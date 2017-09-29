@@ -44,19 +44,21 @@ detects it.
 
 ## First time use
 
-1) Inspect `settings.ini` file and adjust to your needs.
-2) When you run the bot for the first time, it is best that you run it using the `init.bat` file. This will make sure the
+1) Before actually running the bot, you need to run a [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/) instance.
+You need to download correct version (32/64 bit), or else it may not work.
+2) You will need Java runtime installed on your system in order for the bot to run. You may run it by directly running the jar file,
+or by running pre-compiled exe file (Windows only, requires JRE as well).
+3) Inspect `settings.ini` file and adjust to your needs.
+4) When you run the bot for the first time, it is best that you run it using the `init.bat` file. This will make sure the
 bot doesn't perform any operations (it will go into idle mode). It will leave chrome window open for you to set up certain
 settings within the game (like familiars filter, notifications filter, etc.). Once you're done setting it, close the chrome
 window and the bot's console window. This will create certain cookies within your Chrome profile folder that will be used
 the next time you run the bot. Alternativelly to using `init.bat`, you can run bot normally and immediatelly after it loads,
 issue command `pause` which will make sure bot leave Chrome window to you.
-3) As described in the previous step, you should turn off notifications in the game's settings, since that obscures the energy
+5) As described in the previous step, you should turn off notifications in the game's settings, since that obscures the energy
 and PvP ticket bars and may interfere with with energy/tickets detection routine.
-4) When you first run the bot, a 'chrome_profile' folder will be created by the chrome driver, where your chrome profile will
+6) When you first run the bot, a 'chrome_profile' folder will be created by the chrome driver, where your chrome profile will
 be saved (cookies, etc.). You should not touch that folder.
-5) Before actually running the bot, you need to run a [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/) instance.
-You need to download correct version (32/64 bit), or else it may not work.
 
 ## Important
 
@@ -139,6 +141,10 @@ https://github.com/Betalord/BHBot/releases
 play GvG until you manually enter the GvG event. Once you enter it, it will continue to play GvG normally.
 * A brief demonstration of web interface can be viewed here:
 https://youtu.be/TGXHvVJhZ7c
+* As of september 2017, Kongregate has changed the ad system and the bot can't handle all types of ads anymore.
+It will still handle simple ads, the ones when one needs to wait for the close button to appear, but more complex
+ads (like the ones that require clicking on them) won't work. If this should slow down your bot too much (due to
+constant restarts and timeouts), disable the ads within the game settings.
 
 ## Author
 I, Betalord, am the original author of the bot. I have been using the bot until my character achieved level 165. On 29th
