@@ -1,0 +1,3 @@
+# this is a script that launches BHBot
+
+java -jar /home/betalord/BHBOT_EXPORT/bhbot.jar 2>&1 | tee output.txt
