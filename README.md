@@ -3,8 +3,8 @@
 ## What is BHBot?
 BHBot is a program that automates different aspects of the [Bit Heroes](http://www.kongregate.com/games/juppiomenz/bit-heroes) game.
 It is a non intrusive program that works by opening up a Chrome window (or a Firefox, or any other browser for which Selenium WebDriver
-driver exists) and controls it as a normal user would. It works by taking screenshots every 500 ms, detecting cues from screenshot and
-then simulating mouse clicks. BHBot is a good example of how to create such bots to automate flash games or other browser games
+driver exists) and controls it as a normal user would. It works by taking screenshot every 500 ms, detects cues from screenshot and
+then simulates mouse clicks. BHBot is a good example of how to create such bots to automate flash games or other browser games
 (it can be easily adjusted to play some other game).
 
 ## Features
@@ -16,7 +16,9 @@ Bot can automatically play the following types of encounters:
 * PvP
 * GvG
 * Invasion
+
 The difficulty for each such encounter can be (and should be) adjusted in the settings file. Within encounters, the bot will automatically:
+
 * claim ad chests
 * decline merchants
 * decline red (skeleton) chests
@@ -89,3 +91,37 @@ Now, in order to tell the bot to connect to chrome driver on one of these ports,
 `bhbot.exe chromedriveraddress 127.0.0.1:9550`. This will make sure that the bot will connect to the first chrome driver instance.
 The second bot instance should be run like this:
 `bhbot.exe chromedriveraddress 127.0.0.1:9551`. This should make two bots run in parallel without disturbing each other.
+
+## An example Linux setup
+
+Here I give an example setup of the bot (and web interface) for Linux. Note that web interface is possible only when BHBot runs
+in Linux, since it injects commands to `screen`, with which bot should be ran.
+
+Lets see a typical folder structure:
+
+* `/home/betalord/bhbot` root folder for the BHBot. This is where you put your bhbot.jar file, chromedriver, settings.ini, runbot file
+(find it under [web/linux scripts](https://github.com/Betalord/BHBot/tree/master/web/linux%20scripts)), and the rest of the base files.
+* `/home/betalord/bhbot/webserver` root folder for web interface. Here you need to put most of the files from
+[web/linux scripts](https://github.com/Betalord/BHBot/tree/master/web/linux%20scripts) (all files except for `runbot`).
+* `/home/betalord/bhbot/webserver/webroot` here goes contents of
+[web/](https://github.com/Betalord/BHBot/tree/master/web/) (except for `linux_scripts` folder).
+* `/home/betalord/bhbot/webserver/webroot/srv_bin` here you put the HTTPServer class files (and all the rest of class files that
+compiling the HTTPServer produces, like `Misc` and `FletcherChecksum` classes).
+* `/home/betalord/bhbot/marvin` here goes the marvin library files.
+* `/home/betalord/bhbot/cues` here goes the cues (image files).
+* `/home/betalord/bhbot/plans` here goes the plans files.
+
+In order to run BHBot, you need to run it as following (or else web server won't be able to inject commands):
+
+`screen -d -m -S bhbot`
+
+If you need to access bot console, use the following command:
+
+`screen -r bhbot`
+
+You'll need to run chromedriver and HTTPServer (see
+[web/linux scripts](https://github.com/Betalord/BHBot/tree/master/web/linux%20scripts) on how to run it).
+
+## Author
+I, Betalord, am the original author of the bot. I have been using the bot until my character achieved level 165. On 29th
+of September 2017 (a 1st year anniversary of the Bit Heroes game) I have quit the game and released the bot to the public.
