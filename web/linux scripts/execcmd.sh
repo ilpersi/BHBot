@@ -1,0 +1,1 @@
+screen -S bhbot -p 0 -X stuff "$@$(printf \\r)"
