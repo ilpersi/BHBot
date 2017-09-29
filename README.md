@@ -31,6 +31,8 @@ It will also claim daily reward and all week rewards automatically (for PvP, GvG
 maintenance/update dialogs, "Are you still here?" dialog, and pretty much any other dialog (adding new dialog handlers is also very easy).
 In case it encounters a new, unknown type of dialog, it will time out after a while and auto-restart itself.
 
+It will consume consumables as specified in the settings.ini file (potions, tomes, pots), like item find, exp, gold boosts, etc.
+
 It will automatically screenshot any private messages and weekly rewards as they will pop up (it will close them automatically),
 as well as serious crashes (it drop these screenshots in the same folder it has been ran from).
 
@@ -145,6 +147,9 @@ https://youtu.be/TGXHvVJhZ7c
 It will still handle simple ads, the ones when one needs to wait for the close button to appear, but more complex
 ads (like the ones that require clicking on them) won't work. If this should slow down your bot too much (due to
 constant restarts and timeouts), disable the ads within the game settings.
+* Currently consuming of major consumables doesn't work since I didn't have the cue files at the release time of
+the bot. Average and minor consumables, however, work normally. If you require major consumables to work, you
+should screenshot them and create the cue files yourself (see the cues/ folder on how they look like).
 
 ## Author
 I, Betalord, am the original author of the bot. I have been using the bot until my character achieved level 165. On 29th
