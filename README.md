@@ -128,3 +128,10 @@ You'll need to run chromedriver and HTTPServer (see
 ## Author
 I, Betalord, am the original author of the bot. I have been using the bot until my character achieved level 165. On 29th
 of September 2017 (a 1st year anniversary of the Bit Heroes game) I have quit the game and released the bot to the public.
+
+Note that I do not offer support for this bot. If anyone is willing to continue maintaining and developing the bot (it will
+soon become absolete, since BH developers often update the game), contact me so that I can give you the repository rights.
+
+## Finally
+
+Hopefully this bot will prove useful to you. Enjoy it :-)
