@@ -34,6 +34,10 @@ In case it encounters a new, unknown type of dialog, it will time out after a wh
 It will automatically screenshot any private messages and weekly rewards as they will pop up (it will close them automatically),
 as well as serious crashes (it drop these screenshots in the same folder it has been ran from).
 
+It will detect when teams are incomplete (team that you use to play GvG, PvP, dungeon, raid, etc.) and click on AUTO button. This
+will not put tanks in front, so you should adjust it manually when possible. (Note for version v20: this feature might currently
+be broken).
+
 In case bot detects a "Disconnected" dialog, it will pause its execution for 1 hour and thus give chance to the user to play the game.
 Disconnects are usually result of another Chrome instance (or android app) logging into the game. This is why bot pauses in case it 
 detects it.
@@ -129,6 +133,12 @@ You'll need to run chromedriver and HTTPServer (see
 You should download a release ready BHBot (for Windows and Linux) from RELEASES page:
 
 https://github.com/Betalord/BHBot/releases
+
+## Notes
+* I've noticed that in version v20 the "Enter GVG event" at the start of the week is broken, so bot will fail to
+play GvG until you manually enter the GvG event. Once you enter it, it will continue to play GvG normally.
+* A brief demonstration of web interface can be viewed here:
+https://youtu.be/TGXHvVJhZ7c
 
 ## Author
 I, Betalord, am the original author of the bot. I have been using the bot until my character achieved level 165. On 29th
