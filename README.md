@@ -31,6 +31,9 @@ It will also claim daily reward and all week rewards automatically (for PvP, GvG
 maintenance/update dialogs, "Are you still here?" dialog, and pretty much any other dialog (adding new dialog handlers is also very easy).
 In case it encounters a new, unknown type of dialog, it will time out after a while and auto-restart itself.
 
+It will automatically screenshot any private messages and weekly rewards as they will pop up (it will close them automatically),
+as well as serious crashes (it drop these screenshots in the same folder it has been ran from).
+
 In case bot detects a "Disconnected" dialog, it will pause its execution for 1 hour and thus give chance to the user to play the game.
 Disconnects are usually result of another Chrome instance (or android app) logging into the game. This is why bot pauses in case it 
 detects it.
