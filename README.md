@@ -125,6 +125,11 @@ If you need to access bot console, use the following command:
 You'll need to run chromedriver and HTTPServer (see
 [web/linux scripts](https://github.com/Betalord/BHBot/tree/master/web/linux%20scripts) on how to run it).
 
+## Download
+You should download a release ready BHBot (for Windows and Linux) from RELEASES page:
+
+https://github.com/Betalord/BHBot/releases
+
 ## Author
 I, Betalord, am the original author of the bot. I have been using the bot until my character achieved level 165. On 29th
 of September 2017 (a 1st year anniversary of the Bit Heroes game) I have quit the game and released the bot to the public.
