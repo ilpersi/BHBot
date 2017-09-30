@@ -3,8 +3,6 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-import marvin.image.MarvinSegment;
-
 /**
  * Copied from:
  * https://github.com/gabrielarchanjo/marvinproject/blob/ca299ca939b7d64c858d5fff8a6491ec5708719f/marvinproject/dev/MarvinPlugins/src/org/marvinproject/image/pattern/findSubimage/FindSubimage.java

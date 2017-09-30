@@ -24,9 +24,6 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
-import marvin.image.MarvinImage;
-import marvin.image.MarvinSegment;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.Dimension;

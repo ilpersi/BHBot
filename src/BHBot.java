@@ -14,8 +14,6 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.util.Set;
 
-import marvin.image.MarvinSegment;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
@@ -25,7 +23,8 @@ import com.assertthat.selenium_shutterbug.core.Shutterbug;
 public class BHBot {
 
 	public static final String PROGRAM_NAME = "BHBot";
-	public static final int PROGRAM_VERSION = 20;
+	public static final int PROGRAM_VERSION = 21;
+	public static final boolean REQUIRES_ACCESS_TOKEN = false; // obsolete since public release (was used to restrict bot usage)
 	
 	public static Thread mainThread;
 	public static MainThread main;
@@ -42,12 +41,14 @@ public class BHBot {
 		
 		MainThread.loadCues();
 		
-		int timeout = 10000;
-		log("Requesting access token... (timeout=" + Misc.millisToHumanForm(timeout) + ")");
-		boolean access = AccessControl.check(timeout);
-		if (!access) {
-			log("Error: access token expired or was unable to retrieve a new one. Quiting...");
-			return ;
+		if (REQUIRES_ACCESS_TOKEN) {
+			int timeout = 10000;
+			log("Requesting access token... (timeout=" + Misc.millisToHumanForm(timeout) + ")");
+			boolean access = AccessControl.check(timeout);
+			if (!access) {
+				log("Error: access token expired or was unable to retrieve a new one. Quiting...");
+				return ;
+			}
 		}
 		
 		// load settings from disk:
