@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="dependencies/selenium-java-3.4.0/client-combined-3.4.0-nodeps.jar"/>
+	<classpathentry kind="lib" path="dependencies/shutterbug/selenium-shutterbug-0.6.1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
