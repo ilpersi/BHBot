@@ -25,7 +25,7 @@ The difficulty for each such encounter can be (and should be) adjusted in the se
 * persuade any familiar that offers himself
 
 Bot will also try to watch any ad offer in the main screen and claim reward. Note that as of  september 2017, the ad system has been
-reworked and bot is not able to claim al types of ads anymore. On failure, it will restart however.
+reworked and bot is not able to claim all types of ads anymore. On failure, it will restart however.
 
 It will also claim daily reward and all week rewards automatically (for PvP, GvG and other types of events). It will handle
 maintenance/update dialogs, "Are you still here?" dialog, and pretty much any other dialog (adding new dialog handlers is also very easy).
@@ -150,6 +150,14 @@ constant restarts and timeouts), disable the ads within the game settings.
 * Currently consuming of major consumables doesn't work since I didn't have the cue files at the release time of
 the bot. Average and minor consumables, however, work normally. If you require major consumables to work, you
 should screenshot them and create the cue files yourself (see the cues/ folder on how they look like).
+
+## Compiling
+You can import the project into Eclipse (see the .project and .classpath files). It contains all the dependencies
+needed to compile the project (under dependencies/ folder - if you import it into Eclipse, it will all be set up automatically).
+
+The project uses only a fraction of the Marvin framework (does not depend on it - I've copied the required files into the src
+folder) for image cue recognition. It heavily uses Selenium WebDriver for interaction with the web browser (jars included). It also
+uses Selenium Shutterbug to take screenshots (jars included).
 
 ## Author
 I, Betalord, am the original author of the bot. I have been using the bot until my character achieved level 165. On 29th
