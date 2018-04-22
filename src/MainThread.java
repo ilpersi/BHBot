@@ -323,7 +323,7 @@ public class MainThread implements Runnable {
 		addCue("RaidPopup", loadImage("cues/cueRaidPopup.png"), new Bounds(300, 35, 340, 70));
 		addCue("RaidSummon", loadImage("cues/cueRaidSummon.png"), new Bounds(480, 360, 540, 380));
 		addCue("RaidLevel", loadImage("cues/cueRaidLevel.png"), new Bounds(320, 430, 480, 460)); // selected raid type button cue
-		addCue("R1Only", loadImage("cues/cueR1Only.png"), new Bounds(180, 345, 240, 380)); // cue for R1 type selected when R2 (and R3) is not open yet (in that case it won't show raid type selection buttons)
+		addCue("R1Only", loadImage("cues/cueR1Only.png"), null); // cue for R1 type selected when R2 (and R3) is not open yet (in that case it won't show raid type selection buttons)
 
 		addCue("Normal", loadImage("cues/cueNormal.png"), null);
 		addCue("Hard", loadImage("cues/cueHard.png"), null);
