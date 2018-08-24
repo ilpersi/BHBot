@@ -111,18 +111,14 @@ public class BHBot {
 		log(PROGRAM_NAME + " has finished.");
 	}
 	
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("<yyyy/MM/dd HH:mm:ss>");
-	
 	public static final DecimalFormat num4Digits = new DecimalFormat("#.####", new DecimalFormatSymbols(Locale.US));
 	public static final DecimalFormat num3Digits = new DecimalFormat("#.###", new DecimalFormatSymbols(Locale.US));
 	public static final DecimalFormat num2Digits = new DecimalFormat("#.##", new DecimalFormatSymbols(Locale.US));
 	public static final DecimalFormat num1Digit = new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.US));
 	
-	public static void log(String s) {
-		Date date = new Date();
-		System.out.println(dateFormat.format(date) + " " + s);
+	public static void log(String s) {//prints with date and time in format
+		System.out.println(new SimpleDateFormat("<yyyy/MM/dd HH:mm:ss>").format(new Date()) + " " + s);
 	}
-	
 	public static void processCommand(String c) {
 		String[] params = c.split(" ");
 		if (c.equals("exit") || c.equals("quit") || c.equals("stop")) {

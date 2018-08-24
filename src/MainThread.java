@@ -323,7 +323,10 @@ public class MainThread implements Runnable {
 		addCue("RaidPopup", loadImage("cues/cueRaidPopup.png"), new Bounds(300, 35, 340, 70));
 		addCue("RaidSummon", loadImage("cues/cueRaidSummon.png"), new Bounds(480, 360, 540, 380));
 		addCue("RaidLevel", loadImage("cues/cueRaidLevel.png"), new Bounds(320, 430, 480, 460)); // selected raid type button cue
-		addCue("R1Only", loadImage("cues/cueR1Only.png"), new Bounds(180, 345, 240, 380)); // cue for R1 type selected when R2 (and R3) is not open yet (in that case it won't show raid type selection buttons)
+
+		addCue("R1Only", loadImage("cues/cueR1Only.png"), null); // cue for R1 type selected when R2 (and R3) is not open yet (in that case it won't show raid type selection buttons)
+		addCue("Raid2Of2", loadImage("cues/cueRaid2Of2.png"), null);// cue for when R2 type selected when R3 is not open yet. (fixes identifying R2 as R3)
+		
 
 		addCue("Normal", loadImage("cues/cueNormal.png"), null);
 		addCue("Hard", loadImage("cues/cueHard.png"), null);
@@ -379,7 +382,7 @@ public class MainThread implements Runnable {
 		addCue("3Xspeed", loadImage("cues/cue3Xspeed.png"), new Bounds(0, 250, 40, 480));
 
 		// GVG related:
-		addCue("GVG", loadImage("cues/cueGVG.png"), new Bounds(720, 270, 770, 480)); // main GVG button cue
+		addCue("GVG", loadImage("cues/cueGVG.png"), null); // main GVG button cue
 		addCue("BadgeBar", loadImage("cues/cueBadgeBar.png"), null);
 		addCue("GVGWindow", loadImage("cues/cueGVGWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
 
@@ -994,10 +997,11 @@ public class MainThread implements Runnable {
 							String raid = decideRaidRandomly();
 							int difficulty = Integer.parseInt(raid.split(" ")[1]);
 							int raidType = Integer.parseInt(raid.split(" ")[0]);
-
 							BHBot.log("Attempting raid " + (raidType == 1 ? "R1" : raidType == 2 ? "R2" : "R3") + " " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic") + "...");
 
+
 							int currentType = readCurrentRaidType();
+							
 							if (currentType == 0) { // an error!
 								BHBot.log("Error: detected raid type is 0, which is an error. Restarting...");
 								restart();
@@ -2511,13 +2515,19 @@ public class MainThread implements Runnable {
 		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
 
 		Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
-		Point right = center.moveBy(25, 0);
-		Point left = center.moveBy(-25, 0);
 
+		Point right = center.moveBy(26, 0);//number of pixels distance apart
+		Point left = center.moveBy(-26, 0);
+		
 		boolean r = (new Color(img.getRGB(right.x, right.y))).equals(off);
 		boolean l = (new Color(img.getRGB(left.x, left.y))).equals(off);
+				
+		seg = null;
+		seg = detectCue(cues.get("Raid2Of2"));//fix for when you have R2 unlocked, but not R3
+		if (seg != null)
+			return 2;
+		else if (!l)
 
-		if (!l)
 			return 1;
 		else if (!r)
 			return 3;
@@ -2544,6 +2554,10 @@ public class MainThread implements Runnable {
 
 		Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
 		int move = newType - currentType;
+
+		Point pos = center.moveBy(move*26, 0);
+		
+
 		Point pos = center.moveBy(move*25, 0);
 
 		clickInGame(pos.x, pos.y);
@@ -3282,7 +3296,7 @@ public class MainThread implements Runnable {
 			}
 
 			// make sure scroller is in correct position now:
-			readScreen(500); // so that the scroller stabilizes a bit
+			readScreen(2000); // so that the scroller stabilizes a bit //Quick Fix slow down
 			int newScrollerPos = detectEquipmentFilterScrollerPos();
 			int counter = 0;
 			while (newScrollerPos != scrollerPos) {
