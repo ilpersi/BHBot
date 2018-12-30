@@ -1346,7 +1346,7 @@ public class MainThread implements Runnable {
 
 							readScreen(3*SECOND);
 							// select difficulty (except when d4 is in play, then there is no difficulty to select!):
-							if (dungeon.charAt(3) == '4') { // d4
+							if (dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') { // D4, or Z7D3
 								seg = detectCue(cues.get("Enter"), 5*SECOND);
 								clickOnSeg(seg);
 								// for whatever reason D4 accept button is different so using a different cue file
@@ -2673,17 +2673,29 @@ public class MainThread implements Runnable {
 			}
 			break;
 		}
-		// case 7: // zone 7
-		// 	switch (d) {
-		// 	case 1:
-		// 		return new Point(150, 220);
-		// 	case 2:
-		// 		return new Point(500, 400);
-		// 	case 3:
-		// 		return new Point(550, 120);
-		// 	}
+		case 7: // zone 7
+			switch (d) {
+			case 1:
+				return new Point(200, 200);
+			case 2:
+				return new Point(570, 340);
+			case 3:
+				return new Point(400, 430);
+			}
 			break;
 		}
+		//TODO Add zone 8
+		// case 8: // zone 8
+		// 	switch (d) {
+		// 	case 1:
+		// 		return new Point(200, 200);
+		// 	case 2:
+		// 		return new Point(570, 340);
+		// 	case 3:
+		// 		return new Point(400, 430);
+		// 	}
+		// 	break;
+		// }
 
 		return null;
 	}
@@ -2775,12 +2787,14 @@ public class MainThread implements Runnable {
 		Point r3 = center.moveBy(78, 0); // three to the right coords
 		Point r4 = center.moveBy(104, 0); // four to the right coords
 		Point r5 = center.moveBy(130, 0); // four to the right coords
+		Point r6 = center.moveBy(156, 0); // four to the right coords
 
 		Point l1 = center.moveBy(-26, 0); // one button to the left coords
 		Point l2 = center.moveBy(-52, 0); // two to the left coords
 		Point l3 = center.moveBy(-78, 0); // three to the left coords
 		Point l4 = center.moveBy(-104, 0); // four to the left coords
 		Point l5 = center.moveBy(-130, 0); // four to the left coords
+		Point l6 = center.moveBy(-156, 0); // four to the right coords
 
 		//  these define the unselected dots to the right and left of the green selected raid dot, will return false if the dot does not exist
 		boolean r1Off = (new Color(img.getRGB(r1.x, r1.y))).equals(off);
@@ -2788,12 +2802,14 @@ public class MainThread implements Runnable {
 		boolean r3Off = (new Color(img.getRGB(r3.x, r3.y))).equals(off);
 		boolean r4Off = (new Color(img.getRGB(r4.x, r4.y))).equals(off);
 		boolean r5Off = (new Color(img.getRGB(r5.x, r5.y))).equals(off);
+		boolean r6Off = (new Color(img.getRGB(r6.x, r6.y))).equals(off);
 
 		boolean l1Off = (new Color(img.getRGB(l1.x, l1.y))).equals(off);
 		boolean l2Off = (new Color(img.getRGB(l2.x, l2.y))).equals(off);
 		boolean l3Off = (new Color(img.getRGB(l3.x, l3.y))).equals(off);
 		boolean l4Off = (new Color(img.getRGB(l4.x, l4.y))).equals(off);
 		boolean l5Off = (new Color(img.getRGB(l5.x, l5.y))).equals(off);
+		boolean l6Off = (new Color(img.getRGB(l6.x, l6.y))).equals(off);
 
 		//Calculating the currently unlocked tier by all the combinations of dots that exist at each tier, confirming by checking false for the surrounding dots
 		//E.G OOXO
@@ -2832,7 +2848,18 @@ public class MainThread implements Runnable {
 			return 5;
 		else if (r1Off && r2Off && r3Off && r4Off && !r5Off && !l1Off)
 			return 5;
-			//TODO Add raid 6
+		else if (!l6Off && l5Off && l4Off && l3Off && l2Off && l1Off && !r1Off) //R6 Detection
+			return 6;
+		else if (!l5Off && l4Off && l3Off && l2Off && l1Off && r1Off && !r2Off)
+			return 6;
+		else if (!l4Off && l3Off && l2Off && l1Off && r1Off && r2Off && !r3Off)
+			return 6;
+		else if (!l3Off && l2Off && l1Off && r1Off && r2Off && r3Off && !r4Off)
+			return 6;
+		else if (!l2Off && l1Off && r1Off && r2Off && r3Off && r4Off && !r5Off)
+			return 6;
+		else if (!l1Off && r1Off && r2Off && r3Off && r4Off && r5Off && !r6Off)
+			return 6;
 		else
 			//On error return 0
 			return 0;
@@ -2857,30 +2884,35 @@ public class MainThread implements Runnable {
 
 		Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
 
+		// these are the locations of the raid dots  (center to center is 26px)
 		Point r1 = center.moveBy(26, 0); // one button to the right coords
 		Point r2 = center.moveBy(52, 0); // two to the right coords
 		Point r3 = center.moveBy(78, 0); // three to the right coords
 		Point r4 = center.moveBy(104, 0); // four to the right coords
 		Point r5 = center.moveBy(130, 0); // four to the right coords
+		Point r6 = center.moveBy(156, 0); // four to the right coords
 
 		Point l1 = center.moveBy(-26, 0); // one button to the left coords
 		Point l2 = center.moveBy(-52, 0); // two to the left coords
 		Point l3 = center.moveBy(-78, 0); // three to the left coords
 		Point l4 = center.moveBy(-104, 0); // four to the left coords
 		Point l5 = center.moveBy(-130, 0); // four to the left coords
+		Point l6 = center.moveBy(-156, 0); // four to the right coords
 
-		//coordinates for raid selection dots, true is found, false is not found
+		//  these define the unselected dots to the right and left of the green selected raid dot, will return false if the dot does not exist
 		boolean r1Off = (new Color(img.getRGB(r1.x, r1.y))).equals(off);
 		boolean r2Off = (new Color(img.getRGB(r2.x, r2.y))).equals(off);
 		boolean r3Off = (new Color(img.getRGB(r3.x, r3.y))).equals(off);
 		boolean r4Off = (new Color(img.getRGB(r4.x, r4.y))).equals(off);
 		boolean r5Off = (new Color(img.getRGB(r5.x, r5.y))).equals(off);
+		boolean r6Off = (new Color(img.getRGB(r6.x, r6.y))).equals(off);
 
 		boolean l1Off = (new Color(img.getRGB(l1.x, l1.y))).equals(off);
 		boolean l2Off = (new Color(img.getRGB(l2.x, l2.y))).equals(off);
 		boolean l3Off = (new Color(img.getRGB(l3.x, l3.y))).equals(off);
 		boolean l4Off = (new Color(img.getRGB(l4.x, l4.y))).equals(off);
 		boolean l5Off = (new Color(img.getRGB(l5.x, l5.y))).equals(off);
+		boolean l6Off = (new Color(img.getRGB(l6.x, l6.y))).equals(off);
 
 		seg = null;
 
@@ -2918,7 +2950,18 @@ public class MainThread implements Runnable {
 			return 4; //r4
 		else if ((currentRaidTier == 5) && (l4Off && l3Off && l2Off && l1Off))
 			return 5; //r5
-		//TODO Raid 6
+		else if ((currentRaidTier == 6) && (r1Off && r2Off && r3Off && r4Off && r5Off))
+			return 1; //r2
+		else if ((currentRaidTier == 6) && (l1Off && r1Off && r2Off && r3Off && r4Off))
+			return 2; //r1
+		else if ((currentRaidTier == 6) && (l1Off && l2Off && r1Off && r2Off && r3Off))
+			return 3; //r3
+		else if ((currentRaidTier == 6) && (l1Off && l2Off && l3Off && r1Off && r2Off))
+			return 4; //r4
+		else if ((currentRaidTier == 6) && (l1Off && l2Off && l3Off && l4Off && r1Off))
+			return 5; //r5
+		else if ((currentRaidTier == 6) && (l1Off && l2Off && l3Off && l4Off && l5Off))
+			return 6; //r6
 		else
 			return 0; // error
 	}
