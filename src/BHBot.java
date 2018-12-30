@@ -23,7 +23,7 @@ import com.assertthat.selenium_shutterbug.core.Shutterbug;
 public class BHBot {
 
 	public static final String PROGRAM_NAME = "BHBot";
-	public static final int PROGRAM_VERSION = 21;
+	public static final String PROGRAM_VERSION = "25.4";
 	public static final boolean REQUIRES_ACCESS_TOKEN = false; // obsolete since public release (was used to restrict bot usage)
 	
 	public static Thread mainThread;
@@ -80,7 +80,6 @@ public class BHBot {
 				//s = console.readLine();
 				//s = scanner.nextLine();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return;
 			}
@@ -111,18 +110,16 @@ public class BHBot {
 		log(PROGRAM_NAME + " has finished.");
 	}
 	
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("<yyyy/MM/dd HH:mm:ss>");
-	
 	public static final DecimalFormat num4Digits = new DecimalFormat("#.####", new DecimalFormatSymbols(Locale.US));
 	public static final DecimalFormat num3Digits = new DecimalFormat("#.###", new DecimalFormatSymbols(Locale.US));
 	public static final DecimalFormat num2Digits = new DecimalFormat("#.##", new DecimalFormatSymbols(Locale.US));
 	public static final DecimalFormat num1Digit = new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.US));
 	
-	public static void log(String s) {
-		Date date = new Date();
-		System.out.println(dateFormat.format(date) + " " + s);
+	public static void log(String s) {//prints with date and time in format
+		System.out.println(new SimpleDateFormat("<yyyy/MM/dd HH:mm:ss>").format(new Date()) + " " + s);
 	}
-	
+//	public static void logint(int s) {//int logger
+//	}
 	public static void processCommand(String c) {
 		String[] params = c.split(" ");
 		if (c.equals("exit") || c.equals("quit") || c.equals("stop")) {
@@ -251,7 +248,7 @@ public class BHBot {
 			if (params.length > 1)
 				file = params[1];
 			settings.load(file);
-			log("Settings have been loaded from disk! (" + file + ")");
+			log("Settings loaded");
 		} else if (c.equals("readouts") || c.equals("resettimers")) {
 			main.resetTimers();
 			log("Readout timers reset.");
@@ -324,6 +321,8 @@ public class BHBot {
 			}
 		} else if (params[0].equals("numtest")) {
 			main.numTest();
+		} else if (params[0].equals("adtest")) {
+			main.trySkippingAd();
 		}
 	}
 	

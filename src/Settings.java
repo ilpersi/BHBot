@@ -20,9 +20,10 @@ public class Settings {
 	public boolean doTrials = true;
 	public boolean doGauntlet = true;
 	public boolean doPVP = true;
-	public boolean doGVG = true;
-	public boolean doAds = true;
-	public boolean doInvasion = true;
+	public boolean doGVG = false;
+	public boolean doAds = false;
+	public boolean doInvasion = false;
+	public boolean doExpedition = false;
 	
 	/** This is the minimum amount of shards that the bot must leave for the user. If shards get above this value, bot will play the raids in case raiding is enabled of course. */
 	public int minShards = 2;
@@ -44,6 +45,10 @@ public class Settings {
 	
 	/** The trials/gauntlet difficulty */
 	public int difficulty = 60;
+	
+	/** The Expedition difficulty */
+	public int expeditionDifficulty = 5;
+	
 	/**
 	 * List of dungeons with percentages that we will attempt to do. Dungeon name must be in standard format, i.e. 'd2z4',
 	 * followed by a space character and a difficulty level (1-3, where 1 is normal, 2 is hard, 3 is heroic), e.g. '3',
@@ -56,6 +61,10 @@ public class Settings {
 	 * Examples:
 	 * '1 3 70;2 1 30' ==> in 70% of cases it will do R1 on heroic, in 30% of cases it will do R2 normal
 	 * '1 3 100' ==> in 100% of cases it will do R1 on heroic
+	 */
+	public int currentRaidTier = 0;
+	/**
+	 * Current tier of raid unlocked, used for calculating raids to run **IMPORTANT**
 	 */
 	public List<String> raids;
 	/**
@@ -105,6 +114,7 @@ public class Settings {
 		this.doGVG = settings.doGVG;
 		this.doInvasion = settings.doInvasion;
 		this.doAds = settings.doAds;
+		this.doExpedition = settings.doExpedition;
 		
 		this.minShards = settings.minShards;
 		this.minTokens = settings.minTokens;
@@ -120,6 +130,7 @@ public class Settings {
 		
 		this.dungeons = new ArrayList<String>(settings.dungeons);
 		this.raids = new ArrayList<String>(settings.raids);
+		this.currentRaidTier = settings.currentRaidTier;
 		this.pvpstrip = new ArrayList<String>(settings.pvpstrip);
 		
 		this.autoConsume = settings.autoConsume;
@@ -311,6 +322,7 @@ public class Settings {
 		doPVP = map.getOrDefault("doPVP", doPVP ? "1" : "0").equals("0") ? false : true;
 		doGVG = map.getOrDefault("doGVG", doGVG ? "1" : "0").equals("0") ? false : true;
 		doInvasion = map.getOrDefault("doInvasion", doInvasion ? "1" : "0").equals("0") ? false : true;
+		doExpedition = map.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("0") ? false : true;
 		doAds = map.getOrDefault("doAds", doAds ? "1" : "0").equals("0") ? false : true;
 		
 		minShards = Integer.parseInt(map.getOrDefault("minShards", ""+minShards));
@@ -328,6 +340,7 @@ public class Settings {
 		difficulty = Integer.parseInt(map.getOrDefault("difficulty", ""+difficulty));
 		setDungeonsFromString(map.getOrDefault("dungeons", getDungeonsAsString()));
 		setRaidsFromString(map.getOrDefault("raids", getRaidsAsString()));
+		currentRaidTier = Integer.parseInt(map.getOrDefault("currentRaidTier", ""+currentRaidTier));
 		setStripsFromString(map.getOrDefault("pvpstrip", getStripsAsString()));
 		
 		autoConsume = map.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("0") ? false : true;

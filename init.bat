@@ -1,2 +1,2 @@
 @echo off
-bhbot settings init.ini
+java -jar BHBot.jar settings init.ini
