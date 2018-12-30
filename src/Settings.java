@@ -83,6 +83,7 @@ public class Settings {
 	public boolean autoConsume = false;
 	/** List of consumables that we want activate at all times. */
 	public List<String> consumables;
+	public List<String> familiars;
 
 	/** This tells us how much time will we sleep when disconnect has been detected (which happens when a user logs in). This interval should be an hour or so, so that user can play the game in peace without being disconnected due to us reconnecting to the game. */
 	public int pauseOnDisconnect = 60*MainThread.MINUTE;
@@ -220,6 +221,16 @@ public class Settings {
 		}
 	}
 	
+	public void setFamiliars(String... familiars) {
+		this.familiars.clear();
+		for (String f : familiars) {
+			String add = f.trim();
+			if (add.equals(""))
+				continue;
+			this.familiars.add(add);
+		}
+	}
+	
 	public String getDungeonsAsString() {
 		String result = "";
 		for (String d : dungeons)
@@ -253,6 +264,15 @@ public class Settings {
 			result += s + " ";
 		if (result.length() > 0)
 			result = result.substring(0, result.length()-1); // remove last " " character
+		return result;
+	}
+	
+	public String getFamiliarsAsString() {
+		String result = "";
+		for (String f : familiars)
+			result += f + ";";
+		if (result.length() > 0)
+			result = result.substring(0, result.length()-1); // remove last ";" character
 		return result;
 	}
 	
@@ -293,6 +313,16 @@ public class Settings {
 			consumables.set(i, consumables.get(i).trim());
 			if (consumables.get(i).equals(""))
 				consumables.remove(i);
+		}
+	}
+	
+	public void setFamiliarsFromString(String s) {
+		setFamiliars(s.split(";"));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = familiars.size()-1; i >= 0; i--) {
+			familiars.set(i, familiars.get(i).trim());
+			if (familiars.get(i).equals(""))
+				familiars.remove(i);
 		}
 	}
 	
@@ -342,6 +372,7 @@ public class Settings {
 		setRaidsFromString(map.getOrDefault("raids", getRaidsAsString()));
 		currentRaidTier = Integer.parseInt(map.getOrDefault("currentRaidTier", ""+currentRaidTier));
 		setStripsFromString(map.getOrDefault("pvpstrip", getStripsAsString()));
+		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
 		
 		autoConsume = map.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("0") ? false : true;
 		setConsumablesFromString(map.getOrDefault("consumables", getConsumablesAsString()));

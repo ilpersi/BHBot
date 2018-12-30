@@ -331,7 +331,7 @@ public class MainThread implements Runnable {
 		addCue("RaidLevel", loadImage("cues/cueRaidLevel.png"), new Bounds(320, 430, 480, 460)); // selected raid type button cue
 
 		addCue("R1Only", loadImage("cues/cueR1Only.png"), null); // cue for R1 type selected when R2 (and R3) is not open yet (in that case it won't show raid type selection buttons)
-		addCue("Raid2Of2", loadImage("cues/cueRaid2Of2.png"), null);// cue for when R2 type selected when R3 is not open yet. (fixes identifying R2 as R3)
+//		addCue("Raid2Of2", loadImage("cues/cueRaid2Of2.png"), null);// cue for when R2 type selected when R3 is not open yet. (fixes identifying R2 as R3)
 
 
 		addCue("Normal", loadImage("cues/cueNormal.png"), null);
@@ -719,6 +719,8 @@ public class MainThread implements Runnable {
 //		String invasionSetting = Boolean.toString(collectedFishingRewards);
 //		BHBot.log("doInvasions set to " + invasionSetting);
 //		BHBot.log("Session id is: " + driver.getSessionId());
+		for (String f : BHBot.settings.familiars)
+			BHBot.log(f);
 
 
 		state = State.Loading;
@@ -1346,7 +1348,7 @@ public class MainThread implements Runnable {
 
 							readScreen(3*SECOND);
 							// select difficulty (except when d4 is in play, then there is no difficulty to select!):
-							if (dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') { // D4, or Z7D3
+							if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3')) { // D4, or Z7D3
 								seg = detectCue(cues.get("Enter"), 5*SECOND);
 								clickOnSeg(seg);
 								// for whatever reason D4 accept button is different so using a different cue file
@@ -2672,7 +2674,6 @@ public class MainThread implements Runnable {
 				return new Point(400, 270);
 			}
 			break;
-		}
 		case 7: // zone 7
 			switch (d) {
 			case 1:
