@@ -9,23 +9,19 @@ then simulates mouse clicks. BHBot is a good example of how to create such bots 
 
 ## Features
 Bot can automatically play the following types of encounters:
-* dungeons
-* raids
-* gauntlet
-* trials
+* Dungeons
+* Raids
+* Gauntlet / Trials
 * PvP
 * GvG
 * Invasion
+* Expedition
 
 The difficulty for each such encounter can be (and should be) adjusted in the settings file. Within encounters, the bot will automatically:
 
-* claim ad chests
-* decline merchants
-* decline red (skeleton) chests
-* persuade any familiar that offers himself
-
-Bot will also try to watch any ad offer in the main screen and claim reward. Note that as of  september 2017, the ad system has been
-reworked and bot is not able to claim all types of ads anymore. On failure, it will restart however.
+* Decline merchants
+* Decline red (skeleton) chests
+* Persuade any familiar that offers himself
 
 It will also claim daily reward and all week rewards automatically (for PvP, GvG and other types of events). It will handle
 maintenance/update dialogs, "Are you still here?" dialog, and pretty much any other dialog (adding new dialog handlers is also very easy).
@@ -41,7 +37,7 @@ will not put tanks in front, so you should adjust it manually when possible. (No
 be broken).
 
 In case bot detects a "Disconnected" dialog, it will pause its execution for 1 hour and thus give chance to the user to play the game.
-Disconnects are usually result of another Chrome instance (or android app) logging into the game. This is why bot pauses in case it 
+Disconnects are usually result of another Chrome instance (or android app) logging into the game. This is why bot pauses in case it
 detects it.
 
 ## First time use
@@ -50,16 +46,17 @@ detects it.
 You need to download correct version (32/64 bit), or else it may not work.
 2) You will need Java runtime installed on your system in order for the bot to run. You may run it by directly running the jar file,
 or by running pre-compiled exe file (Windows only, requires JRE as well).
-3) Inspect `settings.ini` file and adjust to your needs.
-4) When you run the bot for the first time, it is best that you run it using the `init.bat` file. This will make sure the
+3) The bot will not work with the latest Chrome release, you need to download a copy of Chrome v69 and disable the chrome://flags/#enable-ephemeral-flash-permission flag
+4) Inspect `settings.ini` file and adjust to your needs.
+5) When you run the bot for the first time, it is best that you run it using the `init.bat` file. This will make sure the
 bot doesn't perform any operations (it will go into idle mode). It will leave chrome window open for you to set up certain
 settings within the game (like familiars filter, notifications filter, etc.). Once you're done setting it, close the chrome
 window and the bot's console window. This will create certain cookies within your Chrome profile folder that will be used
 the next time you run the bot. Alternativelly to using `init.bat`, you can run bot normally and immediatelly after it loads,
 issue command `pause` which will make sure bot leave Chrome window to you.
-5) As described in the previous step, you should turn off notifications in the game's settings, since that obscures the energy
+6) As described in the previous step, you should turn off notifications in the game's settings, since that obscures the energy
 and PvP ticket bars and may interfere with with energy/tickets detection routine.
-6) When you first run the bot, a 'chrome_profile' folder will be created by the chrome driver, where your chrome profile will
+7) When you first run the bot, a 'chrome_profile' folder will be created by the chrome driver, where your chrome profile will
 be saved (cookies, etc.). You should not touch that folder.
 
 ## Important
@@ -88,7 +85,7 @@ command input box):
 - `do`: force a dungeon/raid/pvp/gvg/gauntlet/trials. Example: "do raid". Used for debugging purposes more or less (bot will automatically attempt dungeons).
 - `set`: sets a setting line, just like from a 'settings.ini' file. Example: "set raids 1 3 100", or "set difficulty 70". Note that this overwritten setting is NOT saved to the 'settings.ini' file! Once you issue <reload> command, it will get discharged.
 - `plan`: will load a settings file from a plan folder. Some sample plan files are attached to this distribution. Example: "plan idle" (will load 'plans/idle.ini' and overwritte current settings with it). You should write your own plan files as needed.
-- `readouts`: will reset readout timers (and hence immediatelly commence reading out resources).
+- `readouts`: will reset readout timers (and hence immediately commence reading out resources).
 
 ## Advanced
 
@@ -98,6 +95,7 @@ chrome driver like this:
 `chromedriver.exe --port=9550`
 (in case you want your chrome driver to run on port 9550). The next chrome driver instance will run e.g. on port 9551,
 so we'll run it like this: `chromedriver.exe --port=9551`.
+You will  need to run the chromedrivers in separate folders as they create a chrome_profile settings folder in the current directory.
 Now, in order to tell the bot to connect to chrome driver on one of these ports, you'll need to run it like this:
 `bhbot.exe chromedriveraddress 127.0.0.1:9550`. This will make sure that the bot will connect to the first chrome driver instance.
 The second bot instance should be run like this:
@@ -139,17 +137,14 @@ You should download a release ready BHBot (for Windows and Linux) from RELEASES 
 https://github.com/Betalord/BHBot/releases
 
 ## Notes
-* I've noticed that in version v20 the "Enter GVG event" at the start of the week is broken, so bot will fail to
-play GvG until you manually enter the GvG event. Once you enter it, it will continue to play GvG normally.
 * A brief demonstration of web interface can be viewed here:
 https://youtu.be/TGXHvVJhZ7c
-* As of september 2017, Kongregate has changed the ad system and the bot can't handle all types of ads anymore.
-It will still handle simple ads, the ones when one needs to wait for the close button to appear, but more complex
-ads (like the ones that require clicking on them) won't work. If this should slow down your bot too much (due to
-constant restarts and timeouts), disable the ads within the game settings.
+* The current ad system is not implemented and is unlikely to work.
 * Currently consuming of major consumables doesn't work since I didn't have the cue files at the release time of
 the bot. Average and minor consumables, however, work normally. If you require major consumables to work, you
 should screenshot them and create the cue files yourself (see the cues/ folder on how they look like).
+* The image recognition engine can have trouble with high resolution / non-standard DPI. If you're having issues with the bot not starting
+try setting scaling to 100% and resolution 1920*1080 or less.
 
 ## Compiling
 You can import the project into Eclipse (see the .project and .classpath files). It contains all the dependencies
