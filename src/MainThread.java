@@ -2402,38 +2402,50 @@ public class MainThread implements Runnable {
 
 		//TODO Complete gem bribing
 		// check for persuasions:
+		boolean found = false;
 		seg = detectCue(cues.get("Persuade"));
 		if (seg != null) {
 			BHBot.log("Persuation encountered");
 			//click view
 			sleep(2*SECOND);
 			//open view window and cycle through settings familiar list
-			String v = "View";
-			seg = detectCue(cues.get(v));
+			seg = detectCue(cues.get("View"));
 				if (seg != null) {
 					//when view found click it
 					clickOnSeg(seg);
-					for (String f : BHBot.settings.familiars) { //cycle through list checking for matches
-						readScreen();
-						seg = detectCue(cues.get(f));
-						BHBot.log("Checking for familiar to bribe: " + f);
-						sleep(2*SECOND);
-						if (seg != null) {
-							BHBot.log("Match found:" + f);
-							saveGameScreen("Bribed " + f);
-							//TODO add not enough gems failsafe
-							readScreen();
-							seg = detectCue(cues.get("X"));
+						for (String f : BHBot.settings.familiars) { //cycle through list checking for matches
 							sleep(2*SECOND);
-							clickOnSeg(seg);
 							readScreen();
-							seg = detectCue(cues.get("Bribe"));
-								if (seg != null) {
-									BHBot.log("Bribe button found");
-								}
-							//got a match
-							//go back
-							//gem bribe code
+							seg = detectCue(cues.get(f));
+							BHBot.log("Checking for familiar to bribe: " + f);
+							if (seg != null) {
+								BHBot.log("Match found: " + f);
+								saveGameScreen("Bribed " + f);
+								//TODO add not enough gems failsafe
+								readScreen();
+								seg = detectCue(cues.get("X"));
+									if (seg != null) {
+										BHBot.log("X button found");
+										clickOnSeg(seg);
+									}
+								sleep(2*SECOND);
+								readScreen();
+								seg = detectCue(cues.get("Persuade"));
+									if (seg != null) {
+										BHBot.log("Bribe button found");
+										clickOnSeg(seg);
+									}
+									sleep(2*SECOND);
+									readScreen();
+									seg = detectCue(cues.get("YesGreen"));
+										if (seg != null) {
+											BHBot.log("Yes button found");
+											clickOnSeg(seg);
+										}
+									return;
+								//got a match
+								//go back
+								//gem bribe code
 						}
 					}
 					BHBot.log("No match found..");
