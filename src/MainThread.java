@@ -2395,17 +2395,51 @@ public class MainThread implements Runnable {
 		// check for persuasions:
 		seg = detectCue(cues.get("Persuade"));
 		if (seg != null) {
-			clickOnSeg(seg);
+			//click view
 			sleep(2*SECOND);
+			//open view window and cycle through settings familiar list
+			seg = detectCue(cues.get("View"));
+				if (seg != null) {
+					//when view found click it
+					clickOnSeg(seg);
+					for (String f : BHBot.settings.familiars) { //cycle through list checking for matches
+						seg = detectCue(cues.get(f));
+						sleep(2*SECOND);
+						if (seg != null) {
+							//got a match
+							//go back
+							//gem bribe code
+							
+							return;
+						} else {
+							//no match
+							//close view window
+							//persuade with gold
+							seg = detectCue(cues.get("Persuade"));
+							sleep(2*SECOND);
+							clickOnSeg(seg);
+							readScreen();
+							seg = detectCue(cues.get("YesGreen"));
+							clickOnSeg(seg);
+							BHBot.log("Persuasion attempted.");
+							sleep(2*SECOND);
 
-			readScreen();
-			seg = detectCue(cues.get("YesGreen"));
-			clickOnSeg(seg);
-			BHBot.log("Persuasion attempted.");
-			sleep(2*SECOND);
-
-			return;
+							return;
+						}
+					}
+				}
 		}
+//			clickOnSeg(seg);
+//			sleep(2*SECOND);
+//
+//			readScreen();
+//			seg = detectCue(cues.get("YesGreen"));
+//			clickOnSeg(seg);
+//			BHBot.log("Persuasion attempted.");
+//			sleep(2*SECOND);
+//
+//			return;
+// }
 
 		// check for skeleton treasure chest (and decline it):
 		seg = detectCue(cues.get("SkeletonTreasure"));
