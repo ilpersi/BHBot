@@ -476,8 +476,7 @@ public class MainThread implements Runnable {
 		//FAMILIARS
 		addCue("PENGEY", loadImage("cues/familiars/cuePENGEY.png"), null);
 		addCue("MCGOBBLESTEIN", loadImage("cues/familiars/cueMCGOBBLESTEIN.png"), null);
-		addCue("MCGOBBLESTEIN2", loadImage("cues/familiars/cueMCGOBBLESTEIN.png"), null);
-		addCue("MCGOBBLESTEIN3", loadImage("cues/familiars/cueMCGOBBLESTEIN.png"), null);
+		addCue("SQUIB", loadImage("cues/familiars/cueSQUIB.png"), null);
 
 	}
 
@@ -726,9 +725,7 @@ public class MainThread implements Runnable {
 //		BHBot.log("Current Raid tier unlocked set to R" + BHBot.settings.currentRaidTier + " in settings. Make sure this is correct!");
 //		String invasionSetting = Boolean.toString(collectedFishingRewards);
 //		BHBot.log("doInvasions set to " + invasionSetting);
-//		BHBot.log("Session id is: " + driver.getSessionId());
-		for (String f : BHBot.settings.familiars)
-			BHBot.log(f);
+//		BHBot.log("Session id is: " + driver.getSessionId());		
 
 
 		state = State.Loading;
@@ -752,6 +749,7 @@ public class MainThread implements Runnable {
 	}
 
 	public void run() {
+		
 		BHBot.log("Driver started succesfully");
 
 		restart(false);
@@ -774,7 +772,7 @@ public class MainThread implements Runnable {
 				moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
 				readScreen();
 				MarvinSegment seg;
-
+				
 				seg = detectCue(cues.get("UnableToConnect"));
 				if (seg != null) {
 					BHBot.log("'Unable to connect' dialog detected. Reconnecting...");
@@ -784,6 +782,7 @@ public class MainThread implements Runnable {
 					state = State.Loading;
 					continue;
 				}
+				
 
 				// check for "Bit Heroes is currently down for maintenance. Please check back shortly!" window:
 				seg = detectCue(cues.get("Maintenance"));
@@ -1961,6 +1960,9 @@ public class MainThread implements Runnable {
         //MarvinImageIO.saveImage(source, "window_out.png");
         if (BHBot.settings.debugDetectionTimes)
         	BHBot.log("cue detection time: " + (Misc.getTime() - timer) + "ms (" + cue.name + ") [" + (seg != null ? "true" : "false") + "]");
+//        if (seg == null) {
+//        	return -1;
+//        }
         return seg;
 	}
 
@@ -2400,84 +2402,71 @@ public class MainThread implements Runnable {
 			return;
 		}
 
-		//TODO Complete gem bribing
 		// check for persuasions:
 		seg = detectCue(cues.get("Persuade"));
 		if (seg != null) {
 			BHBot.log("Persuation encountered");
 			//click view
 			sleep(2*SECOND);
-			//open view window and cycle through settings familiar list
+			//open view window and check familiar array for match
 			seg = detectCue(cues.get("View"));
-				if (seg != null) {
-					//when view found click it
-					clickOnSeg(seg);
-						for (String f : BHBot.settings.familiars) { //cycle through list checking for matches
-							sleep(2*SECOND);
-							readScreen();
-							seg = detectCue(cues.get(f));
-							BHBot.log("Checking for familiar to bribe: " + f);
-							if (seg != null) {
-								BHBot.log("Match found: " + f);
-								saveGameScreen("Bribed " + f);
-								//TODO add not enough gems failsafe
-								readScreen();
-								seg = detectCue(cues.get("X"));
-									if (seg != null) {
-										BHBot.log("X button found");
-										clickOnSeg(seg);
-									}
-								sleep(2*SECOND);
-								readScreen();
-								seg = detectCue(cues.get("Persuade"));
-									if (seg != null) {
-										BHBot.log("Bribe button found");
-										clickOnSeg(seg);
-									}
-									sleep(2*SECOND);
-									readScreen();
-									seg = detectCue(cues.get("YesGreen"));
-										if (seg != null) {
-											BHBot.log("Yes button found");
-											clickOnSeg(seg);
-										}
-									return;
-								//got a match
-								//go back
-								//gem bribe code
-						}
+			if (seg != null) {
+				clickOnSeg(seg);
+				for (String f : BHBot.settings.familiars) { //cycle through array
+					//sleep(2*SECOND);
+					readScreen();
+					seg = detectCue(cues.get(f.toUpperCase()), 2*SECOND);
+					BHBot.log("Checking for familiar to bribe: " + f);
+					if (seg != null) {
+						BHBot.log("Match found: " + f);
+						readScreen();
+						seg = detectCue(cues.get("X"), 2*SECOND);
+						if (seg != null) {
+							clickOnSeg(seg);
+						} else restart();  //failsafe to restart if the bot can't find the button
+//						sleep(2*SECOND);
+						readScreen();
+						seg = detectCue(cues.get("Bribe"), 2*SECOND); //TODO test code, should be bribe when live
+						if (seg != null) {
+							clickOnSeg(seg);
+						} else restart();
+						// TODO Add not enough gems failsafe
+						readScreen();
+						seg = detectCue(cues.get("YesGreen"), 2*SECOND);
+						if (seg != null) {
+							clickOnSeg(seg);
+						} else restart();
+						saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder
+						return;
 					}
-					BHBot.log("No match found..");
-					//no match
-					//close view window
-					//persuade with gold
-					readScreen();
-					seg = detectCue(cues.get("X"));
-					clickOnSeg(seg);
-					sleep(2*SECOND);
-					BHBot.log("Bribing with gold");
-					readScreen();
-					seg = detectCue(cues.get("Persuade"));
-					clickOnSeg(seg);
-					sleep(2*SECOND);
-					readScreen();
-					seg = detectCue(cues.get("YesGreen"));
-					clickOnSeg(seg);
-					sleep(2*SECOND);
 				}
+				BHBot.log("No match found, attempting persuasion");
+				sleep(1*SECOND);
+				if (BHBot.settings.familiarScreenshot) {
+					BHBot.log("Unknown familiar, saving screenshot");
+					saveGameScreen("familiar-cue-test"); //If the familiar is unknown we might not have an image for it yet, so save a screenshot to create an image from
+				}
+				readScreen();
+				seg = detectCue(cues.get("X"), 2*SECOND);
+				if (seg != null) {
+					clickOnSeg(seg);
+				} else restart();  //failsafe to restart if the bot can't find the button
+				//sleep(2*SECOND);
+				readScreen();
+				seg = detectCue(cues.get("Persuade"), 2*SECOND);
+				if (seg != null) {
+					clickOnSeg(seg);
+				} else restart();
+				//sleep(2*SECOND);
+				readScreen();
+				seg = detectCue(cues.get("YesGreen"), 2*SECOND);
+				if (seg != null) {
+					clickOnSeg(seg);
+				} else restart();
+				//sleep(2*SECOND);
+			}
 			return;
 		}
-//			clickOnSeg(seg);
-//			sleep(2*SECOND);
-//
-//			readScreen();
-//			seg = detectCue(cues.get("YesGreen"));
-//			clickOnSeg(seg);
-//			BHBot.log("Persuasion attempted.");
-//			sleep(2*SECOND);
-//
-//			return;
-// }
 
 		// check for skeleton treasure chest (and decline it):
 		seg = detectCue(cues.get("SkeletonTreasure"));
