@@ -94,6 +94,7 @@ public class Settings {
 		raids = new ArrayList<String>();
 		pvpstrip = new ArrayList<String>();
 		consumables = new ArrayList<String>();
+		familiars = new ArrayList<String>();
 		setRaids("1 3 100"); // some default value
 	}
 	
@@ -136,6 +137,8 @@ public class Settings {
 		
 		this.autoConsume = settings.autoConsume;
 		this.consumables = new ArrayList<String>(settings.consumables);
+		
+		this.familiars = new ArrayList<String>(settings.familiars);
 		
 		this.pauseOnDisconnect = settings.pauseOnDisconnect;
 	}
@@ -221,9 +224,9 @@ public class Settings {
 		}
 	}
 	
-	public void setFamiliars(String... familiars) {
+	public void setFamiliars(String... fams) {
 		this.familiars.clear();
-		for (String f : familiars) {
+		for (String f : fams) {
 			String add = f.trim();
 			if (add.equals(""))
 				continue;
@@ -270,7 +273,7 @@ public class Settings {
 	public String getFamiliarsAsString() {
 		String result = "";
 		for (String f : familiars)
-			result += f + ";";
+			result += f + " ";
 		if (result.length() > 0)
 			result = result.substring(0, result.length()-1); // remove last ";" character
 		return result;
@@ -372,10 +375,11 @@ public class Settings {
 		setRaidsFromString(map.getOrDefault("raids", getRaidsAsString()));
 		currentRaidTier = Integer.parseInt(map.getOrDefault("currentRaidTier", ""+currentRaidTier));
 		setStripsFromString(map.getOrDefault("pvpstrip", getStripsAsString()));
-		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
 		
 		autoConsume = map.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("0") ? false : true;
 		setConsumablesFromString(map.getOrDefault("consumables", getConsumablesAsString()));
+		
+		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
 		
 		pauseOnDisconnect = Integer.parseInt(map.getOrDefault("pauseOnDisconnect", ""+pauseOnDisconnect));
 	}

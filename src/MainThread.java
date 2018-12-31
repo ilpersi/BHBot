@@ -343,6 +343,8 @@ public class MainThread implements Runnable {
 		addCue("Defeat", loadImage("cues/cueDefeat.png"), null); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
 		addCue("YesGreen", loadImage("cues/cueYesGreen.png"), null); // used for example when raid has been finished ("Cleared" popup)
 		addCue("Persuade", loadImage("cues/cuePersuade.png"), null);
+		addCue("View", loadImage("cues/cueView.png"), null);
+		addCue("Bribe", loadImage("cues/cueBribe.png"), null);
 		addCue("SkeletonTreasure", loadImage("cues/cueSkeletonTreasure.png"), null); // skeleton treasure found in dungeons (it's a dialog/popup cue)
 		addCue("AdTreasure", loadImage("cues/cueAdTreasure.png"), null); // ad treasure found in dungeons (it's a dialog/popup cue)
 		addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
@@ -470,6 +472,12 @@ public class MainThread implements Runnable {
 		//fishing related
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
+		
+		//FAMILIARS
+		addCue("PENGEY", loadImage("cues/familiars/cuePENGEY.png"), null);
+		addCue("MCGOBBLESTEIN", loadImage("cues/familiars/cueMCGOBBLESTEIN.png"), null);
+		addCue("MCGOBBLESTEIN2", loadImage("cues/familiars/cueMCGOBBLESTEIN.png"), null);
+		addCue("MCGOBBLESTEIN3", loadImage("cues/familiars/cueMCGOBBLESTEIN.png"), null);
 
 	}
 
@@ -2392,42 +2400,61 @@ public class MainThread implements Runnable {
 			return;
 		}
 
+		//TODO Complete gem bribing
 		// check for persuasions:
 		seg = detectCue(cues.get("Persuade"));
 		if (seg != null) {
+			BHBot.log("Persuation encountered");
 			//click view
 			sleep(2*SECOND);
 			//open view window and cycle through settings familiar list
-			seg = detectCue(cues.get("View"));
+			String v = "View";
+			seg = detectCue(cues.get(v));
 				if (seg != null) {
 					//when view found click it
 					clickOnSeg(seg);
 					for (String f : BHBot.settings.familiars) { //cycle through list checking for matches
+						readScreen();
 						seg = detectCue(cues.get(f));
+						BHBot.log("Checking for familiar to bribe: " + f);
 						sleep(2*SECOND);
 						if (seg != null) {
-							//got a match
-							//go back
-							//gem bribe code
-							
-							return;
-						} else {
-							//no match
-							//close view window
-							//persuade with gold
-							seg = detectCue(cues.get("Persuade"));
+							BHBot.log("Match found:" + f);
+							saveGameScreen("Bribed " + f);
+							//TODO add not enough gems failsafe
+							readScreen();
+							seg = detectCue(cues.get("X"));
 							sleep(2*SECOND);
 							clickOnSeg(seg);
 							readScreen();
-							seg = detectCue(cues.get("YesGreen"));
-							clickOnSeg(seg);
-							BHBot.log("Persuasion attempted.");
-							sleep(2*SECOND);
-
-							return;
+							seg = detectCue(cues.get("Bribe"));
+								if (seg != null) {
+									BHBot.log("Bribe button found");
+								}
+							//got a match
+							//go back
+							//gem bribe code
 						}
 					}
+					BHBot.log("No match found..");
+					//no match
+					//close view window
+					//persuade with gold
+					readScreen();
+					seg = detectCue(cues.get("X"));
+					clickOnSeg(seg);
+					sleep(2*SECOND);
+					BHBot.log("Bribing with gold");
+					readScreen();
+					seg = detectCue(cues.get("Persuade"));
+					clickOnSeg(seg);
+					sleep(2*SECOND);
+					readScreen();
+					seg = detectCue(cues.get("YesGreen"));
+					clickOnSeg(seg);
+					sleep(2*SECOND);
 				}
+			return;
 		}
 //			clickOnSeg(seg);
 //			sleep(2*SECOND);
