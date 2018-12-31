@@ -2402,7 +2402,6 @@ public class MainThread implements Runnable {
 
 		//TODO Complete gem bribing
 		// check for persuasions:
-		boolean found = false;
 		seg = detectCue(cues.get("Persuade"));
 		if (seg != null) {
 			BHBot.log("Persuation encountered");
