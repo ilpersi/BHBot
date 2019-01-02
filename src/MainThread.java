@@ -2436,9 +2436,11 @@ public class MainThread implements Runnable {
 					//sleep(2*SECOND);
 					readScreen();
 					seg = detectCue(cues.get(f.toUpperCase()), 2*SECOND);
+					int bribeCount = checkFamiliarCounter(f);
 					BHBot.log("Checking for familiar to bribe: " + f);
-					if (seg != null) {
+					if (seg != null && !(bribeCount < 1) ) {
 						BHBot.log("Match found: " + f);
+						BHBot.log("Bribe Counter: " + bribeCount);
 						readScreen();
 						seg = detectCue(cues.get("X"), 2*SECOND); // the sleep at the end is the timeout, else it will click as soon as its available
 						if (seg != null) {
@@ -2455,7 +2457,8 @@ public class MainThread implements Runnable {
 						if (seg != null) {
 							clickOnSeg(seg);
 						} else restart();
-						saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
+						saveGameScreen("Bribed " + f + "Bribes left: " + bribeCount); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
+						updateFamiliarCounter(f, bribeCount);
 						return;
 					}
 				}
@@ -2709,13 +2712,9 @@ public class MainThread implements Runnable {
 
 	        BHBot.log(inputStr); // check that it's inputted right
 
-	        // this if structure determines whether or not to replace "0" or "1"
 	        if (inputStr.contains(familiarToUpdate)) {
 	            inputStr = inputStr.replace(familiarToUpdate, updatedFamiliar); 
 	        }
-
-	        // check if the new input is right
-	        System.out.println("----------------------------------\n"  + inputStr);
 
 	        // write the new String with the replaced line OVER the same file
 	        FileOutputStream fileOut = new FileOutputStream("settings.ini");
@@ -2723,24 +2722,8 @@ public class MainThread implements Runnable {
 	        fileOut.close();
 
 	    } catch (Exception e) {
-	        System.out.println("Problem reading file.");
+	        System.out.println("Problem pdating catch counter in settings file");
 	    }
-
-//		File fi = new File("settings.ini");
-//		File tempFile = new File("settings.tmp");
-//		try(BufferedReader reader = new BufferedReader(new FileReader(fi));
-//		PrintWriter writer = new PrintWriter(new FileWriter(tempFile))) {
-//		    String line;
-//		    while ((line = reader.readLine()) != null) {
-//		        if (line.equals(familiarToUpdate)) {
-//		            writer.println(updatedFamiliar);
-//		        } else {
-//		            writer.println(line);
-//		        }
-//		    }
-//		}
-//		fi.delete();
-//		tempFile.renameTo(fi);
 }
 	
 	/**
