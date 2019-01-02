@@ -13,7 +13,9 @@ public class Settings {
 	public boolean restartAfterAdOfferTimeout = true; // if true, then bot will automatically restart itself if it hasn't claimed any ad offer in a time longer than defined. This is needed because ads don't appear anymore if Chrome doesn't get restarted.
 	public boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
 	public boolean hideWindowOnRestart = true; // if true, game window will be hidden upon driver (re)start
-	public boolean resetTimersOnBattleEnd = false; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
+	public boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
+	public boolean openSkeleton = false;
+	public boolean autoBribe  = false;
 	
 	public boolean doRaids = true;
 	public boolean doDungeons = true;
@@ -83,6 +85,10 @@ public class Settings {
 	public boolean autoConsume = false;
 	/** List of consumables that we want activate at all times. */
 	public List<String> consumables;
+	public List<String> familiars;
+	
+	/** Development Settings **/
+	public boolean familiarScreenshot = false;
 
 	/** This tells us how much time will we sleep when disconnect has been detected (which happens when a user logs in). This interval should be an hour or so, so that user can play the game in peace without being disconnected due to us reconnecting to the game. */
 	public int pauseOnDisconnect = 60*MainThread.MINUTE;
@@ -93,6 +99,7 @@ public class Settings {
 		raids = new ArrayList<String>();
 		pvpstrip = new ArrayList<String>();
 		consumables = new ArrayList<String>();
+		familiars = new ArrayList<String>();
 		setRaids("1 3 100"); // some default value
 	}
 	
@@ -136,7 +143,12 @@ public class Settings {
 		this.autoConsume = settings.autoConsume;
 		this.consumables = new ArrayList<String>(settings.consumables);
 		
+		this.autoBribe = settings.autoBribe;
+		this.familiars = new ArrayList<String>(settings.familiars);
+		
 		this.pauseOnDisconnect = settings.pauseOnDisconnect;
+		
+		this.openSkeleton = settings.openSkeleton;
 	}
 	
 	// a handy shortcut for some debug settings:
@@ -220,6 +232,16 @@ public class Settings {
 		}
 	}
 	
+	public void setFamiliars(String... fams) {
+		this.familiars.clear();
+		for (String f : fams) {
+			String add = f.trim();
+			if (add.equals(""))
+				continue;
+			this.familiars.add(add);
+		}
+	}
+	
 	public String getDungeonsAsString() {
 		String result = "";
 		for (String d : dungeons)
@@ -253,6 +275,15 @@ public class Settings {
 			result += s + " ";
 		if (result.length() > 0)
 			result = result.substring(0, result.length()-1); // remove last " " character
+		return result;
+	}
+	
+	public String getFamiliarsAsString() {
+		String result = "";
+		for (String f : familiars)
+			result += f + ";";
+		if (result.length() > 0)
+			result = result.substring(0, result.length()-1); // remove last ";" character
 		return result;
 	}
 	
@@ -296,6 +327,16 @@ public class Settings {
 		}
 	}
 	
+	public void setFamiliarsFromString(String s) {
+		setFamiliars(s.split(";"));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = familiars.size()-1; i >= 0; i--) {
+			familiars.set(i, familiars.get(i).trim());
+			if (familiars.get(i).equals(""))
+				familiars.remove(i);
+		}
+	}
+	
 	/**
 	 * Loads settings from list of string arguments (which are lines of the settings.ini file, for example)
 	 */
@@ -314,6 +355,7 @@ public class Settings {
 		debugDetectionTimes = map.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("0") ? false : true ;
 		hideWindowOnRestart = map.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("0") ? false : true ;
 		resetTimersOnBattleEnd = map.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("0") ? false : true ;
+		openSkeleton = map.getOrDefault("openSkeletonChest", openSkeleton ? "1" : "0").equals("0") ? false : true ;
 		
 		doRaids = map.getOrDefault("doRaids", doRaids ? "1" : "0").equals("0") ? false : true;
 		doDungeons = map.getOrDefault("doDungeons", doDungeons ? "1" : "0").equals("0") ? false : true;
@@ -345,6 +387,10 @@ public class Settings {
 		
 		autoConsume = map.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("0") ? false : true;
 		setConsumablesFromString(map.getOrDefault("consumables", getConsumablesAsString()));
+		
+		autoBribe = map.getOrDefault("autoBribe", autoBribe ? "1" : "0").equals("0") ? false : true ;
+		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
+		familiarScreenshot = map.getOrDefault("familiarScreenshot", familiarScreenshot ? "1" : "0").equals("0") ? false : true;
 		
 		pauseOnDisconnect = Integer.parseInt(map.getOrDefault("pauseOnDisconnect", ""+pauseOnDisconnect));
 	}

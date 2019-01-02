@@ -23,7 +23,7 @@ import com.assertthat.selenium_shutterbug.core.Shutterbug;
 public class BHBot {
 
 	public static final String PROGRAM_NAME = "BHBot";
-	public static final String PROGRAM_VERSION = "25.4";
+	public static final String PROGRAM_VERSION = "26";
 	public static final boolean REQUIRES_ACCESS_TOKEN = false; // obsolete since public release (was used to restrict bot usage)
 	
 	public static Thread mainThread;
@@ -38,6 +38,7 @@ public class BHBot {
 	
 	public static void main(String[] args) {
 		log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started.");
+//		log("Testing Version: Familiar bribing");
 		
 		MainThread.loadCues();
 		
@@ -156,7 +157,7 @@ public class BHBot {
 				;
 			} catch (Exception e) {
 				Shutterbug.shootPage(main.driver)
-				.withName("shot")
+				.withName("custom  screenshot")
 				.save(".")
 				;
 			}
@@ -167,11 +168,11 @@ public class BHBot {
 		} else if (c.equals("resume")) {
 			scheduler.resume();
 		} else if (c.equals("test")) {
-			BufferedImage src = MainThread.loadImage("C:/Tomaz/BHBot/screenshots/(shot) trials on right side of screen.png");
-			BufferedImage cue = MainThread.loadImage("E:/Eclipse/workspace/BHBot/cues/cueTrials2.png");
-			MarvinSegment seg = MainThread.findSubimage(src, new Cue("test", cue));
+//			BufferedImage src = MainThread.loadImage("C:/Tomaz/BHBot/screenshots/(shot) trials on right side of screen.png");
+//			BufferedImage cue = MainThread.loadImage("E:/Eclipse/workspace/BHBot/cues/cueTrials2.png");
+//			MarvinSegment seg = MainThread.findSubimage(src, new Cue("test", cue));
 			
-			log("Image test: " + seg);
+//			log("Image test: " + seg);
 		} else if (c.equals("reload")) {
 			settings.load();
 			log("Settings reloaded from disk.");
