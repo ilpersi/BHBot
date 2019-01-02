@@ -484,7 +484,7 @@ public class MainThread implements Runnable {
 		addCue("SQUIB", loadImage("cues/familiars/cueSQUIB.png"), null);
 		addCue("RAGNAR", loadImage("cues/familiars/cueRAGNAR.png"), null);
 		addCue("SHADE", loadImage("cues/familiars/cueSHADE.png"), null);
-		addCue("ASTAROTH", loadImage("cues/familiars/cueASTAROTH.png"), null);
+//		addCue("ASTAROTH", loadImage("cues/familiars/cueASTAROTH.png"), null);
 		
 		//R2
 		addCue("DRIFFIN", loadImage("cues/familiars/cueDRIFFIN.png"), null);
@@ -753,7 +753,9 @@ public class MainThread implements Runnable {
 //		BHBot.log("Session id is: " + driver.getSessionId());		
 
 //		for (String f : BHBot.settings.familiars) { //cycle through array
-//			String fUpper = f.toUpperCase().split(" ")[0];
+//			String fam = f.toUpperCase().split(" ")[0];
+//			BHBot.log(fam);
+//		}
 //			BHBot.log(Integer.toString(checkFamiliarCounter(fUpper)));
 //			int testCount = checkFamiliarCounter(f);
 //			String fam = f.toUpperCase().split(" ")[0];
@@ -1032,15 +1034,15 @@ public class MainThread implements Runnable {
 					} // adds
 					
 					//Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
-					if (state == State.Main) {
-						seg = detectCue(cues.get("AutoOn")); //check if we're in a non dungeon state, but with the auto button visible
-							if (seg != null) {
-							state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
-						    BHBot.log("Possible dungeon crash, activating failsafe");
-						    continue;
-							}
-					continue;
-					}
+//					if (state == State.Main) {
+//						seg = detectCue(cues.get("AutoOn")); //check if we're in a non dungeon state, but with the auto button visible
+//							if (seg != null) {
+//							state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
+//						    BHBot.log("Possible dungeon crash, activating failsafe");
+//						    continue;
+//							}
+//					continue;
+//					}
 
 					// check for bonuses:
 					if (BHBot.settings.autoConsume && (Misc.getTime() - timeLastBonusCheck > BONUS_CHECK_INTERVAL)) {
@@ -2455,12 +2457,12 @@ public class MainThread implements Runnable {
 					//sleep(2*SECOND);
 					readScreen();
 					String fam = f.toUpperCase().split(" ")[0];
-					seg = detectCue(cues.get(f.toUpperCase()), 2*SECOND);
+					seg = detectCue(cues.get(fam), 1*SECOND);
 					int bribeCount = checkFamiliarCounter(fam);
-					BHBot.log("Checking for familiar to bribe: " + f);
+//					BHBot.log("Checking for familiar to bribe: " + fam);
 					if (seg != null && !(bribeCount < 1 && (BHBot.settings.autoBribe)) ) {
-						BHBot.log("Match found: " + f);
-						BHBot.log("Bribe Counter: " + bribeCount);
+						BHBot.log("Attempting to bribe: " + fam + ", bribes left: " + bribeCount);
+//						BHBot.log("Bribe Counter: " + bribeCount);
 						readScreen();
 						seg = detectCue(cues.get("X"), 2*SECOND); // the sleep at the end is the timeout, else it will click as soon as its available
 						if (seg != null) {
@@ -2477,16 +2479,15 @@ public class MainThread implements Runnable {
 						if (seg != null) {
 							clickOnSeg(seg);
 						} else restart();
-						saveGameScreen("Bribed " + f + "Bribes left: " + bribeCount); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
-						updateFamiliarCounter(f, bribeCount);
-						BHBot.log("New bribe counter: " + Integer.parseInt(f.split(" ")[1]));
+						saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
+						updateFamiliarCounter(fam, bribeCount);
 						return;
 					}
 				}
 				BHBot.log("No match, bribe limit met or autoBribe disabled, attempting persuasion");
 				sleep(1*SECOND);
 				if (BHBot.settings.familiarScreenshot) {
-					BHBot.log("Unknown familiar, saving screenshot");
+//					BHBot.log("Unknown familiar, saving screenshot");
 					saveGameScreen("familiar-cue-test"); //If the familiar is unknown we might not have an image for it yet, so save a screenshot to create a cue from
 				}
 				readScreen();
@@ -2716,8 +2717,8 @@ public class MainThread implements Runnable {
 				currentCounter--; // decrease the counter
 				Integer.toString(currentCounter); //make the int to string
 				updatedFamiliar = (fString.toLowerCase() + " " + currentCounter); //update new string with familiar name and decrease counter
-				BHBot.log("Before: " + familiarToUpdate);
-				BHBot.log("Updated: " + updatedFamiliar);
+//				BHBot.log("Before: " + familiarToUpdate);
+//				BHBot.log("Updated: " + updatedFamiliar);
 			}
 		}
 		
@@ -2747,6 +2748,8 @@ public class MainThread implements Runnable {
 	        FileOutputStream fileOut = new FileOutputStream("settings.ini");
 	        fileOut.write(inputStr.getBytes());
 	        fileOut.close();
+	        
+	        BHBot.settings.load();  //reload the new settings file so the counter will be updated for the next bribe
 
 	    } catch (Exception e) {
 	        System.out.println("Problem writing to settings file");
