@@ -13,7 +13,9 @@ public class Settings {
 	public boolean restartAfterAdOfferTimeout = true; // if true, then bot will automatically restart itself if it hasn't claimed any ad offer in a time longer than defined. This is needed because ads don't appear anymore if Chrome doesn't get restarted.
 	public boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
 	public boolean hideWindowOnRestart = true; // if true, game window will be hidden upon driver (re)start
-	public boolean resetTimersOnBattleEnd = false; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
+	public boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
+	public boolean openSkeleton = false;
+	public boolean autoBribe  = false;
 	
 	public boolean doRaids = true;
 	public boolean doDungeons = true;
@@ -141,9 +143,12 @@ public class Settings {
 		this.autoConsume = settings.autoConsume;
 		this.consumables = new ArrayList<String>(settings.consumables);
 		
+		this.autoBribe = settings.autoBribe;
 		this.familiars = new ArrayList<String>(settings.familiars);
 		
 		this.pauseOnDisconnect = settings.pauseOnDisconnect;
+		
+		this.openSkeleton = settings.openSkeleton;
 	}
 	
 	// a handy shortcut for some debug settings:
@@ -350,6 +355,7 @@ public class Settings {
 		debugDetectionTimes = map.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("0") ? false : true ;
 		hideWindowOnRestart = map.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("0") ? false : true ;
 		resetTimersOnBattleEnd = map.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("0") ? false : true ;
+		openSkeleton = map.getOrDefault("openSkeletonChest", openSkeleton ? "1" : "0").equals("0") ? false : true ;
 		
 		doRaids = map.getOrDefault("doRaids", doRaids ? "1" : "0").equals("0") ? false : true;
 		doDungeons = map.getOrDefault("doDungeons", doDungeons ? "1" : "0").equals("0") ? false : true;
@@ -382,6 +388,7 @@ public class Settings {
 		autoConsume = map.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("0") ? false : true;
 		setConsumablesFromString(map.getOrDefault("consumables", getConsumablesAsString()));
 		
+		autoBribe = map.getOrDefault("autoBribe", autoBribe ? "1" : "0").equals("0") ? false : true ;
 		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
 		familiarScreenshot = map.getOrDefault("familiarScreenshot", familiarScreenshot ? "1" : "0").equals("0") ? false : true;
 		

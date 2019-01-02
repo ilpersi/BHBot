@@ -157,7 +157,7 @@ public class BHBot {
 				;
 			} catch (Exception e) {
 				Shutterbug.shootPage(main.driver)
-				.withName("shot")
+				.withName("custom  screenshot")
 				.save(".")
 				;
 			}
@@ -168,11 +168,11 @@ public class BHBot {
 		} else if (c.equals("resume")) {
 			scheduler.resume();
 		} else if (c.equals("test")) {
-			BufferedImage src = MainThread.loadImage("C:/Tomaz/BHBot/screenshots/(shot) trials on right side of screen.png");
-			BufferedImage cue = MainThread.loadImage("E:/Eclipse/workspace/BHBot/cues/cueTrials2.png");
-			MarvinSegment seg = MainThread.findSubimage(src, new Cue("test", cue));
+//			BufferedImage src = MainThread.loadImage("C:/Tomaz/BHBot/screenshots/(shot) trials on right side of screen.png");
+//			BufferedImage cue = MainThread.loadImage("E:/Eclipse/workspace/BHBot/cues/cueTrials2.png");
+//			MarvinSegment seg = MainThread.findSubimage(src, new Cue("test", cue));
 			
-			log("Image test: " + seg);
+//			log("Image test: " + seg);
 		} else if (c.equals("reload")) {
 			settings.load();
 			log("Settings reloaded from disk.");
