@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -491,6 +492,7 @@ public class MainThread implements Runnable {
 		if (BHBot.settings.useHeadlessMode) {
 			options.setBinary("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/Application/chrome.exe");
 
+		
 			// https://sites.google.com/a/chromium.org/chromedriver/capabilities
 
 			options.addArguments("--headless");
@@ -727,6 +729,24 @@ public class MainThread implements Runnable {
 //		BHBot.log("doInvasions set to " + invasionSetting);
 //		BHBot.log("Session id is: " + driver.getSessionId());		
 
+//		for (String f : BHBot.settings.familiars) { //cycle through array
+//			String fUpper = f.toUpperCase().split(" ")[0];
+//			BHBot.log(Integer.toString(checkFamiliarCounter(fUpper)));
+//			int testCount = checkFamiliarCounter(f);
+//			String fam = f.toUpperCase().split(" ")[0];
+//			BHBot.log(Integer.toString(checkFamiliarCounter(fam)));
+//			BHBot.log(f);
+//			BHBot.log(f.toUpperCase().split(" ")[0]);
+//			int catchCount = Integer.parseInt(f.split(" ")[1]);
+//			BHBot.log(Integer.toString(catchCount));
+//		}
+		
+		for (String f : BHBot.settings.familiars) { //cycle through array
+			String fUpper = f.toUpperCase().split(" ")[0];
+			int catchCount = Integer.parseInt(f.split(" ")[1]);
+			updateFamiliarCounter(fUpper, catchCount);
+		}
+			
 
 		state = State.Loading;
 		BHBot.scheduler.resetIdleTime();
@@ -1050,7 +1070,7 @@ public class MainThread implements Runnable {
 							int difficulty = Integer.parseInt(raid.split(" ")[1]);
 							int raidType = Integer.parseInt(raid.split(" ")[0]);
 							int raidUnlocked = readCurrentRaidTier();
-							BHBot.log("Attempting raid " + (raidType == 1 ? "R1" : raidType == 2 ? "R2" : raidType == 3 ? "R3" : raidType == 4 ? "R4" : "R5") + " " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic") + "...");
+							BHBot.log("Attempting raid R" + raidType + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic") + "...");
 
 
 							int currentType = readCurrentRaidType();
@@ -1206,7 +1226,7 @@ public class MainThread implements Runnable {
 							if (BHBot.scheduler.doTrialsOrGauntletImmediately)
 								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // reset it
 
-							BHBot.log("Attempting " + (trials ? "trials" : "gauntlet") + " at difficulty level " + BHBot.settings.difficulty + "...");
+							BHBot.log("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + BHBot.settings.difficulty + "...");
 
 							// select difficulty if needed:
 							int difficulty = detectDifficulty();
@@ -2420,23 +2440,22 @@ public class MainThread implements Runnable {
 					if (seg != null) {
 						BHBot.log("Match found: " + f);
 						readScreen();
-						seg = detectCue(cues.get("X"), 2*SECOND);
+						seg = detectCue(cues.get("X"), 2*SECOND); // the sleep at the end is the timeout, else it will click as soon as its available
 						if (seg != null) {
 							clickOnSeg(seg);
 						} else restart();  //failsafe to restart if the bot can't find the button
-//						sleep(2*SECOND);
 						readScreen();
-						seg = detectCue(cues.get("Bribe"), 2*SECOND); //TODO test code, should be bribe when live
+						seg = detectCue(cues.get("Persuade"), 2*SECOND); //TODO test code, should be set to "Bribe" when live
 						if (seg != null) {
 							clickOnSeg(seg);
 						} else restart();
-						// TODO Add not enough gems failsafe
+						// TODO Add not enough gems fail-safe
 						readScreen();
 						seg = detectCue(cues.get("YesGreen"), 2*SECOND);
 						if (seg != null) {
 							clickOnSeg(seg);
 						} else restart();
-						saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder
+						saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
 						return;
 					}
 				}
@@ -2451,19 +2470,16 @@ public class MainThread implements Runnable {
 				if (seg != null) {
 					clickOnSeg(seg);
 				} else restart();  //failsafe to restart if the bot can't find the button
-				//sleep(2*SECOND);
 				readScreen();
 				seg = detectCue(cues.get("Persuade"), 2*SECOND);
 				if (seg != null) {
 					clickOnSeg(seg);
 				} else restart();
-				//sleep(2*SECOND);
 				readScreen();
 				seg = detectCue(cues.get("YesGreen"), 2*SECOND);
 				if (seg != null) {
 					clickOnSeg(seg);
 				} else restart();
-				//sleep(2*SECOND);
 			}
 			return;
 		}
@@ -2648,6 +2664,85 @@ public class MainThread implements Runnable {
 		BHBot.scheduler.restoreIdleTime();
 	}
 
+	//TODO fix  me
+	public int checkFamiliarCounter(String fam) {
+		int catchCount = 0;
+		for (String f : BHBot.settings.familiars) { //cycle through array
+				String fString = f.toUpperCase().split(" ")[0];
+				if (fam.equals(fString)) {
+					catchCount = Integer.parseInt(f.split(" ")[1]);
+				}
+			}
+		return catchCount;
+		}
+	
+	public void updateFamiliarCounter(String fam, int currentCounter) {
+        String familiarToUpdate = "";
+        String updatedFamiliar = "";
+        
+		for (String fa : BHBot.settings.familiars) { //cycle through array
+			String fString = fa.toUpperCase().split(" ")[0];
+			currentCounter = Integer.parseInt(fa.split(" ")[1]);
+			if (fam.equals(fString)) {
+				familiarToUpdate = fa;
+				currentCounter--;
+				Integer.toString(currentCounter);
+				updatedFamiliar = (fString.toLowerCase() + " " + currentCounter);
+				BHBot.log("Before: " + familiarToUpdate);
+				BHBot.log("Updated: " + updatedFamiliar);
+			}
+		}
+		
+	    try {
+	        // input the file content to the StringBuffer "input"
+	        BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
+	        String line;
+	        StringBuffer inputBuffer = new StringBuffer();
+
+	        while ((line = file.readLine()) != null) {
+	            inputBuffer.append(line);
+	            inputBuffer.append(System.getProperty("line.separator"));
+	        }
+	        String inputStr = inputBuffer.toString();
+
+	        file.close();
+
+	        BHBot.log(inputStr); // check that it's inputted right
+
+	        // this if structure determines whether or not to replace "0" or "1"
+	        if (inputStr.contains(familiarToUpdate)) {
+	            inputStr = inputStr.replace(familiarToUpdate, updatedFamiliar); 
+	        }
+
+	        // check if the new input is right
+	        System.out.println("----------------------------------\n"  + inputStr);
+
+	        // write the new String with the replaced line OVER the same file
+	        FileOutputStream fileOut = new FileOutputStream("settings.ini");
+	        fileOut.write(inputStr.getBytes());
+	        fileOut.close();
+
+	    } catch (Exception e) {
+	        System.out.println("Problem reading file.");
+	    }
+
+//		File fi = new File("settings.ini");
+//		File tempFile = new File("settings.tmp");
+//		try(BufferedReader reader = new BufferedReader(new FileReader(fi));
+//		PrintWriter writer = new PrintWriter(new FileWriter(tempFile))) {
+//		    String line;
+//		    while ((line = reader.readLine()) != null) {
+//		        if (line.equals(familiarToUpdate)) {
+//		            writer.println(updatedFamiliar);
+//		        } else {
+//		            writer.println(line);
+//		        }
+//		    }
+//		}
+//		fi.delete();
+//		tempFile.renameTo(fi);
+}
+	
 	/**
 	 *
 	 * @param dungeon in standard format, e.g. "z2d4".

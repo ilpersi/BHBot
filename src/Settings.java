@@ -84,6 +84,9 @@ public class Settings {
 	/** List of consumables that we want activate at all times. */
 	public List<String> consumables;
 	public List<String> familiars;
+	
+	/** Development Settings **/
+	public boolean familiarScreenshot = false;
 
 	/** This tells us how much time will we sleep when disconnect has been detected (which happens when a user logs in). This interval should be an hour or so, so that user can play the game in peace without being disconnected due to us reconnecting to the game. */
 	public int pauseOnDisconnect = 60*MainThread.MINUTE;
@@ -273,7 +276,7 @@ public class Settings {
 	public String getFamiliarsAsString() {
 		String result = "";
 		for (String f : familiars)
-			result += f + " ";
+			result += f + ";";
 		if (result.length() > 0)
 			result = result.substring(0, result.length()-1); // remove last ";" character
 		return result;
@@ -380,6 +383,7 @@ public class Settings {
 		setConsumablesFromString(map.getOrDefault("consumables", getConsumablesAsString()));
 		
 		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
+		familiarScreenshot = map.getOrDefault("familiarScreenshot", familiarScreenshot ? "1" : "0").equals("0") ? false : true;
 		
 		pauseOnDisconnect = Integer.parseInt(map.getOrDefault("pauseOnDisconnect", ""+pauseOnDisconnect));
 	}
