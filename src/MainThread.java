@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -246,6 +247,8 @@ public class MainThread implements Runnable {
 	final long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
 	long timeLastBadgesCheck = 0; // when did we check for badges the last time?
 	final long BADGES_CHECK_INTERVAL = 10 * MINUTE;
+	long timeLastBaitCheck = 0; // when did we check for badges the last time?
+	final long BAIT_CHECK_INTERVAL = 12 * HOUR;
 	long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
 	final long BONUS_CHECK_INTERVAL = 10 * MINUTE;
 
@@ -331,8 +334,6 @@ public class MainThread implements Runnable {
 		addCue("RaidLevel", loadImage("cues/cueRaidLevel.png"), new Bounds(320, 430, 480, 460)); // selected raid type button cue
 
 		addCue("R1Only", loadImage("cues/cueR1Only.png"), null); // cue for R1 type selected when R2 (and R3) is not open yet (in that case it won't show raid type selection buttons)
-		addCue("Raid2Of2", loadImage("cues/cueRaid2Of2.png"), null);// cue for when R2 type selected when R3 is not open yet. (fixes identifying R2 as R3)
-
 
 		addCue("Normal", loadImage("cues/cueNormal.png"), null);
 		addCue("Hard", loadImage("cues/cueHard.png"), null);
@@ -343,6 +344,8 @@ public class MainThread implements Runnable {
 		addCue("Defeat", loadImage("cues/cueDefeat.png"), null); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
 		addCue("YesGreen", loadImage("cues/cueYesGreen.png"), null); // used for example when raid has been finished ("Cleared" popup)
 		addCue("Persuade", loadImage("cues/cuePersuade.png"), null);
+		addCue("View", loadImage("cues/cueView.png"), null);
+		addCue("Bribe", loadImage("cues/cueBribe.png"), null);
 		addCue("SkeletonTreasure", loadImage("cues/cueSkeletonTreasure.png"), null); // skeleton treasure found in dungeons (it's a dialog/popup cue)
 		addCue("AdTreasure", loadImage("cues/cueAdTreasure.png"), null); // ad treasure found in dungeons (it's a dialog/popup cue)
 		addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
@@ -470,7 +473,32 @@ public class MainThread implements Runnable {
 		//fishing related
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
-
+		
+		//Familiar bribing cues
+		
+		//testing cues
+		addCue("PENGEY", loadImage("cues/familiars/cuePENGEY.png"), null);
+		addCue("MCGOBBLESTEIN", loadImage("cues/familiars/cueMCGOBBLESTEIN.png"), null);
+		
+		//R1
+		addCue("SQUIB", loadImage("cues/familiars/cueSQUIB.png"), null);
+		addCue("RAGNAR", loadImage("cues/familiars/cueRAGNAR.png"), null);
+		addCue("SHADE", loadImage("cues/familiars/cueSHADE.png"), null);
+//		addCue("ASTAROTH", loadImage("cues/familiars/cueASTAROTH.png"), null);
+		
+		//R2
+		addCue("DRIFFIN", loadImage("cues/familiars/cueDRIFFIN.png"), null);
+		addCue("VIOLACE", loadImage("cues/familiars/cueVIOLACE.png"), null);
+		addCue("OEVOR", loadImage("cues/familiars/cueOEVOR.png"), null);
+		addCue("MIMZY", loadImage("cues/familiars/cueMIMZY.png"), null);
+		
+		//R3
+		addCue("BARGZ", loadImage("cues/familiars/cueBARGZ.png"), null);
+		
+		//R4
+		addCue("J3-17", loadImage("cues/familiars/cueJ3-17.png"), null);
+		addCue("DUOBOMZ", loadImage("cues/familiars/cueDUOBOMZ.png"), null);
+		
 	}
 
 	public static void connectDriver() throws MalformedURLException {
@@ -484,6 +512,7 @@ public class MainThread implements Runnable {
 		if (BHBot.settings.useHeadlessMode) {
 			options.setBinary("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/Application/chrome.exe");
 
+		
 			// https://sites.google.com/a/chromium.org/chromedriver/capabilities
 
 			options.addArguments("--headless");
@@ -715,11 +744,35 @@ public class MainThread implements Runnable {
 
 //		BHBot.log("Window handle is: " + driver.getWindowHandle());
 		BHBot.log("Game window found. Starting main thread loop..");
+		
+		//Code under is all debugging
+		
 //		BHBot.log("Current Raid tier unlocked set to R" + BHBot.settings.currentRaidTier + " in settings. Make sure this is correct!");
 //		String invasionSetting = Boolean.toString(collectedFishingRewards);
 //		BHBot.log("doInvasions set to " + invasionSetting);
-//		BHBot.log("Session id is: " + driver.getSessionId());
+//		BHBot.log("Session id is: " + driver.getSessionId());		
 
+//		for (String f : BHBot.settings.familiars) { //cycle through array
+//			String fam = f.toUpperCase().split(" ")[0];
+//			BHBot.log(fam);
+//		}
+//			BHBot.log(Integer.toString(checkFamiliarCounter(fUpper)));
+//			int testCount = checkFamiliarCounter(f);
+//			String fam = f.toUpperCase().split(" ")[0];
+//			BHBot.log(Integer.toString(checkFamiliarCounter(fam)));
+//			BHBot.log(f);
+//			BHBot.log(f.toUpperCase().split(" ")[0]);
+//			int catchCount = Integer.parseInt(f.split(" ")[1]);
+//			BHBot.log(Integer.toString(catchCount));
+//		}
+		
+//		for (String f : BHBot.settings.familiars) { //cycle through array
+//			String fUpper = f.toUpperCase().split(" ")[0];
+//			int catchCount = Integer.parseInt(f.split(" ")[1]);
+//			updateFamiliarCounter(fUpper, catchCount);
+//		}
+		
+		//End debugging section
 
 		state = State.Loading;
 		BHBot.scheduler.resetIdleTime();
@@ -742,6 +795,7 @@ public class MainThread implements Runnable {
 	}
 
 	public void run() {
+		
 		BHBot.log("Driver started succesfully");
 
 		restart(false);
@@ -764,7 +818,7 @@ public class MainThread implements Runnable {
 				moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
 				readScreen();
 				MarvinSegment seg;
-
+				
 				seg = detectCue(cues.get("UnableToConnect"));
 				if (seg != null) {
 					BHBot.log("'Unable to connect' dialog detected. Reconnecting...");
@@ -774,6 +828,7 @@ public class MainThread implements Runnable {
 					state = State.Loading;
 					continue;
 				}
+				
 
 				// check for "Bit Heroes is currently down for maintenance. Please check back shortly!" window:
 				seg = detectCue(cues.get("Maintenance"));
@@ -917,17 +972,6 @@ public class MainThread implements Runnable {
 					continue;
 				}
 
-				//Dungeon crash failsafe, this can happen if you crash and reconnect, then get placed back in the dungeon with no dialogue
-//				if (state == State.Main) {
-//					seg = detectCue(cues.get("AutoOn"));
-//						if (seg != null) {
-//						state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
-//					    BHBot.log("Possible dungeon crash, activating failsafe");
-//					    continue;
-//						}
-//				continue;
-//				}
-
 				// process dungeons of any kind (if we are in any):
 				if (state == State.Raid || state == State.Trials || state == State.Gauntlet || state == State.Dungeon || state == State.PVP || state == State.GVG || state == State.Invasion || state == State.UnidentifiedDungeon || state == State.Expedition ) {
 					processDungeon();
@@ -939,7 +983,7 @@ public class MainThread implements Runnable {
 				if (seg != null) {
 					state = State.Main;
 
-					//TODO get town ads working
+					//TODO get ads working
 					// check for ads:
 					if (BHBot.settings.doAds) {
 						seg = detectCue(cues.get("Ad"));
@@ -988,6 +1032,17 @@ public class MainThread implements Runnable {
 							}
 						}
 					} // adds
+					
+					//Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
+//					if (state == State.Main) {
+//						seg = detectCue(cues.get("AutoOn")); //check if we're in a non dungeon state, but with the auto button visible
+//							if (seg != null) {
+//							state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
+//						    BHBot.log("Possible dungeon crash, activating failsafe");
+//						    continue;
+//							}
+//					continue;
+//					}
 
 					// check for bonuses:
 					if (BHBot.settings.autoConsume && (Misc.getTime() - timeLastBonusCheck > BONUS_CHECK_INTERVAL)) {
@@ -1041,7 +1096,7 @@ public class MainThread implements Runnable {
 							int difficulty = Integer.parseInt(raid.split(" ")[1]);
 							int raidType = Integer.parseInt(raid.split(" ")[0]);
 							int raidUnlocked = readCurrentRaidTier();
-							BHBot.log("Attempting raid " + (raidType == 1 ? "R1" : raidType == 2 ? "R2" : raidType == 3 ? "R3" : raidType == 4 ? "R4" : "R5") + " " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic") + "...");
+							BHBot.log("Attempting raid R" + raidType + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic") + "...");
 
 
 							int currentType = readCurrentRaidType();
@@ -1136,7 +1191,7 @@ public class MainThread implements Runnable {
 							seg = detectCue(cues.get("Play"), 2*SECOND);
 							clickOnSeg(seg);
 
-							//select and click portal (TODO: this is a stopgap solution for running portal 1 only, need to add settings selection & cues of all portals)
+							//select and click portal
 							//I dont have them unlocked to get cues
 							seg = detectCue(cues.get("GoogarumsPortal"), 2*SECOND);
 							clickOnSeg(seg);
@@ -1197,7 +1252,7 @@ public class MainThread implements Runnable {
 							if (BHBot.scheduler.doTrialsOrGauntletImmediately)
 								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // reset it
 
-							BHBot.log("Attempting " + (trials ? "trials" : "gauntlet") + " at difficulty level " + BHBot.settings.difficulty + "...");
+							BHBot.log("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + BHBot.settings.difficulty + "...");
 
 							// select difficulty if needed:
 							int difficulty = detectDifficulty();
@@ -1327,13 +1382,13 @@ public class MainThread implements Runnable {
 									clickInGame(55,275);
 //									clickOnSeg(seg);
 									vec++;
-									// just a log to track the vector moving
+									// just a debugging log to track the vector moving
 									BHBot.log(Integer.toString(vec));
 								}
 							}
 
 							sleep(2*SECOND);
-							//  For some reason this  section doesn't work afte moving zones.
+							//  For some reason this section doesn't work after moving zones.
 //							int currentZoneStart = readCurrentZone();
 //							if (currentZoneStart != goalZone) {
 //								BHBot.log("Zone change failed. Current zone is " + currentZoneStart + ", goal zone is " + goalZone + ". Ignoring...");
@@ -1346,7 +1401,7 @@ public class MainThread implements Runnable {
 
 							readScreen(3*SECOND);
 							// select difficulty (except when d4 is in play, then there is no difficulty to select!):
-							if (dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') { // D4, or Z7D3
+							if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3')) { // D4, or Z7D3
 								seg = detectCue(cues.get("Enter"), 5*SECOND);
 								clickOnSeg(seg);
 								// for whatever reason D4 accept button is different so using a different cue file
@@ -1457,15 +1512,11 @@ public class MainThread implements Runnable {
 
 						seg = detectCue(cues.get("GVG"));
 						if (seg == null) {
-//							BHBot.log("GvG buttion not detected");
 							seg = detectCue(cues.get("Invasion"));
 							if (seg != null)
-//								BHBot.log("Invasion button detected");
 								badgeEvent = BadgeEvent.Invasion;
-//								BHBot.log("Event set to Invasion");
 						} else {
 							badgeEvent = BadgeEvent.GVG;
-//							BHBot.log("Event set to GvG");
 						}
 
 						if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion event?)
@@ -1474,7 +1525,6 @@ public class MainThread implements Runnable {
 							continue;
 						}
 
-//						BHBot.log("Attempting to start " + badgeEvent);
 						clickOnSeg(seg);
 						sleep(2*SECOND);
 
@@ -1623,7 +1673,7 @@ public class MainThread implements Runnable {
 					} // badges
 
 					//Open fishing dialog once to retrieve bait rewards TODO
-					//Needs seperate timer system adding to click fishing button once every few hours to collect bait
+					//Needs seperate timer system adding to click fishing button once a day to collect bait
 //					if (!collectedFishingRewards) {
 ////						BHBot.log("Fishing rewards false");
 //						seg = detectCue(cues.get("FishingButton"));
@@ -1951,6 +2001,9 @@ public class MainThread implements Runnable {
         //MarvinImageIO.saveImage(source, "window_out.png");
         if (BHBot.settings.debugDetectionTimes)
         	BHBot.log("cue detection time: " + (Misc.getTime() - timer) + "ms (" + cue.name + ") [" + (seg != null ? "true" : "false") + "]");
+//        if (seg == null) {
+//        	return -1;
+//        }
         return seg;
 	}
 
@@ -2393,28 +2446,84 @@ public class MainThread implements Runnable {
 		// check for persuasions:
 		seg = detectCue(cues.get("Persuade"));
 		if (seg != null) {
-			clickOnSeg(seg);
+			BHBot.log("Persuation encountered");
+			//click view
 			sleep(2*SECOND);
-
-			readScreen();
-			seg = detectCue(cues.get("YesGreen"));
-			clickOnSeg(seg);
-			BHBot.log("Persuasion attempted.");
-			sleep(2*SECOND);
-
+			//open view window and check familiar array for match
+			seg = detectCue(cues.get("View"));
+			if (seg != null) {
+				clickOnSeg(seg);
+				for (String f : BHBot.settings.familiars) { //cycle through array
+					//sleep(2*SECOND);
+					readScreen();
+					String fam = f.toUpperCase().split(" ")[0];
+					seg = detectCue(cues.get(fam), 1*SECOND);
+					int bribeCount = checkFamiliarCounter(fam);
+//					BHBot.log("Checking for familiar to bribe: " + fam);
+					if (seg != null && !(bribeCount < 1 && (BHBot.settings.autoBribe)) ) {
+						BHBot.log("Attempting to bribe: " + fam + ", bribes left: " + bribeCount);
+//						BHBot.log("Bribe Counter: " + bribeCount);
+						readScreen();
+						seg = detectCue(cues.get("X"), 2*SECOND); // the sleep at the end is the timeout, else it will click as soon as its available
+						if (seg != null) {
+							clickOnSeg(seg);
+						} else restart();  //failsafe to restart if the bot can't find the button
+						readScreen();
+						seg = detectCue(cues.get("Persuade"), 2*SECOND); //TODO test code, should be set to "Bribe" when live
+						if (seg != null) {
+							clickOnSeg(seg);
+						} else restart();
+						// TODO Add not enough gems fail-safe
+						readScreen();
+						seg = detectCue(cues.get("YesGreen"), 2*SECOND);
+						if (seg != null) {
+							clickOnSeg(seg);
+						} else restart();
+						saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
+						updateFamiliarCounter(fam, bribeCount);
+						return;
+					}
+				}
+				BHBot.log("No match, bribe limit met or autoBribe disabled, attempting persuasion");
+				sleep(1*SECOND);
+				if (BHBot.settings.familiarScreenshot) {
+//					BHBot.log("Unknown familiar, saving screenshot");
+					saveGameScreen("familiar-cue-test"); //If the familiar is unknown we might not have an image for it yet, so save a screenshot to create a cue from
+				}
+				readScreen();
+				seg = detectCue(cues.get("X"), 2*SECOND);
+				if (seg != null) {
+					clickOnSeg(seg);
+				} else restart();  //failsafe to restart if the bot can't find the button
+				readScreen();
+				seg = detectCue(cues.get("Persuade"), 2*SECOND);
+				if (seg != null) {
+					clickOnSeg(seg);
+				} else restart();
+				readScreen();
+				seg = detectCue(cues.get("YesGreen"), 2*SECOND);
+				if (seg != null) {
+					clickOnSeg(seg);
+					//below failsafe for yes button highlighting getting stuck
+					//					sleep(1*SECOND);
+					//					clickInGame(740,275);
+				} else restart();
+			}
 			return;
 		}
 
 		// check for skeleton treasure chest (and decline it):
 		seg = detectCue(cues.get("SkeletonTreasure"));
-		if (seg != null) {
+		if (seg != null && (BHBot.settings.openSkeleton)) {
 			seg = detectCue(cues.get("Decline"), 5*SECOND);
 			clickOnSeg(seg);
-
 			readScreen(1*SECOND);
 			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 			clickOnSeg(seg);
 			return;
+		} else if (seg != null && !(BHBot.settings.openSkeleton)) {
+			//TODO
+			BHBot.log("Using skeleton key");
 		}
 
 		// check for merchant's offer (and decline it):
@@ -2585,6 +2694,68 @@ public class MainThread implements Runnable {
 		BHBot.scheduler.restoreIdleTime();
 	}
 
+	public int checkFamiliarCounter(String fam) { //returns current catch count for given familiar from the settings file
+		int catchCount = 0;
+		for (String f : BHBot.settings.familiars) { //cycle familiars defined in settings
+				String fString = f.toUpperCase().split(" ")[0]; //stringify the familiar name
+				if (fam.equals(fString)) { // on match return 
+					catchCount = Integer.parseInt(f.split(" ")[1]);
+				}
+			}
+		return catchCount;
+		}
+	
+	public void updateFamiliarCounter(String fam, int currentCounter) {
+        String familiarToUpdate = "";
+        String updatedFamiliar = "";
+        
+		for (String fa : BHBot.settings.familiars) { //cycle through array
+			String fString = fa.toUpperCase().split(" ")[0]; //case sensitive for a match so convert to upper case
+			currentCounter = Integer.parseInt(fa.split(" ")[1]); //set the bribe counter to an int
+			if (fam.equals(fString)) { //when match is found from the function
+				familiarToUpdate = fa; //write current status to String
+				currentCounter--; // decrease the counter
+				Integer.toString(currentCounter); //make the int to string
+				updatedFamiliar = (fString.toLowerCase() + " " + currentCounter); //update new string with familiar name and decrease counter
+//				BHBot.log("Before: " + familiarToUpdate);
+//				BHBot.log("Updated: " + updatedFamiliar);
+			}
+		}
+		
+	    try {
+	        // input the file content to the StringBuffer "input"
+	        BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
+	        String line;
+	        StringBuffer inputBuffer = new StringBuffer();
+
+	        //print lines to string with linebreaks
+	        while ((line = file.readLine()) != null) {
+	            inputBuffer.append(line);
+	            inputBuffer.append(System.getProperty("line.separator"));
+	        }
+	        String inputStr = inputBuffer.toString(); //load lines to string
+	        file.close();
+
+//	        BHBot.log(inputStr); // check that it's inputted right
+
+	        //find containing string and update with the output from the function above
+	        if (inputStr.contains(familiarToUpdate)) {
+	            inputStr = inputStr.replace(familiarToUpdate, updatedFamiliar); 
+	        }
+
+	        // write the string from memory over the existing file
+	        // a bit risky for crashes
+	        FileOutputStream fileOut = new FileOutputStream("settings.ini");
+	        fileOut.write(inputStr.getBytes());
+	        fileOut.close();
+	        
+	        BHBot.settings.load();  //reload the new settings file so the counter will be updated for the next bribe
+
+	    } catch (Exception e) {
+	        System.out.println("Problem writing to settings file");
+	    }
+}
+	
 	/**
 	 *
 	 * @param dungeon in standard format, e.g. "z2d4".
@@ -2672,7 +2843,6 @@ public class MainThread implements Runnable {
 				return new Point(400, 270);
 			}
 			break;
-		}
 		case 7: // zone 7
 			switch (d) {
 			case 1:
@@ -2890,14 +3060,14 @@ public class MainThread implements Runnable {
 		Point r3 = center.moveBy(78, 0); // three to the right coords
 		Point r4 = center.moveBy(104, 0); // four to the right coords
 		Point r5 = center.moveBy(130, 0); // four to the right coords
-		Point r6 = center.moveBy(156, 0); // four to the right coords
+//		Point r6 = center.moveBy(156, 0); // four to the right coords
 
 		Point l1 = center.moveBy(-26, 0); // one button to the left coords
 		Point l2 = center.moveBy(-52, 0); // two to the left coords
 		Point l3 = center.moveBy(-78, 0); // three to the left coords
 		Point l4 = center.moveBy(-104, 0); // four to the left coords
 		Point l5 = center.moveBy(-130, 0); // four to the left coords
-		Point l6 = center.moveBy(-156, 0); // four to the right coords
+//		Point l6 = center.moveBy(-156, 0); // four to the right coords
 
 		//  these define the unselected dots to the right and left of the green selected raid dot, will return false if the dot does not exist
 		boolean r1Off = (new Color(img.getRGB(r1.x, r1.y))).equals(off);
@@ -2905,14 +3075,14 @@ public class MainThread implements Runnable {
 		boolean r3Off = (new Color(img.getRGB(r3.x, r3.y))).equals(off);
 		boolean r4Off = (new Color(img.getRGB(r4.x, r4.y))).equals(off);
 		boolean r5Off = (new Color(img.getRGB(r5.x, r5.y))).equals(off);
-		boolean r6Off = (new Color(img.getRGB(r6.x, r6.y))).equals(off);
+//		boolean r6Off = (new Color(img.getRGB(r6.x, r6.y))).equals(off);
 
 		boolean l1Off = (new Color(img.getRGB(l1.x, l1.y))).equals(off);
 		boolean l2Off = (new Color(img.getRGB(l2.x, l2.y))).equals(off);
 		boolean l3Off = (new Color(img.getRGB(l3.x, l3.y))).equals(off);
 		boolean l4Off = (new Color(img.getRGB(l4.x, l4.y))).equals(off);
 		boolean l5Off = (new Color(img.getRGB(l5.x, l5.y))).equals(off);
-		boolean l6Off = (new Color(img.getRGB(l6.x, l6.y))).equals(off);
+//		boolean l6Off = (new Color(img.getRGB(l6.x, l6.y))).equals(off);
 
 		seg = null;
 
@@ -2972,12 +3142,12 @@ public class MainThread implements Runnable {
 	 * Returns false in case it failed.
 	 */
 	private boolean setRaidType(int newType, int currentType) {
-		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
+//		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
 
 		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
 		if (seg == null) {
 			// error!
-			BHBot.log("Error: Changing of raid type failed - raid type button not detected.");
+			BHBot.log("Error: Changing of raid type failed - raid selection button not detected.");
 			return false;
 		}
 
