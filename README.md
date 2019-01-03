@@ -7,38 +7,28 @@ driver exists) and controls it as a normal user would. It works by taking screen
 then simulates mouse clicks. BHBot is a good example of how to create such bots to automate flash games or other browser games
 (it can be easily adjusted to play some other game).
 
+Once configured and running the bot is designed to run unattended for weeks at a time.
+
 ## Features
-Bot can automatically play the following types of encounters:
+This bot will automatically farm schematics, familiars and cosmetics running the following:
 * Dungeons
 * Raids
 * Gauntlet / Trials
-* PvP
-* GvG
-* Invasion
-* Expedition
+* PvP / GvG
+* Expedition / Invasion
 
-The difficulty for each such encounter can be (and should be) adjusted in the settings file. Within encounters, the bot will automatically:
+The level/difficulty for each activity can be defined in the settings file. The bot can also:
 
-* Decline merchants
-* Decline red (skeleton) chests
-* Persuade any familiar that offers himself
+* Automatically bribe specific familiars defined in the settings file (with limits so you dont waste gems)
+* Use consumables to keep 25% IF/XP/GF running unattended
+* Claim all weekly rewards
+* Open skeleton chests
+* Screenshot and close PMs
+* Handle incomplete teams (for when your 4.4k tank leaves you)
+* Collect daily fishing bait
 
-It will also claim daily reward and all week rewards automatically (for PvP, GvG and other types of events). It will handle
-maintenance/update dialogs, "Are you still here?" dialog, and pretty much any other dialog (adding new dialog handlers is also very easy).
-In case it encounters a new, unknown type of dialog, it will time out after a while and auto-restart itself.
-
-It will consume consumables as specified in the settings.ini file (potions, tomes, pots), like item find, exp, gold boosts, etc.
-
-It will automatically screenshot any private messages and weekly rewards as they will pop up (it will close them automatically),
-as well as serious crashes (it drop these screenshots in the same folder it has been ran from).
-
-It will detect when teams are incomplete (team that you use to play GvG, PvP, dungeon, raid, etc.) and click on AUTO button. This
-will not put tanks in front, so you should adjust it manually when possible. (Note for version v20: this feature might currently
-be broken).
-
-In case bot detects a "Disconnected" dialog, it will pause its execution for 1 hour and thus give chance to the user to play the game.
-Disconnects are usually result of another Chrome instance (or android app) logging into the game. This is why bot pauses in case it
-detects it.
+If the bot detects a "Disconnected" dialog, it will pause its execution for 1 hour giving the user a chance to play manually.
+Disconnects are usually result of another instance logging into the game. This is why bot pauses in case it detects it.
 
 ## First time use
 
