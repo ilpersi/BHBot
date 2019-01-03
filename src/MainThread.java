@@ -3043,13 +3043,12 @@ public class MainThread implements Runnable {
 	 */
 	private int readCurrentRaidType() {
 		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
-		if (seg == null) {
-			int currentRaidTier = readCurrentRaidTier(); //get max unlocked tier
-			BHBot.log("Raid Detection: R"  + Integer.toString(currentRaidTier) + " unlocked");
-			// either we don't have R2 open yet (hence there is not selection button) or an error occured:
-			seg = detectCue(cues.get("R1Only"));
-			return seg != null ? 1 : 0;
-		}
+//		if (seg == null) {
+//			int currentRaidTier = readCurrentRaidTier(); //get max unlocked tier
+//			BHBot.log("Raid Detection: R"  + Integer.toString(currentRaidTier) + " unlocked");
+//			// either we don't have R2 open yet (hence there is not selection button) or an error occured:
+//			return 1;
+//		}
 
 		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
 
