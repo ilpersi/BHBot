@@ -2446,7 +2446,7 @@ public class MainThread implements Runnable {
 		// check for persuasions:
 		seg = detectCue(cues.get("Persuade"));
 		if (seg != null) {
-			BHBot.log("Persuation encountered");
+			BHBot.log("Familiar encountered");
 			//click view
 			sleep(2*SECOND);
 			//open view window and check familiar array for match
@@ -2461,7 +2461,7 @@ public class MainThread implements Runnable {
 					int bribeCount = checkFamiliarCounter(fam);
 //					BHBot.log("Checking for familiar to bribe: " + fam);
 					if (seg != null && !(bribeCount < 1 && (BHBot.settings.autoBribe)) ) {
-						BHBot.log("Attempting to bribe: " + fam + ", bribes left: " + bribeCount);
+						BHBot.log("Bribing " + fam);
 //						BHBot.log("Bribe Counter: " + bribeCount);
 						readScreen();
 						seg = detectCue(cues.get("X"), 2*SECOND); // the sleep at the end is the timeout, else it will click as soon as its available
@@ -2477,7 +2477,9 @@ public class MainThread implements Runnable {
 						readScreen();
 						seg = detectCue(cues.get("YesGreen"), 2*SECOND);
 						if (seg != null) {
-							clickOnSeg(seg);
+//							clickOnSeg(seg);
+							sleep(1*SECOND);
+							clickInGame(330,360);
 						} else restart();
 						saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
 						updateFamiliarCounter(fam, bribeCount);
@@ -2503,10 +2505,9 @@ public class MainThread implements Runnable {
 				readScreen();
 				seg = detectCue(cues.get("YesGreen"), 2*SECOND);
 				if (seg != null) {
-					clickOnSeg(seg);
-					//below failsafe for yes button highlighting getting stuck
-					//					sleep(1*SECOND);
-					//					clickInGame(740,275);
+//					clickOnSeg(seg);
+					sleep(1*SECOND);
+					clickInGame(330,360);
 				} else restart();
 			}
 			return;
