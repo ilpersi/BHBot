@@ -2460,7 +2460,7 @@ public class MainThread implements Runnable {
 					seg = detectCue(cues.get(fam), 1*SECOND);
 					int bribeCount = checkFamiliarCounter(fam);
 //					BHBot.log("Checking for familiar to bribe: " + fam);
-					if (seg != null && !(bribeCount < 1 && (BHBot.settings.autoBribe)) ) {
+					if (seg != null && !(bribeCount < 1) && (BHBot.settings.autoBribe)) {
 						BHBot.log("Bribing " + fam);
 //						BHBot.log("Bribe Counter: " + bribeCount);
 						readScreen();
@@ -2469,7 +2469,7 @@ public class MainThread implements Runnable {
 							clickOnSeg(seg);
 						} else restart();  //failsafe to restart if the bot can't find the button
 						readScreen();
-						seg = detectCue(cues.get("Persuade"), 2*SECOND); //TODO test code, should be set to "Bribe" when live
+						seg = detectCue(cues.get("Bribe"), 2*SECOND); //TODO test code, should be set to "Bribe" when live
 						if (seg != null) {
 							clickOnSeg(seg);
 						} else restart();
