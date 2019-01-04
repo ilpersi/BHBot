@@ -30,6 +30,10 @@ The level/difficulty for each activity can be defined in the settings file. The 
 If the bot detects a "Disconnected" dialog, it will pause its execution for 1 hour giving the user a chance to play manually.
 Disconnects are usually result of another instance logging into the game. This is why bot pauses in case it detects it.
 
+## Upcoming Features
+* World Boss farming
+* Fishing
+
 ## First time use
 
 1) Before actually running the bot, you need to run a [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/) instance.
