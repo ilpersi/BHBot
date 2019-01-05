@@ -362,6 +362,7 @@ public class MainThread implements Runnable {
 		addCue("Trials", loadImage("cues/cueTrials.png"), new Bounds(0, 0, 40, 400)); // cue for trials button (note that as of 23.9.2017 they changed the button position to the right side of the screen and modified the glyph)
 		addCue("Trials2", loadImage("cues/cueTrials2.png"), new Bounds(720, 0, 770, 400)); // an alternative cue for trials (flipped horizontally, located on the right side of the screen). Used since 23.9.2017.
 		addCue("Gauntlet", loadImage("cues/cueGauntlet.png"), null); // cue for gauntlet button
+		addCue("Gauntlet2", loadImage("cues/cueGauntlet2.png"), null); // alternative cue for gauntlet button
 		addCue("Play", loadImage("cues/cuePlay.png"), null); // cue for play button in trials/gauntlet window
 		addCue("TokenBar", loadImage("cues/cueTokenBar.png"), null);
 		addCue("CloseGreen", loadImage("cues/cueCloseGreen.png"), null); // close button used with "You have been defeated" popup in gauntlet and also "Victory" window in gauntlet
@@ -1219,7 +1220,11 @@ public class MainThread implements Runnable {
 						boolean trials = seg != null; // if false, then we will do gauntlet instead of trials
 						if (seg == null)
 							seg = detectCue(cues.get("Gauntlet"));
-						if (seg == null) { // trials/gauntlet button not visible (perhaps it is disabled?)
+						if (seg == null) { 
+							seg = detectCue(cues.get("Gauntlet2"));
+						}
+						if (seg == null) {// trials/gauntlet button not visible (perhaps it is disabled?)
+							BHBot.log("Gauntlet/Trials button not found");
 							BHBot.scheduler.restoreIdleTime();
 							continue;
 						}
@@ -3043,12 +3048,12 @@ public class MainThread implements Runnable {
 	 */
 	private int readCurrentRaidType() {
 		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
-//		if (seg == null) {
+		if (seg == null) {
 //			int currentRaidTier = readCurrentRaidTier(); //get max unlocked tier
 //			BHBot.log("Raid Detection: R"  + Integer.toString(currentRaidTier) + " unlocked");
 //			// either we don't have R2 open yet (hence there is not selection button) or an error occured:
-//			return 1;
-//		}
+			return 1;
+		}
 
 		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
 
@@ -3147,7 +3152,7 @@ public class MainThread implements Runnable {
 		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
 		if (seg == null) {
 			// error!
-			BHBot.log("Error: Changing of raid type failed - raid selection button not detected.");
+//			BHBot.log("Error: Changing of raid type failed - raid selection button not detected.");
 			return false;
 		}
 
