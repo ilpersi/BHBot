@@ -504,64 +504,70 @@ public class MainThread implements Runnable {
 
 	public static void connectDriver() throws MalformedURLException {
 		ChromeOptions options = new ChromeOptions();
-		// https://sites.google.com/a/chromium.org/chromedriver/capabilities
-		//options.addArguments("user-data-dir=./chrome_profile_test"); // will create this profile folder where chromedriver.exe is located!
-		options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
-		//***options.addArguments("--no-startup-window");
-		//***options.addArguments("--silent-launch");
-
-		if (BHBot.settings.useHeadlessMode) {
-			options.setBinary("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/Application/chrome.exe");
-
 		
-			// https://sites.google.com/a/chromium.org/chromedriver/capabilities
+		options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
+		options.setBinary("C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe"); //set Chromium v69 binary location
+		
+		// disable ephemeral flash permissions flag
+		options.addArguments("--disable-features=EnableEphemeralFlashPermission");
+		Map<String, Object> prefs = new HashMap<>();
+		// Enable flash for all sites for Chrome 69
+		prefs.put("profile.content_settings.exceptions.plugins.*,*.setting", 1);
+		options.setExperimentalOption("prefs", prefs);
 
-			options.addArguments("--headless");
-			//options.addArguments("--disable-gpu"); // in future versions of Chrome this flag will not be needed
+//		if (BHBot.settings.useHeadlessMode) {
+//			options.setBinary("C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe"); //set chromium v69 binary location
 
-			/*
-			options.addArguments("--disable-plugins");
-			options.addArguments("--disable-internal-flash");
-			options.addArguments("--disable-plugins-discovery");
-			*/
-			//options.addArguments("--disable-bundled-ppapi-flash");
-
-
-
-			options.addArguments("--always-authorize-plugins");
-			options.addArguments("--allow-outdated-plugins");
-			options.addArguments("--allow-file-access-from-files");
-			options.addArguments("--allow-running-insecure-content");
-			options.addArguments("--disable-translate");
-			options.addArguments("-�allow-webui-compositing"); // https://adestefawp.wordpress.com/software/chromium-command-line-switches/
-			options.addArguments("-�ppapi-flash-in-process");
-
-			options.addArguments("--use-fake-device-for-media-stream");
-			options.addArguments("--disable-web-security");
-
-
-			options.setExperimentalOption("excludeSwitches", Arrays.asList("disable-component-update", "disable-default-apps"));
+//
+//		
+//			// https://sites.google.com/a/chromium.org/chromedriver/capabilities
+//
+//			options.addArguments("--headless");
+//			//options.addArguments("--disable-gpu"); // in future versions of Chrome this flag will not be needed
+//
+//			/*
+//			options.addArguments("--disable-plugins");
+//			options.addArguments("--disable-internal-flash");
+//			options.addArguments("--disable-plugins-discovery");
+//			*/
+//			//options.addArguments("--disable-bundled-ppapi-flash");
+//
+//
+//
+//			options.addArguments("--always-authorize-plugins");
+//			options.addArguments("--allow-outdated-plugins");
+//			options.addArguments("--allow-file-access-from-files");
+//			options.addArguments("--allow-running-insecure-content");
+//			options.addArguments("--disable-translate");
+//			options.addArguments("-�allow-webui-compositing"); // https://adestefawp.wordpress.com/software/chromium-command-line-switches/
+//			options.addArguments("-�ppapi-flash-in-process");
+//
+//			options.addArguments("--use-fake-device-for-media-stream");
+//			options.addArguments("--disable-web-security");
+//
+//
+//			options.setExperimentalOption("excludeSwitches", Arrays.asList("disable-component-update", "disable-default-apps"));
 
 			//options.setExperimentalOption("#run-all-flash-in-allow-mode", Arrays.asList("Enabled"));
 			//options.setExperimentalOption("#run-all-flash-in-allow-mode", "Enabled");
 
-			Map<String, Object> prefs = new HashMap<>();
-			prefs.put("run-all-flash-in-allow-mode", Boolean.valueOf(true));
-			prefs.put("profile.run_all_flash_in_allow_mode", Boolean.valueOf(true));
-			options.setExperimentalOption("prefs", prefs);
+//			Map<String, Object> prefs = new HashMap<>();
+//			prefs.put("run-all-flash-in-allow-mode", Boolean.valueOf(true));
+//			prefs.put("profile.run_all_flash_in_allow_mode", Boolean.valueOf(true));
+//			options.setExperimentalOption("prefs", prefs);
 
 			//options.addExtensions(new File("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/Application/chrome_profile_test/PepperFlash/26.0.0.137/pepflashplayer.dll"));
 			//options.addExtensions(new File("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/User Data/PepperFlash/26.0.0.137/pepflashplayer.dll"));
 
 			//options.addArguments("--remote-debugging-port=9222"); // this doesn't work because ChromeDriver uses dubuging port internally. Read about it here: https://bugs.chromium.org/p/chromedriver/issues/detail?id=878#c16
-		}
+//		}
 
 		//options.addArguments("--no-startup-window"); // does not work with WebDriver. Read about it here: https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/5351
 
 
 		//options.addArguments("--headless");
 		//options.addArguments("--disable-gpu");
-		options.addArguments("--mute-audio"); // found this solution here: https://stackoverflow.com/questions/39392479/how-to-mute-all-sounds-in-chrome-webdriver-with-selenium/39392601#39392601
+//		options.addArguments("--mute-audio"); // found this solution here: https://stackoverflow.com/questions/39392479/how-to-mute-all-sounds-in-chrome-webdriver-with-selenium/39392601#39392601
 
 		//***ChromeDriverService chromeDriverService = ChromeDriverService.createDefaultService();
 		//***chromeDriverService.CHROME_DRIVER_SILENT_OUTPUT_PROPERTY
@@ -569,7 +575,6 @@ public class MainThread implements Runnable {
 		DesiredCapabilities capabilities = DesiredCapabilities.chrome();
 		capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 		driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
-		//driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
 	}
 
 	// http://www.qaautomationsimplified.com/selenium/selenium-webdriver-get-cookies-from-an-existing-session-and-add-those-to-a-newly-instantiated-webdriver-browser-instance/
@@ -2520,14 +2525,14 @@ public class MainThread implements Runnable {
 
 		// check for skeleton treasure chest (and decline it):
 		seg = detectCue(cues.get("SkeletonTreasure"));
-		if (seg != null && (BHBot.settings.openSkeleton)) {
+		if (seg != null && !(BHBot.settings.openSkeleton)) {
 			seg = detectCue(cues.get("Decline"), 5*SECOND);
 			clickOnSeg(seg);
 			readScreen(1*SECOND);
 			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 			clickOnSeg(seg);
 			return;
-		} else if (seg != null && !(BHBot.settings.openSkeleton)) {
+		} else if (seg != null && (BHBot.settings.openSkeleton)) {
 			//TODO
 			BHBot.log("Using skeleton key");
 		}
