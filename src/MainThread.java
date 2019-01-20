@@ -793,7 +793,7 @@ public class MainThread implements Runnable {
 		}
 
 //		BHBot.log("Window handle is: " + driver.getWindowHandle());
-		BHBot.log("Game window found. Starting main thread loop..");
+		BHBot.log("Game element found. Starting to run bot..");
 		
 		//Code under is all debugging
 		
