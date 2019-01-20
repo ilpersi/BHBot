@@ -36,32 +36,12 @@ Disconnects are usually result of another instance logging into the game. This i
 
 ## First time use
 
-1) Before actually running the bot, you need to run a [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/) instance.
-You need to download correct version (32/64 bit), or else it may not work.
-2) You will need Java runtime installed on your system in order for the bot to run. You may run it by directly running the jar file,
-or by running pre-compiled exe file (Windows only, requires JRE as well).
-3) The bot will not work with the latest Chrome release, you need to download a copy of Chrome v69 and disable the chrome://flags/#enable-ephemeral-flash-permission flag
-4) Inspect `settings.ini` file and adjust to your needs.
-5) When you run the bot for the first time, it is best that you run it using the `init.bat` file. This will make sure the
-bot doesn't perform any operations (it will go into idle mode). It will leave chrome window open for you to set up certain
-settings within the game (like familiars filter, notifications filter, etc.). Once you're done setting it, close the chrome
-window and the bot's console window. This will create certain cookies within your Chrome profile folder that will be used
-the next time you run the bot. Alternativelly to using `init.bat`, you can run bot normally and immediatelly after it loads,
-issue command `pause` which will make sure bot leave Chrome window to you.
-6) As described in the previous step, you should turn off notifications in the game's settings, since that obscures the energy
-and PvP ticket bars and may interfere with with energy/tickets detection routine.
-7) When you first run the bot, a 'chrome_profile' folder will be created by the chrome driver, where your chrome profile will
-be saved (cookies, etc.). You should not touch that folder.
+See [the wiki](https://github.com/Betalord/BHBot/wiki) for first time use guide.
 
 ## Important
 
 While bot is running, do not interfere with the Chrome window that the bot has open via chrome driver. That means don't open
-menus and click around since that may confuse the bot and it could fail to do its tasks (which could lead to crashing it).
-Bot clicks on certain buttons and cues and expects certain thing to pop up, and if they don't (due to user interaction), then he
-will fail to function properly (however he will detect any such inconsistent states and will auto-restart). In general, bot always
-restarts when it detects some kind of an error or when nothing happens in 30 minutes (time-out detection). In such cases, it will
-restart the Chrome driver and itself. This ensures that the bot will run uninterrupted for weeks without user interaction (tested - it
-works). If you are running the bot in Windows, you may want to run it under a separate account in order for it to not interfere
+menus and click around since that may confuse the bot and it could fail to do its tasks (which could lead to crashing it). If you want to continue using your comuter while running the not use the 'hide' command to minimize the window. The bot clicks on certain buttons and cues and expects certain thing to pop up, and if they don't (due to user interaction), then it will fail to function properly. If you are running the bot in Windows, you may want to run it under a separate account in order for it to not interfere
 with your work.
 
 ## Commands
@@ -91,9 +71,11 @@ chrome driver like this:
 so we'll run it like this: `chromedriver.exe --port=9551`.
 You will  need to run the chromedrivers in separate folders as they create a chrome_profile settings folder in the current directory.
 Now, in order to tell the bot to connect to chrome driver on one of these ports, you'll need to run it like this:
-`bhbot.exe chromedriveraddress 127.0.0.1:9550`. This will make sure that the bot will connect to the first chrome driver instance.
+`bhbot.jar chromedriveraddress 127.0.0.1:9550`. This will make sure that the bot will connect to the first chrome driver instance.
 The second bot instance should be run like this:
-`bhbot.exe chromedriveraddress 127.0.0.1:9551`. This should make two bots run in parallel without disturbing each other.
+`bhbot.jar chromedriveraddress 127.0.0.1:9551`. This should make two bots run in parallel without disturbing each other.
+
+Note that due to Flash this can be quiet resource intensive. Due to the slow nature of energy regeneration if you wish to run multiple accounts on Windows it is more effective to use a cron-like service (E.G [Z-Cron](https://www.z-cron.com/)) to stagger running and stopping multiple accounts, generally you only need to run the bot for 30 minutes to use 8 hours of shards/energy/tokens/tickets regeneration.
 
 ## An example Linux setup
 
