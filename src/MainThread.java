@@ -480,25 +480,69 @@ public class MainThread implements Runnable {
 		//testing cues
 		addCue("PENGEY", loadImage("cues/familiars/cuePENGEY.png"), null);
 		addCue("MCGOBBLESTEIN", loadImage("cues/familiars/cueMCGOBBLESTEIN.png"), null);
+
+		//GLOBAL
+		addCue("GOBBY", loadImage("cues/familiars/cueGOBBY.png"), null);		
+		
+		//Z1
+		addCue("DRYAD", loadImage("cues/familiars/cueDRYAD.png"), null);
+		addCue("GRIMZ", loadImage("cues/familiars/cueGRIMZ.png"), null);
+		addCue("LORDCERULEAN", loadImage("cues/familiars/cueLORDCERULEAN.png"), null);		
 		
 		//R1
 		addCue("SQUIB", loadImage("cues/familiars/cueSQUIB.png"), null);
 		addCue("RAGNAR", loadImage("cues/familiars/cueRAGNAR.png"), null);
 		addCue("SHADE", loadImage("cues/familiars/cueSHADE.png"), null);
-//		addCue("ASTAROTH", loadImage("cues/familiars/cueASTAROTH.png"), null);
+//		addCue("OLXA", loadImage("cues/familiars/cueOLXA.png"), null);
+		addCue("ASTAROTH", loadImage("cues/familiars/cueASTAROTH.png"), null);
+		
+		//Z2
+		addCue("YETI", loadImage("cues/familiars/cueYETI.png"), null);
+		addCue("BLUBBER", loadImage("cues/familiars/cueBLUBBER.png"), null);
+		addCue("GEMM", loadImage("cues/familiars/cueGEMM.png"), null);		
 		
 		//R2
 		addCue("DRIFFIN", loadImage("cues/familiars/cueDRIFFIN.png"), null);
 		addCue("VIOLACE", loadImage("cues/familiars/cueVIOLACE.png"), null);
 		addCue("OEVOR", loadImage("cues/familiars/cueOEVOR.png"), null);
 		addCue("MIMZY", loadImage("cues/familiars/cueMIMZY.png"), null);
+//		addCue("KALEIDO", loadImage("cues/familiars/cueKALEIDO.png"), null);
+		
+		//Z3
+		addCue("NOSDOODOO", loadImage("cues/familiars/cueNOSDOODOO.png"), null);
+		addCue("JEB", loadImage("cues/familiars/cueJEB.png"), null);
+		addCue("QUIRREL", loadImage("cues/familiars/cueQUIRREL.png"), null);	
 		
 		//R3
 		addCue("BARGZ", loadImage("cues/familiars/cueBARGZ.png"), null);
+		addCue("JACK", loadImage("cues/familiars/cueJACK.png"), null);
+		addCue("KRACKERS", loadImage("cues/familiars/cueKRACKERS.png"), null);
+//		addCue("BULLY", loadImage("cues/familiars/cueBULLY.png"), null);
+//		addCue("CPTWOODBEARD", loadImage("cues/familiars/cueCPTWOODBEARD.png"), null);
+		
+		//Z4
+		addCue("REXIE", loadImage("cues/familiars/cueREXIE.png"), null);
+		addCue("WARTY", loadImage("cues/familiars/cueWARTY.png"), null);
+		addCue("KOVALG", loadImage("cues/familiars/cueKOVALG.png"), null);	
 		
 		//R4
 		addCue("J3-17", loadImage("cues/familiars/cueJ3-17.png"), null);
 		addCue("DUOBOMZ", loadImage("cues/familiars/cueDUOBOMZ.png"), null);
+//		addCue("ROBOMAX-6000", loadImage("cues/familiars/cueROBOMAX-6000.png"), null);
+//		addCue("X4-GOMBO", loadImage("cues/familiars/cueX4-GOMBO.png"), null);
+//		addCue("XL-OMBIS400", loadImage("cues/familiars/cueXL-OMBIS400.png"), null);
+		
+		//Z5
+//		addCue("TORLIM", loadImage("cues/familiars/cueTORLIM.png"), null);
+//		addCue("ZORUL", loadImage("cues/familiars/cueZORUL.png"), null);
+//		addCue("TEALK", loadImage("cues/familiars/cueTEALK.png"), null);	
+		
+		//R5
+		addCue("XANTHIN", loadImage("cues/familiars/cueXANTHIN.png"), null);
+//		addCue("SVIRNIC", loadImage("cues/familiars/cueSVIRNIC.png"), null);
+//		addCue("GELVINS", loadImage("cues/familiars/cueGELVINS.png"), null);
+//		addCue("SVIRNAN", loadImage("cues/familiars/cueSVIRNAN.png"), null);
+		addCue("ZOL", loadImage("cues/familiars/cueZOL.png"), null);
 		
 	}
 
