@@ -1433,42 +1433,22 @@ public class MainThread implements Runnable {
 									// note that moving to the right will fail in case player has not unlocked the zone yet!
 									readScreen(500); // wait for screen to stabilise
 									seg = detectCue(cues.get("RightArrow"));
-//									if (seg == null) {
-//										BHBot.log("Right not found");
-//										break; // happens for example when player hasn't unlock the zone yet
-//									}
-//									clickOnSeg(seg);
-									//stopgap solution using the buttons coordinates instead of clicking the iamge
-									//there is an error moving more than 2 left or right where the button remains highlighted and the bot crashes
-									//new cues of the highlighted button are needed to keep failsafes, until then this works
+									if (seg == null) {
+										BHBot.log("Right button not found, zone unlocked?");
+										break; // happens for example when player hasn't unlock the zone yet
+									}
+									//coords used as moving multiple screens would crash the bot using images
 									clickInGame(740,275);
 									vec--;
-									// just a log to track the vector moving
-									BHBot.log(Integer.toString(vec));
 								} else if (vec < 0) {
 									readScreen(500); // wait for screen to stabilise
-//									seg = detectCue(cues.get("LeftArrow"));
-//										if (seg == null) {
-//										BHBot.log("Left not found");
-//										}
-									//stopgap solution using the buttons coordinates instead of clicking the iamge
-									//there is an error moving more than 2 left or right where the button remains highlighted and the bot crashes
-									//new cues of the highlighted button are needed to keep failsafes, until then this works
+									//coords used as moving multiple screens would crash the bot using button cue
 									clickInGame(55,275);
-//									clickOnSeg(seg);
 									vec++;
-									// just a debugging log to track the vector moving
-									BHBot.log(Integer.toString(vec));
 								}
 							}
 
 							sleep(2*SECOND);
-							//  For some reason this section doesn't work after moving zones.
-//							int currentZoneStart = readCurrentZone();
-//							if (currentZoneStart != goalZone) {
-//								BHBot.log("Zone change failed. Current zone is " + currentZoneStart + ", goal zone is " + goalZone + ". Ignoring...");
-//								continue;
-//							}
 
 							// click on the dungeon:
 							Point p = getDungeonIconPos(dungeon);
@@ -1479,10 +1459,15 @@ public class MainThread implements Runnable {
 							if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') || (dungeon.charAt(1) == '8' && dungeon.charAt(3) == '3' )) { // D4, or Z7D3/Z8D3
 								seg = detectCue(cues.get("Enter"), 5*SECOND);
 								clickOnSeg(seg);
-								// for whatever reason D4 accept button is different so using a different cue file
+								// some weirdness happens with the accept button on D4's, this should fix it
 								readScreen(1*SECOND);
 								seg = detectCue(cues.get("D4Accept"));
+								if (seg == null) {
+									seg = detectCue(cues.get("Accept"));
+									clickOnSeg(seg);
+								} else {
 								clickOnSeg(seg);
+								}
 
 							} else { // d1-d3
 								seg = detectCue(cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), 5*SECOND);
