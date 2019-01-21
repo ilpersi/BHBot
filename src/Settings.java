@@ -17,11 +17,11 @@ public class Settings {
 	public boolean openSkeleton = false;
 	public boolean autoBribe  = false;
 	
-	public boolean doRaids = true;
-	public boolean doDungeons = true;
-	public boolean doTrials = true;
-	public boolean doGauntlet = true;
-	public boolean doPVP = true;
+	public boolean doRaids = false;
+	public boolean doDungeons = false;
+	public boolean doTrials = false;
+	public boolean doGauntlet = false;
+	public boolean doPVP = false;
 	public boolean doGVG = false;
 	public boolean doAds = false;
 	public boolean doInvasion = false;

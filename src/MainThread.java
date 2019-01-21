@@ -399,6 +399,7 @@ public class MainThread implements Runnable {
 		addCue("GVG", loadImage("cues/cueGVG.png"), null); // main GVG button cue
 		addCue("BadgeBar", loadImage("cues/cueBadgeBar.png"), null);
 		addCue("GVGWindow", loadImage("cues/cueGVGWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
+		addCue("GVGWarning", loadImage("cues/cueGVGWarning.png"), null); //inital GvG run wanring
 
 		addCue("InGamePM", loadImage("cues/cueInGamePM.png"), new Bounds(450, 330, 530, 380)); // note that the guild window uses the same cue! That's why it's important that user doesn't open guild window while bot is working!
 
@@ -493,7 +494,7 @@ public class MainThread implements Runnable {
 		addCue("SQUIB", loadImage("cues/familiars/cueSQUIB.png"), null);
 		addCue("RAGNAR", loadImage("cues/familiars/cueRAGNAR.png"), null);
 		addCue("SHADE", loadImage("cues/familiars/cueSHADE.png"), null);
-//		addCue("OLXA", loadImage("cues/familiars/cueOLXA.png"), null);
+		addCue("OLXA", loadImage("cues/familiars/cueOLXA.png"), null);
 		addCue("ASTAROTH", loadImage("cues/familiars/cueASTAROTH.png"), null);
 		
 		//Z2
@@ -506,7 +507,7 @@ public class MainThread implements Runnable {
 		addCue("VIOLACE", loadImage("cues/familiars/cueVIOLACE.png"), null);
 		addCue("OEVOR", loadImage("cues/familiars/cueOEVOR.png"), null);
 		addCue("MIMZY", loadImage("cues/familiars/cueMIMZY.png"), null);
-//		addCue("KALEIDO", loadImage("cues/familiars/cueKALEIDO.png"), null);
+		addCue("KALEIDO", loadImage("cues/familiars/cueKALEIDO.png"), null);
 		
 		//Z3
 		addCue("NOSDOODOO", loadImage("cues/familiars/cueNOSDOODOO.png"), null);
@@ -517,8 +518,8 @@ public class MainThread implements Runnable {
 		addCue("BARGZ", loadImage("cues/familiars/cueBARGZ.png"), null);
 		addCue("JACK", loadImage("cues/familiars/cueJACK.png"), null);
 		addCue("KRACKERS", loadImage("cues/familiars/cueKRACKERS.png"), null);
-//		addCue("BULLY", loadImage("cues/familiars/cueBULLY.png"), null);
-//		addCue("CPTWOODBEARD", loadImage("cues/familiars/cueCPTWOODBEARD.png"), null);
+		addCue("BULLY", loadImage("cues/familiars/cueBULLY.png"), null);
+		addCue("CAPTWOODBEARD", loadImage("cues/familiars/cueCAPTWOODBEARD.png"), null);
 		
 		//Z4
 		addCue("REXIE", loadImage("cues/familiars/cueREXIE.png"), null);
@@ -529,20 +530,40 @@ public class MainThread implements Runnable {
 		addCue("J3-17", loadImage("cues/familiars/cueJ3-17.png"), null);
 		addCue("DUOBOMZ", loadImage("cues/familiars/cueDUOBOMZ.png"), null);
 //		addCue("ROBOMAX-6000", loadImage("cues/familiars/cueROBOMAX-6000.png"), null);
-//		addCue("X4-GOMBO", loadImage("cues/familiars/cueX4-GOMBO.png"), null);
-//		addCue("XL-OMBIS400", loadImage("cues/familiars/cueXL-OMBIS400.png"), null);
+		addCue("X4-GOMBO", loadImage("cues/familiars/cueX4-GOMBO.png"), null);
+		addCue("XL-OMBIS400", loadImage("cues/familiars/cueXL-OMBIS400.png"), null);
 		
 		//Z5
 //		addCue("TORLIM", loadImage("cues/familiars/cueTORLIM.png"), null);
 //		addCue("ZORUL", loadImage("cues/familiars/cueZORUL.png"), null);
-//		addCue("TEALK", loadImage("cues/familiars/cueTEALK.png"), null);	
+		addCue("TEALK", loadImage("cues/familiars/cueTEALK.png"), null);	
 		
 		//R5
 		addCue("XANTHIN", loadImage("cues/familiars/cueXANTHIN.png"), null);
-//		addCue("SVIRNIC", loadImage("cues/familiars/cueSVIRNIC.png"), null);
-//		addCue("GELVINS", loadImage("cues/familiars/cueGELVINS.png"), null);
+		addCue("SVIRNIC", loadImage("cues/familiars/cueSVIRNIC.png"), null);
+		addCue("GELVINS", loadImage("cues/familiars/cueGELVINS.png"), null);
 //		addCue("SVIRNAN", loadImage("cues/familiars/cueSVIRNAN.png"), null);
 		addCue("ZOL", loadImage("cues/familiars/cueZOL.png"), null);
+		
+		//Z6
+		addCue("RUGUMZ", loadImage("cues/familiars/cueRUGUMZ.png"), null);
+		addCue("BLEMB", loadImage("cues/familiars/cueBLEMB.png"), null);
+//		addCue("MOGHUR", loadImage("cues/familiars/cueMOGHUR.png"), null);
+		
+		//R6
+//		addCue("CRUM", loadImage("cues/familiars/cueCRUM.png"), null);
+//		addCue("SPROUT", loadImage("cues/familiars/cueSPROUT.png"), null);
+//		addCue("FLITTY", loadImage("cues/familiars/cueFLITTY.png"), null);
+//		addCue("CLOUBY", loadImage("cues/familiars/cueCLOUBY.png"), null);
+//		addCue("COLUMBUS", loadImage("cues/familiars/cueCOLUMBUS.png"), null);
+		
+		//Z7
+//		addCue("SCORPIUS", loadImage("cues/familiars/cueSCORPIUS.png"), null);
+//		addCue("VEDAIRE", loadImage("cues/familiars/cueVEDAIRE.png"), null);
+		
+		//Z8
+		addCue("GOOGAMENZ", loadImage("cues/familiars/cueGOOGAMENZ.png"), null);
+//		addCue("THETRILOGY", loadImage("cues/familiars/cueTHETRILOGY.png"), null);
 		
 	}
 
@@ -1455,7 +1476,7 @@ public class MainThread implements Runnable {
 
 							readScreen(3*SECOND);
 							// select difficulty (except when d4 is in play, then there is no difficulty to select!):
-							if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3')) { // D4, or Z7D3
+							if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') || (dungeon.charAt(1) == '8' && dungeon.charAt(3) == '3' )) { // D4, or Z7D3/Z8D3
 								seg = detectCue(cues.get("Enter"), 5*SECOND);
 								clickOnSeg(seg);
 								// for whatever reason D4 accept button is different so using a different cue file
@@ -1633,10 +1654,21 @@ public class MainThread implements Runnable {
 									}
 								}
 
+
 								seg = detectCue(cues.get("Play"), 5*SECOND);
 								clickOnSeg(seg);
 								readScreen(2*SECOND);
 
+								//On initial GvG run you'll get a warning about not being able to leave guild, this will close that
+								readScreen(2*SECOND);
+								seg = detectCue(cues.get("GVGWarning"), 3*SECOND);
+								if (seg != null) {
+									BHBot.log("Initial GvG run warning found, closing");
+									sleep(1*SECOND); //wait to stabilise just in case
+									seg = detectCue(cues.get("YesGreen"), 5*SECOND);
+									clickOnSeg(seg);
+								}							
+								
 								seg = detectCue(cues.get("Fight"), 5*SECOND);
 								clickOnSeg(seg);
 								sleep(5*SECOND);
@@ -2523,7 +2555,7 @@ public class MainThread implements Runnable {
 							clickOnSeg(seg);
 						} else restart();  //failsafe to restart if the bot can't find the button
 						readScreen();
-						seg = detectCue(cues.get("Bribe"), 2*SECOND); //TODO test code, should be set to "Bribe" when live
+						seg = detectCue(cues.get("Bribe"), 2*SECOND);
 						if (seg != null) {
 							clickOnSeg(seg);
 						} else restart();
@@ -2903,24 +2935,22 @@ public class MainThread implements Runnable {
 			case 1:
 				return new Point(200, 200);
 			case 2:
-				return new Point(570, 340);
+				return new Point(650, 400);
 			case 3:
 				return new Point(400, 430);
 			}
 			break;
-		}
-		//TODO Add zone 8
-		// case 8: // zone 8
-		// 	switch (d) {
-		// 	case 1:
-		// 		return new Point(200, 200);
-		// 	case 2:
-		// 		return new Point(570, 340);
-		// 	case 3:
-		// 		return new Point(400, 430);
-		// 	}
-		// 	break;
-		// }
+		 case 8: // zone 8
+		 	switch (d) {
+		 	case 1:
+		 		return new Point(570, 170);
+		 	case 2:
+		 		return new Point(570, 340);
+		 	case 3:
+		 		return new Point(250, 390);
+		 	}
+		 	break;
+		 }
 
 		return null;
 	}
