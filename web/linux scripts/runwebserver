@@ -1,1 +1,0 @@
-java -cp ./srv_bin HTTPServer webroot/ 8080

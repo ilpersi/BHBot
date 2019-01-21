@@ -1,1 +1,0 @@
-stat -c %s ../output.txt

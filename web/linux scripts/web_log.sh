@@ -1,1 +1,0 @@
-tail -n $@ ../output.txt

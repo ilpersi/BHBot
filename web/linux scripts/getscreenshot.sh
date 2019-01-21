@@ -1,1 +1,0 @@
-cp ../shot.png ./shot.png
