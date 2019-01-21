@@ -153,7 +153,7 @@ public class BHBot {
 			try {
 				Shutterbug.shootElement(main.driver, main.driver.findElement(By.id("game")), false)
 				.withName("shot")
-				.save(".")
+				.save("./screenshots/")
 				;
 			} catch (Exception e) {
 				Shutterbug.shootPage(main.driver)

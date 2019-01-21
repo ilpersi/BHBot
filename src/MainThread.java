@@ -3264,7 +3264,7 @@ public class MainThread implements Runnable {
 
 		// save screen shot:
 		try {
-			Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length()-4)).save(".");
+			Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length()-4)).save("./screenshots/");
 		} catch (Exception e) {
 		}
 
