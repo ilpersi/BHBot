@@ -475,104 +475,104 @@ public class MainThread implements Runnable {
 		//fishing related
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
-		
+
 		//Familiar bribing cues
-		
+
 		//testing cues
 		addCue("PENGEY", loadImage("cues/familiars/cuePENGEY.png"), null);
 		addCue("MCGOBBLESTEIN", loadImage("cues/familiars/cueMCGOBBLESTEIN.png"), null);
 
 		//GLOBAL
-		addCue("GOBBY", loadImage("cues/familiars/cueGOBBY.png"), null);		
-		
+		addCue("GOBBY", loadImage("cues/familiars/cueGOBBY.png"), null);
+
 		//Z1
 		addCue("DRYAD", loadImage("cues/familiars/cueDRYAD.png"), null);
 		addCue("GRIMZ", loadImage("cues/familiars/cueGRIMZ.png"), null);
-		addCue("LORDCERULEAN", loadImage("cues/familiars/cueLORDCERULEAN.png"), null);		
-		
+		addCue("LORDCERULEAN", loadImage("cues/familiars/cueLORDCERULEAN.png"), null);
+
 		//R1
 		addCue("SQUIB", loadImage("cues/familiars/cueSQUIB.png"), null);
 		addCue("RAGNAR", loadImage("cues/familiars/cueRAGNAR.png"), null);
 		addCue("SHADE", loadImage("cues/familiars/cueSHADE.png"), null);
 		addCue("OLXA", loadImage("cues/familiars/cueOLXA.png"), null);
 		addCue("ASTAROTH", loadImage("cues/familiars/cueASTAROTH.png"), null);
-		
+
 		//Z2
 		addCue("YETI", loadImage("cues/familiars/cueYETI.png"), null);
 		addCue("BLUBBER", loadImage("cues/familiars/cueBLUBBER.png"), null);
-		addCue("GEMM", loadImage("cues/familiars/cueGEMM.png"), null);		
-		
+		addCue("GEMM", loadImage("cues/familiars/cueGEMM.png"), null);
+
 		//R2
 		addCue("DRIFFIN", loadImage("cues/familiars/cueDRIFFIN.png"), null);
 		addCue("VIOLACE", loadImage("cues/familiars/cueVIOLACE.png"), null);
 		addCue("OEVOR", loadImage("cues/familiars/cueOEVOR.png"), null);
 		addCue("MIMZY", loadImage("cues/familiars/cueMIMZY.png"), null);
 		addCue("KALEIDO", loadImage("cues/familiars/cueKALEIDO.png"), null);
-		
+
 		//Z3
 		addCue("NOSDOODOO", loadImage("cues/familiars/cueNOSDOODOO.png"), null);
 		addCue("JEB", loadImage("cues/familiars/cueJEB.png"), null);
-		addCue("QUIRREL", loadImage("cues/familiars/cueQUIRREL.png"), null);	
-		
+		addCue("QUIRREL", loadImage("cues/familiars/cueQUIRREL.png"), null);
+
 		//R3
 		addCue("BARGZ", loadImage("cues/familiars/cueBARGZ.png"), null);
 		addCue("JACK", loadImage("cues/familiars/cueJACK.png"), null);
 		addCue("KRACKERS", loadImage("cues/familiars/cueKRACKERS.png"), null);
 		addCue("BULLY", loadImage("cues/familiars/cueBULLY.png"), null);
 		addCue("CAPTWOODBEARD", loadImage("cues/familiars/cueCAPTWOODBEARD.png"), null);
-		
+
 		//Z4
 		addCue("REXIE", loadImage("cues/familiars/cueREXIE.png"), null);
 		addCue("WARTY", loadImage("cues/familiars/cueWARTY.png"), null);
-		addCue("KOVALG", loadImage("cues/familiars/cueKOVALG.png"), null);	
-		
+		addCue("KOVALG", loadImage("cues/familiars/cueKOVALG.png"), null);
+
 		//R4
 		addCue("J3-17", loadImage("cues/familiars/cueJ3-17.png"), null);
 		addCue("DUOBOMZ", loadImage("cues/familiars/cueDUOBOMZ.png"), null);
 //		addCue("ROBOMAX-6000", loadImage("cues/familiars/cueROBOMAX-6000.png"), null);
 		addCue("X4-GOMBO", loadImage("cues/familiars/cueX4-GOMBO.png"), null);
 		addCue("XL-OMBIS400", loadImage("cues/familiars/cueXL-OMBIS400.png"), null);
-		
+
 		//Z5
 //		addCue("TORLIM", loadImage("cues/familiars/cueTORLIM.png"), null);
 //		addCue("ZORUL", loadImage("cues/familiars/cueZORUL.png"), null);
-		addCue("TEALK", loadImage("cues/familiars/cueTEALK.png"), null);	
-		
+		addCue("TEALK", loadImage("cues/familiars/cueTEALK.png"), null);
+
 		//R5
 		addCue("XANTHIN", loadImage("cues/familiars/cueXANTHIN.png"), null);
 		addCue("SVIRNIC", loadImage("cues/familiars/cueSVIRNIC.png"), null);
 		addCue("GELVINS", loadImage("cues/familiars/cueGELVINS.png"), null);
 //		addCue("SVIRNAN", loadImage("cues/familiars/cueSVIRNAN.png"), null);
 		addCue("ZOL", loadImage("cues/familiars/cueZOL.png"), null);
-		
+
 		//Z6
 		addCue("RUGUMZ", loadImage("cues/familiars/cueRUGUMZ.png"), null);
 		addCue("BLEMB", loadImage("cues/familiars/cueBLEMB.png"), null);
 //		addCue("MOGHUR", loadImage("cues/familiars/cueMOGHUR.png"), null);
-		
+
 		//R6
 //		addCue("CRUM", loadImage("cues/familiars/cueCRUM.png"), null);
 //		addCue("SPROUT", loadImage("cues/familiars/cueSPROUT.png"), null);
 //		addCue("FLITTY", loadImage("cues/familiars/cueFLITTY.png"), null);
 //		addCue("CLOUBY", loadImage("cues/familiars/cueCLOUBY.png"), null);
 //		addCue("COLUMBUS", loadImage("cues/familiars/cueCOLUMBUS.png"), null);
-		
+
 		//Z7
 //		addCue("SCORPIUS", loadImage("cues/familiars/cueSCORPIUS.png"), null);
 //		addCue("VEDAIRE", loadImage("cues/familiars/cueVEDAIRE.png"), null);
-		
+
 		//Z8
 		addCue("GOOGAMENZ", loadImage("cues/familiars/cueGOOGAMENZ.png"), null);
 //		addCue("THETRILOGY", loadImage("cues/familiars/cueTHETRILOGY.png"), null);
-		
+
 	}
 
 	public static void connectDriver() throws MalformedURLException {
 		ChromeOptions options = new ChromeOptions();
-		
+
 		options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
 		options.setBinary("C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe"); //set Chromium v69 binary location
-		
+
 		// disable ephemeral flash permissions flag
 		options.addArguments("--disable-features=EnableEphemeralFlashPermission");
 		Map<String, Object> prefs = new HashMap<>();
@@ -584,7 +584,7 @@ public class MainThread implements Runnable {
 //			options.setBinary("C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe"); //set chromium v69 binary location
 
 //
-//		
+//
 //			// https://sites.google.com/a/chromium.org/chromedriver/capabilities
 //
 //			options.addArguments("--headless");
@@ -815,13 +815,13 @@ public class MainThread implements Runnable {
 
 //		BHBot.log("Window handle is: " + driver.getWindowHandle());
 		BHBot.log("Game element found. Starting to run bot..");
-		
+
 		//Code under is all debugging
-		
+
 //		BHBot.log("Current Raid tier unlocked set to R" + BHBot.settings.currentRaidTier + " in settings. Make sure this is correct!");
 //		String invasionSetting = Boolean.toString(collectedFishingRewards);
 //		BHBot.log("doInvasions set to " + invasionSetting);
-//		BHBot.log("Session id is: " + driver.getSessionId());		
+//		BHBot.log("Session id is: " + driver.getSessionId());
 
 //		for (String f : BHBot.settings.familiars) { //cycle through array
 //			String fam = f.toUpperCase().split(" ")[0];
@@ -836,13 +836,13 @@ public class MainThread implements Runnable {
 //			int catchCount = Integer.parseInt(f.split(" ")[1]);
 //			BHBot.log(Integer.toString(catchCount));
 //		}
-		
+
 //		for (String f : BHBot.settings.familiars) { //cycle through array
 //			String fUpper = f.toUpperCase().split(" ")[0];
 //			int catchCount = Integer.parseInt(f.split(" ")[1]);
 //			updateFamiliarCounter(fUpper, catchCount);
 //		}
-		
+
 		//End debugging section
 
 		state = State.Loading;
@@ -866,7 +866,7 @@ public class MainThread implements Runnable {
 	}
 
 	public void run() {
-		
+
 		BHBot.log("Driver started succesfully");
 
 		restart(false);
@@ -889,7 +889,7 @@ public class MainThread implements Runnable {
 				moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
 				readScreen();
 				MarvinSegment seg;
-				
+
 				seg = detectCue(cues.get("UnableToConnect"));
 				if (seg != null) {
 					BHBot.log("'Unable to connect' dialog detected. Reconnecting...");
@@ -899,7 +899,7 @@ public class MainThread implements Runnable {
 					state = State.Loading;
 					continue;
 				}
-				
+
 
 				// check for "Bit Heroes is currently down for maintenance. Please check back shortly!" window:
 				seg = detectCue(cues.get("Maintenance"));
@@ -1103,7 +1103,7 @@ public class MainThread implements Runnable {
 							}
 						}
 					} // adds
-					
+
 					//Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
 //					if (state == State.Main) {
 //						seg = detectCue(cues.get("AutoOn")); //check if we're in a non dungeon state, but with the auto button visible
@@ -1290,7 +1290,7 @@ public class MainThread implements Runnable {
 						boolean trials = seg != null; // if false, then we will do gauntlet instead of trials
 						if (seg == null)
 							seg = detectCue(cues.get("Gauntlet"));
-						if (seg == null) { 
+						if (seg == null) {
 							seg = detectCue(cues.get("Gauntlet2"));
 						}
 						if (seg == null) {// trials/gauntlet button not visible (perhaps it is disabled?)
@@ -1652,8 +1652,8 @@ public class MainThread implements Runnable {
 									sleep(1*SECOND); //wait to stabilise just in case
 									seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 									clickOnSeg(seg);
-								}							
-								
+								}
+
 								seg = detectCue(cues.get("Fight"), 5*SECOND);
 								clickOnSeg(seg);
 								sleep(5*SECOND);
@@ -2770,17 +2770,17 @@ public class MainThread implements Runnable {
 		int catchCount = 0;
 		for (String f : BHBot.settings.familiars) { //cycle familiars defined in settings
 				String fString = f.toUpperCase().split(" ")[0]; //stringify the familiar name
-				if (fam.equals(fString)) { // on match return 
+				if (fam.equals(fString)) { // on match return
 					catchCount = Integer.parseInt(f.split(" ")[1]);
 				}
 			}
 		return catchCount;
 		}
-	
+
 	public void updateFamiliarCounter(String fam, int currentCounter) {
         String familiarToUpdate = "";
         String updatedFamiliar = "";
-        
+
 		for (String fa : BHBot.settings.familiars) { //cycle through array
 			String fString = fa.toUpperCase().split(" ")[0]; //case sensitive for a match so convert to upper case
 			currentCounter = Integer.parseInt(fa.split(" ")[1]); //set the bribe counter to an int
@@ -2793,7 +2793,7 @@ public class MainThread implements Runnable {
 //				BHBot.log("Updated: " + updatedFamiliar);
 			}
 		}
-		
+
 	    try {
 	        // input the file content to the StringBuffer "input"
 	        BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
@@ -2812,7 +2812,7 @@ public class MainThread implements Runnable {
 
 	        //find containing string and update with the output from the function above
 	        if (inputStr.contains(familiarToUpdate)) {
-	            inputStr = inputStr.replace(familiarToUpdate, updatedFamiliar); 
+	            inputStr = inputStr.replace(familiarToUpdate, updatedFamiliar);
 	        }
 
 	        // write the string from memory over the existing file
@@ -2820,14 +2820,14 @@ public class MainThread implements Runnable {
 	        FileOutputStream fileOut = new FileOutputStream("settings.ini");
 	        fileOut.write(inputStr.getBytes());
 	        fileOut.close();
-	        
+
 	        BHBot.settings.load();  //reload the new settings file so the counter will be updated for the next bribe
 
 	    } catch (Exception e) {
 	        System.out.println("Problem writing to settings file");
 	    }
 }
-	
+
 	/**
 	 *
 	 * @param dungeon in standard format, e.g. "z2d4".
@@ -3060,33 +3060,33 @@ public class MainThread implements Runnable {
 
 		//(Must be a simpler way of doing this)
 
-		if (l1Off && !l2Off && !r1Off) //R2 detection
+		if (!l2Off && l1Off && !r1Off) //R2 detection
 			return 2;
-		else if (r1Off && !r2Off && !l1Off)
+		else if (!l1Off && r1Off && !r2Off)
 			return 2;
-		else if (l1Off && l2Off && !l3Off && !r1Off) //R3 detection
+		else if (!l3Off && l2Off && l1Off && !r1Off) //R3 detection
 			return 3;
-		else if (l1Off && !l2Off && r1Off && !r2Off)
+		else if (!l2Off && l1Off && r1Off && !r2Off)
 			return 3;
-		else if (r1Off && r2Off && !r3Off && !l1Off)
+		else if (!l1Off && r1Off && r2Off && !r3Off)
 			return 3;
-		else if (l1Off && l2Off && l3Off && !l4Off && !r1Off) //R4 Detection
+		else if (!l4Off && l3Off && l2Off && l1Off && !r1Off) //R4 Detection
 			return 4;
-		else if (l1Off && l2Off && !l3Off && r1Off && !r2Off)
+		else if (!l3Off && l2Off && l1Off && r1Off && !r2Off)
 			return 4;
-		else if (l1Off && !l2Off && r1Off && r2Off && !r3Off)
+		else if (!l2Off && l1Off && r1Off && r2Off && !r3Off)
 			return 4;
 		else if (!l1Off && r1Off && r2Off && r3Off && !r4Off)
 			return 4;
-		else if (l1Off && l2Off && l3Off && l4Off && !l5Off && !r1Off) //R5 Detection
+		else if (!l5Off && l4Off && l3Off && l2Off && l1Off && !r1Off) //R5 Detection
 			return 5;
-		else if (l1Off && l2Off && l3Off && !l4Off && !r2Off && r1Off)
+		else if (!l4Off && l3Off && l2Off && l1Off && r1Off && !r2Off)
 			return 5;
-		else if (l1Off && l2Off && !l3Off && !r3Off && r2Off && r1Off)
+		else if (!l3Off && l2Off && l1Off && r1Off && r2Off && !r3Off)
 			return 5;
-		else if (l1Off && !l2Off && !r4Off && r3Off && r2Off && r1Off)
+		else if (!l2Off && l1Off && r1Off && r2Off && r3Off && !r4Off)
 			return 5;
-		else if (r1Off && r2Off && r3Off && r4Off && !r5Off && !l1Off)
+		else if (!l1Off && r1Off && r2Off && r3Off && r4Off && !r5Off)
 			return 5;
 		else if (!l6Off && l5Off && l4Off && l3Off && l2Off && l1Off && !r1Off) //R6 Detection
 			return 6;
