@@ -76,20 +76,20 @@ The second bot instance should be run like this:
 Note that due to Flash this can be quiet resource intensive. Due to the slow nature of energy regeneration if you wish to run multiple accounts on Windows it is more effective to use a cron-like service (E.G [Z-Cron](https://www.z-cron.com/)) to stagger running and stopping multiple accounts, generally you only need to run the bot for 30 minutes to use 8 hours of shards/energy/tokens/tickets regeneration.
 
 ## Download
-You should download a release ready BHBot (for Windows and Linux) from RELEASES page:
+You can download a release ready BHBot.jar from the RELEASES page:
 
 https://github.com/Betalord/BHBot/releases
 
-For the latest functionality it is best to compile your own version.
+For the latest functionality it is recommended to compile your own version as there are frequent commits with bug-fixes and new functionality between major releases.
 
 ## Notes
-* The current ad system is not implemented and is unlikely to work.
+* The current ad system needs to be completely rewritten and is unlikely to work.
 * The image recognition engine can have trouble with high resolution / non-standard DPI. If you're having issues with the bot not starting
 try setting scaling to 100% and resolution 1920*1080 or less.
 
 ## Finally
 
-Hopefully this bot will prove useful to you, if you  have any questions just raise an issue! Enjoy it :-)
+Hopefully this bot will prove useful to you, if you have any questions just raise an issue! Enjoy :-)
 
 ## Author
 I, Betalord, am the original author of the bot. I have been using the bot until my character achieved level 165. On 29th
