@@ -23,7 +23,7 @@ import com.assertthat.selenium_shutterbug.core.Shutterbug;
 public class BHBot {
 
 	public static final String PROGRAM_NAME = "BHBot";
-	public static final String PROGRAM_VERSION = "27.5";
+	public static final String PROGRAM_VERSION = "28.0";
 	public static final boolean REQUIRES_ACCESS_TOKEN = false; // obsolete since public release (was used to restrict bot usage)
 	
 	public static Thread mainThread;
