@@ -14,7 +14,7 @@ public class Settings {
 	public boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
 	public boolean hideWindowOnRestart = true; // if true, game window will be hidden upon driver (re)start
 	public boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
-	public boolean openSkeleton = false;
+	public int openSkeleton = 0;
 	public boolean autoBribe  = false;
 	
 	public boolean doRaids = false;
@@ -37,6 +37,12 @@ public class Settings {
 	public int minTickets = 5;
 	/** This is the minimum amount of badges that the bot must leave for the user. If badges get above this value, bot will play the gvg in case gvg is enabled of course. */
 	public int minBadges = 5;
+	
+	// Max for various expendables for correct calculation if not default
+	public int maxShards = 4;
+	public int maxTokens =  10;
+	public int maxTickets = 10;
+	public int maxBadges = 10;
 	
 	// costs (1..5) for various events:
 	public int costPVP = 1;
@@ -122,6 +128,11 @@ public class Settings {
 		this.doInvasion = settings.doInvasion;
 		this.doAds = settings.doAds;
 		this.doExpedition = settings.doExpedition;
+		
+		this.maxShards = settings.maxShards;
+		this.maxTokens = settings.maxTokens;
+		this.maxTickets = settings.maxTickets;
+		this.maxBadges = settings.maxBadges;		
 		
 		this.minShards = settings.minShards;
 		this.minTokens = settings.minTokens;
@@ -355,7 +366,7 @@ public class Settings {
 		debugDetectionTimes = map.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("0") ? false : true ;
 		hideWindowOnRestart = map.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("0") ? false : true ;
 		resetTimersOnBattleEnd = map.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("0") ? false : true ;
-		openSkeleton = map.getOrDefault("openSkeletonChest", openSkeleton ? "1" : "0").equals("0") ? false : true ;
+		
 		
 		doRaids = map.getOrDefault("doRaids", doRaids ? "1" : "0").equals("0") ? false : true;
 		doDungeons = map.getOrDefault("doDungeons", doDungeons ? "1" : "0").equals("0") ? false : true;
@@ -366,6 +377,11 @@ public class Settings {
 		doInvasion = map.getOrDefault("doInvasion", doInvasion ? "1" : "0").equals("0") ? false : true;
 		doExpedition = map.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("0") ? false : true;
 		doAds = map.getOrDefault("doAds", doAds ? "1" : "0").equals("0") ? false : true;
+		
+		maxShards = Integer.parseInt(map.getOrDefault("maxShards", ""+minShards));
+		maxTokens = Integer.parseInt(map.getOrDefault("maxTokens", ""+minTokens));
+		maxTickets = Integer.parseInt(map.getOrDefault("maxTickets", ""+minTickets));
+		maxBadges = Integer.parseInt(map.getOrDefault("maxBadges", ""+minBadges));
 		
 		minShards = Integer.parseInt(map.getOrDefault("minShards", ""+minShards));
 		minTokens = Integer.parseInt(map.getOrDefault("minTokens", ""+minTokens));
@@ -391,6 +407,7 @@ public class Settings {
 		autoBribe = map.getOrDefault("autoBribe", autoBribe ? "1" : "0").equals("0") ? false : true ;
 		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
 		familiarScreenshot = map.getOrDefault("familiarScreenshot", familiarScreenshot ? "1" : "0").equals("0") ? false : true;
+		openSkeleton = Integer.parseInt(map.getOrDefault("openSkeletonChest", ""+openSkeleton));
 		
 		pauseOnDisconnect = Integer.parseInt(map.getOrDefault("pauseOnDisconnect", ""+pauseOnDisconnect));
 	}

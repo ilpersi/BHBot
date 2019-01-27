@@ -529,7 +529,7 @@ public class MainThread implements Runnable {
 		//R4
 		addCue("J3-17", loadImage("cues/familiars/cueJ3-17.png"), null);
 		addCue("DUOBOMZ", loadImage("cues/familiars/cueDUOBOMZ.png"), null);
-//		addCue("ROBOMAX-6000", loadImage("cues/familiars/cueROBOMAX-6000.png"), null);
+		addCue("ROBOMAX-6000", loadImage("cues/familiars/cueROBOMAX-6000.png"), null);
 		addCue("X4-GOMBO", loadImage("cues/familiars/cueX4-GOMBO.png"), null);
 		addCue("XL-OMBIS400", loadImage("cues/familiars/cueXL-OMBIS400.png"), null);
 
@@ -842,6 +842,9 @@ public class MainThread implements Runnable {
 //			int catchCount = Integer.parseInt(f.split(" ")[1]);
 //			updateFamiliarCounter(fUpper, catchCount);
 //		}
+		
+		
+//		BHBot.log(Integer.toString(BHBot.settings.maxShards));
 
 		//End debugging section
 
@@ -1166,13 +1169,14 @@ public class MainThread implements Runnable {
 							String raid = decideRaidRandomly();
 							int difficulty = Integer.parseInt(raid.split(" ")[1]);
 							int raidType = Integer.parseInt(raid.split(" ")[0]);
-							int raidUnlocked = readCurrentRaidTier();
+//							int raidUnlocked = readUnlockedRaidTier();
+							int raidUnlocked = BHBot.settings.currentRaidTier;
 							BHBot.log("Attempting raid R" + raidType + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic") + "...");
 
 
-							int currentType = readCurrentRaidType();
+							int currentType = readSelectedRaidTier();
 							String currentRaid = Integer.toString(currentType);
-							BHBot.log("Raid selected is R" + currentRaid);
+//							BHBot.log("Raid selected is R" + currentRaid);
 
 							if (currentType == 0) { // an error!
 								BHBot.log("Error: detected raid type is 0, which is an error. Restarting...");
@@ -1183,6 +1187,7 @@ public class MainThread implements Runnable {
 							if (currentType != raidType) {
 								if 	(raidUnlocked < raidType) {
 									BHBot.log("Raid selected in settings (R" + raidType + ") higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
+									BHBot.log("If  this is wrong update your current unlocked tier in settings!");
 									setRaidType(raidType, raidUnlocked);
 									readScreen(2*SECOND);
 								} else {
@@ -1274,6 +1279,11 @@ public class MainThread implements Runnable {
 							//click enter
 							seg = detectCue(cues.get("Accept"), 2*SECOND);
 							clickOnSeg(seg);
+							
+							if (handleTeamMalformedWarning()) {
+								restart();
+								continue;
+							}
 
 							state = State.Expedition;
 
@@ -1386,6 +1396,11 @@ public class MainThread implements Runnable {
 							seg = detectCue(cues.get("Accept"), 5*SECOND);
 							clickOnSeg(seg);
 							sleep(5*SECOND);
+							
+							if (handleTeamMalformedWarning()) {
+								restart();
+								continue;
+							}
 
 							state = trials ? State.Trials : State.Gauntlet;
 
@@ -1468,6 +1483,11 @@ public class MainThread implements Runnable {
 								} else {
 								clickOnSeg(seg);
 								}
+								
+								if (handleTeamMalformedWarning()) {
+									restart();
+									continue;
+								}
 
 							} else { // d1-d3
 								seg = detectCue(cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), 5*SECOND);
@@ -1475,6 +1495,11 @@ public class MainThread implements Runnable {
 								readScreen(1*SECOND);
 								seg = detectCue(cues.get("Accept"));
 								clickOnSeg(seg);
+							}
+							
+							if (handleTeamMalformedWarning()) {
+								restart();
+								continue;
 							}
 
 							state = State.Dungeon;
@@ -1555,6 +1580,11 @@ public class MainThread implements Runnable {
 							seg = detectCue(cues.get("Accept"));
 							clickOnSeg(seg);
 							sleep(5*SECOND);
+							
+							if (handleTeamMalformedWarning()) {
+								restart();
+								continue;
+							}
 
 							state = State.PVP;
 
@@ -2210,6 +2240,7 @@ public class MainThread implements Runnable {
 		final Color full = new Color(226, 42, 81);
 
 		int value = 0;
+		int maxTickets = BHBot.settings.maxTickets;
 
 		// ticket bar is 80 pixels long (however last two pixels will have "medium" color and not full color (it's so due to shading))
 		for (int i = 0; i < 78; i++) {
@@ -2220,7 +2251,7 @@ public class MainThread implements Runnable {
 				break;
 		}
 
-		return Math.round(value * (10 / 77.0f)); // scale it to interval [0..10]
+		return Math.round(value * (maxTickets / 77.0f)); // scale it to interval [0..10]
 	}
 
 	/** Returns number of shards that we have. Works only if raid popup is open. Returns -1 in case it cannot read number of shards for some reason. */
@@ -2238,19 +2269,30 @@ public class MainThread implements Runnable {
 		final Color full = new Color(199, 79, 175);
 
 		int value = 0;
+		int maxShards = BHBot.settings.maxShards;
+		
+		for (int i = 0; i < 76; i++) {
+			value = i;
+			Color col = new Color(img.getRGB(left+i, top));
 
-		// we measure it at 4 points:
-		Color c1 = new Color(img.getRGB(left+10, top));
-		Color c2 = new Color(img.getRGB(left+30, top));
-		Color c3 = new Color(img.getRGB(left+50, top));
-		Color c4 = new Color(img.getRGB(left+70, top));
+			if (!col.equals(full))
+				break;
+		}
+		
+		return Math.round(value * (maxShards / 75.0f)); // scale it to interval [0..10]
 
-		if (c1.equals(full)) value++;
-		if (c2.equals(full)) value++;
-		if (c3.equals(full)) value++;
-		if (c4.equals(full)) value++;
-
-		return value;
+//		// we measure it at 4 points:
+//		Color c1 = new Color(img.getRGB(left+10, top));
+//		Color c2 = new Color(img.getRGB(left+30, top));
+//		Color c3 = new Color(img.getRGB(left+50, top));
+//		Color c4 = new Color(img.getRGB(left+70, top));
+//
+//		if (c1.equals(full)) value++;
+//		if (c2.equals(full)) value++;
+//		if (c3.equals(full)) value++;
+//		if (c4.equals(full)) value++;
+//
+//		return value;
 	}
 
 	/** Returns number of tokens we have. Works only if trials/gauntlet window is open. Returns -1 in case it cannot read number of tokens for some reason. */
@@ -2268,6 +2310,7 @@ public class MainThread implements Runnable {
 		final Color full = new Color(17, 208, 226);
 
 		int value = 0;
+		int maxTokens = BHBot.settings.maxTokens;
 
 		// tokens bar is 78 pixels wide (however last two pixels will have "medium" color and not full color (it's so due to shading))
 		for (int i = 0; i < 76; i++) {
@@ -2278,7 +2321,7 @@ public class MainThread implements Runnable {
 				break;
 		}
 
-		return Math.round(value * (10 / 75.0f)); // scale it to interval [0..10]
+		return Math.round(value * (maxTokens / 75.0f)); // scale it to interval [0..10]
 	}
 
 	/** Returns number of badges we have. Works only if GVG window is open. Returns -1 in case it cannot read number of badges for some reason. */
@@ -2296,6 +2339,7 @@ public class MainThread implements Runnable {
 		final Color full = new Color(17, 208, 226);
 
 		int value = 0;
+		int maxBadges = BHBot.settings.maxBadges;
 
 		// badges bar is 78 pixels wide (however last two pixels will have "medium" color and not full color (it's so due to shading))
 		for (int i = 0; i < 76; i++) {
@@ -2306,7 +2350,7 @@ public class MainThread implements Runnable {
 				break;
 		}
 
-		return Math.round(value * (10 / 75.0f)); // scale it to interval [0..10]
+		return Math.round(value * (maxBadges / 75.0f)); // scale it to interval [0..10]
 	}
 
 	/**
@@ -2586,18 +2630,24 @@ public class MainThread implements Runnable {
 
 		// check for skeleton treasure chest (and decline it):
 		seg = detectCue(cues.get("SkeletonTreasure"));
-		if (seg != null && !(BHBot.settings.openSkeleton)) {
-			seg = detectCue(cues.get("Decline"), 5*SECOND);
-			clickOnSeg(seg);
-			readScreen(1*SECOND);
-			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-			clickOnSeg(seg);
-			return;
-		} else if (seg != null && (BHBot.settings.openSkeleton)) {
+		if (seg != null) {
+			if (BHBot.settings.openSkeleton == 0) {
+				seg = detectCue(cues.get("Decline"), 5*SECOND);
+				clickOnSeg(seg);
+				readScreen(1*SECOND);
+				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
+				clickOnSeg(seg);
+				return;
+			} else if (BHBot.settings.openSkeleton == 1) {
 			//TODO
-			BHBot.log("Using skeleton key");
+			BHBot.log("Using skeleton key globally");
+			} else if (BHBot.settings.openSkeleton == 2 && state == state.Raid) {
+			//TODO
+			BHBot.log("Using skeleton key in raid");
+			} else
+				BHBot.log("Skeleton Key error");
+				return;
 		}
-
 		// check for merchant's offer (and decline it):
 		seg = detectCue(cues.get("Merchant"));
 		if (seg != null) {
@@ -3011,7 +3061,8 @@ public class MainThread implements Runnable {
 	 * Returns the current max tier of raid the player has unlocked, so we can calculate which raid we are selecting via the dot menu
 	 * Returns 0 in case of error
 	 */
-	private int readCurrentRaidTier() {
+	
+	private int readUnlockedRaidTier() {
 		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
 		if (seg == null) {
 			//if there is no green raid dot, we only have R1 unlocked
@@ -3078,6 +3129,9 @@ public class MainThread implements Runnable {
 			return 4;
 		else if (!l1Off && r1Off && r2Off && r3Off && !r4Off)
 			return 4;
+		
+		/* When raid 6 is unlocked its starts to return false results, using static int from settings file until I can work out why */
+		
 		else if (!l5Off && l4Off && l3Off && l2Off && l1Off && !r1Off) //R5 Detection
 			return 5;
 		else if (!l4Off && l3Off && l2Off && l1Off && r1Off && !r2Off)
@@ -3110,12 +3164,14 @@ public class MainThread implements Runnable {
 	 * Returns raid type, that is value between 1 and 4 (Corresponding to the raid tiers) that is currently selected in the raid window.
 	 * Note that the raid window must be open for this method to work (or else it will simply return 0).
 	 */
-	private int readCurrentRaidType() {
+	private int readSelectedRaidTier() {
 		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
 		if (seg == null) {
-//			int currentRaidTier = readCurrentRaidTier(); //get max unlocked tier
+//			int currentRaidTier = readUnlockedRaidTier(); //get max unlocked tier
 //			BHBot.log("Raid Detection: R"  + Integer.toString(currentRaidTier) + " unlocked");
 //			// either we don't have R2 open yet (hence there is not selection button) or an error occured:
+			int currentRaidTier = readUnlockedRaidTier(); //get current unlocked tier
+			BHBot.log("Raid Detection: R"  + Integer.toString(currentRaidTier) + " unlocked");
 			return 1;
 		}
 
@@ -3155,8 +3211,9 @@ public class MainThread implements Runnable {
 
 		seg = null;
 
-		int currentRaidTier = readCurrentRaidTier(); //get current unlocked tier
-		BHBot.log("Raid Detection: R"  + Integer.toString(currentRaidTier) + " unlocked");
+//		int currentRaidTier = readUnlockedRaidTier(); //get current unlocked tier
+		int currentRaidTier = BHBot.settings.currentRaidTier;
+		BHBot.log("Settings file: R"  + Integer.toString(currentRaidTier) + " unlocked");
 
 		//using the calculated unlocked tier, calculate the currently selected raid
 		if (currentRaidTier == 1)
