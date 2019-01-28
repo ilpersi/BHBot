@@ -23,7 +23,7 @@ import com.assertthat.selenium_shutterbug.core.Shutterbug;
 public class BHBot {
 
 	public static final String PROGRAM_NAME = "BHBot";
-	public static final String PROGRAM_VERSION = "28.0";
+	public static final String PROGRAM_VERSION = "29";
 	public static final boolean REQUIRES_ACCESS_TOKEN = false; // obsolete since public release (was used to restrict bot usage)
 	
 	public static Thread mainThread;
@@ -38,8 +38,6 @@ public class BHBot {
 	
 	public static void main(String[] args) {
 		log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started.");
-		String username = BHBot.settings.username;
-		log("Character:" + username);
 		
 		MainThread.loadCues();
 		
@@ -250,7 +248,8 @@ public class BHBot {
 			if (params.length > 1)
 				file = params[1];
 			settings.load(file);
-			log("Settings loaded");
+			log("Settings loaded from file");
+			log("Character: " + BHBot.settings.username);
 		} else if (c.equals("readouts") || c.equals("resettimers")) {
 			main.resetTimers();
 			log("Readout timers reset.");
@@ -275,6 +274,10 @@ public class BHBot {
 				// force raid (if we have at least 1 shard though)
 				log("Forcing raid...");
 				scheduler.doRaidImmediately = true;
+			} else if (params[1].equals("expedition")) {
+				// force dungeon (regardless of energy)
+				log("Forcing expedition...");
+				scheduler.doExpeditionImmediately = true;
 			} else if (params[1].equals("dungeon")) {
 				// force dungeon (regardless of energy)
 				log("Forcing dungeon...");
@@ -325,6 +328,8 @@ public class BHBot {
 			main.numTest();
 		} else if (params[0].equals("rtest")) {
 			main.raidReadTest();
+		} else if (params[0].equals("etest")) {
+			main.expeditionReadTest();
 		}
 	}
 	

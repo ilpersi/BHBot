@@ -50,6 +50,7 @@ public class Settings {
 	public int costTrials = 1;
 	public int costGauntlet = 1;
 	public int costInvasion = 1;
+	public int costExpedition = 1;
 	
 	/** Current tier of raid unlocked, used for calculating selected raid **IMPORTANT** */
 	public int currentRaidTier = 0;
@@ -58,7 +59,7 @@ public class Settings {
 	public int difficulty = 60;
 	
 	/** The Expedition difficulty */
-	public int expeditionDifficulty = 5;
+	public int expeditionDifficulty = 50;
 	
 	/** list of expedtion portals and chance to run, similar formatting to dungeons */
 	public List<String> expeditions;
@@ -125,6 +126,7 @@ public class Settings {
 		this.resetTimersOnBattleEnd = settings.resetTimersOnBattleEnd;
 		
 		this.difficulty = settings.difficulty;
+		this.expeditionDifficulty = settings.expeditionDifficulty;
 		this.doRaids = settings.doRaids;
 		this.doDungeons = settings.doDungeons;
 		this.doTrials = settings.doTrials;
@@ -151,6 +153,7 @@ public class Settings {
 		this.costTrials = settings.costTrials;
 		this.costGauntlet = settings.costGauntlet;
 		this.costInvasion = settings.costInvasion;
+		this.costExpedition = settings.costExpedition;
 		
 		this.dungeons = new ArrayList<String>(settings.dungeons);
 		this.raids = new ArrayList<String>(settings.raids);
@@ -181,6 +184,7 @@ public class Settings {
 		doAds = true;
 		
 		difficulty = 60;
+		expeditionDifficulty = 100;
 		setDungeons("z2d1 3 50", "z2d2 3 50");
 		setRaids("1 3 100");
 		
@@ -335,7 +339,7 @@ public class Settings {
 	}
 	
 	public void setExpeditionsFromString(String s) {
-		setDungeons(s.split(";"));
+		setExpeditions(s.split(";"));
 		// clean up (trailing spaces and remove if empty):
 		for (int i = expeditions.size()-1; i >= 0; i--) {
 			expeditions.set(i, expeditions.get(i).trim());
@@ -430,8 +434,10 @@ public class Settings {
 		costTrials = Integer.parseInt(map.getOrDefault("costTrials", ""+costTrials));
 		costGauntlet = Integer.parseInt(map.getOrDefault("costGauntlet", ""+costGauntlet));
 		costInvasion = Integer.parseInt(map.getOrDefault("costInvasion", ""+costInvasion));
+		costExpedition = Integer.parseInt(map.getOrDefault("costExpedition", ""+costExpedition));
 		
 		difficulty = Integer.parseInt(map.getOrDefault("difficulty", ""+difficulty));
+		expeditionDifficulty = Integer.parseInt(map.getOrDefault("expeditionDifficulty", ""+expeditionDifficulty));
 		setDungeonsFromString(map.getOrDefault("dungeons", getDungeonsAsString()));
 		setRaidsFromString(map.getOrDefault("raids", getRaidsAsString()));
 		setExpeditionsFromString(map.getOrDefault("expeditions", getExpeditionsAsString()));
