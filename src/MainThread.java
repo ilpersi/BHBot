@@ -2285,18 +2285,6 @@ public class MainThread implements Runnable {
 		
 		return Math.round(value * (maxShards / 75.0f)); // scale it to interval [0..10]
 
-//		// we measure it at 4 points:
-//		Color c1 = new Color(img.getRGB(left+10, top));
-//		Color c2 = new Color(img.getRGB(left+30, top));
-//		Color c3 = new Color(img.getRGB(left+50, top));
-//		Color c4 = new Color(img.getRGB(left+70, top));
-//
-//		if (c1.equals(full)) value++;
-//		if (c2.equals(full)) value++;
-//		if (c3.equals(full)) value++;
-//		if (c4.equals(full)) value++;
-//
-//		return value;
 	}
 
 	/** Returns number of tokens we have. Works only if trials/gauntlet window is open. Returns -1 in case it cannot read number of tokens for some reason. */
@@ -2995,9 +2983,7 @@ public class MainThread implements Runnable {
 	}
 	
 	/**
-	 *
-	 * @param expedition in standard format, e.g. "h4/i4".
-	 * @return null in case dungeon parameter is malformed (can even throw an exception)
+	 * Function to return the name of the portal for console output
 	 */
 	private String getExpeditionName(String expedition) {
 		if (expedition.length() != 2) return null;
@@ -3071,13 +3057,13 @@ public class MainThread implements Runnable {
 		case 1: // Hallowed Dimension
 			switch (n) {
 			case 1:
-				return new Point(0,0); //Googarum
+				return new Point(200,200); //Googarum
 			case 2:
-				return new Point(0,0); //Svord
+				return new Point(520,220); //Svord
 			case 3:
-				return new Point(0,0); //Twimbo
+				return new Point(360,360); //Twimbo
 			case 4:
-				return new Point(0,0); //X5-T34M
+				return new Point(650,380); //X5-T34M
 			}
 			break;
 		case 2: // Inferno dimension
