@@ -38,7 +38,8 @@ public class BHBot {
 	
 	public static void main(String[] args) {
 		log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started.");
-//		log("Testing Version: Familiar bribing");
+		String username = BHBot.settings.username;
+		log("Character:" + username);
 		
 		MainThread.loadCues();
 		
@@ -323,7 +324,7 @@ public class BHBot {
 		} else if (params[0].equals("numtest")) {
 			main.numTest();
 		} else if (params[0].equals("rtest")) {
-			main.readSelectedRaidTier();
+			main.raidReadTest();
 		}
 	}
 	

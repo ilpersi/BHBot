@@ -1169,30 +1169,33 @@ public class MainThread implements Runnable {
 							String raid = decideRaidRandomly();
 							int difficulty = Integer.parseInt(raid.split(" ")[1]);
 							int raidType = Integer.parseInt(raid.split(" ")[0]);
-//							int raidUnlocked = readUnlockedRaidTier();
-							int raidUnlocked = BHBot.settings.currentRaidTier;
-							BHBot.log("Attempting raid R" + raidType + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic") + "...");
+							int raidUnlocked = readUnlockedRaidTier();
+							BHBot.log("Detected: R" + Integer.toString(raidUnlocked) + " unlocked");
+//							int raidUnlocked = BHBot.settings.currentRaidTier;
+							BHBot.log("Attempting R" + raidType + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
 
+							sleep(1*SECOND);
+							readScreen();
 
 							int currentType = readSelectedRaidTier();
 							String currentRaid = Integer.toString(currentType);
 //							BHBot.log("Raid selected is R" + currentRaid);
 
 							if (currentType == 0) { // an error!
-								BHBot.log("Error: detected raid type is 0, which is an error. Restarting...");
-								restart();
+								BHBot.log("Error: detected selected raid is 0, which is an error. Restarting...");
+//								restart();
 								continue;
 							}
 
 							if (currentType != raidType) {
 								if 	(raidUnlocked < raidType) {
 									BHBot.log("Raid selected in settings (R" + raidType + ") higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
-									BHBot.log("If  this is wrong update your current unlocked tier in settings!");
+									BHBot.log("If this is incorrect update your current unlocked tier in settings!");
 									setRaidType(raidType, raidUnlocked);
 									readScreen(2*SECOND);
 								} else {
 								// we need to change the raid type!
-								BHBot.log("Changing raid to R" + raidType);
+								BHBot.log("Changing from R" + currentRaid + " to R" + raidType);
 								setRaidType(raidType, currentType);
 								readScreen(2*SECOND);
 								}
@@ -3170,14 +3173,20 @@ public class MainThread implements Runnable {
 			return 0;
 	}
 
+	public void raidReadTest() {
+		int test = readUnlockedRaidTier();
+		BHBot.log(Integer.toString(test));
+	}
+	
 	/**
 	 * Returns the current max tier of raid the player has unlocked, so we can calculate which raid we are selecting via the dot menu
 	 * Returns 0 in case of error
 	 */
-	private int readUnlockedRaidTier() {
+	public int readUnlockedRaidTier() {
 		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
 		if (seg == null) {
 			//if there is no green raid dot, we only have R1 unlocked
+			BHBot.log("R1 Unlocked");
 			return 1;
 		}
 		final Color exists = new Color(147, 147, 147); // color of center pixel of turned off button
@@ -3188,8 +3197,8 @@ public class MainThread implements Runnable {
 		Point r1 = center.moveBy(26, 0); // one button to the right coords
 		Point r2 = center.moveBy(52, 0); // two to the right coords
 		Point r3 = center.moveBy(78, 0); // three to the right coords
-		Point r4 = center.moveBy(104, 0); // four to the right coords
-		Point r5 = center.moveBy(130, 0); // five to the right coords
+		Point r4 = center.moveBy(100, 0); // four to the right coords
+		Point r5 = center.moveBy(124, 0); // five to the right coords
 		Point r6 = center.moveBy(156, 0); // six to the right coords
 		
 		//v26,52,78,104,130,156
@@ -3197,8 +3206,8 @@ public class MainThread implements Runnable {
 		Point l1 = center.moveBy(-26, 0); // one button to the left coords
 		Point l2 = center.moveBy(-52, 0); // two to the left coords
 		Point l3 = center.moveBy(-78, 0); // three to the left coords
-		Point l4 = center.moveBy(-104, 0); // four to the left coords
-		Point l5 = center.moveBy(-130, 0); // five to the left coords
+		Point l4 = center.moveBy(-100, 0); // four to the left coords
+		Point l5 = center.moveBy(-124, 0); // five to the left coords
 		Point l6 = center.moveBy(-156, 0); // six to the right coords
 
 		//  these define the unselected dots to the right and left of the green selected raid dot, will return false if the dot does not exist
@@ -3246,9 +3255,9 @@ public class MainThread implements Runnable {
 		
 		/* When raid 6 is unlocked its starts to return false results, using static int from settings file until I can work out why */
 		
-		else if (!l5Exists && l4Exists && l3Exists && l2Exists && l1Exists && !r1Exists) //R5 Detection
+		else if (!l5Exists && !r1Exists) //R5 Detection
 			return 5;
-		else if (!l4Exists && l3Exists && l2Exists && l1Exists && r1Exists && !r2Exists)
+		else if (!l4Exists && !r2Exists)
 			return 5;
 		else if (!l3Exists && l2Exists && l1Exists && r1Exists && r2Exists && !r3Exists)
 			return 5;
@@ -3264,9 +3273,9 @@ public class MainThread implements Runnable {
 			return 6;
 		else if (!l3Exists && l2Exists && l1Exists && r1Exists && r2Exists && r3Exists && !r4Exists)
 			return 6;
-		else if (!l2Exists && l1Exists && r1Exists && r2Exists && r3Exists && r4Exists && !r5Exists)
+		else if (!l2Exists && !r5Exists)
 			return 6;
-		else if (!l1Exists && r1Exists && r2Exists && r3Exists && r4Exists && r5Exists && !r6Exists)
+		else if (!l1Exists && !r6Exists)
 			return 6;
 		else
 			//On error return 0
@@ -3284,8 +3293,8 @@ public class MainThread implements Runnable {
 //			int currentRaidTier = readUnlockedRaidTier(); //get max unlocked tier
 //			BHBot.log("Raid Detection: R"  + Integer.toString(currentRaidTier) + " unlocked");
 //			// either we don't have R2 open yet (hence there is not selection button) or an error occured:
-			int currentRaidTier = readUnlockedRaidTier(); //get current unlocked tier
-			BHBot.log("Raid Detection: R"  + Integer.toString(currentRaidTier) + " unlocked");
+//			int currentRaidTier = readUnlockedRaidTier(); //get current unlocked tier
+//			BHBot.log("Raid Detection: R"  + Integer.toString(currentRaidTier) + " unlocked");
 			return 1;
 		}
 
@@ -3298,15 +3307,15 @@ public class MainThread implements Runnable {
 		Point r2 = center.moveBy(52, 0); // two to the right coords
 		Point r3 = center.moveBy(78, 0); // three to the right coords
 		Point r4 = center.moveBy(104, 0); // four to the right coords
-		Point r5 = center.moveBy(130, 0); // four to the right coords
-//		Point r6 = center.moveBy(156, 0); // four to the right coords
+		Point r5 = center.moveBy(130, 0); // five to the right coords
+//		Point r6 = center.moveBy(156, 0); // six to the right coords
 
 		Point l1 = center.moveBy(-26, 0); // one button to the left coords
 		Point l2 = center.moveBy(-52, 0); // two to the left coords
 		Point l3 = center.moveBy(-78, 0); // three to the left coords
-		Point l4 = center.moveBy(-104, 0); // four to the left coords
-		Point l5 = center.moveBy(-130, 0); // four to the left coords
-//		Point l6 = center.moveBy(-156, 0); // four to the right coords
+		Point l4 = center.moveBy(-100, 0); // four to the left coords
+		Point l5 = center.moveBy(-124, 0); // five to the left coords
+//		Point l6 = center.moveBy(-156, 0); // six to the right coords
 
 		//  these define the unselected dots to the right and left of the green selected raid dot, will return false if the dot does not exist
 		boolean r1Off = (new Color(img.getRGB(r1.x, r1.y))).equals(off);
@@ -3325,9 +3334,9 @@ public class MainThread implements Runnable {
 
 		seg = null;
 
-//		int currentRaidTier = readUnlockedRaidTier(); //get current unlocked tier
-		int currentRaidTier = BHBot.settings.currentRaidTier;
-		BHBot.log("Settings file: R"  + Integer.toString(currentRaidTier) + " unlocked");
+		int currentRaidTier = readUnlockedRaidTier(); //get current unlocked tier
+//		int currentRaidTier = BHBot.settings.currentRaidTier;
+//		BHBot.log("Settings file: R"  + Integer.toString(currentRaidTier) + " unlocked");
 
 		//using the calculated unlocked tier, calculate the currently selected raid
 		if (currentRaidTier == 1)
@@ -3354,23 +3363,23 @@ public class MainThread implements Runnable {
 			return 1; //r2
 		else if ((currentRaidTier == 5) && (r1Off && r2Off && r3Off && l1Off))
 			return 2; //r1
-		else if ((currentRaidTier == 5) && (r1Off && r2Off && l2Off && l1Off))
+		else if ((currentRaidTier == 5) && (r2Off && l2Off))
 			return 3; //r3
-		else if ((currentRaidTier == 5) && (r1Off && l3Off && l2Off && l1Off))
+		else if ((currentRaidTier == 5) && (r1Off && l3Off))
 			return 4; //r4
-		else if ((currentRaidTier == 5) && (l4Off && l3Off && l2Off && l1Off))
+		else if ((currentRaidTier == 5) && (l4Off))
 			return 5; //r5
 		else if ((currentRaidTier == 6) && (r1Off && r2Off && r3Off && r4Off && r5Off))
-			return 1; //r2
+			return 1; //r1
 		else if ((currentRaidTier == 6) && (l1Off && r1Off && r2Off && r3Off && r4Off))
-			return 2; //r1
+			return 2; //r2
 		else if ((currentRaidTier == 6) && (l1Off && l2Off && r1Off && r2Off && r3Off))
 			return 3; //r3
-		else if ((currentRaidTier == 6) && (l1Off && l2Off && l3Off && r1Off && r2Off))
+		else if ((currentRaidTier == 6) && (l3Off && r2Off))
 			return 4; //r4
-		else if ((currentRaidTier == 6) && (l1Off && l2Off && l3Off && l4Off && r1Off))
+		else if ((currentRaidTier == 6) && (l4Off && r1Off))
 			return 5; //r5
-		else if ((currentRaidTier == 6) && (l1Off && l2Off && l3Off && l4Off && l5Off))
+		else if ((currentRaidTier == 6) && (l5Off))
 			return 6; //r6
 		else
 			return 0; // error

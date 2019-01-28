@@ -108,6 +108,8 @@ public class Settings {
 		setDungeons("z1d1 3 100"); // some default value
 		raids = new ArrayList<String>();
 		setRaids("1 3 100"); // some default value
+		expeditions = new ArrayList<String>();
+		setExpeditions("h1 100"); // some default value
 		pvpstrip = new ArrayList<String>();
 		consumables = new ArrayList<String>();
 		familiars = new ArrayList<String>();
