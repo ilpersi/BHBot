@@ -51,11 +51,17 @@ public class Settings {
 	public int costGauntlet = 1;
 	public int costInvasion = 1;
 	
+	/** Current tier of raid unlocked, used for calculating selected raid **IMPORTANT** */
+	public int currentRaidTier = 0;
+	
 	/** The trials/gauntlet difficulty */
 	public int difficulty = 60;
 	
 	/** The Expedition difficulty */
 	public int expeditionDifficulty = 5;
+	
+	/** list of expedtion portals and chance to run, similar formatting to dungeons */
+	public List<String> expeditions;
 	
 	/**
 	 * List of dungeons with percentages that we will attempt to do. Dungeon name must be in standard format, i.e. 'd2z4',
@@ -64,17 +70,15 @@ public class Settings {
 	 * Example of full string: 'z2d4 3 50'.
 	 */
 	public List<String> dungeons;
+	
 	/**
 	 * List of raids we want to do (there are 3 raids: 1, 2 and 3) with a difficulty level and percentage.
 	 * Examples:
 	 * '1 3 70;2 1 30' ==> in 70% of cases it will do R1 on heroic, in 30% of cases it will do R2 normal
 	 * '1 3 100' ==> in 100% of cases it will do R1 on heroic
 	 */
-	public int currentRaidTier = 0;
-	/**
-	 * Current tier of raid unlocked, used for calculating raids to run **IMPORTANT**
-	 */
 	public List<String> raids;
+	
 	/**
 	 * List of equipment that should be stripped before attempting PvP (and dressed up again after PvP is done).
 	 * Allowed tokens:
@@ -103,10 +107,10 @@ public class Settings {
 		dungeons = new ArrayList<String>();
 		setDungeons("z1d1 3 100"); // some default value
 		raids = new ArrayList<String>();
+		setRaids("1 3 100"); // some default value
 		pvpstrip = new ArrayList<String>();
 		consumables = new ArrayList<String>();
 		familiars = new ArrayList<String>();
-		setRaids("1 3 100"); // some default value
 	}
 	
 	public void set(Settings settings) {
@@ -148,6 +152,7 @@ public class Settings {
 		
 		this.dungeons = new ArrayList<String>(settings.dungeons);
 		this.raids = new ArrayList<String>(settings.raids);
+		this.expeditions = new ArrayList<String>(settings.expeditions);	
 		this.currentRaidTier = settings.currentRaidTier;
 		this.pvpstrip = new ArrayList<String>(settings.pvpstrip);
 		
@@ -213,6 +218,16 @@ public class Settings {
 		}
 	}
 	
+	public void setExpeditions(String... expeditions) {
+		this.expeditions.clear();
+		for (String e : expeditions) {
+			String add = e.trim();
+			if (add.equals(""))
+				continue;
+			this.expeditions.add(add);
+		}
+	}
+	
 	public void setRaids(String... raids) {
 		this.raids.clear();
 		for (String r : raids) {
@@ -261,6 +276,15 @@ public class Settings {
 			result = result.substring(0, result.length()-1); // remove last ";" character
 		return result;
 	}
+	
+	public String getExpeditionsAsString() {
+		String result = "";
+		for (String e : expeditions)
+			result += e + ";";
+		if (result.length() > 0)
+			result = result.substring(0, result.length()-1); // remove last ";" character
+		return result;
+	}
 
 	public String getRaidsAsString() {
 		String result = "";
@@ -305,6 +329,16 @@ public class Settings {
 			dungeons.set(i, dungeons.get(i).trim());
 			if (dungeons.get(i).equals(""))
 				dungeons.remove(i);
+		}
+	}
+	
+	public void setExpeditionsFromString(String s) {
+		setDungeons(s.split(";"));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = expeditions.size()-1; i >= 0; i--) {
+			expeditions.set(i, expeditions.get(i).trim());
+			if (expeditions.get(i).equals(""))
+				expeditions.remove(i);
 		}
 	}
 	
@@ -398,6 +432,7 @@ public class Settings {
 		difficulty = Integer.parseInt(map.getOrDefault("difficulty", ""+difficulty));
 		setDungeonsFromString(map.getOrDefault("dungeons", getDungeonsAsString()));
 		setRaidsFromString(map.getOrDefault("raids", getRaidsAsString()));
+		setExpeditionsFromString(map.getOrDefault("expeditions", getExpeditionsAsString()));
 		currentRaidTier = Integer.parseInt(map.getOrDefault("currentRaidTier", ""+currentRaidTier));
 		setStripsFromString(map.getOrDefault("pvpstrip", getStripsAsString()));
 		

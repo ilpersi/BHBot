@@ -1228,16 +1228,13 @@ public class MainThread implements Runnable {
 
 					// EXPEDITION TESTING
 					if (BHBot.scheduler.doExpeditionImmediately || (BHBot.settings.doExpedition && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL)) {
-//						BHBot.log("Expedition Setting:" + BHBot.settings.doExpedition);
-//						BHBot.log("Badges required:" + BHBot.settings.minBadges);
 						timeLastBadgesCheck = Misc.getTime();
-//						BHBot.log("Finding Expedition Button");
 						seg = detectCue(cues.get("ExpeditionButton"));
 						if (seg == null) {
-							BHBot.log("Expedition button not found, are Expeditions active?");
+							BHBot.log("Expedition button not found");
 							BHBot.scheduler.restoreIdleTime();
 							continue;
-							}
+						}
 						clickOnSeg(seg);
 
 						//clear dialogue if found
@@ -1261,16 +1258,22 @@ public class MainThread implements Runnable {
 							sleep(1*SECOND);
 							continue;
 						} else {
-							// do the dungeon!
 							BHBot.log("starting Expedition");
-                            //click play
 							seg = detectCue(cues.get("Play"), 2*SECOND);
 							clickOnSeg(seg);
+							sleep(2*SECOND);
+							
+							//TODO Check Cost
+							
+							//TODO Check difficulty
 
-							//select and click portal
-							//I dont have them unlocked to get cues
-							seg = detectCue(cues.get("GoogarumsPortal"), 2*SECOND);
-							clickOnSeg(seg);
+							//Select Expedition and write portal to a variable
+							String expedition = decideExpeditionRandomly();
+							expedition = expedition.split(" ")[0];
+
+							// click on the chosen portal:
+							Point p = getExpeditionIconPos(expedition);
+							clickInGame(p.x, p.y);
 
 							//click enter
 							seg = detectCue(cues.get("Enter"), 2*SECOND);
@@ -1279,15 +1282,16 @@ public class MainThread implements Runnable {
 							//click enter
 							seg = detectCue(cues.get("Accept"), 2*SECOND);
 							clickOnSeg(seg);
-							
+
 							if (handleTeamMalformedWarning()) {
 								restart();
 								continue;
 							}
 
 							state = State.Expedition;
-
-							BHBot.log("Googarum's Portal Expedition initiated!");
+							
+							String expedName = getExpeditionName(expedition);
+							BHBot.log(expedName + " portal initiated!");
 						}
 						continue;
 					}
@@ -2989,6 +2993,108 @@ public class MainThread implements Runnable {
 
 		return null;
 	}
+	
+	/**
+	 *
+	 * @param expedition in standard format, e.g. "h4/i4".
+	 * @return null in case dungeon parameter is malformed (can even throw an exception)
+	 */
+	private String getExpeditionName(String expedition) {
+		if (expedition.length() != 2) return null;
+		if (expedition.charAt(0) != 'h') return null;
+		if (expedition.charAt(0) != 'i') return null;
+		/* I can't get the switch to work with a string so this if statement makes a new int with 1 for Hallowed and 2 for Inferno, forgive me for my sins */
+		int e = 0;
+		char ex = expedition.charAt(0);
+			if (ex == 'h') {
+				e = 1; // Hallowed
+			}  else {
+				e = 2; // Inferno
+			}
+			
+		int n = Integer.parseInt(""+expedition.charAt(1));
+		
+		if (n < 1 || n > 4) return null;
+		
+		switch (e) {
+		case 1: // Hallowed Dimension
+			switch (n) {
+			case 1:
+				return "Googarum's";
+			case 2:
+				return "Svord's";
+			case 3:
+				return "Twimbos";
+			case 4:
+				return "X5-T34M's";
+			}
+			break;
+		case 2: // Inferno dimension
+			switch (n) {
+			case 1:
+				return "Raleib's";
+			case 2:
+				return "Blemo's";
+			case 3:
+				return "Gummy's";
+			case 4:
+				return "Zarlocks";
+			}
+			break;
+		}
+		return null;
+	}
+	
+	/**
+	 *
+	 * @param expedition in standard format, e.g. "h4/i4".
+	 * @return null in case dungeon parameter is malformed (can even throw an exception)
+	 */
+	private Point getExpeditionIconPos(String expedition) {
+		if (expedition.length() != 2) return null;
+		if (expedition.charAt(0) != 'h') return null;
+		if (expedition.charAt(0) != 'i') return null;
+		/* I can't get the switch to work with a string so this if statement makes a new int with 1 for Hallowed and 2 for Inferno, forgive me for my sins */
+		int e = 0;
+		char ex = expedition.charAt(0);
+			if (ex == 'h') {
+				e = 1; // Hallowed
+			}  else {
+				e = 2; // Inferno
+			}
+			
+		int n = Integer.parseInt(""+expedition.charAt(1));
+		
+		if (n < 1 || n > 4) return null;
+		
+		switch (e) {
+		case 1: // Hallowed Dimension
+			switch (n) {
+			case 1:
+				return new Point(0,0); //Googarum
+			case 2:
+				return new Point(0,0); //Svord
+			case 3:
+				return new Point(0,0); //Twimbo
+			case 4:
+				return new Point(0,0); //X5-T34M
+			}
+			break;
+		case 2: // Inferno dimension
+			switch (n) {
+			case 1:
+				return new Point(0,0);
+			case 2:
+				return new Point(0,0);
+			case 3:
+				return new Point(0,0);
+			case 4:
+				return new Point(0,0);
+			}
+			break;
+		}
+		return null;
+	}
 
 	/** Returns dungeon and difficulty level, e.g. 'z2d4 2'. */
 	private String decideDungeonRandomly() {
@@ -3006,6 +3112,27 @@ public class MainThread implements Runnable {
 			value += Integer.parseInt(d.split(" ")[2]);
 			if (value >= rand)
 				return d.split(" ")[0] + " " + d.split(" ")[1];
+		}
+
+		return null; // should not come to this
+	}
+	
+	/** Returns random expedition from settings file */
+	private String decideExpeditionRandomly() {
+		if (BHBot.settings.expeditions.size() == 0)
+			return null;
+
+		int total = 0;
+		for (String e : BHBot.settings.expeditions)
+			total += Integer.parseInt(e.split(" ")[1]);
+
+		int rand = (int)Math.round(Math.random() * total);
+
+		int value = 0;
+		for (String e : BHBot.settings.expeditions) {
+			value += Integer.parseInt(e.split(" ")[1]);
+			if (value >= rand)
+				return e.split(" ")[0] + " " + e.split(" ")[1];
 		}
 
 		return null; // should not come to this
