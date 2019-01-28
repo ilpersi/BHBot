@@ -3174,14 +3174,13 @@ public class MainThread implements Runnable {
 	 * Returns the current max tier of raid the player has unlocked, so we can calculate which raid we are selecting via the dot menu
 	 * Returns 0 in case of error
 	 */
-	
 	private int readUnlockedRaidTier() {
 		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
 		if (seg == null) {
 			//if there is no green raid dot, we only have R1 unlocked
 			return 1;
 		}
-		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
+		final Color exists = new Color(147, 147, 147); // color of center pixel of turned off button
 		Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
 
 
@@ -3190,30 +3189,32 @@ public class MainThread implements Runnable {
 		Point r2 = center.moveBy(52, 0); // two to the right coords
 		Point r3 = center.moveBy(78, 0); // three to the right coords
 		Point r4 = center.moveBy(104, 0); // four to the right coords
-		Point r5 = center.moveBy(130, 0); // four to the right coords
-		Point r6 = center.moveBy(156, 0); // four to the right coords
+		Point r5 = center.moveBy(130, 0); // five to the right coords
+		Point r6 = center.moveBy(156, 0); // six to the right coords
+		
+		//v26,52,78,104,130,156
 
 		Point l1 = center.moveBy(-26, 0); // one button to the left coords
 		Point l2 = center.moveBy(-52, 0); // two to the left coords
 		Point l3 = center.moveBy(-78, 0); // three to the left coords
 		Point l4 = center.moveBy(-104, 0); // four to the left coords
-		Point l5 = center.moveBy(-130, 0); // four to the left coords
-		Point l6 = center.moveBy(-156, 0); // four to the right coords
+		Point l5 = center.moveBy(-130, 0); // five to the left coords
+		Point l6 = center.moveBy(-156, 0); // six to the right coords
 
 		//  these define the unselected dots to the right and left of the green selected raid dot, will return false if the dot does not exist
-		boolean r1Off = (new Color(img.getRGB(r1.x, r1.y))).equals(off);
-		boolean r2Off = (new Color(img.getRGB(r2.x, r2.y))).equals(off);
-		boolean r3Off = (new Color(img.getRGB(r3.x, r3.y))).equals(off);
-		boolean r4Off = (new Color(img.getRGB(r4.x, r4.y))).equals(off);
-		boolean r5Off = (new Color(img.getRGB(r5.x, r5.y))).equals(off);
-		boolean r6Off = (new Color(img.getRGB(r6.x, r6.y))).equals(off);
+		boolean r1Exists = (new Color(img.getRGB(r1.x, r1.y))).equals(exists);
+		boolean r2Exists = (new Color(img.getRGB(r2.x, r2.y))).equals(exists);
+		boolean r3Exists = (new Color(img.getRGB(r3.x, r3.y))).equals(exists);
+		boolean r4Exists = (new Color(img.getRGB(r4.x, r4.y))).equals(exists);
+		boolean r5Exists = (new Color(img.getRGB(r5.x, r5.y))).equals(exists);
+		boolean r6Exists = (new Color(img.getRGB(r6.x, r6.y))).equals(exists);
 
-		boolean l1Off = (new Color(img.getRGB(l1.x, l1.y))).equals(off);
-		boolean l2Off = (new Color(img.getRGB(l2.x, l2.y))).equals(off);
-		boolean l3Off = (new Color(img.getRGB(l3.x, l3.y))).equals(off);
-		boolean l4Off = (new Color(img.getRGB(l4.x, l4.y))).equals(off);
-		boolean l5Off = (new Color(img.getRGB(l5.x, l5.y))).equals(off);
-		boolean l6Off = (new Color(img.getRGB(l6.x, l6.y))).equals(off);
+		boolean l1Exists = (new Color(img.getRGB(l1.x, l1.y))).equals(exists);
+		boolean l2Exists = (new Color(img.getRGB(l2.x, l2.y))).equals(exists);
+		boolean l3Exists = (new Color(img.getRGB(l3.x, l3.y))).equals(exists);
+		boolean l4Exists = (new Color(img.getRGB(l4.x, l4.y))).equals(exists);
+		boolean l5Exists = (new Color(img.getRGB(l5.x, l5.y))).equals(exists);
+		boolean l6Exists = (new Color(img.getRGB(l6.x, l6.y))).equals(exists);
 
 		//Calculating the currently unlocked tier by all the combinations of dots that exist at each tier, confirming by checking false for the surrounding dots
 		//E.G OOXO
@@ -3224,48 +3225,48 @@ public class MainThread implements Runnable {
 
 		//(Must be a simpler way of doing this)
 
-		if (!l2Off && l1Off && !r1Off) //R2 detection
+		if (!l2Exists && l1Exists && !r1Exists) //R2 detection
 			return 2;
-		else if (!l1Off && r1Off && !r2Off)
+		else if (!l1Exists && r1Exists && !r2Exists)
 			return 2;
-		else if (!l3Off && l2Off && l1Off && !r1Off) //R3 detection
+		else if (!l3Exists && l2Exists && l1Exists && !r1Exists) //R3 detection
 			return 3;
-		else if (!l2Off && l1Off && r1Off && !r2Off)
+		else if (!l2Exists && l1Exists && r1Exists && !r2Exists)
 			return 3;
-		else if (!l1Off && r1Off && r2Off && !r3Off)
+		else if (!l1Exists && r1Exists && r2Exists && !r3Exists)
 			return 3;
-		else if (!l4Off && l3Off && l2Off && l1Off && !r1Off) //R4 Detection
+		else if (!l4Exists && l3Exists && l2Exists && l1Exists && !r1Exists) //R4 Detection
 			return 4;
-		else if (!l3Off && l2Off && l1Off && r1Off && !r2Off)
+		else if (!l3Exists && l2Exists && l1Exists && r1Exists && !r2Exists)
 			return 4;
-		else if (!l2Off && l1Off && r1Off && r2Off && !r3Off)
+		else if (!l2Exists && l1Exists && r1Exists && r2Exists && !r3Exists)
 			return 4;
-		else if (!l1Off && r1Off && r2Off && r3Off && !r4Off)
+		else if (!l1Exists && r1Exists && r2Exists && r3Exists && !r4Exists)
 			return 4;
 		
 		/* When raid 6 is unlocked its starts to return false results, using static int from settings file until I can work out why */
 		
-		else if (!l5Off && l4Off && l3Off && l2Off && l1Off && !r1Off) //R5 Detection
+		else if (!l5Exists && l4Exists && l3Exists && l2Exists && l1Exists && !r1Exists) //R5 Detection
 			return 5;
-		else if (!l4Off && l3Off && l2Off && l1Off && r1Off && !r2Off)
+		else if (!l4Exists && l3Exists && l2Exists && l1Exists && r1Exists && !r2Exists)
 			return 5;
-		else if (!l3Off && l2Off && l1Off && r1Off && r2Off && !r3Off)
+		else if (!l3Exists && l2Exists && l1Exists && r1Exists && r2Exists && !r3Exists)
 			return 5;
-		else if (!l2Off && l1Off && r1Off && r2Off && r3Off && !r4Off)
+		else if (!l2Exists && l1Exists && r1Exists && r2Exists && r3Exists && !r4Exists)
 			return 5;
-		else if (!l1Off && r1Off && r2Off && r3Off && r4Off && !r5Off)
+		else if (!l1Exists && r1Exists && r2Exists && r3Exists && r4Exists && !r5Exists)
 			return 5;
-		else if (!l6Off && l5Off && l4Off && l3Off && l2Off && l1Off && !r1Off) //R6 Detection
+		else if (!l6Exists && l5Exists && l4Exists && l3Exists && l2Exists && l1Exists && !r1Exists) //R6 Detection
 			return 6;
-		else if (!l5Off && l4Off && l3Off && l2Off && l1Off && r1Off && !r2Off)
+		else if (!l5Exists && l4Exists && l3Exists && l2Exists && l1Exists && r1Exists && !r2Exists)
 			return 6;
-		else if (!l4Off && l3Off && l2Off && l1Off && r1Off && r2Off && !r3Off)
+		else if (!l4Exists && l3Exists && l2Exists && l1Exists && r1Exists && r2Exists && !r3Exists)
 			return 6;
-		else if (!l3Off && l2Off && l1Off && r1Off && r2Off && r3Off && !r4Off)
+		else if (!l3Exists && l2Exists && l1Exists && r1Exists && r2Exists && r3Exists && !r4Exists)
 			return 6;
-		else if (!l2Off && l1Off && r1Off && r2Off && r3Off && r4Off && !r5Off)
+		else if (!l2Exists && l1Exists && r1Exists && r2Exists && r3Exists && r4Exists && !r5Exists)
 			return 6;
-		else if (!l1Off && r1Off && r2Off && r3Off && r4Off && r5Off && !r6Off)
+		else if (!l1Exists && r1Exists && r2Exists && r3Exists && r4Exists && r5Exists && !r6Exists)
 			return 6;
 		else
 			//On error return 0
@@ -3277,7 +3278,7 @@ public class MainThread implements Runnable {
 	 * Returns raid type, that is value between 1 and 4 (Corresponding to the raid tiers) that is currently selected in the raid window.
 	 * Note that the raid window must be open for this method to work (or else it will simply return 0).
 	 */
-	private int readSelectedRaidTier() {
+	public int readSelectedRaidTier() {
 		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
 		if (seg == null) {
 //			int currentRaidTier = readUnlockedRaidTier(); //get max unlocked tier

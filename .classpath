@@ -3,8 +3,8 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="dependencies/selenium-java-3.4.0/client-combined-3.4.0-nodeps.jar"/>
-	<classpathentry kind="lib" path="dependencies/shutterbug/selenium-shutterbug-0.6.1.jar"/>
 	<classpathentry kind="lib" path="dependencies/selenium-java-3.4.0/lib/cglib-nodep-3.2.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jc/Documents/Repo/BHBot/dependencies/shutterbug/selenium-shutterbug-0.9.jar"/>
 	<classpathentry kind="lib" path="dependencies/selenium-java-3.4.0/lib/commons-codec-1.10.jar"/>
 	<classpathentry kind="lib" path="dependencies/selenium-java-3.4.0/lib/commons-exec-1.3.jar"/>
 	<classpathentry kind="lib" path="dependencies/selenium-java-3.4.0/lib/commons-io-2.5.jar"/>

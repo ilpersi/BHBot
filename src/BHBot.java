@@ -322,8 +322,8 @@ public class BHBot {
 			}
 		} else if (params[0].equals("numtest")) {
 			main.numTest();
-		} else if (params[0].equals("adtest")) {
-			main.trySkippingAd();
+		} else if (params[0].equals("rtest")) {
+			main.readSelectedRaidTier();
 		}
 	}
 	
