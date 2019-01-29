@@ -355,6 +355,7 @@ public class MainThread implements Runnable {
 		addCue("TeamNotOrdered", loadImage("cues/cueTeamNotOrdered.png"), new Bounds(230, 190, 350, 250)); // warning popup when some guild member left and your GvG team is not complete anymore
 		addCue("No", loadImage("cues/cueNo.png"), null); // cue for a blue "No" button used for example with "Your team is not full" dialog, or for "Replace consumable" dialog, etc. This is why we can't put concrete borders as position varies a lot.
 		addCue("AutoTeam", loadImage("cues/cueAutoTeam.png"), null); // "Auto" button that automatically assigns team (in raid, GvG, ...)
+		addCue("Clear", loadImage("cues/cueClear.png"), null); //clear team button
 
 		addCue("AutoOn", loadImage("cues/cueAutoOn.png"), new Bounds(740, 180, 785, 220)); // cue for auto pilot on
 		addCue("AutoOff", loadImage("cues/cueAutoOff.png"), new Bounds(740, 180, 785, 220)); // cue for auto pilot off
@@ -842,7 +843,8 @@ public class MainThread implements Runnable {
 //			updateFamiliarCounter(fUpper, catchCount);
 //		}
 		
-
+		BHBot.log(Integer.toString(BHBot.settings.minSolo));
+		
 		//End debugging section
 
 		state = State.Loading;
@@ -1105,15 +1107,14 @@ public class MainThread implements Runnable {
 					} // adds
 
 					//Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
-//					if (state == State.Main) {
-//						seg = detectCue(cues.get("AutoOn")); //check if we're in a non dungeon state, but with the auto button visible
-//							if (seg != null) {
-//							state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
-//						    BHBot.log("Possible dungeon crash, activating failsafe");
-//						    continue;
-//							}
-//					continue;
-//					}
+					if (state == State.Main) {
+						seg = detectCue(cues.get("AutoOn")); //if we're in Main state, with auto button visible, then we need to change state
+							if (seg != null) {
+							state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
+						    BHBot.log("Possible dungeon crash, activating failsafe");
+						    continue;
+							}
+					}
 
 					// check for bonuses:
 					if (BHBot.settings.autoConsume && (Misc.getTime() - timeLastBonusCheck > BONUS_CHECK_INTERVAL)) {
@@ -1213,16 +1214,17 @@ public class MainThread implements Runnable {
 							seg = detectCue(cues.get("Accept"), 5*SECOND);
 							clickOnSeg(seg);
 							sleep(5*SECOND);
+
+							handleTeamMalformedWarning();
 							if (handleTeamMalformedWarning()) {
+								BHBot.log("Team incomplete, doing emergency restart..");
 								restart();
 								continue;
+							} else {
+								state = State.Raid;
+								BHBot.log("Raid initiated!");
 							}
-
-							state = State.Raid;
-
-							BHBot.log("Raid initiated!");
 						}
-
 						continue;
 					} // shards
 
@@ -1337,15 +1339,16 @@ public class MainThread implements Runnable {
 							//click enter
 							seg = detectCue(cues.get("Accept"), 2*SECOND);
 							clickOnSeg(seg);
-
+							
+							handleTeamMalformedWarning();
 							if (handleTeamMalformedWarning()) {
+								BHBot.log("Team incomplete, doing emergency restart..");
 								restart();
 								continue;
+							} else {
+								state = State.Expedition;
+								BHBot.log(expedName + " portal initiated!");
 							}
-
-							state = State.Expedition;
-							
-							BHBot.log(expedName + " portal initiated!");
 						}
 						continue;
 					}
@@ -1455,16 +1458,16 @@ public class MainThread implements Runnable {
 							clickOnSeg(seg);
 							sleep(5*SECOND);
 							
+							handleTeamMalformedWarning();
 							if (handleTeamMalformedWarning()) {
+								BHBot.log("Team incomplete, doing emergency restart..");
 								restart();
 								continue;
+							} else {
+								state = trials ? State.Trials : State.Gauntlet;
+								BHBot.log((trials ? "Trials" : "Gauntlet") + " initiated!");
 							}
-
-							state = trials ? State.Trials : State.Gauntlet;
-
-							BHBot.log((trials ? "Trials" : "Gauntlet") + " initiated!");
 						}
-
 						continue;
 					} // tokens (trials and gauntlet)
 
@@ -1500,7 +1503,7 @@ public class MainThread implements Runnable {
 
 							int currentZone = readCurrentZone();
 							int vec = goalZone - currentZone; // movement vector
-							BHBot.log("Target Zone: " + Integer.toString(goalZone) + " Current zone: " + Integer.toString(currentZone));
+//							BHBot.log("Current zone: " + Integer.toString(currentZone) + " Target Zone: " + Integer.toString(goalZone));
 							while (vec != 0) { // move to the correct zone
 								if (vec > 0) {
 									// note that moving to the right will fail in case player has not unlocked the zone yet!
@@ -1528,43 +1531,55 @@ public class MainThread implements Runnable {
 							clickInGame(p.x, p.y);
 
 							readScreen(3*SECOND);
-							// select difficulty (except when d4 is in play, then there is no difficulty to select!):
+							// select difficulty (If D4 just hit enter):
 							if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') || (dungeon.charAt(1) == '8' && dungeon.charAt(3) == '3' )) { // D4, or Z7D3/Z8D3
 								seg = detectCue(cues.get("Enter"), 5*SECOND);
 								clickOnSeg(seg);
-								// some weirdness happens with the accept button on D4's, this should fix it
+							} else  { //else select appropriate difficulty
+								seg = detectCue(cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), 5*SECOND);
+								clickOnSeg(seg);
+							}
+							
+							//team selection screen
+							/* Solo  bounty test code */
+							int soloThreshold = Character.getNumericValue(dungeon.charAt(1)); //convert the zone char to int so we can compare
+							if (soloThreshold <= BHBot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
+								BHBot.log("Zone less than dungeon solo threshold, attempting solo");
+								sleep(1*SECOND);
+								readScreen();
+								seg = detectCue(cues.get("Clear"), 1*SECOND);
+								clickOnSeg(seg);
+								readScreen();
+								seg = detectCue(cues.get("Accept"), 1*SECOND);
+								clickOnSeg(seg);
+								readScreen();
+								sleep(1*SECOND); //wait for dropdown animation to finish
+								seg = detectCue(cues.get("YesGreen"), 1*SECOND);
+								clickOnSeg(seg);
+								state = State.Dungeon;
+								BHBot.log("Dungeon <" + dungeon + "> initiated solo!");
+								continue;
+							} else { // d1-d3
 								readScreen(1*SECOND);
-								seg = detectCue(cues.get("D4Accept"));
+								seg = detectCue(cues.get("D4Accept")); //D4's accept button is a few pixels different for reasons
 								if (seg == null) {
-									seg = detectCue(cues.get("Accept"));
+									seg = detectCue(cues.get("Accept")); //standard accept button
 									clickOnSeg(seg);
 								} else {
 								clickOnSeg(seg);
 								}
-								
-								if (handleTeamMalformedWarning()) {
-									restart();
-									continue;
-								}
-
-							} else { // d1-d3
-								seg = detectCue(cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), 5*SECOND);
-								clickOnSeg(seg);
-								readScreen(1*SECOND);
-								seg = detectCue(cues.get("Accept"));
-								clickOnSeg(seg);
 							}
-							
+
+							handleTeamMalformedWarning();
 							if (handleTeamMalformedWarning()) {
+								BHBot.log("Team malformed");
 								restart();
 								continue;
+							} else {
+								state = State.Dungeon;
+								BHBot.log("Dungeon <" + dungeon + "> initiated!");
 							}
-
-							state = State.Dungeon;
-
-							BHBot.log("Dungeon <" + dungeon + "> initiated!");
 						}
-
 						continue;
 					} // energy
 
@@ -1639,16 +1654,16 @@ public class MainThread implements Runnable {
 							clickOnSeg(seg);
 							sleep(5*SECOND);
 							
+							handleTeamMalformedWarning();
 							if (handleTeamMalformedWarning()) {
+								BHBot.log("Team malformed");
 								restart();
 								continue;
+							} else {
+								state = State.PVP;
+								BHBot.log("PVP initiated!");
 							}
-
-							state = State.PVP;
-
-							BHBot.log("PVP initiated!");
 						}
-
 						continue;
 					} // PvP
 
@@ -1750,18 +1765,19 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 								sleep(5*SECOND);
 
+								handleTeamMalformedWarning();
 								if (handleTeamMalformedWarning()) {
+									BHBot.log("Team malformed");
 									restart();
 									continue;
+								} else {
+									state = State.GVG;
+									BHBot.log("GVG initiated!");
 								}
-
-								state = State.GVG;
-
-								BHBot.log("GVG initiated!");
 							}
-
 							continue;
 						} // GvG
+						
 						// check invasion:
 						else if (badgeEvent == BadgeEvent.Invasion) {
 							if ((!BHBot.scheduler.doInvasionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costInvasion)) {
@@ -1810,16 +1826,16 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 								sleep(5*SECOND);
 
+								handleTeamMalformedWarning();
 								if (handleTeamMalformedWarning()) {
+									BHBot.log("Team malformed");
 									restart();
 									continue;
+								} else {
+									state = State.Invasion;
+									BHBot.log("Invasion initiated!");
 								}
-
-								state = State.Invasion;
-
-								BHBot.log("Invasion initiated!");
 							}
-
 							continue;
 						} // invasion
 						else {
@@ -1830,34 +1846,6 @@ public class MainThread implements Runnable {
 							continue;
 						}
 					} // badges
-
-					//Open fishing dialog once to retrieve bait rewards TODO
-					//Needs seperate timer system adding to click fishing button once a day to collect bait
-//					if (!collectedFishingRewards) {
-////						BHBot.log("Fishing rewards false");
-//						seg = detectCue(cues.get("FishingButton"));
-//						if (seg != null) {
-////							BHBot.log("fishing button found");
-//							clickOnSeg(seg);
-//							sleep(2*SECOND);
-//							seg = detectCue(cues.get("Exit"));
-//							if (seg != null) {
-//								BHBot.log("Exit Found");
-//								clickOnSeg(seg);
-//								sleep(2*SECOND);
-//								collectedFishingRewards = true;
-//								BHBot.log("Bait claimed (or so they say");
-//								continue;
-//							} else {
-//								BHBot.log("Exit not found");
-//								restart();
-//							}
-//						} else {
-//							BHBot.log("Fishing button not found, bait not claimed");
-//							collectedFishingRewards = true;  //not true but if the buttons not found we don't want to try again in a loop
-//							continue;
-//						}
-//					}
 
 				} // main screen processing
 			} catch (Exception e) {
@@ -2723,7 +2711,6 @@ public class MainThread implements Runnable {
 
 			sleep(1*SECOND);
 			if (state == state.Expedition) {
-				BHBot.log("Running extra closing commands");
 				sleep(1*SECOND);
 
 				// Close Portal Map after expedition
@@ -2780,7 +2767,6 @@ public class MainThread implements Runnable {
 				BHBot.log("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 			sleep(1*SECOND);
 			if (state == state.Expedition) {
-				BHBot.log("Running extra closing commands");
 				sleep(1*SECOND);
 
 				// Close Portal Map after expedition
@@ -3536,7 +3522,7 @@ public class MainThread implements Runnable {
 	 *
 	 * @return true in case emergency restart is needed.
 	 */
-	private boolean handleTeamMalformedWarning() {
+	public boolean handleTeamMalformedWarning() {
 		readScreen();
 		if (detectCue(cues.get("TeamNotFull")) != null || detectCue(cues.get("TeamNotOrdered")) != null) {
 			sleep(500); // in case popup is still sliding downward
@@ -3556,7 +3542,7 @@ public class MainThread implements Runnable {
 			}
 			clickOnSeg(seg);
 
-			readScreen(10*SECOND);
+			readScreen(10*SECOND); //this long pause is for if you have 100 friends it will take a long time to autofill the team, may need to be longer
 			seg = detectCue(cues.get("Accept"));
 			if (seg == null) {
 				BHBot.log("Error: 'Team not full/ordered' window detected, but no 'Accept' button found. Restarting...");
@@ -3756,8 +3742,6 @@ public class MainThread implements Runnable {
 
 		return selectDifficultyFromDropDownExpedition(oldDifficulty, newDifficulty);
 	}
-
-	//TODO Fix this
 	
 	/**
 	 * Internal routine. Difficulty drop down must be open for this to work!

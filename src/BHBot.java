@@ -324,8 +324,8 @@ public class BHBot {
 				boolean result = main.selectCost(current, goal);
 				log("Cost change result: " + result);
 			}
-		} else if (params[0].equals("numtest")) {
-			main.numTest();
+		} else if (params[0].equals("mtest")) {
+			main.handleTeamMalformedWarning();
 		} else if (params[0].equals("rtest")) {
 			main.raidReadTest();
 		} else if (params[0].equals("etest")) {

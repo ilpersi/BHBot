@@ -100,6 +100,7 @@ public class Settings {
 	
 	/** Development Settings **/
 	public boolean familiarScreenshot = false;
+	public int minSolo = 2;
 
 	/** This tells us how much time will we sleep when disconnect has been detected (which happens when a user logs in). This interval should be an hour or so, so that user can play the game in peace without being disconnected due to us reconnecting to the game. */
 	public int pauseOnDisconnect = 60*MainThread.MINUTE;
@@ -160,6 +161,7 @@ public class Settings {
 		this.expeditions = new ArrayList<String>(settings.expeditions);	
 		this.currentRaidTier = settings.currentRaidTier;
 		this.pvpstrip = new ArrayList<String>(settings.pvpstrip);
+		this.minSolo  = settings.minSolo;
 		
 		this.autoConsume = settings.autoConsume;
 		this.consumables = new ArrayList<String>(settings.consumables);
@@ -451,6 +453,7 @@ public class Settings {
 		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
 		familiarScreenshot = map.getOrDefault("familiarScreenshot", familiarScreenshot ? "1" : "0").equals("0") ? false : true;
 		openSkeleton = Integer.parseInt(map.getOrDefault("openSkeletonChest", ""+openSkeleton));
+		minSolo  = Integer.parseInt(map.getOrDefault("minSolo", ""+minSolo));
 		
 		pauseOnDisconnect = Integer.parseInt(map.getOrDefault("pauseOnDisconnect", ""+pauseOnDisconnect));
 	}
