@@ -26,6 +26,7 @@ public class Settings {
 	public boolean doAds = false;
 	public boolean doInvasion = false;
 	public boolean doExpedition = false;
+	public boolean doWorldBoss = false;
 	
 	/** This is the minimum amount of shards that the bot must leave for the user. If shards get above this value, bot will play the raids in case raiding is enabled of course. */
 	public int minShards = 2;
@@ -52,9 +53,6 @@ public class Settings {
 	public int costInvasion = 1;
 	public int costExpedition = 1;
 	
-	/** Current tier of raid unlocked, used for calculating selected raid **IMPORTANT** */
-	public int currentRaidTier = 0;
-	
 	/** The trials/gauntlet difficulty */
 	public int difficulty = 60;
 	
@@ -79,6 +77,11 @@ public class Settings {
 	 * '1 3 100' ==> in 100% of cases it will do R1 on heroic
 	 */
 	public List<String> raids;
+	
+	/** World Boss Settings **/
+	public String worldBossType = "Orlag";
+	public int worldBossTier  =  9;
+	public int worldBossTimer = 120;
 	
 	/**
 	 * List of equipment that should be stripped before attempting PvP (and dressed up again after PvP is done).
@@ -125,9 +128,7 @@ public class Settings {
 		this.debugDetectionTimes = settings.debugDetectionTimes;
 		this.hideWindowOnRestart = settings.hideWindowOnRestart;
 		this.resetTimersOnBattleEnd = settings.resetTimersOnBattleEnd;
-		
-		this.difficulty = settings.difficulty;
-		this.expeditionDifficulty = settings.expeditionDifficulty;
+	
 		this.doRaids = settings.doRaids;
 		this.doDungeons = settings.doDungeons;
 		this.doTrials = settings.doTrials;
@@ -137,6 +138,7 @@ public class Settings {
 		this.doInvasion = settings.doInvasion;
 		this.doAds = settings.doAds;
 		this.doExpedition = settings.doExpedition;
+		this.doWorldBoss =  settings.doWorldBoss;
 		
 		this.maxShards = settings.maxShards;
 		this.maxTokens = settings.maxTokens;
@@ -156,10 +158,12 @@ public class Settings {
 		this.costInvasion = settings.costInvasion;
 		this.costExpedition = settings.costExpedition;
 		
+		this.difficulty = settings.difficulty;
+		this.expeditionDifficulty = settings.expeditionDifficulty;
+		
 		this.dungeons = new ArrayList<String>(settings.dungeons);
 		this.raids = new ArrayList<String>(settings.raids);
 		this.expeditions = new ArrayList<String>(settings.expeditions);	
-		this.currentRaidTier = settings.currentRaidTier;
 		this.pvpstrip = new ArrayList<String>(settings.pvpstrip);
 		this.minSolo  = settings.minSolo;
 		
@@ -170,7 +174,6 @@ public class Settings {
 		this.familiars = new ArrayList<String>(settings.familiars);
 		
 		this.pauseOnDisconnect = settings.pauseOnDisconnect;
-		
 		this.openSkeleton = settings.openSkeleton;
 	}
 	
@@ -418,6 +421,7 @@ public class Settings {
 		doGVG = map.getOrDefault("doGVG", doGVG ? "1" : "0").equals("0") ? false : true;
 		doInvasion = map.getOrDefault("doInvasion", doInvasion ? "1" : "0").equals("0") ? false : true;
 		doExpedition = map.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("0") ? false : true;
+		doWorldBoss = map.getOrDefault("doWorldBoss", doWorldBoss ? "1" : "0").equals("0") ? false : true;
 		doAds = map.getOrDefault("doAds", doAds ? "1" : "0").equals("0") ? false : true;
 		
 		maxShards = Integer.parseInt(map.getOrDefault("maxShards", ""+minShards));
@@ -440,10 +444,11 @@ public class Settings {
 		
 		difficulty = Integer.parseInt(map.getOrDefault("difficulty", ""+difficulty));
 		expeditionDifficulty = Integer.parseInt(map.getOrDefault("expeditionDifficulty", ""+expeditionDifficulty));
+		minSolo  = Integer.parseInt(map.getOrDefault("minSolo", ""+minSolo));
+		
 		setDungeonsFromString(map.getOrDefault("dungeons", getDungeonsAsString()));
 		setRaidsFromString(map.getOrDefault("raids", getRaidsAsString()));
 		setExpeditionsFromString(map.getOrDefault("expeditions", getExpeditionsAsString()));
-		currentRaidTier = Integer.parseInt(map.getOrDefault("currentRaidTier", ""+currentRaidTier));
 		setStripsFromString(map.getOrDefault("pvpstrip", getStripsAsString()));
 		
 		autoConsume = map.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("0") ? false : true;
@@ -451,10 +456,9 @@ public class Settings {
 		
 		autoBribe = map.getOrDefault("autoBribe", autoBribe ? "1" : "0").equals("0") ? false : true ;
 		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
-		familiarScreenshot = map.getOrDefault("familiarScreenshot", familiarScreenshot ? "1" : "0").equals("0") ? false : true;
-		openSkeleton = Integer.parseInt(map.getOrDefault("openSkeletonChest", ""+openSkeleton));
-		minSolo  = Integer.parseInt(map.getOrDefault("minSolo", ""+minSolo));
 		
+		familiarScreenshot = map.getOrDefault("familiarScreenshot", familiarScreenshot ? "1" : "0").equals("0") ? false : true;
+		openSkeleton = Integer.parseInt(map.getOrDefault("openSkeletonChest", ""+openSkeleton));	
 		pauseOnDisconnect = Integer.parseInt(map.getOrDefault("pauseOnDisconnect", ""+pauseOnDisconnect));
 	}
 	

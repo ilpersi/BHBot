@@ -471,8 +471,10 @@ public class MainThread implements Runnable {
 
 		// Expedition related:
 		addCue("ExpeditionButton", loadImage("cues/cueExpeditionButton.png"),  null);
-		addCue("GoogarumsPortal", loadImage("cues/cueGoogarumsPortal.png"),  null);
-
+		
+		//WorldBoss Related
+		addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"),  null);
+		
 		//fishing related
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
@@ -843,7 +845,7 @@ public class MainThread implements Runnable {
 //			updateFamiliarCounter(fUpper, catchCount);
 //		}
 		
-		BHBot.log(Integer.toString(BHBot.settings.minSolo));
+//		BHBot.log(Integer.toString(BHBot.settings.minSolo));
 		
 		//End debugging section
 
@@ -1846,6 +1848,60 @@ public class MainThread implements Runnable {
 							continue;
 						}
 					} // badges
+					
+					// Check worldBoss:
+					if (BHBot.scheduler.doWorldBossImmediately || (BHBot.settings.doWorldBoss && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
+						timeLastEnergyCheck = Misc.getTime();
+						int energy = getEnergy();
+						BHBot.log("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
+
+						if (energy == -1) { // error
+							BHBot.scheduler.restoreIdleTime();
+							continue;
+						}
+
+						if (!BHBot.scheduler.doWorldBossImmediately && (energy <= BHBot.settings.minEnergyPercentage)) {
+							continue;
+						} else { 
+							// do the WorldBoss!
+							if (BHBot.scheduler.doWorldBossImmediately)
+								BHBot.scheduler.doWorldBossImmediately = false; // reset it
+							
+							//create function to check type/tier/timer are valid inputs
+
+							seg = detectCue(cues.get("WorldBoss"));
+							if (seg != null) {
+								clickOnSeg(seg);
+							} else {
+								BHBot.log("World Boss button not found");
+								continue;
+							}
+							
+							readScreen();
+							detectCharacterDialogAndHandleIt();
+
+							// settings load tier
+							// settings load difficulty
+							String worldBossType = BHBot.settings.worldBossType;
+							int worldBossTier = BHBot.settings.worldBossTier;
+							int worldBossTimer = BHBot.settings.worldBossTimer;
+
+							BHBot.log("Summoning T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s");
+
+							// summon room
+							// detect Nether or Orlag and select appropriately (small wait for horizontal scrolling)
+							// tier readable? can change with pos(xy) if known
+							// difficulty static can use pos(xy)
+							// apply tier and difficulty
+							// summon again with those settings
+							// wait until cueInvite == null with defined timer
+							// start
+							// State == worldBoss settings
+							// manually close victory screen
+							// back to WB listings and summon screen, single close back to world
+						}
+						continue;
+					} // World Boss
 
 				} // main screen processing
 			} catch (Exception e) {

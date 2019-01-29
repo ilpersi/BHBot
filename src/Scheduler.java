@@ -14,6 +14,8 @@ public class Scheduler {
 	boolean doInvasionImmediately;
 	/** Instructs bot to do 1 Expedition immediately (after which this flag will get reset to 'false' */
 	boolean doExpeditionImmediately;
+	/** Instructs bot to do 1 World Boss immediately (after which this flag will get reset to 'false' */
+	boolean doWorldBossImmediately;
 	
 	private static final long PAUSED_INDEFINITELY = Long.MAX_VALUE;
 	private boolean paused = false;

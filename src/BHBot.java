@@ -23,7 +23,7 @@ import com.assertthat.selenium_shutterbug.core.Shutterbug;
 public class BHBot {
 
 	public static final String PROGRAM_NAME = "BHBot";
-	public static final String PROGRAM_VERSION = "29";
+	public static final String PROGRAM_VERSION = "29.3";
 	public static final boolean REQUIRES_ACCESS_TOKEN = false; // obsolete since public release (was used to restrict bot usage)
 	
 	public static Thread mainThread;
@@ -298,6 +298,10 @@ public class BHBot {
 				// force invasion
 				log("Forcing invasion...");
 				scheduler.doInvasionImmediately = true;
+			} else if (params[1].equals("worldboss")) {
+				// force invasion
+				log("Forcing World Boss...");
+				scheduler.doWorldBossImmediately = true;
 			}
 		} else if (params[0].equals("plan")) {
 			settings.load("plans/" + params[1] + ".ini");
