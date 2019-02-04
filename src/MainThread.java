@@ -247,8 +247,8 @@ public class MainThread implements Runnable {
 	final long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
 	long timeLastBadgesCheck = 0; // when did we check for badges the last time?
 	final long BADGES_CHECK_INTERVAL = 10 * MINUTE;
-	long timeLastBaitCheck = 0; // when did we check for badges the last time?
-	final long BAIT_CHECK_INTERVAL = 12 * HOUR;
+	long timeLastBountyCheck = 0; // when did we check for badges the last time?
+	final long BOUNTY_CHECK_INTERVAL = 360 * MINUTE;
 	long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
 	final long BONUS_CHECK_INTERVAL = 10 * MINUTE;
 
@@ -310,6 +310,8 @@ public class MainThread implements Runnable {
 		addCue("Items", loadImage("cues/cueItems.png"), null); // used when we clicked "claim" on daily rewards popup. Used also with main menu ads.
 		addCue("X", loadImage("cues/cueX.png"), null); // "X" close button used with claimed daily rewards popup
 		addCue("WeeklyRewards", loadImage("cues/cueWeeklyRewards.png"), new Bounds(185, 95, 250, 185)); // used with reward for GVG/PVP/Gauntlet/Trial on Friday night (when day changes into Saturday)
+		addCue("Bounties", loadImage("cues/cueBounties.png"), new Bounds(300, 60, 500, 120));
+		addCue("Loot", loadImage("cues/cueLoot.png"), new Bounds(460, 225, 630, 290));
 
 		addCue("News", loadImage("cues/cueNewsPopup.png"), new Bounds(345, 60, 365, 85)); // news popup
 		addCue("Close", loadImage("cues/cueClose.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
@@ -537,8 +539,8 @@ public class MainThread implements Runnable {
 		addCue("XL-OMBIS400", loadImage("cues/familiars/cueXL-OMBIS400.png"), null);
 
 		//Z5
-//		addCue("TORLIM", loadImage("cues/familiars/cueTORLIM.png"), null);
-//		addCue("ZORUL", loadImage("cues/familiars/cueZORUL.png"), null);
+		addCue("TORLIM", loadImage("cues/familiars/cueTORLIM.png"), null);
+		addCue("ZORUL", loadImage("cues/familiars/cueZORUL.png"), null);
 		addCue("TEALK", loadImage("cues/familiars/cueTEALK.png"), null);
 
 		//R5
@@ -555,14 +557,14 @@ public class MainThread implements Runnable {
 
 		//R6
 //		addCue("CRUM", loadImage("cues/familiars/cueCRUM.png"), null);
-//		addCue("SPROUT", loadImage("cues/familiars/cueSPROUT.png"), null);
-//		addCue("FLITTY", loadImage("cues/familiars/cueFLITTY.png"), null);
+		addCue("SPROUT", loadImage("cues/familiars/cueSPROUT.png"), null);
+		addCue("FLITTY", loadImage("cues/familiars/cueFLITTY.png"), null);
 //		addCue("CLOUBY", loadImage("cues/familiars/cueCLOUBY.png"), null);
-//		addCue("COLUMBUS", loadImage("cues/familiars/cueCOLUMBUS.png"), null);
+		addCue("COLUMBUS", loadImage("cues/familiars/cueCOLUMBUS.png"), null);
 
 		//Z7
 //		addCue("SCORPIUS", loadImage("cues/familiars/cueSCORPIUS.png"), null);
-//		addCue("VEDAIRE", loadImage("cues/familiars/cueVEDAIRE.png"), null);
+		addCue("VEDAIRE", loadImage("cues/familiars/cueVEDAIRE.png"), null);
 
 		//Z8
 		addCue("GOOGAMENZ", loadImage("cues/familiars/cueGOOGAMENZ.png"), null);
@@ -846,6 +848,8 @@ public class MainThread implements Runnable {
 //		}
 		
 //		BHBot.log(Integer.toString(BHBot.settings.minSolo));
+		
+//		BHBot.log("collectBounties = " + Boolean.toString(BHBot.settings.collectBounties));
 		
 		//End debugging section
 
@@ -1902,6 +1906,42 @@ public class MainThread implements Runnable {
 						}
 						continue;
 					} // World Boss
+					
+					// Collect bounties:
+					if ((BHBot.settings.collectBounties && Misc.getTime() - timeLastBountyCheck > BOUNTY_CHECK_INTERVAL)) {
+						timeLastBountyCheck = Misc.getTime();
+						BHBot.log("Checking for Bounties to collect..");
+
+							sleep(2*SECOND); //make sure screen is stable
+							clickInGame(130, 440); // click on the bounties icon
+
+							int bountyCounter = 0;
+							
+							readScreen();
+							seg = detectCue(cues.get("Bounties"), 2*SECOND);
+							if (seg == null) {
+								BHBot.log("Bounties window not found, skipping"); // failsafe in case bounties window didn't open
+								continue;
+							} else {
+								seg = detectCue(cues.get("Loot"), 1*SECOND);
+								while (seg != null) { // the loot cue has bounds for only the top loot button, so while there is a loot cue there there are bounties to claim
+									readScreen();
+									seg = detectCue(cues.get("Loot"), 1*SECOND); //set cue to loot again as its changed to X underneath
+									sleep(1*SECOND); //wait for screen to settle
+									clickOnSeg(seg);
+									readScreen();
+									seg = detectCue(cues.get("X"), 1*SECOND); // we have to manually close rewards window
+									sleep(1*SECOND);
+									clickOnSeg(seg);
+									bountyCounter++; // just to count how many we have claimed
+								} if (seg == null) {
+									seg = detectCue(cues.get("X"), 1*SECOND); // once we're done close bountines window
+									clickOnSeg(seg);
+									BHBot.log(bountyCounter + " Bounties claimed.");
+									continue;
+									}
+								}
+							}
 
 				} // main screen processing
 			} catch (Exception e) {

@@ -16,6 +16,7 @@ public class Settings {
 	public boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
 	public int openSkeleton = 0;
 	public boolean autoBribe  = false;
+	public boolean collectBounties  = false;
 	
 	public boolean doRaids = false;
 	public boolean doDungeons = false;
@@ -175,6 +176,7 @@ public class Settings {
 		
 		this.pauseOnDisconnect = settings.pauseOnDisconnect;
 		this.openSkeleton = settings.openSkeleton;
+		this.collectBounties = settings.collectBounties;
 	}
 	
 	// a handy shortcut for some debug settings:
@@ -209,6 +211,7 @@ public class Settings {
 		doExpedition = false;
 		doWorldBoss = false;
 		autoConsume = false;
+		collectBounties = false;
 		BHBot.log("Idle mode started, no actions will be taken");
 		
 		return this; // for chaining
@@ -458,8 +461,10 @@ public class Settings {
 		
 		autoBribe = map.getOrDefault("autoBribe", autoBribe ? "1" : "0").equals("0") ? false : true ;
 		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
-		
 		familiarScreenshot = map.getOrDefault("familiarScreenshot", familiarScreenshot ? "1" : "0").equals("0") ? false : true;
+		
+		collectBounties = map.getOrDefault("collectBounties", collectBounties ? "1" : "0").equals("0") ? false : true ;
+		
 		openSkeleton = Integer.parseInt(map.getOrDefault("openSkeletonChest", ""+openSkeleton));	
 		pauseOnDisconnect = Integer.parseInt(map.getOrDefault("pauseOnDisconnect", ""+pauseOnDisconnect));
 	}
