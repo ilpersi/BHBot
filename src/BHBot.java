@@ -23,7 +23,7 @@ import com.assertthat.selenium_shutterbug.core.Shutterbug;
 public class BHBot {
 
 	public static final String PROGRAM_NAME = "BHBot";
-	public static final String PROGRAM_VERSION = "29.3";
+	public static final String PROGRAM_VERSION = "29.4";
 	public static final boolean REQUIRES_ACCESS_TOKEN = false; // obsolete since public release (was used to restrict bot usage)
 	
 	public static Thread mainThread;
@@ -51,15 +51,25 @@ public class BHBot {
 			}
 		}
 		
-		// load settings from disk:
+		// process launch arguments
 		boolean settingsProcessed = false;
-		for (int i = 0; i < args.length; i++) {
+		for (int i = 0; i < args.length; i++) { //select settings file to load
 			if (args[i].equals("settings")) {
 				processCommand("loadsettings " + args[i+1]);
 				settingsProcessed = true;
 				i++;
-			} else if (args[i].equals("chromedriveraddress")) {
+			} else if (args[i].equals("chromedriveraddress")) { //change chrome driver port
 				chromeDriverAddress = args[i+1];
+				i++;
+			}
+			 else if (args[i].equals("init")) { //start bot in idle mode
+				BHBot.settings.setIdle();
+				settingsProcessed = true;
+				i++;
+			}
+			 else if (args[i].equals("idle")) { //start bot in idle mode
+				BHBot.settings.setIdle();
+				settingsProcessed = true;
 				i++;
 			}
 		}
@@ -68,8 +78,8 @@ public class BHBot {
 		
 		processCommand("start");
 		
-	    Console console = System.console();
-	    Scanner scanner = new Scanner(System.in);
+//	    Console console = System.console();
+//	    Scanner scanner = new Scanner(System.in);
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		while (!finished) {

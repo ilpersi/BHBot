@@ -551,7 +551,7 @@ public class MainThread implements Runnable {
 		//Z6
 		addCue("RUGUMZ", loadImage("cues/familiars/cueRUGUMZ.png"), null);
 		addCue("BLEMB", loadImage("cues/familiars/cueBLEMB.png"), null);
-//		addCue("MOGHUR", loadImage("cues/familiars/cueMOGHUR.png"), null);
+		addCue("MOGHUR", loadImage("cues/familiars/cueMOGHUR.png"), null);
 
 		//R6
 //		addCue("CRUM", loadImage("cues/familiars/cueCRUM.png"), null);

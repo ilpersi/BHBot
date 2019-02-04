@@ -12,7 +12,7 @@ public class Settings {
 	public boolean useHeadlessMode = false; // run Chrome with --headless switch?
 	public boolean restartAfterAdOfferTimeout = true; // if true, then bot will automatically restart itself if it hasn't claimed any ad offer in a time longer than defined. This is needed because ads don't appear anymore if Chrome doesn't get restarted.
 	public boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
-	public boolean hideWindowOnRestart = true; // if true, game window will be hidden upon driver (re)start
+	public boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
 	public boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
 	public int openSkeleton = 0;
 	public boolean autoBribe  = false;
@@ -205,19 +205,21 @@ public class Settings {
 		doPVP = false;
 		doGVG = false;
 		doInvasion = false;
-		doAds = true;
-		
+		doAds = false;
+		doExpedition = false;
+		doWorldBoss = false;
 		autoConsume = false;
+		BHBot.log("Idle mode started, no actions will be taken");
 		
 		return this; // for chaining
 	}
 	
-	public Settings setIdleNoAds() {
-		setIdle();
-		doAds = false;
-		
-		return this;
-	}
+//	public Settings setIdleNoAds() {
+//		setIdle();
+//		doAds = false;
+//		
+//		return this;
+//	}
 	
 	public void setDungeons(String... dungeons) {
 		this.dungeons.clear();
