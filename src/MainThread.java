@@ -1940,14 +1940,15 @@ public class MainThread implements Runnable {
 					} // World Boss
 					
 					// Collect bounties:
+					/** I can't get a working while loop to clear all bounties available, so we simply check and clear one if available every 6 hours **/
 					if ((BHBot.settings.collectBounties && Misc.getTime() - timeLastBountyCheck > BOUNTY_CHECK_INTERVAL)) {
 						timeLastBountyCheck = Misc.getTime();
-						BHBot.log("Checking for Bounties to collect..");
+						BHBot.log("Collecting bounties..");
 
 							sleep(2*SECOND); //make sure screen is stable
 							clickInGame(130, 440); // click on the bounties icon
 
-							int bountyCounter = 0;
+//							int bountyCounter = 0;
 							
 							readScreen();
 							seg = detectCue(cues.get("Bounties"), 2*SECOND);
@@ -1955,8 +1956,8 @@ public class MainThread implements Runnable {
 								BHBot.log("Bounties window not found, skipping"); // failsafe in case bounties window didn't open
 								continue;
 							} else {
-								seg = detectCue(cues.get("Loot"), 1*SECOND);
-								while (seg != null) { // the loot cue has bounds for only the top loot button, so while there is a loot cue there there are bounties to claim
+								MarvinSegment segLoot = detectCue(cues.get("Loot"), 1*SECOND);
+								if (segLoot != null) { // the loot cue has bounds for only the top loot button, so while there is a loot cue there there are bounties to claim
 									readScreen();
 									seg = detectCue(cues.get("Loot"), 1*SECOND); //set cue to loot again as its changed to X underneath
 									sleep(1*SECOND); //wait for screen to settle
@@ -1965,11 +1966,19 @@ public class MainThread implements Runnable {
 									seg = detectCue(cues.get("X"), 1*SECOND); // we have to manually close rewards window
 									sleep(1*SECOND);
 									clickOnSeg(seg);
-									bountyCounter++; // just to count how many we have claimed
-								} if (seg == null) {
-									seg = detectCue(cues.get("X"), 1*SECOND); // once we're done close bountines window
+									sleep(1*SECOND);
+									readScreen();
+									seg = detectCue(cues.get("X"), 1*SECOND); // once we're done close bounties window
 									clickOnSeg(seg);
-									BHBot.log(bountyCounter + " Bounties claimed.");
+									BHBot.log("Bounty Claimed");
+//									BHBot.log(bountyCounter + " Bounties claimed.");
+									continue;
+//									bountyCounter++; // just to count how many we have claimed
+								} else {
+									seg = detectCue(cues.get("X"), 1*SECOND); // once we're done close bounties window
+									clickOnSeg(seg);
+									BHBot.log("No bounties available");
+//									BHBot.log(bountyCounter + " Bounties claimed.");
 									continue;
 									}
 								}
