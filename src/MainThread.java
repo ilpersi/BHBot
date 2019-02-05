@@ -476,6 +476,12 @@ public class MainThread implements Runnable {
 		
 		//WorldBoss Related
 		addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"),  null);
+		addCue("WorldBossSelector", loadImage("cues/cueWorldBossSelector.png"),  null);
+		addCue("BlueSummon", loadImage("cues/cueBlueSummon.png"),  null);
+		addCue("LargeGreenSummon", loadImage("cues/cueLargeGreenSummon.png"),  null);
+		addCue("SmallGreenSummon", loadImage("cues/cueSmallGreenSummon.png"),  null);
+		addCue("Invite", loadImage("cues/cueInvite.png"),  new Bounds(336, 387, 452, 422)); //bounds define invite #5 only
+		addCue("Start", loadImage("cues/cueStart.png"),  null);
 		
 		//fishing related
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
@@ -1871,7 +1877,10 @@ public class MainThread implements Runnable {
 							if (BHBot.scheduler.doWorldBossImmediately)
 								BHBot.scheduler.doWorldBossImmediately = false; // reset it
 							
-							//create function to check type/tier/timer are valid inputs
+							if (!checkWorldBossInput()) {
+								BHBot.log("Invalid world boss settings detected, World Boss will be skipped");
+								continue;
+							}
 
 							seg = detectCue(cues.get("WorldBoss"));
 							if (seg != null) {
@@ -1882,24 +1891,47 @@ public class MainThread implements Runnable {
 							}
 							
 							readScreen();
-							detectCharacterDialogAndHandleIt();
+							detectCharacterDialogAndHandleIt(); //clear dialogue
 
-							// settings load tier
-							// settings load difficulty
+							//load settings
 							String worldBossType = BHBot.settings.worldBossType;
 							int worldBossTier = BHBot.settings.worldBossTier;
 							int worldBossTimer = BHBot.settings.worldBossTimer;
 
 							BHBot.log("Summoning T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s");
 
-							// summon room
-							// detect Nether or Orlag and select appropriately (small wait for horizontal scrolling)
-							// tier readable? can change with pos(xy) if known
-							// difficulty static can use pos(xy)
-							// apply tier and difficulty
-							// summon again with those settings
-							// wait until cueInvite == null with defined timer
-							// start
+							//TODO
+							
+							seg = detectCue(cues.get("BlueSummon"),1*SECOND);
+							clickOnSeg(seg);
+							sleep(1*SECOND); //wait for screen to stablise
+							
+							String selectedWB = readSelectedWorldBoss();
+							BHBot.log(selectedWB + " selected.");
+							
+							if (!worldBossType.equals(selectedWB)) {
+								clickInGame(605, 310); //check if we have the right boss selected, else change it
+							}
+							
+							seg = detectCue(cues.get("LargeGreenSummon"),1*SECOND);
+							clickOnSeg(seg); //selected world boss
+							sleep(1*SECOND); //wait for screen to stablise
+							seg = detectCue(cues.get("SmallGreenSummon"),1*SECOND);
+							clickOnSeg(seg); //accept current settings
+
+							for (int i = 0; i < worldBossTimer; i++) {
+								readScreen();
+								seg = detectCue(cues.get("Invite"));
+								if (seg == null) {
+									sleep(1*SECOND);
+									BHBot.log(Integer.toString(i));
+								} else if (seg != null) {
+									readScreen();
+									seg = detectCue(cues.get("Start"),10*SECOND);
+									BHBot.log("Starting World Boss!");
+									//clickOnSeg(seg); //start World Boss
+								}
+							}
 							// State == worldBoss settings
 							// manually close victory screen
 							// back to WB listings and summon screen, single close back to world
@@ -1941,7 +1973,7 @@ public class MainThread implements Runnable {
 									continue;
 									}
 								}
-							}
+						}
 
 				} // main screen processing
 			} catch (Exception e) {
@@ -3228,6 +3260,43 @@ public class MainThread implements Runnable {
 		return null;
 	}
 
+	/** Check world boss inputs are valid **/
+	private boolean checkWorldBossInput() {
+		boolean failed = false;
+		int passed = 0;
+		
+		//check name
+		if (BHBot.settings.worldBossType.equals("Orlag") || BHBot.settings.worldBossType.equals("Nether")) {
+			passed++;
+		} else {
+			BHBot.log("Invalid world boss name, check settings file");
+			failed = true;
+		}
+		
+		//check tier
+		if (BHBot.settings.worldBossTier <= 9 || BHBot.settings.worldBossTier >= 1) {
+			passed++;
+		} else {
+			BHBot.log("Invalid world boss tier, must between 1 and 9");
+			failed = true;
+		}
+		
+		//warn user if timer is over 5 minutes
+		if (BHBot.settings.worldBossTimer <= 300) {
+			passed++;
+		} else {
+			BHBot.log("Timer longer than 5 minutes");
+		}
+		
+		if (!failed && passed == 3) {
+			return true;
+		} else {
+			return false;
+		}
+			
+		
+	}
+	
 	/** Returns dungeon and difficulty level, e.g. 'z2d4 2'. */
 	private String decideDungeonRandomly() {
 		if (BHBot.settings.dungeons.size() == 0)
@@ -3537,6 +3606,38 @@ public class MainThread implements Runnable {
 			return 0; // error
 	}
 
+	/** Read Selected World Boss **/
+	
+	public String readSelectedWorldBoss() {
+		MarvinSegment seg = detectCue(cues.get("WorldBossSelector"));
+		if (seg == null) {
+			BHBot.log("WB Selector not found");
+			return "Unknown";
+		}
+
+		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
+		Point center = new Point(seg.x1 + 5, seg.y1 + 5); // center of the raid button
+
+		// these are the locations of the raid dots  (center to center is 26px)
+		Point r1 = center.moveBy(26, 0); // one button to the right coords
+		Point l1 = center.moveBy(-26, 0); // one button to the left coords
+
+		//  these define the unselected dots to the right and left of the green selected raid dot, will return false if the dot does not exist
+		boolean r1Off = (new Color(img.getRGB(r1.x, r1.y))).equals(off);
+		boolean l1Off = (new Color(img.getRGB(l1.x, l1.y))).equals(off);
+
+
+		seg = null;
+
+		//using the calculated unlocked tier, calculate the currently selected raid
+		if (r1Off)
+			return "Nether";
+		else if (l1Off)
+			return "Orlag";
+		else
+			return "Unknown";
+	}
+	
 	/**
 	 * Note: raid window must be open for this to work!
 	 *
