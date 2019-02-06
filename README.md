@@ -23,6 +23,7 @@ The level/difficulty for each activity can be defined in the settings file. The 
 * Claim all weekly rewards
 * Screenshot and close PMs
 * Handle incomplete teams
+* Collect completed bounties
 
 If the bot detects a "Disconnected" dialog, it will pause its execution for 1 hour giving the user a chance to play manually.
 Disconnects are usually result of another instance logging into the game. This is why bot pauses in case it detects it.
