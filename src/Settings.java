@@ -82,7 +82,8 @@ public class Settings {
 	/** World Boss Settings **/
 	public String worldBossType = "Orlag";
 	public int worldBossTier  =  9;
-	public int worldBossTimer = 120;
+	public int worldBossTimer = 90;
+	public int worldBossDifficulty = 1;
 	
 	/**
 	 * List of equipment that should be stripped before attempting PvP (and dressed up again after PvP is done).
@@ -467,6 +468,8 @@ public class Settings {
 		
 		openSkeleton = Integer.parseInt(map.getOrDefault("openSkeletonChest", ""+openSkeleton));	
 		pauseOnDisconnect = Integer.parseInt(map.getOrDefault("pauseOnDisconnect", ""+pauseOnDisconnect));
+		
+		
 	}
 	
 	/** Loads settings from disk. */

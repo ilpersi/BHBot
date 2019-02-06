@@ -52,6 +52,7 @@ public class MainThread implements Runnable {
 		GVG("GVG"),
 		Invasion("Invasion"),
 		Expedition("Expedition"),
+		WorldBoss("WorldBoss"),
 		UnidentifiedDungeon("Unidentified dungeon"); // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
 
 		private String name;
@@ -481,7 +482,12 @@ public class MainThread implements Runnable {
 		addCue("LargeGreenSummon", loadImage("cues/cueLargeGreenSummon.png"),  null);
 		addCue("SmallGreenSummon", loadImage("cues/cueSmallGreenSummon.png"),  null);
 		addCue("Invite", loadImage("cues/cueInvite.png"),  new Bounds(336, 387, 452, 422)); //bounds define invite #5 only
+		addCue("InviteAny", loadImage("cues/cueInvite.png"),  null); //any instance of ready
 		addCue("Start", loadImage("cues/cueStart.png"),  null);
+		addCue("WorldBossVictory", loadImage("cues/cueWorldBossVictory.png"), null);
+		addCue("OrlagSelected", loadImage("cues/cueOrlagSelected.png"), new Bounds(360, 430, 440, 460));
+		addCue("NetherSelected", loadImage("cues/cueNetherSelected.png"), null);
+		addCue("Private", loadImage("cues/cuePrivate.png"), new Bounds(310, 320, 370, 380));
 		
 		//fishing related
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
@@ -1058,7 +1064,7 @@ public class MainThread implements Runnable {
 				}
 
 				// process dungeons of any kind (if we are in any):
-				if (state == State.Raid || state == State.Trials || state == State.Gauntlet || state == State.Dungeon || state == State.PVP || state == State.GVG || state == State.Invasion || state == State.UnidentifiedDungeon || state == State.Expedition ) {
+				if (state == State.Raid || state == State.Trials || state == State.Gauntlet || state == State.Dungeon || state == State.PVP || state == State.GVG || state == State.Invasion || state == State.UnidentifiedDungeon || state == State.Expedition || state == State.WorldBoss ) {
 					processDungeon();
 					continue;
 				}
@@ -1897,40 +1903,79 @@ public class MainThread implements Runnable {
 							String worldBossType = BHBot.settings.worldBossType;
 							int worldBossTier = BHBot.settings.worldBossTier;
 							int worldBossTimer = BHBot.settings.worldBossTimer;
+							int worldBossDifficulty = BHBot.settings.worldBossDifficulty;
+							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
 
-							BHBot.log("Summoning T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s");
-
-							//TODO
+							BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s");
 							
 							seg = detectCue(cues.get("BlueSummon"),1*SECOND);
 							clickOnSeg(seg);
-							sleep(1*SECOND); //wait for screen to stablise
+							sleep(2*SECOND); //wait for screen to stablise
 							
+							readScreen();
 							String selectedWB = readSelectedWorldBoss();
-							BHBot.log(selectedWB + " selected.");
-							
 							if (!worldBossType.equals(selectedWB)) {
-								clickInGame(605, 310); //check if we have the right boss selected, else change it
+								BHBot.log(selectedWB + " selected, changing..");
+								sleep(1*SECOND); //wait for screen to stablise
+								clickInGame(644, 303); //check if we have the right boss selected, else change it
 							}
 							
-							seg = detectCue(cues.get("LargeGreenSummon"),1*SECOND);
+							sleep(1*SECOND); //more stablising if we changed world boss type
+							readScreen();
+							seg = detectCue(cues.get("LargeGreenSummon"),3*SECOND);
 							clickOnSeg(seg); //selected world boss
+							
+							readScreen();
+							seg = detectCue(cues.get("Private"),1*SECOND);
+							if (seg != null) {
+								BHBot.log("Unchecking private lobby");
+								clickOnSeg(seg);
+							}
+							
+							//TODO Proper tier selection
+							//tier is static, transparency and bounds to read number
+							//move slider to top or bottom then select with pos(x,y) if needed
+							//temp just add tier 9 and select if !=
+							
+							// TODO Proper difficulty changing
+							//cues for 1-2-3
+							//select with pos(x,y)
+						
 							sleep(1*SECOND); //wait for screen to stablise
 							seg = detectCue(cues.get("SmallGreenSummon"),1*SECOND);
 							clickOnSeg(seg); //accept current settings
-
+							BHBot.log("Starting lobby..");
+							
 							for (int i = 0; i < worldBossTimer; i++) {
+								sleep(1*SECOND);
 								readScreen();
 								seg = detectCue(cues.get("Invite"));
-								if (seg == null) {
-									sleep(1*SECOND);
-									BHBot.log(Integer.toString(i));
-								} else if (seg != null) {
+								if (seg != null) {
+									if (i != 0 && (i % 10) == 0) {
+											int timeLeft = worldBossTimer - i;
+											BHBot.log("Waiting for full team. Time out in " + Integer.toString(timeLeft) + "s.");
+										}
+									if (i == (worldBossTimer - 1)) {
+										BHBot.log("Lobby timed out, returning to main screen.");
+										closeWorldBoss();
+										continue;
+									}
+									continue;
+								} else if (seg == null) {
+									BHBot.log("Lobby filled in " + Integer.toString(i) + "s, Starting World Boss");
+									i = worldBossTimer;
+									sleep(3*SECOND); //wait for last person to ready up
 									readScreen();
 									seg = detectCue(cues.get("Start"),10*SECOND);
-									BHBot.log("Starting World Boss!");
-									//clickOnSeg(seg); //start World Boss
+									
+									//TODO startWorldBossSafely();
+									
+									clickOnSeg(seg); //start World Boss
+									BHBot.log(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
+									state = State.WorldBoss;
+									
 								}
+								continue;
 							}
 							// State == worldBoss settings
 							// manually close victory screen
@@ -2052,6 +2097,25 @@ public class MainThread implements Runnable {
 		BHBot.log("Main thread stopped.");
 	}
 
+	// World boss invite button debugging
+	public void wbReady() {
+	readScreen();
+	MarvinSegment seg = detectCue(cues.get("OrlagSelected"));
+		if (seg == null) {
+			BHBot.log("Orlag Not Selected");;
+		} else if (seg != null) {
+			BHBot.log("Orlag Selected");
+		}
+	}
+	
+	private Boolean startWorldBossSafely() {
+		//press start
+		//if someone left/unreadied after pressing start deal with that
+		//make sure AutoOn or AutoOff are visible to confirm we're in
+		//then started string and state change
+		return true;
+	}
+	
 	/**
 	 * This form opens only seldom (haven't figured out what triggers it exactly - perhaps some cookie expired?). We need to handle it!
 	 */
@@ -2662,6 +2726,8 @@ public class MainThread implements Runnable {
 	 */
 	private void processDungeon() {
 		MarvinSegment seg;
+		
+//		BHBot.log("Processing Dungeon");
 
 		// handle "Not enough energy" popup:
 		boolean insufficientEnergy = handleNotEnoughEnergyPopup();
@@ -2930,8 +2996,10 @@ public class MainThread implements Runnable {
 		}
 
 		// check if we're done (victory - found in gauntlet, for example):
-		seg = detectCue(cues.get("Victory"));
-		if (seg != null) {
+		//Victory screen on world boss is slightly different, so we check both
+		MarvinSegment seg1 = detectCue(cues.get("Victory"));
+		MarvinSegment seg2 = detectCue(cues.get("WorldBossVictory"));
+		if (seg1 != null || seg2 != null) {
 			seg = detectCue(cues.get("CloseGreen"), 2*SECOND); // we need to wait a little bit because the popup scrolls down and the close button is semi-transparent (it stabilizes after popup scrolls down and bounces a bit)
 			if (seg != null)
 				clickOnSeg(seg);
@@ -2985,6 +3053,39 @@ public class MainThread implements Runnable {
 		BHBot.scheduler.restoreIdleTime();
 	}
 
+	public void closeWorldBoss() {
+		MarvinSegment seg;
+		
+		sleep(1*SECOND);
+		seg = detectCue(cues.get("X"), 2*SECOND);
+		if (seg != null) {
+			clickOnSeg(seg);
+		} else {
+			BHBot.log("first x Error returning to main screen from World Boss, restarting");
+//			return false;
+		}
+		
+		sleep(1*SECOND);
+		seg = detectCue(cues.get("YesGreen"), 2*SECOND);
+		if (seg != null) {
+			clickOnSeg(seg);
+		} else { 
+			BHBot.log("yesgreen Error returning to main screen from World Boss, restarting");
+//			return false;
+		}
+		
+		sleep(1*SECOND);
+		seg = detectCue(cues.get("X"), 2*SECOND);
+		if (seg != null) {
+			clickOnSeg(seg);
+		} else {
+			BHBot.log("second x Error returning to main screen from World Boss, restarting");
+//			return false;
+		}
+		
+//		return true;
+	}
+	
 	public int checkFamiliarCounter(String fam) { //returns current catch count for given familiar from the settings file
 		int catchCount = 0;
 		for (String f : BHBot.settings.familiars) { //cycle familiars defined in settings
@@ -3618,33 +3719,12 @@ public class MainThread implements Runnable {
 	/** Read Selected World Boss **/
 	
 	public String readSelectedWorldBoss() {
-		MarvinSegment seg = detectCue(cues.get("WorldBossSelector"));
-		if (seg == null) {
-			BHBot.log("WB Selector not found");
-			return "Unknown";
-		}
-
-		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
-		Point center = new Point(seg.x1 + 5, seg.y1 + 5); // center of the raid button
-
-		// these are the locations of the raid dots  (center to center is 26px)
-		Point r1 = center.moveBy(26, 0); // one button to the right coords
-		Point l1 = center.moveBy(-26, 0); // one button to the left coords
-
-		//  these define the unselected dots to the right and left of the green selected raid dot, will return false if the dot does not exist
-		boolean r1Off = (new Color(img.getRGB(r1.x, r1.y))).equals(off);
-		boolean l1Off = (new Color(img.getRGB(l1.x, l1.y))).equals(off);
-
-
-		seg = null;
-
-		//using the calculated unlocked tier, calculate the currently selected raid
-		if (r1Off)
-			return "Nether";
-		else if (l1Off)
+		MarvinSegment seg;
+		seg = detectCue(cues.get("OrlagSelected"));
+		if (seg != null)
 			return "Orlag";
 		else
-			return "Unknown";
+			return "Nether";
 	}
 	
 	/**
