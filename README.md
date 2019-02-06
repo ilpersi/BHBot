@@ -39,9 +39,9 @@ See [the wiki](https://github.com/Betalord/BHBot/wiki) for the first time setup 
 
 ## Important
 
-While bot is running, do not interfere with the Chromium window that the bot has open via chromedriver. That means don't open
-menus and click around since that may confuse the bot and it could fail to do its tasks (which could lead to crashing it). If you want to continue using your comuter while running the not use the 'hide' command to minimize the window. The bot clicks on certain buttons and cues and expects certain thing to pop up, and if they don't (due to user interaction), then it will fail to function properly. If you are running the bot in Windows, you may want to run it under a separate account in order for it to not interfere
-with your work.
+- While bot is running, do not interfere with the Chromium window that the bot has open via chromedriver. That means don't open menus and click around since that may confuse the bot and it could fail to do its tasks (which could lead to crashing it).
+- If you want to continue using your computer while running the bot use, the 'hide' command to minimize the window. The bot clicks on certain buttons and cues and expects certain thing to pop up, and if they don't (due to user interaction), then it will fail to function properly. 
+- If you are running the bot in Windows, you may want to run it under a separate account in order for it to not interfere with your work.
 
 ## Commands
 Here is a list of most common commands used with the bot (must be typed in the console window, or, if you use web interface, in the
