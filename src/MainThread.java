@@ -52,7 +52,7 @@ public class MainThread implements Runnable {
 		GVG("GVG"),
 		Invasion("Invasion"),
 		Expedition("Expedition"),
-		WorldBoss("WorldBoss"),
+		WorldBoss("World Boss"),
 		UnidentifiedDungeon("Unidentified dungeon"); // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
 
 		private String name;
@@ -482,12 +482,13 @@ public class MainThread implements Runnable {
 		addCue("LargeGreenSummon", loadImage("cues/cueLargeGreenSummon.png"),  null);
 		addCue("SmallGreenSummon", loadImage("cues/cueSmallGreenSummon.png"),  null);
 		addCue("Invite", loadImage("cues/cueInvite.png"),  new Bounds(336, 387, 452, 422)); //bounds define invite #5 only
-		addCue("InviteAny", loadImage("cues/cueInvite.png"),  null); //any instance of ready
+		addCue("InviteAny", loadImage("cues/cueInviteAny.png"), new Bounds(330, 220, 460, 430)); //any instance of ready
 		addCue("Start", loadImage("cues/cueStart.png"),  null);
 		addCue("WorldBossVictory", loadImage("cues/cueWorldBossVictory.png"), null);
 		addCue("OrlagSelected", loadImage("cues/cueOrlagSelected.png"), new Bounds(360, 430, 440, 460));
 		addCue("NetherSelected", loadImage("cues/cueNetherSelected.png"), null);
 		addCue("Private", loadImage("cues/cuePrivate.png"), new Bounds(310, 320, 370, 380));
+		addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
 		
 		//fishing related
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
@@ -1899,6 +1900,9 @@ public class MainThread implements Runnable {
 							readScreen();
 							detectCharacterDialogAndHandleIt(); //clear dialogue
 
+							//TODO Single line settings similar to raid/dungeon (E.G 'o 1 9 60')
+							//Maybe attach this to Dungeons with a % to do, similar login to GvG/Invasion
+							
 							//load settings
 							String worldBossType = BHBot.settings.worldBossType;
 							int worldBossTier = BHBot.settings.worldBossTier;
@@ -1906,7 +1910,7 @@ public class MainThread implements Runnable {
 							int worldBossDifficulty = BHBot.settings.worldBossDifficulty;
 							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
 
-							BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s");
+							BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s.");
 							
 							seg = detectCue(cues.get("BlueSummon"),1*SECOND);
 							clickOnSeg(seg);
@@ -1964,22 +1968,51 @@ public class MainThread implements Runnable {
 								} else if (seg == null) {
 									BHBot.log("Lobby filled in " + Integer.toString(i) + "s, Starting World Boss");
 									i = worldBossTimer;
-									sleep(3*SECOND); //wait for last person to ready up
+
+									while (1 == 1) { //loop while we make sure everyone has readied up
+										seg = detectCue(cues.get("Unready"), 2*SECOND);
+										readScreen();
+										if (seg == null) {// no red X's found
+											BHBot.log("Everyones ready!");
+											break;
+										} else if (seg != null) { //red X's found
+											sleep(1*SECOND);
+											int readyMessage = 1;
+											if (readyMessage == 1) {
+												BHBot.log("Waiting for everyone to be ready..");
+												readyMessage = 0; // Don't want to spam this every second
+											}
+										}
+									}
+									
 									readScreen();
-									seg = detectCue(cues.get("Start"),10*SECOND);
-									
-									//TODO startWorldBossSafely();
-									
-									clickOnSeg(seg); //start World Boss
-									BHBot.log(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
-									state = State.WorldBoss;
+									MarvinSegment segStart = detectCue(cues.get("Start"), 2*SECOND);
+									if (segStart != null) {
+										clickOnSeg(segStart); //start World Boss
+										readScreen();
+										seg = detectCue(cues.get("TeamNotFull"), 2*SECOND); //check if we have the team not full screen an clear it
+											if (seg != null) {
+												readScreen();
+												seg = detectCue(cues.get("GreenYes"), 2*SECOND);
+												clickOnSeg(seg);
+											}
+										BHBot.log(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
+										state = State.WorldBoss;
+										sleep(10*SECOND); //long wait to make sure we are in the world boss dungeon, and if so that processDungeon() has enabled AutoPilot
+										readScreen();
+										MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
+										if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
+											BHBot.log("World Boss started but no encounter detected, restarting");
+											restart();
+										}
+									} else { //generic error / unknown action restart
+										BHBot.log("Something went wrong while attempting to start the World Boss, restarting");
+										restart();
+									}
 									
 								}
 								continue;
 							}
-							// State == worldBoss settings
-							// manually close victory screen
-							// back to WB listings and summon screen, single close back to world
 						}
 						continue;
 					} // World Boss
@@ -2100,17 +2133,18 @@ public class MainThread implements Runnable {
 	// World boss invite button debugging
 	public void wbReady() {
 	readScreen();
-	MarvinSegment seg = detectCue(cues.get("OrlagSelected"));
+	MarvinSegment seg = detectCue(cues.get("AnyInvite"));
 		if (seg == null) {
-			BHBot.log("Orlag Not Selected");;
+			BHBot.log("Invite button not seen");;
 		} else if (seg != null) {
-			BHBot.log("Orlag Selected");
+			BHBot.log("Invite button seen!");
 		}
 	}
 	
 	private Boolean startWorldBossSafely() {
 		//press start
 		//if someone left/unreadied after pressing start deal with that
+		//not full team 
 		//make sure AutoOn or AutoOff are visible to confirm we're in
 		//then started string and state change
 		return true;
@@ -2445,6 +2479,8 @@ public class MainThread implements Runnable {
 	/** Returns amount of energy in percent (0-100). Returns -1 in case it cannot read energy for some reason. */
 	private int getEnergy() {
 		MarvinSegment seg;
+		
+		//TODO Read level circle and add 99 to get accurate energy?
 
 		seg = detectCue(cues.get("EnergyBar"));
 
