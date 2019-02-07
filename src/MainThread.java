@@ -1171,12 +1171,18 @@ public class MainThread implements Runnable {
 						if ((shards == 0) || (!BHBot.scheduler.doRaidImmediately && (shards <= BHBot.settings.minShards || BHBot.settings.raids.size() == 0))) {
 							if (BHBot.scheduler.doRaidImmediately)
 								BHBot.scheduler.doRaidImmediately = false; // reset it
-
-							seg = detectCue(cues.get("X"));
+							
+							readScreen();
+							seg = detectCue(cues.get("X"),1*SECOND);
 							clickOnSeg(seg);
-							sleep(2*SECOND);
-
+							sleep(1*SECOND);
 							continue;
+							
+							//pre speed boost code
+//							seg = detectCue(cues.get("X"));
+//							clickOnSeg(seg);
+//							sleep(2*SECOND);
+							
 						} else {
 							// do the raiding!
 
@@ -1273,12 +1279,15 @@ public class MainThread implements Runnable {
 						}
 
 						if (!BHBot.scheduler.doExpeditionImmediately && expeditionBadges <= BHBot.settings.minBadges) {
-							readScreen(2*SECOND);
-							seg = detectCue(cues.get("X"));
+							readScreen();
+							seg = detectCue(cues.get("X"),1*SECOND);
 							clickOnSeg(seg);
 							sleep(1*SECOND);
 							continue;
 						} else {
+							if (BHBot.scheduler.doExpeditionImmediately)
+								BHBot.scheduler.doExpeditionImmediately = false; //reset if we did a debug expedition
+							
 							// select cost if needed:
 							readScreen(2*SECOND); // wait for the popup to stabilize a bit
 							int cost = detectCost();
@@ -1406,9 +1415,10 @@ public class MainThread implements Runnable {
 						}
 
 						if ((!BHBot.scheduler.doTrialsOrGauntletImmediately && (tokens <= BHBot.settings.minTokens)) || (tokens < (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet))) {
-							seg = detectCue(cues.get("X"));
+							readScreen();
+							seg = detectCue(cues.get("X"),1*SECOND);
 							clickOnSeg(seg);
-							sleep(2*SECOND);
+							sleep(1*SECOND);
 
 							continue;
 						} else {
@@ -1502,6 +1512,7 @@ public class MainThread implements Runnable {
 						}
 
 						if (!BHBot.scheduler.doDungeonImmediately && (energy <= BHBot.settings.minEnergyPercentage || BHBot.settings.dungeons.size() == 0)) {
+							sleep(1*SECOND);
 							continue;
 						} else {
 							// do the dungeon!
@@ -1614,6 +1625,7 @@ public class MainThread implements Runnable {
 						}
 
 						if ((!BHBot.scheduler.doPVPImmediately && (tickets <= BHBot.settings.minTickets)) || (tickets < BHBot.settings.costPVP)) {
+							sleep(1*SECOND);
 							continue;
 						} else {
 							// do the pvp!
@@ -1724,10 +1736,10 @@ public class MainThread implements Runnable {
 						// check GVG:
 						if (badgeEvent == BadgeEvent.GVG) {
 							if ((!BHBot.scheduler.doGVGImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costGVG)) {
-								seg = detectCue(cues.get("X"));
+								readScreen();
+								seg = detectCue(cues.get("X"),1*SECOND);
 								clickOnSeg(seg);
-								sleep(2*SECOND);
-
+								sleep(1*SECOND);
 								continue;
 							} else {
 								// do the GVG!
@@ -1800,9 +1812,10 @@ public class MainThread implements Runnable {
 						// check invasion:
 						else if (badgeEvent == BadgeEvent.Invasion) {
 							if ((!BHBot.scheduler.doInvasionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costInvasion)) {
-								seg = detectCue(cues.get("X"));
+								readScreen();
+								seg = detectCue(cues.get("X"),1*SECOND);
 								clickOnSeg(seg);
-								sleep(2*SECOND);
+								sleep(1*SECOND);
 
 								continue;
 							} else {
@@ -1878,6 +1891,7 @@ public class MainThread implements Runnable {
 						}
 
 						if (!BHBot.scheduler.doWorldBossImmediately && (energy <= BHBot.settings.minEnergyPercentage)) {
+							sleep(1*SECOND);
 							continue;
 						} else { 
 							// do the WorldBoss!
@@ -1899,9 +1913,6 @@ public class MainThread implements Runnable {
 							
 							readScreen();
 							detectCharacterDialogAndHandleIt(); //clear dialogue
-
-							//TODO Single line settings similar to raid/dungeon (E.G 'o 1 9 60')
-							//Maybe attach this to Dungeons with a % to do, similar login to GvG/Invasion
 							
 							//load settings
 							String worldBossType = BHBot.settings.worldBossType;
@@ -1955,7 +1966,7 @@ public class MainThread implements Runnable {
 								readScreen();
 								seg = detectCue(cues.get("Invite"));
 								if (seg != null) {
-									if (i != 0 && (i % 10) == 0) {
+									if (i != 0 && (i % 15) == 0) {
 											int timeLeft = worldBossTimer - i;
 											BHBot.log("Waiting for full team. Time out in " + Integer.toString(timeLeft) + "s.");
 										}
@@ -1966,7 +1977,7 @@ public class MainThread implements Runnable {
 									}
 									continue;
 								} else if (seg == null) {
-									BHBot.log("Lobby filled in " + Integer.toString(i) + "s, Starting World Boss");
+									BHBot.log("Lobby filled in " + Integer.toString(i) + "s, starting World Boss");
 									i = worldBossTimer;
 
 									while (1 == 1) { //loop while we make sure everyone has readied up
@@ -2021,7 +2032,7 @@ public class MainThread implements Runnable {
 					/** I can't get a working while loop to clear all bounties available, so we simply check and clear one if available every 6 hours **/
 					if ((BHBot.settings.collectBounties && Misc.getTime() - timeLastBountyCheck > BOUNTY_CHECK_INTERVAL)) {
 						timeLastBountyCheck = Misc.getTime();
-						BHBot.log("Collecting bounties..");
+						BHBot.log("Checking bounties..");
 
 							sleep(2*SECOND); //make sure screen is stable
 							clickInGame(130, 440); // click on the bounties icon
@@ -3035,7 +3046,7 @@ public class MainThread implements Runnable {
 		//Victory screen on world boss is slightly different, so we check both
 		MarvinSegment seg1 = detectCue(cues.get("Victory"));
 		MarvinSegment seg2 = detectCue(cues.get("WorldBossVictory"));
-		if (seg1 != null || seg2 != null) {
+		if (seg1 != null || (state == State.WorldBoss && seg2 != null)) { //seg2 needs state defined as otherwise the battle victory screen in dungeon-type encounters triggers it
 			seg = detectCue(cues.get("CloseGreen"), 2*SECOND); // we need to wait a little bit because the popup scrolls down and the close button is semi-transparent (it stabilizes after popup scrolls down and bounces a bit)
 			if (seg != null)
 				clickOnSeg(seg);
