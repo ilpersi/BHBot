@@ -17,6 +17,7 @@ public class Settings {
 	public int openSkeleton = 0;
 	public boolean autoBribe  = false;
 	public boolean collectBounties  = false;
+	public boolean dungeonOnTimeout = true;
 	
 	public boolean doRaids = false;
 	public boolean doDungeons = false;
