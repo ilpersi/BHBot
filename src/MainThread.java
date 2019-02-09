@@ -261,7 +261,7 @@ public class MainThread implements Runnable {
 	public final long MAX_IDLE_TIME = 30*MINUTE;
 	/** Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale. */
 	private int numConsecutiveException = 0;
-	private final int MAX_CONSECUTIVE_EXCEPTIONS = 30;
+	private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 	/** Amount of ads that were offered in main screen since last restart. We need it in order to do restart() after 2 ads, since sometimes ads won't get offered anymore after two restarts. */
 	public int numAdOffers = 0;
 	/** Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through! */
@@ -1166,7 +1166,7 @@ public class MainThread implements Runnable {
 						}
 
 						int shards = getShards();
-						//globalShards = shards;
+						globalShards = shards;
 						BHBot.log("Shards: " + shards + ", required: >" + BHBot.settings.minShards);
 
 						if (shards == -1) { // error
@@ -1277,7 +1277,7 @@ public class MainThread implements Runnable {
 						//check badge count
 						readScreen();
 						int expeditionBadges = getBadges();
-						//globalBadges = expeditionBadges;
+						globalBadges = expeditionBadges;
 						BHBot.log("Badges: " + expeditionBadges + ", required: >" + BHBot.settings.minBadges);
 
 						if (expeditionBadges == -1) { // error
@@ -1414,7 +1414,7 @@ public class MainThread implements Runnable {
 
 						readScreen();
 						int tokens = getTokens();
-						//globalTokens = tokens;
+						globalTokens = tokens;
 						BHBot.log("Tokens: " + tokens + ", required: >" + BHBot.settings.minTokens);
 
 						if (tokens == -1) { // error
@@ -1512,7 +1512,7 @@ public class MainThread implements Runnable {
 					if (BHBot.scheduler.doDungeonImmediately || (BHBot.settings.doDungeons && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
 						timeLastEnergyCheck = Misc.getTime();
 						int energy = getEnergy();
-						//globalEnergy = energy;
+						globalEnergy = energy;
 						BHBot.log("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
 
 						if (energy == -1) { // error
@@ -1592,9 +1592,12 @@ public class MainThread implements Runnable {
 								seg = detectCue(cues.get("Accept"), 1*SECOND);
 								clickOnSeg(seg);
 								readScreen();
-								sleep(1*SECOND); //wait for dropdown animation to finish
-								seg = detectCue(cues.get("YesGreen"), 1*SECOND);
+								sleep(2*SECOND); //wait for dropdown animation to finish
+								seg = detectCue(cues.get("YesGreen"), 2*SECOND);
+								//TODO Change to clickingame as yesGreen has issues
 								clickOnSeg(seg);
+								sleep(500);
+								clickInGame(330,360); //yesgreen cue has issues so we use pos to click on Yes as a backup
 								state = State.Dungeon;
 								BHBot.log("Dungeon <" + dungeon + "> initiated solo!");
 								continue;
@@ -1626,7 +1629,7 @@ public class MainThread implements Runnable {
 					if (BHBot.scheduler.doPVPImmediately || (BHBot.settings.doPVP && Misc.getTime() - timeLastTicketsCheck > TICKETS_CHECK_INTERVAL)) {
 						timeLastTicketsCheck = Misc.getTime();
 						int tickets = getTickets();
-						//globalTickets = tickets;
+						globalTickets = tickets;
 						BHBot.log("Tickets: " + tickets  + ", required: >" + BHBot.settings.minTickets);
 
 						if (tickets == -1) { // error
@@ -1736,7 +1739,7 @@ public class MainThread implements Runnable {
 
 						readScreen();
 						int badges = getBadges();
-						//globalBadges = badges;
+						globalBadges = badges;
 						BHBot.log("Badges: " + badges + ", required: >" + BHBot.settings.minBadges);
 
 						if (badges == -1) { // error
@@ -1894,7 +1897,7 @@ public class MainThread implements Runnable {
 					if (BHBot.scheduler.doWorldBossImmediately || (BHBot.settings.doWorldBoss && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
 						timeLastEnergyCheck = Misc.getTime();
 						int energy = getEnergy();
-						//globalEnergy = energy;
+						globalEnergy = energy;
 						BHBot.log("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
 
 						if (energy == -1) { // error
@@ -1933,7 +1936,8 @@ public class MainThread implements Runnable {
 							int worldBossDifficulty = BHBot.settings.worldBossDifficulty;
 							
 							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
-							BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s.");
+//							BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s.");
+							BHBot.log("World Boss Testing, running last ran settings. Lobby timeout is " + worldBossTimer + "s");
 							
 							seg = detectCue(cues.get("BlueSummon"),1*SECOND);
 							clickOnSeg(seg);
@@ -2022,10 +2026,8 @@ public class MainThread implements Runnable {
 										readScreen();
 										seg = detectCue(cues.get("TeamNotFull"), 2*SECOND); //check if we have the team not full screen an clear it
 											if (seg != null) {
-												sleep(1*SECOND); //wait for animation to finish
-												readScreen();
-												seg = detectCue(cues.get("GreenYes"), 2*SECOND);
-												clickOnSeg(seg);
+												sleep(2*SECOND); //wait for animation to finish
+												clickInGame(330,360); //yesgreen cue has issues so we use pos to click on Yes
 											}
 										BHBot.log(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
 										state = State.WorldBoss;
@@ -2794,35 +2796,41 @@ public class MainThread implements Runnable {
 	private void processDungeon() {
 		MarvinSegment seg;
 		
-//		BHBot.log("Processing Dungeon");
 
 		// handle "Not enough energy" popup:
 		boolean insufficientEnergy = handleNotEnoughEnergyPopup();
 		if (insufficientEnergy) {
 			state = State.Main; // reset state
-			return ;
+			return;
 		}
 
 		// check for any character dialog:
+		/* This is nearly half of the proccessing time of proccessDungeon(); so trying to minimize its usage */
+		if (state == State.Dungeon || state == State.Raid) {
 		detectCharacterDialogAndHandleIt();
+		return;
+		}
 
 		// check for 1X and 3X speed (and increase it):
-		int speed = 0; // unknown
-		seg = detectCue(cues.get("1Xspeed"));
-		if (seg != null)
-			speed = 1;
-		if (speed == 0) {
-			seg = detectCue(cues.get("3Xspeed"));
-			if (seg != null)
-				speed = 3;
-		}
-		if (speed == 1 || speed == 3) {
-			clickOnSeg(seg);
-			if (speed == 1)
-				clickOnSeg(seg); // click twice to increase speed to 5X
-			BHBot.log("Increased battle speed (old speed=" + speed + "X).");
-			return;
-		}
+		
+		/* Currently not working */
+		
+//		int speed = 0; // unknown
+//		seg = detectCue(cues.get("1Xspeed"));
+//		if (seg != null)
+//			speed = 1;
+//		if (speed == 0) {
+//			seg = detectCue(cues.get("3Xspeed"));
+//			if (seg != null)
+//				speed = 3;
+//		}
+//		if (speed == 1 || speed == 3) {
+//			clickOnSeg(seg);
+//			if (speed == 1)
+//				clickOnSeg(seg); // click twice to increase speed to 5X
+//			BHBot.log("Increased battle speed (old speed=" + speed + "X).");
+//			return;
+//		}
 
 		// check for auto-pilot disabled:
 		seg = detectCue(cues.get("AutoOff"));
@@ -2834,33 +2842,36 @@ public class MainThread implements Runnable {
 		}
 
 		// check for ad treasure:
-		seg = detectCue(cues.get("AdTreasure"));
-		if (seg != null) {
-			BHBot.log("Ad detected, attempting to run");
-			seg = detectCue(cues.get("Watch2"), 5*SECOND);
-			clickOnSeg(seg);
-
-			sleep(5*SECOND);
-
-			trySkippingAd();
-
-//			sleep(40 * SECOND);
-
-//			ReturnResult result = waitForAdAndCloseIt(false);
-//			if (result.msg != null) {
-//				Misc.log("Error: " + result.msg);
-//			}
-
-			sleep(5*SECOND);
-
-			// note that the reward window closes automatically inside dungeons (when autopilot is enabled)
-
-			scrollGameIntoView();
-
-			sleep(2 * SECOND);
-
-			return;
-		}
+		
+		/* Disabling until Ads are back */
+		
+//		seg = detectCue(cues.get("AdTreasure"));
+//		if (seg != null) {
+//			BHBot.log("Ad detected, attempting to run");
+//			seg = detectCue(cues.get("Watch2"), 5*SECOND);
+//			clickOnSeg(seg);
+//
+//			sleep(5*SECOND);
+//
+//			trySkippingAd();
+//
+////			sleep(40 * SECOND);
+//
+////			ReturnResult result = waitForAdAndCloseIt(false);
+////			if (result.msg != null) {
+////				Misc.log("Error: " + result.msg);
+////			}
+//
+//			sleep(5*SECOND);
+//
+//			// note that the reward window closes automatically inside dungeons (when autopilot is enabled)
+//
+//			scrollGameIntoView();
+//
+//			sleep(2 * SECOND);
+//
+//			return;
+//		}
 
 		// check for persuasions:
 		seg = detectCue(cues.get("Persuade"));
@@ -2873,15 +2884,12 @@ public class MainThread implements Runnable {
 			if (seg != null) {
 				clickOnSeg(seg);
 				for (String f : BHBot.settings.familiars) { //cycle through array
-					//sleep(2*SECOND);
 					readScreen();
 					String fam = f.toUpperCase().split(" ")[0];
 					seg = detectCue(cues.get(fam), 1*SECOND);
 					int bribeCount = checkFamiliarCounter(fam);
-//					BHBot.log("Checking for familiar to bribe: " + fam);
 					if (seg != null && !(bribeCount < 1) && (BHBot.settings.autoBribe)) {
 						BHBot.log("Bribing " + fam);
-//						BHBot.log("Bribe Counter: " + bribeCount);
 						readScreen();
 						seg = detectCue(cues.get("X"), 2*SECOND); // the sleep at the end is the timeout, else it will click as soon as its available
 						if (seg != null) {
@@ -2896,19 +2904,17 @@ public class MainThread implements Runnable {
 						readScreen();
 						seg = detectCue(cues.get("YesGreen"), 2*SECOND);
 						if (seg != null) {
-//							clickOnSeg(seg);
 							sleep(1*SECOND);
-							clickInGame(330,360);
+							clickInGame(330,360); //click in game as the drop down was too inconsistent to find the cue
 						} else restart();
 						saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
 						updateFamiliarCounter(fam, bribeCount);
 						return;
 					}
 				}
-				BHBot.log("No match, bribe limit met or autoBribe disabled, attempting persuasion");
+				BHBot.log("No bribe flags were met, persuading");
 				sleep(1*SECOND);
 				if (BHBot.settings.familiarScreenshot) {
-//					BHBot.log("Unknown familiar, saving screenshot");
 					saveGameScreen("familiar-cue-test"); //If the familiar is unknown we might not have an image for it yet, so save a screenshot to create a cue from
 				}
 				readScreen();
@@ -2996,7 +3002,7 @@ public class MainThread implements Runnable {
 				sleep(1*SECOND);
 			}
 			BHBot.log(state.getName() + " completed successfully. Result: Victory");
-			if (BHBot.settings.resetTimersOnBattleEnd) resetTimers();
+			resetAppropriateTimers();
 			if (state == State.PVP) dressUp();
 			state = State.Main; // reset state
 			return;
@@ -3056,7 +3062,7 @@ public class MainThread implements Runnable {
 			} else {
 				BHBot.log(state.getName() + " completed successfully. Result: Defeat");
 			}
-			if (BHBot.settings.resetTimersOnBattleEnd) resetTimers();
+			resetAppropriateTimers();
 			if (state == State.PVP) dressUp();
 			state = State.Main; // reset state
 			return;
@@ -3087,7 +3093,7 @@ public class MainThread implements Runnable {
 
 			sleep(1*SECOND);
 			BHBot.log(state.getName() + " completed successfully. Result: Victory");
-			if (BHBot.settings.resetTimersOnBattleEnd) resetTimers();
+			resetAppropriateTimers();
 			state = State.Main; // reset state
 			return;
 		}
@@ -3110,7 +3116,7 @@ public class MainThread implements Runnable {
 				closePopupSecurely(cues.get("PVPWindow"), cues.get("X")); // ignore failure
 			sleep(1*SECOND);
 			BHBot.log(state.getName() + " completed successfully. Result: Victory");
-			if (BHBot.settings.resetTimersOnBattleEnd) resetTimers();
+			resetAppropriateTimers();
 			if (state == State.PVP) dressUp();
 			state = State.Main; // reset state
 			return;
@@ -4830,21 +4836,21 @@ public class MainThread implements Runnable {
 	
 	/* This will only reset timers for activities we still have resources to run */
 	/* This saves cycling through the list of all activities to run every time we finish one */
-//	public void resetAppropriateTimers() {
-//		if ( (globalShards - 1) > BHBot.settings.minShards && state == State.Raid ) timeLastShardsCheck = 0;
-//	
-//		if ( (globalBadges - BHBot.settings.costExpedition) > BHBot.settings.minBadges && (state == State.Expedition) ) timeLastBadgesCheck = 0;
-//		
-//		if ( (globalBadges - BHBot.settings.costInvasion) > BHBot.settings.minBadges && (state == State.Invasion ) ) timeLastBadgesCheck = 0;
-//		
-//		if ( (globalBadges - BHBot.settings.costGVG) > BHBot.settings.minBadges && (state == State.GVG) ) timeLastBadgesCheck = 0;
-//		
-//		if ( (globalEnergy - 10) > BHBot.settings.minEnergyPercentage && (state == State.Dungeon || state == State.WorldBoss) ) timeLastEnergyCheck = 0;
-//		
-//		if ( (globalTickets - BHBot.settings.costPVP) > BHBot.settings.minTickets && state == State.PVP ) timeLastTicketsCheck = 0;
-//		
-//		if ( (globalTokens - BHBot.settings.costTrials) > BHBot.settings.minTokens && (state == State.Trials) ) timeLastTokensCheck = 0;
-//		
-//		if ( (globalTokens - BHBot.settings.costGauntlet) > BHBot.settings.minTokens && (state == State.Gauntlet) ) timeLastTokensCheck = 0;
-//	}
+	public void resetAppropriateTimers() {
+		if ( (globalShards - 1) > BHBot.settings.minShards && state == State.Raid ) timeLastShardsCheck = 0;
+	
+		if ( (globalBadges - BHBot.settings.costExpedition) > BHBot.settings.minBadges && (state == State.Expedition) ) timeLastBadgesCheck = 0;
+		
+		if ( (globalBadges - BHBot.settings.costInvasion) > BHBot.settings.minBadges && (state == State.Invasion ) ) timeLastBadgesCheck = 0;
+		
+		if ( (globalBadges - BHBot.settings.costGVG) > BHBot.settings.minBadges && (state == State.GVG) ) timeLastBadgesCheck = 0;
+		
+		if ( (globalEnergy - 10) > BHBot.settings.minEnergyPercentage && (state == State.Dungeon || state == State.WorldBoss) ) timeLastEnergyCheck = 0;
+		
+		if ( (globalTickets - BHBot.settings.costPVP) > BHBot.settings.minTickets && state == State.PVP ) timeLastTicketsCheck = 0;
+		
+		if ( (globalTokens - BHBot.settings.costTrials) > BHBot.settings.minTokens && (state == State.Trials) ) timeLastTokensCheck = 0;
+		
+		if ( (globalTokens - BHBot.settings.costGauntlet) > BHBot.settings.minTokens && (state == State.Gauntlet) ) timeLastTokensCheck = 0;
+	}
 }
