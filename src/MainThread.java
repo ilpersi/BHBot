@@ -494,6 +494,11 @@ public class MainThread implements Runnable {
 		addCue("NetherSelected", loadImage("cues/cueNetherSelected.png"), null);
 		addCue("Private", loadImage("cues/cuePrivate.png"), new Bounds(310, 320, 370, 380));
 		addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
+		addCue("WorldBossTier", loadImage("cues/cueWorldBossTier.png"), new Bounds(300, 180, 500, 250));
+		addCue("WorldBossDifficultyNormal", loadImage("cues/cueWorldBossDifficultyNormal.png"), new Bounds(325, 277, 444, 320));
+		addCue("WorldBossDifficultyHard", loadImage("cues/cueWorldBossDifficultyHard.png"), new Bounds(325, 277, 444, 320));
+		addCue("WorldBossDifficultyHeroic", loadImage("cues/cueWorldBossDifficultyHeroic.png"), new Bounds(325, 277, 444, 320));
+		
 		
 		//fishing related
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
@@ -1936,8 +1941,8 @@ public class MainThread implements Runnable {
 							int worldBossDifficulty = BHBot.settings.worldBossDifficulty;
 							
 							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
-//							BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s.");
-							BHBot.log("World Boss Testing, running last ran settings. Lobby timeout is " + worldBossTimer + "s");
+							BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s.");
+//							BHBot.log("World Boss Testing, running last ran settings. Lobby timeout is " + worldBossTimer + " seconds");
 							
 							seg = detectCue(cues.get("BlueSummon"),1*SECOND);
 							clickOnSeg(seg);
@@ -1963,18 +1968,24 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 							}
 							
-							//TODO Proper tier selection
-							//tier is static, transparency and bounds to read number
-							//move slider to top or bottom then select with pos(x,y) if needed
-							//temp just add tier 9 and select if !=
+							int currentTier = detectWorldBossTier();
+							if (currentTier != BHBot.settings.worldBossTier) {
+								BHBot.log("T" + currentTier + " detected, changing to T" + BHBot.settings.worldBossTier);
+								changeWorldBossTier(BHBot.settings.worldBossTier);
+							}
 							
-							// TODO Proper difficulty changing
-							//cues for 1-2-3
-							//select with pos(x,y)
+							
+							int currentDifficulty = detectWorldBossDifficulty();
+							String currentDifficultyName = (currentDifficulty == 1 ? "Normal" : currentDifficulty == 2 ? "Hard" : "Heroic");
+							String settingsDifficultyName = (BHBot.settings.worldBossDifficulty == 1 ? "Normal" : BHBot.settings.worldBossDifficulty == 2 ? "Hard" : "Heroic");
+							if (currentDifficulty != BHBot.settings.worldBossDifficulty) {
+								BHBot.log(currentDifficultyName + " detected, changing to " + settingsDifficultyName);
+								changeWorldBossDifficulty(BHBot.settings.worldBossDifficulty);
+							}
 						
 							sleep(1*SECOND); //wait for screen to stablise
 							seg = detectCue(cues.get("SmallGreenSummon"),1*SECOND);
-							clickOnSeg(seg); //accept current settings
+							//clickOnSeg(seg); //accept current settings
 							BHBot.log("Starting lobby..");
 							
 							//this part gets messy
@@ -1988,7 +1999,7 @@ public class MainThread implements Runnable {
 								if (seg != null) {
 									if (i != 0 && (i % 15) == 0) { //every 15 seconds
 											int timeLeft = worldBossTimer - i;
-											BHBot.log("Waiting for full team. Time out in " + Integer.toString(timeLeft) + "s.");
+											BHBot.log("Waiting for full team. Time out in " + Integer.toString(timeLeft) + " seconds.");
 										}
 									if (i == (worldBossTimer - 1)) {
 										if (BHBot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
@@ -2004,19 +2015,27 @@ public class MainThread implements Runnable {
 									}
 									continue;
 								} else if (seg == null) {
-									BHBot.log("Lobby filled in " + Integer.toString(i) + "s!");
+									BHBot.log("Lobby filled in " + Integer.toString(i) + " seconds!");
 									i = worldBossTimer; // end the for loop
 									
 									//check that all players are ready
 									BHBot.log("Making sure everyones ready..");
-									while (1 == 1) { //infinite loop while we make sure everyone has readied up
+									int j = 1;
+									while (j != 20) { //ready check for 10 seconds
 										seg = detectCue(cues.get("Unready"), 2*SECOND); //this checks all 4 ready statuses
 										readScreen();
 										if (seg == null) {// no red X's found
 											break;
 										} else if (seg != null) { //red X's found
-											sleep(1*SECOND);
+											BHBot.log(Integer.toString(j));
+											j++;
+											sleep(500); //check every 500ms
 										}
+									}
+									
+									if (j >= 20) {
+										BHBot.log("Ready check failed, restarting");
+										restart();
 									}
 									
 									readScreen();
@@ -2164,24 +2183,11 @@ public class MainThread implements Runnable {
 	}
 
 	// World boss invite button debugging
-	public void wbReady() {
-	readScreen();
-	MarvinSegment seg = detectCue(cues.get("AnyInvite"));
-		if (seg == null) {
-			BHBot.log("Invite button not seen");;
-		} else if (seg != null) {
-			BHBot.log("Invite button seen!");
-		}
+	public void wbTest() {
+		int t = detectWorldBossDifficulty();
+		BHBot.log(Integer.toString(t));
 	}
-	
-	private Boolean startWorldBossSafely() {
-		//press start
-		//if someone left/unreadied after pressing start deal with that
-		//not full team 
-		//make sure AutoOn or AutoOff are visible to confirm we're in
-		//then started string and state change
-		return true;
-	}
+
 	
 	/**
 	 * This form opens only seldom (haven't figured out what triggers it exactly - perhaps some cookie expired?). We need to handle it!
@@ -4027,6 +4033,116 @@ public class MainThread implements Runnable {
 		int d = readNumFromImg(imb);
 
 		return d;
+	}
+	
+	//TODO MAke this for world boss
+	public int detectWorldBossTier() {
+		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),1*SECOND);
+		if (seg == null) {
+			BHBot.log("Error: unable to detect world boss difficulty selection box!");
+			saveGameScreen("early_error");
+			return 0; // error
+		}
+
+		MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 98, seg.y1 + 9, 134, 31));
+
+		// make it white-gray (to facilitate cue recognition):
+		makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
+
+		BufferedImage imb = im.getBufferedImage();
+		int d = readNumFromImg(imb);
+		
+		if (d < 100) {
+		d = ( d - 1 ) / 10; //because I left room for tier 10 it returns 91, 81, 71 etc, this is a quick fix
+		}
+		
+		return d;
+	}
+	
+	public void changeWorldBossTier(int target) {
+		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),1*SECOND);
+		if (seg == null) {
+			BHBot.log("Error: unable to detect world boss difficulty selection box!");
+			saveGameScreen("early_error");
+			restart();
+		}
+		clickOnSeg(seg);
+		sleep(2*SECOND); //wait for screen to stabilize
+		//get known screen position for difficulty screen selection
+		if (target >= 5) { //top most
+			readScreen();
+			MarvinSegment up = detectCue(cues.get("DropDownUp"),1*SECOND);
+			clickOnSeg(up);
+			clickOnSeg(up);
+		} else { //bottom most
+			readScreen();
+			MarvinSegment down = detectCue(cues.get("DropDownDown"),1*SECOND);
+			clickOnSeg(down);
+			clickOnSeg(down);
+			}
+		sleep(1*SECOND); //wait for screen to stabilize
+		Point diff = getDifficultyButtonXY(target);
+		clickInGame(diff.y, diff.x);
+	}
+	
+	private Point getDifficultyButtonXY(int target) {
+		switch (target) {
+		case 3:
+			return new Point(410, 390);
+		case 4:
+			return new Point(350, 390); //bottom 2 buttons after we scroll to the bottom
+		case 5:
+			return new Point(410, 390); //top 5 buttons after we scroll to the top
+		case 6:
+			return new Point(350, 390);
+		case 7:
+			return new Point(290, 390);
+		case 8:
+			return new Point(230, 390);
+		case 9:
+			return new Point(170, 390);
+		}
+		return null;
+	}
+	
+	private int detectWorldBossDifficulty() {
+		readScreen();
+		MarvinSegment normal = detectCue(cues.get("WorldBossDifficultyNormal"),1*SECOND);
+		if (normal != null) {
+			return 1;
+		}
+		
+		MarvinSegment hard = detectCue(cues.get("WorldBossDifficultyHard"),1*SECOND);
+		if (hard != null) {
+			return 2;
+		}
+		
+		MarvinSegment heroic = detectCue(cues.get("WorldBossDifficultyHeroic"),1*SECOND);
+		if (heroic != null) {
+			return 3;
+		} 
+		else return 0;
+	}
+	
+	private void changeWorldBossDifficulty(int target) {
+		
+		/* Cant get dynamic cue name working below so this is a quick fix */
+		sleep(1*SECOND); //screen stabilising
+		clickInGame(480,300); //difficulty button
+		sleep(1*SECOND); //screen stabilising
+		
+//		String targetName = (target == 1 ? "Normal" : target == 2 ? "Hard" : "Heroic"); //get current difficulty name so we can load the right cue
+//		String cueName = "WorldBossDifficulty" + targetName;
+//		MarvinSegment button = detectCue(cues.get(cueName),1*SECOND);
+//		clickOnSeg(button);
+		
+		if (target == 1) {
+			clickInGame(390, 170); //top button
+		} else if (target == 2) {
+			clickInGame(390, 230); // middle button
+		} else if (target == 3) {
+			clickInGame(390, 290); //bottom button
+		}
 	}
 	
 	/**

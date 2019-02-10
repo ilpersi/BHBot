@@ -345,7 +345,7 @@ public class BHBot {
 		} else if (params[0].equals("etest")) {
 			main.expeditionReadTest();
 		} else if (params[0].equals("wbtest")) {
-			main.wbReady();
+			main.wbTest();
 		}
 	}
 	
