@@ -486,8 +486,8 @@ public class MainThread implements Runnable {
 		addCue("BlueSummon", loadImage("cues/cueBlueSummon.png"),  null);
 		addCue("LargeGreenSummon", loadImage("cues/cueLargeGreenSummon.png"),  null);
 		addCue("SmallGreenSummon", loadImage("cues/cueSmallGreenSummon.png"),  null);
-		addCue("Invite", loadImage("cues/cueInvite.png"),  new Bounds(336, 387, 452, 422)); //bounds define invite #5 only
-		addCue("InviteAny", loadImage("cues/cueInviteAny.png"), new Bounds(330, 220, 460, 430)); //any instance of ready
+		addCue("Invite", loadImage("cues/cueInvite.png"),  new Bounds(336, 387, 452, 422)); //bounds defined 5th invite button
+		addCue("InviteNether", loadImage("cues/cueInviteAny.png"), new Bounds(334, 275, 456, 323)); //bounds defined 3rd invite button for Nether
 		addCue("Start", loadImage("cues/cueStart.png"),  null);
 		addCue("WorldBossVictory", loadImage("cues/cueWorldBossVictory.png"), null);
 		addCue("OrlagSelected", loadImage("cues/cueOrlagSelected.png"), new Bounds(360, 430, 440, 460));
@@ -875,7 +875,12 @@ public class MainThread implements Runnable {
 //		BHBot.log("collectBounties = " + Boolean.toString(BHBot.settings.collectBounties));
 		
 		//End debugging section
-
+		
+		if ((BHBot.settings.doDungeons) && (BHBot.settings.doWorldBoss)) {
+			BHBot.log("Both Dungeons and World Boss selected, disabling World Boss.");
+			BHBot.log("To run a mixture of both use a low lobby timer and enable dungeonOnTimeout");
+			BHBot.settings.doWorldBoss = false;
+		}
 		state = State.Loading;
 		BHBot.scheduler.resetIdleTime();
 		numAdOffers = 0; // reset ad offers counter
@@ -1540,10 +1545,11 @@ public class MainThread implements Runnable {
 
 							String dungeon = decideDungeonRandomly();
 							int difficulty = Integer.parseInt(dungeon.split(" ")[1]);
+							String difficultyName = (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic");
 							dungeon = dungeon.split(" ")[0];
 							int goalZone = Integer.parseInt(""+dungeon.charAt(1));
 
-							BHBot.log("Attempting dungeon " + dungeon + " at diffulty " + difficulty);
+							BHBot.log("Attempting " + difficultyName + " " + dungeon);
 
 							int currentZone = readCurrentZone();
 							int vec = goalZone - currentZone; // movement vector
@@ -1585,7 +1591,7 @@ public class MainThread implements Runnable {
 							}
 							
 							//team selection screen
-							/* Solo  bounty test code */
+							/* Solo-for-bounty code */
 							int soloThreshold = Character.getNumericValue(dungeon.charAt(1)); //convert the zone char to int so we can compare
 							if (soloThreshold <= BHBot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
 								BHBot.log("Zone less than dungeon solo threshold, attempting solo");
@@ -1599,13 +1605,18 @@ public class MainThread implements Runnable {
 								readScreen();
 								sleep(2*SECOND); //wait for dropdown animation to finish
 								seg = detectCue(cues.get("YesGreen"), 2*SECOND);
-								//TODO Change to clickingame as yesGreen has issues
-								clickOnSeg(seg);
-								sleep(500);
-								clickInGame(330,360); //yesgreen cue has issues so we use pos to click on Yes as a backup
+								if (seg == null) {
+									sleep(500);
+									clickInGame(330,360); //yesgreen cue has issues so we use pos to click on Yes as a backup
+								} else {
+									clickOnSeg(seg);
+									clickInGame(330,360); //click anyway this cue has issues
+								}
+
 								state = State.Dungeon;
 								BHBot.log("Dungeon <" + dungeon + "> initiated solo!");
 								continue;
+								
 							} else { // d1-d3
 								readScreen(1*SECOND);
 								seg = detectCue(cues.get("D4Accept")); //D4's accept button is a few pixels different for reasons
@@ -1946,7 +1957,9 @@ public class MainThread implements Runnable {
 							
 							seg = detectCue(cues.get("BlueSummon"),1*SECOND);
 							clickOnSeg(seg);
-							sleep(2*SECOND); //wait for screen to stablise
+							sleep(1*SECOND); //wait for screen to stablise
+							
+							//world boss type selection
 							
 							readScreen();
 							String selectedWB = readSelectedWorldBoss();
@@ -1968,13 +1981,16 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 							}
 							
+							//world boss tier selection
+							
 							int currentTier = detectWorldBossTier();
 							if (currentTier != BHBot.settings.worldBossTier) {
 								BHBot.log("T" + currentTier + " detected, changing to T" + BHBot.settings.worldBossTier);
 								changeWorldBossTier(BHBot.settings.worldBossTier);
 							}
 							
-							
+							//world boss difficulty selection
+												
 							int currentDifficulty = detectWorldBossDifficulty();
 							String currentDifficultyName = (currentDifficulty == 1 ? "Normal" : currentDifficulty == 2 ? "Hard" : "Heroic");
 							String settingsDifficultyName = (BHBot.settings.worldBossDifficulty == 1 ? "Normal" : BHBot.settings.worldBossDifficulty == 2 ? "Hard" : "Heroic");
@@ -1985,17 +2001,21 @@ public class MainThread implements Runnable {
 						
 							sleep(1*SECOND); //wait for screen to stablise
 							seg = detectCue(cues.get("SmallGreenSummon"),1*SECOND);
-							//clickOnSeg(seg); //accept current settings
-							BHBot.log("Starting lobby..");
+							clickOnSeg(seg); //accept current settings
+							BHBot.log("Starting lobby");
 							
 							//this part gets messy
 							//as WB is much more dynamic its harder to automate
 							//I've tried to introduce as many error catchers with restarts(); as possible to keep things running smoothly
 							
-							for (int i = 0; i < worldBossTimer; i++) { //cycle through timer
+							//wait for lobby to fill with a timer
+							for (int i = 0; i < worldBossTimer; i++) {
 								sleep(1*SECOND);
 								readScreen();
-								seg = detectCue(cues.get("Invite")); //this cue is only for the 5th Invite button
+								if (worldBossType.equals("Orlag")) { //shouldn't have this inside the loop but it doesn't work if its outside
+									seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
+								} else seg = detectCue(cues.get("InviteNether")); // 3rd Invite button for Nether
+
 								if (seg != null) {
 									if (i != 0 && (i % 15) == 0) { //every 15 seconds
 											int timeLeft = worldBossTimer - i;
@@ -2003,7 +2023,7 @@ public class MainThread implements Runnable {
 										}
 									if (i == (worldBossTimer - 1)) {
 										if (BHBot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
-											BHBot.log("Lobby timed out, running dungeon instead..");
+											BHBot.log("Lobby timed out, running dungeon instead");
 											closeWorldBoss();
 											sleep(4*SECOND); //make sure we're stable on the main screen
 											BHBot.scheduler.doDungeonImmediately = true;
@@ -2027,14 +2047,14 @@ public class MainThread implements Runnable {
 										if (seg == null) {// no red X's found
 											break;
 										} else if (seg != null) { //red X's found
-											BHBot.log(Integer.toString(j));
+											//BHBot.log(Integer.toString(j));
 											j++;
 											sleep(500); //check every 500ms
 										}
 									}
 									
 									if (j >= 20) {
-										BHBot.log("Ready check failed, restarting");
+										BHBot.log("Ready check not passed after 10 seconds, restarting");
 										restart();
 									}
 									
@@ -2050,7 +2070,14 @@ public class MainThread implements Runnable {
 											}
 										BHBot.log(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
 										state = State.WorldBoss;
-										sleep(10*SECOND); //long wait to make sure we are in the world boss dungeon, and if so that processDungeon() has enabled AutoPilot
+										sleep(6*SECOND); //long wait to make sure we are in the world boss dungeon
+										readScreen();
+										seg = detectCue(cues.get("AutoOff")); // takes processDungeon too long so we do it manually
+										if (seg != null) {
+											clickOnSeg(seg);
+											BHBot.log("Auto-pilot is disabled. Enabling...");
+										}
+										sleep(4*SECOND);
 										readScreen();
 										MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
 										if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
@@ -2060,6 +2087,7 @@ public class MainThread implements Runnable {
 									} else { //generic error / unknown action restart
 										BHBot.log("Something went wrong while attempting to start the World Boss, restarting");
 										restart();
+										timeLastEnergyCheck = 1*MINUTE; // leave it a minute before trying again
 									}
 									
 								}
@@ -2811,10 +2839,9 @@ public class MainThread implements Runnable {
 		}
 
 		// check for any character dialog:
-		/* This is nearly half of the proccessing time of proccessDungeon(); so trying to minimize its usage */
+		/* This is nearly half of the processing time of proccessDungeon(); so trying to minimize its usage */
 		if (state == State.Dungeon || state == State.Raid) {
 		detectCharacterDialogAndHandleIt();
-		return;
 		}
 
 		// check for 1X and 3X speed (and increase it):
@@ -3474,7 +3501,7 @@ public class MainThread implements Runnable {
 		if (BHBot.settings.worldBossTimer <= 300) {
 			passed++;
 		} else {
-			BHBot.log("Timer longer than 5 minutes");
+			BHBot.log("Warning: Timer longer than 5 minutes");
 		}
 		
 		if (!failed && passed == 3) {
@@ -4035,7 +4062,7 @@ public class MainThread implements Runnable {
 		return d;
 	}
 	
-	//TODO MAke this for world boss
+	/* World boss reading and changing section */
 	public int detectWorldBossTier() {
 		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),1*SECOND);
 		if (seg == null) {
@@ -4108,17 +4135,13 @@ public class MainThread implements Runnable {
 	private int detectWorldBossDifficulty() {
 		readScreen();
 		MarvinSegment normal = detectCue(cues.get("WorldBossDifficultyNormal"),1*SECOND);
+		MarvinSegment hard = detectCue(cues.get("WorldBossDifficultyHard"),1*SECOND);
+		MarvinSegment heroic = detectCue(cues.get("WorldBossDifficultyHeroic"),1*SECOND);
 		if (normal != null) {
 			return 1;
-		}
-		
-		MarvinSegment hard = detectCue(cues.get("WorldBossDifficultyHard"),1*SECOND);
-		if (hard != null) {
+		} else if (hard != null) {
 			return 2;
-		}
-		
-		MarvinSegment heroic = detectCue(cues.get("WorldBossDifficultyHeroic"),1*SECOND);
-		if (heroic != null) {
+		} else if (heroic != null) {
 			return 3;
 		} 
 		else return 0;
@@ -4146,7 +4169,7 @@ public class MainThread implements Runnable {
 	}
 	
 	/**
-	 * Detects selected difficulty in expeditiont window. <br>
+	 * Detects selected difficulty in expedition window. <br>
 	 * @return 0 in case of an error, or the selected difficulty level instead.
 	 */
 	public int detectDifficultyExpedition() {

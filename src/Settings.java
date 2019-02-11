@@ -81,10 +81,10 @@ public class Settings {
 	public List<String> raids;
 	
 	/** World Boss Settings **/
-	public String worldBossType = "Orlag";
-	public int worldBossTier  =  7;
-	public int worldBossTimer = 90;
-	public int worldBossDifficulty = 2;
+	public String worldBossType = "";
+	public int worldBossTier  =  0;
+	public int worldBossTimer = 0;
+	public int worldBossDifficulty = 0;
 	
 	/**
 	 * List of equipment that should be stripped before attempting PvP (and dressed up again after PvP is done).
@@ -131,7 +131,8 @@ public class Settings {
 		this.debugDetectionTimes = settings.debugDetectionTimes;
 		this.hideWindowOnRestart = settings.hideWindowOnRestart;
 		this.resetTimersOnBattleEnd = settings.resetTimersOnBattleEnd;
-	
+		this.dungeonOnTimeout = settings.dungeonOnTimeout;
+		
 		this.doRaids = settings.doRaids;
 		this.doDungeons = settings.doDungeons;
 		this.doTrials = settings.doTrials;
@@ -179,6 +180,11 @@ public class Settings {
 		this.pauseOnDisconnect = settings.pauseOnDisconnect;
 		this.openSkeleton = settings.openSkeleton;
 		this.collectBounties = settings.collectBounties;
+		
+		this.worldBossType = settings.worldBossType;
+		this.worldBossTier  =  settings.worldBossTier;
+		this.worldBossTimer = settings.worldBossTimer;
+		this.worldBossDifficulty = settings.worldBossTimer;
 	}
 	
 	// a handy shortcut for some debug settings:
@@ -448,6 +454,12 @@ public class Settings {
 		costGauntlet = Integer.parseInt(map.getOrDefault("costGauntlet", ""+costGauntlet));
 		costInvasion = Integer.parseInt(map.getOrDefault("costInvasion", ""+costInvasion));
 		costExpedition = Integer.parseInt(map.getOrDefault("costExpedition", ""+costExpedition));
+		
+		worldBossType = map.getOrDefault("worldBossType", worldBossType);
+		worldBossDifficulty = Integer.parseInt(map.getOrDefault("worldBossDifficulty", ""+worldBossDifficulty));
+		worldBossTier = Integer.parseInt(map.getOrDefault("worldBossTier", ""+worldBossTier));
+		worldBossTimer = Integer.parseInt(map.getOrDefault("worldBossTimer", ""+worldBossTimer));
+		dungeonOnTimeout = map.getOrDefault("dungeonOnTimeout", dungeonOnTimeout ? "1" : "0").equals("0") ? false : true;
 		
 		difficulty = Integer.parseInt(map.getOrDefault("difficulty", ""+difficulty));
 		expeditionDifficulty = Integer.parseInt(map.getOrDefault("expeditionDifficulty", ""+expeditionDifficulty));
