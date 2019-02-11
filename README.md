@@ -11,6 +11,7 @@ Once configured and running the bot is designed to run unattended indefinitely.
 ## Features
 This bot will automatically farm items, familiars and schematics running the following:
 * Dungeons
+* World Bosses
 * Raids
 * Gauntlet / Trials
 * PvP / GvG
@@ -19,19 +20,20 @@ This bot will automatically farm items, familiars and schematics running the fol
 The level/difficulty for each activity can be defined in the settings file. The bot can also:
 
 * Automatically bribe specific familiars defined in the settings file (with limits so you dont waste gems)
-* Use consumables to keep 25% IF/XP/GF running unattended
+* Use consumables to keep 25% IF/XP/Gold boosts running unattended
+* Strip items for PvP to lower TS
+* Solo certain zones for bounty requirements
+* Collect completed bounties
 * Claim all weekly rewards
 * Screenshot and close PMs
 * Handle incomplete teams
-* Collect completed bounties
 
 If the bot detects a "Disconnected" dialog, it will pause its execution for 1 hour giving the user a chance to play manually.
 Disconnects are usually result of another instance logging into the game. This is why bot pauses in case it detects it.
 
 ## Upcoming Features
-* World Boss farming
-* Open skeleton chests
 * Watching and Collecting Ads
+* Opening skeleton chests
 
 ## First time setup
 
@@ -57,7 +59,6 @@ command input box):
 - `show`: shows Chromium window again after it has been hidden.
 - `do`: force a dungeon/raid/pvp/gvg/gauntlet/trials. Example: "do raid". Used for debugging purposes more or less (bot will automatically attempt dungeons).
 - `set`: sets a setting line, just like from a 'settings.ini' file. Example: "set raids 1 3 100", or "set difficulty 70". Note that this overwritten setting is NOT saved to the 'settings.ini' file! Once you issue <reload> command, it will get discharged.
-- `plan`: will load a settings file from a plan folder. Some sample plan files are attached to this distribution. Example: "plan idle" (will load 'plans/idle.ini' and overwritte current settings with it). You should write your own plan files as needed.
 - `readouts`: will reset readout timers (and hence immediately commence reading out resources).
 
 ## Multiple Instances
