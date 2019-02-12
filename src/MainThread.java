@@ -119,7 +119,7 @@ public class MainThread implements Runnable {
 		}
 
 		public int minPos() {
-			return 2 + ordinal();
+			return 3 + ordinal();
 		}
 
 		public int maxPos() {
@@ -579,7 +579,7 @@ public class MainThread implements Runnable {
 		addCue("MOGHUR", loadImage("cues/familiars/cueMOGHUR.png"), null);
 
 		//R6
-//		addCue("CRUM", loadImage("cues/familiars/cueCRUM.png"), null);
+		addCue("CRUM", loadImage("cues/familiars/cueCRUM.png"), null);
 		addCue("SPROUT", loadImage("cues/familiars/cueSPROUT.png"), null);
 		addCue("FLITTY", loadImage("cues/familiars/cueFLITTY.png"), null);
 //		addCue("CLOUBY", loadImage("cues/familiars/cueCLOUBY.png"), null);
@@ -873,6 +873,13 @@ public class MainThread implements Runnable {
 //		BHBot.log(Integer.toString(BHBot.settings.minSolo));
 		
 //		BHBot.log("collectBounties = " + Boolean.toString(BHBot.settings.collectBounties));
+		
+//		BHBot.log("Dungeons run:");
+//		BHBot.log(BHBot.settings.dungeonsRun);
+		
+		if (new SimpleDateFormat("EEE").format(new Date()).equals("Tue")) {
+			BHBot.log("Tuesday");
+		} else BHBot.log("Not Tuesday");
 		
 		//End debugging section
 		
@@ -1521,11 +1528,23 @@ public class MainThread implements Runnable {
 					// check for energy:
 					if (BHBot.scheduler.doDungeonImmediately || (BHBot.settings.doDungeons && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
 						timeLastEnergyCheck = Misc.getTime();
+						int dungeonCounter = Integer.parseInt(BHBot.settings.dungeonsRun.split(" ")[1]);
 						int energy = getEnergy();
 						globalEnergy = energy;
 						BHBot.log("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
+						BHBot.log("Dungeon limit: " + dungeonCounter + "/10");
 
 						if (energy == -1) { // error
+							BHBot.scheduler.restoreIdleTime();
+							if (BHBot.scheduler.doDungeonImmediately)
+								BHBot.scheduler.doDungeonImmediately = false; // reset it
+							continue;
+						}
+						
+						if ((BHBot.settings.countActivities) && dungeonCounter >= 10) {
+							BHBot.log("Dungeon limit met (" + dungeonCounter + "), skipping.");
+							if (BHBot.scheduler.doDungeonImmediately)
+								BHBot.scheduler.doDungeonImmediately = false; // reset it
 							BHBot.scheduler.restoreIdleTime();
 							continue;
 						}
@@ -1546,7 +1565,7 @@ public class MainThread implements Runnable {
 							String dungeon = decideDungeonRandomly();
 							int difficulty = Integer.parseInt(dungeon.split(" ")[1]);
 							String difficultyName = (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic");
-							dungeon = dungeon.split(" ")[0];
+							dungeon = dungeon.split(" ")[0].toLowerCase(); //in case the settings file is input in upper case
 							int goalZone = Integer.parseInt(""+dungeon.charAt(1));
 
 							BHBot.log("Attempting " + difficultyName + " " + dungeon);
@@ -1912,11 +1931,23 @@ public class MainThread implements Runnable {
 					// Check worldBoss:
 					if (BHBot.scheduler.doWorldBossImmediately || (BHBot.settings.doWorldBoss && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
 						timeLastEnergyCheck = Misc.getTime();
+						int worldBossCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]);
 						int energy = getEnergy();
 						globalEnergy = energy;
 						BHBot.log("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
+						BHBot.log("World Boss limit: " + worldBossCounter + "/10");
 
 						if (energy == -1) { // error
+							if (BHBot.scheduler.doWorldBossImmediately)
+								BHBot.scheduler.doWorldBossImmediately = false; // reset it
+							BHBot.scheduler.restoreIdleTime();
+							continue;
+						}
+						
+						if ((BHBot.settings.countActivities) && worldBossCounter >= 10) {
+							BHBot.log("World Boss limit met (" + worldBossCounter + "), skipping.");
+							if (BHBot.scheduler.doDungeonImmediately)
+								BHBot.scheduler.doDungeonImmediately = false; // reset it
 							BHBot.scheduler.restoreIdleTime();
 							continue;
 						}
@@ -2830,6 +2861,7 @@ public class MainThread implements Runnable {
 	private void processDungeon() {
 		MarvinSegment seg;
 		
+		readScreen();
 
 		// handle "Not enough energy" popup:
 		boolean insufficientEnergy = handleNotEnoughEnergyPopup();
@@ -3035,6 +3067,9 @@ public class MainThread implements Runnable {
 				sleep(1*SECOND);
 			}
 			BHBot.log(state.getName() + " completed successfully. Result: Victory");
+			if (state == state.Dungeon && (BHBot.settings.countActivities)) {
+				updateActivityCounter(state.getName());
+			}
 			resetAppropriateTimers();
 			if (state == State.PVP) dressUp();
 			state = State.Main; // reset state
@@ -3126,6 +3161,9 @@ public class MainThread implements Runnable {
 
 			sleep(1*SECOND);
 			BHBot.log(state.getName() + " completed successfully. Result: Victory");
+			if (state == state.WorldBoss && (BHBot.settings.countActivities)) {
+				updateActivityCounter(state.getName());
+			}
 			resetAppropriateTimers();
 			state = State.Main; // reset state
 			return;
@@ -3239,6 +3277,69 @@ public class MainThread implements Runnable {
 	        //find containing string and update with the output from the function above
 	        if (inputStr.contains(familiarToUpdate)) {
 	            inputStr = inputStr.replace(familiarToUpdate, updatedFamiliar);
+	        }
+
+	        // write the string from memory over the existing file
+	        // a bit risky for crashes
+	        FileOutputStream fileOut = new FileOutputStream("settings.ini");
+	        fileOut.write(inputStr.getBytes());
+	        fileOut.close();
+
+	        BHBot.settings.load();  //reload the new settings file so the counter will be updated for the next bribe
+
+	    } catch (Exception e) {
+	        System.out.println("Problem writing to settings file");
+	    }
+}
+	
+	public void updateActivityCounter(String activity) {
+        String typeToUpdate = "";
+        String updatedType = "";
+        
+		if (activity == "Dungeon") {
+			String numberRun = BHBot.settings.dungeonsRun.split(" ")[0]; //case sensitive for a match so convert to upper case
+			int currentCounter = Integer.parseInt(BHBot.settings.dungeonsRun.split(" ")[1]); //set the bribe counter to an int
+			typeToUpdate = numberRun + " " + currentCounter; //write current status to String
+			currentCounter++; // decrease the counter
+			Integer.toString(currentCounter); //make the int to string
+			updatedType = (numberRun + " " + currentCounter); //update new string with familiar name and decrease counter
+				BHBot.log("Before: " + typeToUpdate);
+				BHBot.log("Updated: " + updatedType);
+		}
+		
+		if (activity == "World Boss") {
+			String numberRun = BHBot.settings.worldBossRun.split(" ")[0]; //case sensitive for a match so convert to upper case
+			int currentCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]); //set the bribe counter to an int
+			typeToUpdate = numberRun + " " + currentCounter; //write current status to String
+			currentCounter++; // decrease the counter
+			Integer.toString(currentCounter); //make the int to string
+			updatedType = (numberRun + " " + currentCounter); //update new string with familiar name and decrease counter
+				BHBot.log("Before: " + typeToUpdate);
+				BHBot.log("Updated: " + updatedType);
+		}
+	
+
+
+
+	    try {
+	        // input the file content to the StringBuffer "input"
+	        BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
+	        String line;
+	        StringBuffer inputBuffer = new StringBuffer();
+
+	        //print lines to string with linebreaks
+	        while ((line = file.readLine()) != null) {
+	            inputBuffer.append(line);
+	            inputBuffer.append(System.getProperty("line.separator"));
+	        }
+	        String inputStr = inputBuffer.toString(); //load lines to string
+	        file.close();
+
+//	        BHBot.log(inputStr); // check that it's inputted right
+
+	        //find containing string and update with the output from the function above
+	        if (inputStr.contains(typeToUpdate)) {
+	            inputStr = inputStr.replace(typeToUpdate, updatedType);
 	        }
 
 	        // write the string from memory over the existing file
@@ -3515,22 +3616,44 @@ public class MainThread implements Runnable {
 	
 	/** Returns dungeon and difficulty level, e.g. 'z2d4 2'. */
 	private String decideDungeonRandomly() {
-		if (BHBot.settings.dungeons.size() == 0)
+		
+		if (new SimpleDateFormat("EEE").format(new Date()).equals("Thu") && !(BHBot.settings.thursdayDungeons.size() == 0)) { // if its thursday and thursdayRaids is not empty
+			List<String> dungeons = BHBot.settings.thursdayDungeons;
+			
+		if (dungeons.size() == 0)
 			return null;
 
 		int total = 0;
-		for (String d : BHBot.settings.dungeons)
+		for (String d : dungeons)
 			total += Integer.parseInt(d.split(" ")[2]);
 
 		int rand = (int)Math.round(Math.random() * total);
 
 		int value = 0;
-		for (String d : BHBot.settings.dungeons) {
+		for (String d : dungeons) {
 			value += Integer.parseInt(d.split(" ")[2]);
 			if (value >= rand)
 				return d.split(" ")[0] + " " + d.split(" ")[1];
-		}
+			}
+		} else {
+			List<String> dungeons = BHBot.settings.dungeons;
+			
+			if (dungeons.size() == 0)
+				return null;
 
+			int total = 0;
+			for (String d : dungeons)
+				total += Integer.parseInt(d.split(" ")[2]);
+
+			int rand = (int)Math.round(Math.random() * total);
+
+			int value = 0;
+			for (String d : dungeons) {
+				value += Integer.parseInt(d.split(" ")[2]);
+				if (value >= rand)
+					return d.split(" ")[0] + " " + d.split(" ")[1];
+				}
+			}
 		return null; // should not come to this
 	}
 	
@@ -3560,23 +3683,46 @@ public class MainThread implements Runnable {
 
 	/** Returns raid type (1, 2 or 3) and difficulty level (1, 2 or 3, which correspond to normal, hard and heroic), e.g. '1 3'. */
 	private String decideRaidRandomly() {
-		if (BHBot.settings.raids.size() == 0)
-			return null;
+		
+		if (new SimpleDateFormat("EEE").format(new Date()).equals("Thu") && !(BHBot.settings.thursdayRaids.size() == 0)) { // if its thursday and thursdayRaids is not empty
+			List<String> raid = BHBot.settings.thursdayRaids;
+			if (raid.size() == 0)
+				return null;
 
-		int total = 0;
-		for (String r : BHBot.settings.raids)
-			total += Integer.parseInt(r.split(" ")[2]);
+			int total = 0;
+			for (String r : raid)
+				total += Integer.parseInt(r.split(" ")[2]);
 
-		int rand = (int)Math.round(Math.random() * total);
+			int rand = (int)Math.round(Math.random() * total);
 
-		int value = 0;
-		for (String r : BHBot.settings.raids) {
-			value += Integer.parseInt(r.split(" ")[2]);
-			if (value >= rand)
-				return r.split(" ")[0] + " " + r.split(" ")[1];
+			int value = 0;
+			for (String r : raid) {
+				value += Integer.parseInt(r.split(" ")[2]);
+				if (value >= rand)
+					return r.split(" ")[0] + " " + r.split(" ")[1];
+			}
+
+			return null; // should not come to this
+		} else {
+			List<String> raid = BHBot.settings.raids;
+			if (raid.size() == 0)
+				return null;
+
+			int total = 0;
+			for (String r : raid)
+				total += Integer.parseInt(r.split(" ")[2]);
+
+			int rand = (int)Math.round(Math.random() * total);
+
+			int value = 0;
+			for (String r : raid) {
+				value += Integer.parseInt(r.split(" ")[2]);
+				if (value >= rand)
+					return r.split(" ")[0] + " " + r.split(" ")[1];
+			}
+
+			return null; // should not come to this
 		}
-
-		return null; // should not come to this
 	}
 
 	/**
@@ -4064,6 +4210,7 @@ public class MainThread implements Runnable {
 	
 	/* World boss reading and changing section */
 	public int detectWorldBossTier() {
+		readScreen();
 		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),1*SECOND);
 		if (seg == null) {
 			BHBot.log("Error: unable to detect world boss difficulty selection box!");

@@ -18,6 +18,7 @@ public class Settings {
 	public boolean autoBribe  = false;
 	public boolean collectBounties  = false;
 	public boolean dungeonOnTimeout = true;
+	public boolean countActivities = false;
 	
 	public boolean doRaids = false;
 	public boolean doDungeons = false;
@@ -71,6 +72,7 @@ public class Settings {
 	 * Example of full string: 'z2d4 3 50'.
 	 */
 	public List<String> dungeons;
+	public List<String> thursdayDungeons;
 	
 	/**
 	 * List of raids we want to do (there are 3 raids: 1, 2 and 3) with a difficulty level and percentage.
@@ -79,6 +81,7 @@ public class Settings {
 	 * '1 3 100' ==> in 100% of cases it will do R1 on heroic
 	 */
 	public List<String> raids;
+	public List<String> thursdayRaids;
 	
 	/** World Boss Settings **/
 	public String worldBossType = "";
@@ -107,15 +110,22 @@ public class Settings {
 	/** Development Settings **/
 	public boolean familiarScreenshot = false;
 	public int minSolo = 2;
+	public String dungeonsRun = "";
+	public String worldBossRun = "";
 
 	/** This tells us how much time will we sleep when disconnect has been detected (which happens when a user logs in). This interval should be an hour or so, so that user can play the game in peace without being disconnected due to us reconnecting to the game. */
 	public int pauseOnDisconnect = 60*MainThread.MINUTE;
 	
 	public Settings() {
 		dungeons = new ArrayList<String>();
-		setDungeons("z1d1 3 100"); // some default value
+		setDungeons(""); // some default value
+		thursdayDungeons = new ArrayList<String>();
+		setThursdayDungeons(""); // some default value
 		raids = new ArrayList<String>();
-		setRaids("1 3 100"); // some default value
+		setRaids(""); // some default value
+		thursdayRaids = new ArrayList<String>();
+		thursdayDungeons = new ArrayList<String>();
+		setThursdayRaids(""); // some default value("z1d1 3 100"); // some default value
 		expeditions = new ArrayList<String>();
 		setExpeditions("h1 100"); // some default value
 		pvpstrip = new ArrayList<String>();
@@ -167,6 +177,8 @@ public class Settings {
 		
 		this.dungeons = new ArrayList<String>(settings.dungeons);
 		this.raids = new ArrayList<String>(settings.raids);
+		this.thursdayDungeons = new ArrayList<String>(settings.thursdayDungeons);
+		this.thursdayRaids = new ArrayList<String>(settings.thursdayRaids);
 		this.expeditions = new ArrayList<String>(settings.expeditions);	
 		this.pvpstrip = new ArrayList<String>(settings.pvpstrip);
 		this.minSolo  = settings.minSolo;
@@ -180,6 +192,8 @@ public class Settings {
 		this.pauseOnDisconnect = settings.pauseOnDisconnect;
 		this.openSkeleton = settings.openSkeleton;
 		this.collectBounties = settings.collectBounties;
+		this.dungeonsRun = settings.dungeonsRun;
+		this.worldBossRun = settings.worldBossRun;
 		
 		this.worldBossType = settings.worldBossType;
 		this.worldBossTier  =  settings.worldBossTier;
@@ -225,12 +239,7 @@ public class Settings {
 		return this; // for chaining
 	}
 	
-//	public Settings setIdleNoAds() {
-//		setIdle();
-//		doAds = false;
-//		
-//		return this;
-//	}
+	/* Cleans the data from the input and saves it at a string */
 	
 	public void setDungeons(String... dungeons) {
 		this.dungeons.clear();
@@ -239,6 +248,16 @@ public class Settings {
 			if (add.equals(""))
 				continue;
 			this.dungeons.add(add);
+		}
+	}
+	
+	public void setThursdayDungeons(String... thursdayDungeons) {
+		this.thursdayDungeons.clear();
+		for (String td : thursdayDungeons) {
+			String add = td.trim();
+			if (add.equals(""))
+				continue;
+			this.thursdayDungeons.add(add);
 		}
 	}
 	
@@ -259,6 +278,16 @@ public class Settings {
 			if (add.equals(""))
 				continue;
 			this.raids.add(add);
+		}
+	}
+	
+	public void setThursdayRaids(String... thursdayRaids) {
+		this.thursdayRaids.clear();
+		for (String tr : thursdayRaids) {
+			String add = tr.trim();
+			if (add.equals(""))
+				continue;
+			this.thursdayRaids.add(add);
 		}
 	}
 	
@@ -292,10 +321,21 @@ public class Settings {
 		}
 	}
 	
+	/* Gets the string from the previous method and creates a list if there are multiple items */
+	
 	public String getDungeonsAsString() {
 		String result = "";
 		for (String d : dungeons)
 			result += d + ";";
+		if (result.length() > 0)
+			result = result.substring(0, result.length()-1); // remove last ";" character
+		return result;
+	}
+	
+	public String getThursdayDungeonsAsString() {
+		String result = "";
+		for (String td : thursdayDungeons)
+			result += td + ";";
 		if (result.length() > 0)
 			result = result.substring(0, result.length()-1); // remove last ";" character
 		return result;
@@ -314,6 +354,15 @@ public class Settings {
 		String result = "";
 		for (String r : raids)
 			result += r + ";";
+		if (result.length() > 0)
+			result = result.substring(0, result.length()-1); // remove last ";" character
+		return result;
+	}
+	
+	public String getThursdayRaidsAsString() {
+		String result = "";
+		for (String tr : thursdayRaids)
+			result += tr + ";";
 		if (result.length() > 0)
 			result = result.substring(0, result.length()-1); // remove last ";" character
 		return result;
@@ -346,6 +395,8 @@ public class Settings {
 		return result;
 	}
 	
+	/* Cleans up the data in the list again */
+	
 	public void setDungeonsFromString(String s) {
 		setDungeons(s.split(";"));
 		// clean up (trailing spaces and remove if empty):
@@ -353,6 +404,16 @@ public class Settings {
 			dungeons.set(i, dungeons.get(i).trim());
 			if (dungeons.get(i).equals(""))
 				dungeons.remove(i);
+		}
+	}
+	
+	public void setThursdayDungeonsFromString(String s) {
+		setThursdayDungeons(s.split(";"));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = thursdayDungeons.size()-1; i >= 0; i--) {
+			thursdayDungeons.set(i, thursdayDungeons.get(i).trim());
+			if (thursdayDungeons.get(i).equals(""))
+				thursdayDungeons.remove(i);
 		}
 	}
 	
@@ -373,6 +434,16 @@ public class Settings {
 			raids.set(i, raids.get(i).trim());
 			if (raids.get(i).equals(""))
 				raids.remove(i);
+		}
+	}
+	
+	public void setThursdayRaidsFromString(String s) {
+		setThursdayRaids(s.split(";"));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = thursdayRaids.size()-1; i >= 0; i--) {
+			thursdayRaids.set(i, thursdayRaids.get(i).trim());
+			if (thursdayRaids.get(i).equals(""))
+				thursdayRaids.remove(i);
 		}
 	}
 
@@ -466,7 +537,9 @@ public class Settings {
 		minSolo  = Integer.parseInt(map.getOrDefault("minSolo", ""+minSolo));
 		
 		setDungeonsFromString(map.getOrDefault("dungeons", getDungeonsAsString()));
+		setThursdayDungeonsFromString(map.getOrDefault("thursdayDungeons", getThursdayDungeonsAsString()));
 		setRaidsFromString(map.getOrDefault("raids", getRaidsAsString()));
+		setThursdayRaidsFromString(map.getOrDefault("thursdayRaids", getThursdayRaidsAsString()));
 		setExpeditionsFromString(map.getOrDefault("expeditions", getExpeditionsAsString()));
 		setStripsFromString(map.getOrDefault("pvpstrip", getStripsAsString()));
 		
@@ -481,6 +554,8 @@ public class Settings {
 		
 		openSkeleton = Integer.parseInt(map.getOrDefault("openSkeletonChest", ""+openSkeleton));	
 		pauseOnDisconnect = Integer.parseInt(map.getOrDefault("pauseOnDisconnect", ""+pauseOnDisconnect));
+		dungeonsRun = "dungeonsrun " + map.getOrDefault("dungeonsrun", dungeonsRun);
+		worldBossRun = "worldbossrun " + map.getOrDefault("worldbossrun", worldBossRun);
 		
 		
 	}

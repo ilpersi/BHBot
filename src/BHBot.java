@@ -346,6 +346,8 @@ public class BHBot {
 			main.expeditionReadTest();
 		} else if (params[0].equals("wbtest")) {
 			main.wbTest();
+		} else if (params[0].equals("dtest")) {
+			main.updateActivityCounter("World Boss");
 		}
 	}
 	
