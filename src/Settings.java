@@ -110,8 +110,8 @@ public class Settings {
 	/** Development Settings **/
 	public boolean familiarScreenshot = false;
 	public int minSolo = 2;
-	public String dungeonsRun = "";
-	public String worldBossRun = "";
+	public String dungeonsRun = "dungeonsrun 0";
+	public String worldBossRun = "worldbossrun 0";
 
 	/** This tells us how much time will we sleep when disconnect has been detected (which happens when a user logs in). This interval should be an hour or so, so that user can play the game in peace without being disconnected due to us reconnecting to the game. */
 	public int pauseOnDisconnect = 60*MainThread.MINUTE;

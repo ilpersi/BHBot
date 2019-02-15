@@ -877,9 +877,9 @@ public class MainThread implements Runnable {
 //		BHBot.log("Dungeons run:");
 //		BHBot.log(BHBot.settings.dungeonsRun);
 		
-		if (new SimpleDateFormat("EEE").format(new Date()).equals("Tue")) {
-			BHBot.log("Tuesday");
-		} else BHBot.log("Not Tuesday");
+//		if (new SimpleDateFormat("EEE").format(new Date()).equals("Tue")) {
+//			BHBot.log("Tuesday");
+//		} else BHBot.log("Not Tuesday");
 		
 		//End debugging section
 		
@@ -1528,11 +1528,10 @@ public class MainThread implements Runnable {
 					// check for energy:
 					if (BHBot.scheduler.doDungeonImmediately || (BHBot.settings.doDungeons && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
 						timeLastEnergyCheck = Misc.getTime();
-						int dungeonCounter = Integer.parseInt(BHBot.settings.dungeonsRun.split(" ")[1]);
+
 						int energy = getEnergy();
 						globalEnergy = energy;
 						BHBot.log("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
-						BHBot.log("Dungeon limit: " + dungeonCounter + "/10");
 
 						if (energy == -1) { // error
 							BHBot.scheduler.restoreIdleTime();
@@ -1541,12 +1540,14 @@ public class MainThread implements Runnable {
 							continue;
 						}
 						
-						if ((BHBot.settings.countActivities) && dungeonCounter >= 10) {
-							BHBot.log("Dungeon limit met (" + dungeonCounter + "), skipping.");
+						if (BHBot.settings.countActivities) {
+							int dungeonCounter = Integer.parseInt(BHBot.settings.dungeonsRun.split(" ")[1]);					
+						    if (dungeonCounter >= 10) {
 							if (BHBot.scheduler.doDungeonImmediately)
 								BHBot.scheduler.doDungeonImmediately = false; // reset it
 							BHBot.scheduler.restoreIdleTime();
 							continue;
+						    }
 						}
 
 						if (!BHBot.scheduler.doDungeonImmediately && (energy <= BHBot.settings.minEnergyPercentage || BHBot.settings.dungeons.size() == 0)) {
@@ -1931,11 +1932,9 @@ public class MainThread implements Runnable {
 					// Check worldBoss:
 					if (BHBot.scheduler.doWorldBossImmediately || (BHBot.settings.doWorldBoss && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
 						timeLastEnergyCheck = Misc.getTime();
-						int worldBossCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]);
 						int energy = getEnergy();
 						globalEnergy = energy;
 						BHBot.log("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
-						BHBot.log("World Boss limit: " + worldBossCounter + "/10");
 
 						if (energy == -1) { // error
 							if (BHBot.scheduler.doWorldBossImmediately)
@@ -1944,12 +1943,15 @@ public class MainThread implements Runnable {
 							continue;
 						}
 						
-						if ((BHBot.settings.countActivities) && worldBossCounter >= 10) {
-							BHBot.log("World Boss limit met (" + worldBossCounter + "), skipping.");
-							if (BHBot.scheduler.doDungeonImmediately)
-								BHBot.scheduler.doDungeonImmediately = false; // reset it
-							BHBot.scheduler.restoreIdleTime();
-							continue;
+						if (BHBot.settings.countActivities) {
+							int worldBossCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]);
+								if (worldBossCounter >= 10) {
+								BHBot.log("World Boss limit met (" + worldBossCounter + "), skipping.");
+								if (BHBot.scheduler.doDungeonImmediately)
+									BHBot.scheduler.doDungeonImmediately = false; // reset it
+								BHBot.scheduler.restoreIdleTime();
+								continue;
+								}
 						}
 
 						if (!BHBot.scheduler.doWorldBossImmediately && (energy <= BHBot.settings.minEnergyPercentage)) {
@@ -2577,8 +2579,6 @@ public class MainThread implements Runnable {
 	/** Returns amount of energy in percent (0-100). Returns -1 in case it cannot read energy for some reason. */
 	private int getEnergy() {
 		MarvinSegment seg;
-		
-		//TODO Read level circle and add 99 to get accurate energy?
 
 		seg = detectCue(cues.get("EnergyBar"));
 
@@ -2632,6 +2632,8 @@ public class MainThread implements Runnable {
 				break;
 		}
 
+		value = value + 2; //add the last 2 pixels to get an accurate count
+//		BHBot.log("Pre-rounded stat = " + Float.toString(value * (maxTickets / 77.0f)));
 		return Math.round(value * (maxTickets / 77.0f)); // scale it to interval [0..10]
 	}
 
@@ -2660,8 +2662,9 @@ public class MainThread implements Runnable {
 				break;
 		}
 		
+		value = value + 2; //add the last 2 pixels to get an accurate count
+//		BHBot.log("Pre-rounded stat = " + Float.toString(value * (maxShards / 77.0f)));
 		return Math.round(value * (maxShards / 75.0f)); // round to nearest whole number
-
 	}
 
 	/** Returns number of tokens we have. Works only if trials/gauntlet window is open. Returns -1 in case it cannot read number of tokens for some reason. */
@@ -2689,7 +2692,9 @@ public class MainThread implements Runnable {
 			if (!col.equals(full))
 				break;
 		}
-
+		
+		value = value + 2; //add the last 2 pixels to get an accurate count
+//		BHBot.log("Pre-rounded stat = " + Float.toString(value * (maxTokens / 77.0f)));
 		return Math.round(value * (maxTokens / 75.0f)); // scale it to interval [0..10]
 	}
 
@@ -2719,6 +2724,8 @@ public class MainThread implements Runnable {
 				break;
 		}
 
+		value = value + 2; //add the last 2 pixels to get an accurate count
+//		BHBot.log("Pre-rounded stat = " + Float.toString(value * (maxBadges / 77.0f)));
 		return Math.round(value * (maxBadges / 75.0f)); // scale it to interval [0..10]
 	}
 
@@ -2729,32 +2736,74 @@ public class MainThread implements Runnable {
 	 * @return true in case it successfully skipped an ad
 	 */
 
-	public void trySkippingAd() {
+	//TODO Farm ads again
+	
+	public ReturnResult trySkippingAd() {
+			
+//			Actions act = new Actions(driver);
+//			act.moveToElement(adWindow, 1, 1);
+//			act.click();
+//			act.moveToElement(adWindow, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
+//			act.perform();
+			
 			//save current tab to variable
 			String oldTab = driver.getWindowHandle();
+			BHBot.log(driver.getWindowHandle());
+			
 			//set Read Article xpath to variable and click using selenium
-			WebElement openAdButton;
+			WebElement openWindow;
 			try {
-				openAdButton = driver.findElement(By.xpath("//*[@id=\"sz-container\"]/div[1]/div/a/div"));
+				openWindow = driver.findElement(By.xpath("//*[@id=\"play\"]/div[20]/div[1]/div[3]"));
 			} catch (NoSuchElementException e) {
-				return;
+				return ReturnResult.error("Cannot find the close button on 'out of offers' ad window!");
 			}
-			openAdButton.click();
-			//wait for ad to load, and change back to original tab
-			sleep(10*SECOND);
-		    driver.switchTo().window(oldTab);
-		    //pause just in case
-		    sleep(5*SECOND);
-		    //set 'X' close button xpath to variable and click using selenium
-			WebElement closeAdButton;
-			try {
-				closeAdButton = driver.findElement(By.xpath("//*[@id=\"play\"]/div[20]/div[1]/div[3]"));
-			} catch (NoSuchElementException e) {
-				return;
-			}
-			closeAdButton.click();
-			//pause just in case
-			sleep(5*SECOND);
+			openWindow.click();
+			BHBot.log("Attempted to click button");
+			
+			sleep(2000);
+			
+			Actions act = new Actions(driver);
+//			act.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+			
+			driver.switchTo().window("Bit Heroes");
+			
+//			driver.close();
+			
+			//*[@id="play"]/div[20]/div[1]/div[3]
+			
+//			ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
+//			BHBot.log(tabs);
+//			
+//			sleep(1000);
+//			
+//			driver.switchTo().window(oldTab);
+//			
+//			sleep(1000);
+//			
+//		    for(String handle : driver.getWindowHandles()) {
+//		        if (!handle.equals(oldTab)) {
+//		            driver.switchTo().window(oldTab);
+//		            driver.close();
+//		        }
+//		    }
+			
+			
+//			//wait for ad to load, and change back to original tab
+//			sleep(10*SECOND);
+//		    driver.switchTo().window(oldTab);
+//		    //pause just in case
+//		    sleep(5*SECOND);
+//		    //set 'X' close button xpath to variable and click using selenium
+			
+//			WebElement closeAdButton;
+//			try {
+//				closeAdButton = driver.findElement(By.xpath("//*[@id=\"play\"]/div[20]/div[1]/div[3]"));
+//			} catch (NoSuchElementException e) {
+//				return ReturnResult.error("Cannot find the close");
+//			}
+//			closeAdButton.click();
+//			//pause just in case
+//			sleep(5*SECOND);
 
 //			WebElement btnSignIn;
 //			try {
@@ -2763,6 +2812,7 @@ public class MainThread implements Runnable {
 //				return;
 //			}
 //			btnSignIn.click();
+			return ReturnResult.ok();
 	}
 
 	/**
@@ -4794,7 +4844,7 @@ public class MainThread implements Runnable {
 			readScreen(500); // to stabilize sliding popup a bit
 
 			int scrollerPos = detectEquipmentFilterScrollerPos();
-			BHBot.log("Scroller Pos = " + Integer.toString(scrollerPos));
+//			BHBot.log("Scroller Pos = " + Integer.toString(scrollerPos));
 			if (scrollerPos == -1) {
 				BHBot.log("Problem detected: unable to detect scroller position in the character window (location #1)! Skipping strip down/up...");
 				return ;
