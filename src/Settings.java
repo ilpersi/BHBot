@@ -89,6 +89,11 @@ public class Settings {
 	public int worldBossTimer = 0;
 	public int worldBossDifficulty = 0;
 	
+	/** Autorevive Settings **/
+	public int autoRevive = 0;
+	public String potionOrder = "";
+	public boolean tankPriority = false;
+	
 	/**
 	 * List of equipment that should be stripped before attempting PvP (and dressed up again after PvP is done).
 	 * Allowed tokens:
@@ -199,6 +204,10 @@ public class Settings {
 		this.worldBossTier  =  settings.worldBossTier;
 		this.worldBossTimer = settings.worldBossTimer;
 		this.worldBossDifficulty = settings.worldBossTimer;
+		
+		this.autoRevive = settings.autoRevive;
+		this.potionOrder = settings.potionOrder;
+		this.tankPriority = settings.tankPriority;
 	}
 	
 	// a handy shortcut for some debug settings:
@@ -531,6 +540,10 @@ public class Settings {
 		worldBossTier = Integer.parseInt(map.getOrDefault("worldBossTier", ""+worldBossTier));
 		worldBossTimer = Integer.parseInt(map.getOrDefault("worldBossTimer", ""+worldBossTimer));
 		dungeonOnTimeout = map.getOrDefault("dungeonOnTimeout", dungeonOnTimeout ? "1" : "0").equals("0") ? false : true;
+		
+		autoRevive = Integer.parseInt(map.getOrDefault("autoRevive", ""+autoRevive));
+		tankPriority = map.getOrDefault("tankPriority", tankPriority ? "1" : "0").equals("0") ? false : true;
+		potionOrder  = map.getOrDefault("potionOrder", potionOrder);
 		
 		difficulty = Integer.parseInt(map.getOrDefault("difficulty", ""+difficulty));
 		expeditionDifficulty = Integer.parseInt(map.getOrDefault("expeditionDifficulty", ""+expeditionDifficulty));

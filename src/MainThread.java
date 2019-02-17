@@ -378,7 +378,7 @@ public class MainThread implements Runnable {
 		addCue("Victory", loadImage("cues/cueVictory.png"), null); // victory window cue found upon completing gauntlet
 		
 		addCue("UhOh", loadImage("cues/cueUhoh.png"), new Bounds(319, 122, 526, 184));
-		addCue("Revive60", loadImage("cues/cueRevive60.png"), null);
+		addCue("ReviveAverage", loadImage("cues/cueReviveAverage.png"), null);
 
 		addCue("Quest", loadImage("cues/cueQuest.png"), new Bounds(0, 0, 40, 40)); // cue for quest (dungeons) button
 		addCue("ZonesButton", loadImage("cues/cueZonesButton.png"), new Bounds(105, 60, 125, 75));
@@ -606,6 +606,7 @@ public class MainThread implements Runnable {
 
 		// disable ephemeral flash permissions flag
 		options.addArguments("--disable-features=EnableEphemeralFlashPermission");
+		options.addArguments("disable-infobars"); 
 		Map<String, Object> prefs = new HashMap<>();
 		// Enable flash for all sites for Chrome 69
 		prefs.put("profile.content_settings.exceptions.plugins.*,*.setting", 1);
@@ -815,8 +816,8 @@ public class MainThread implements Runnable {
 
 		int vw = (int)(0+(Long)(((JavascriptExecutor)driver).executeScript("return window.outerWidth - window.innerWidth + arguments[0];", game.getSize().width)));
 		int vh = (int)(0+(Long)(((JavascriptExecutor)driver).executeScript("return window.outerHeight - window.innerHeight + arguments[0];", game.getSize().height)));
-		vw += 70; // compensate for scrollbars
-		vh += 50; // compensate for scrollbars
+		vw += 45; // compensate for scrollbars 70
+		vh += 32; // compensate for scrollbars 50
 		driver.manage().window().setSize(new Dimension(vw, vh));
 		scrollGameIntoView();
 
@@ -884,6 +885,8 @@ public class MainThread implements Runnable {
 //			BHBot.log("Tuesday");
 //		} else BHBot.log("Not Tuesday");
 		
+
+		
 		//End debugging section
 		
 		if ((BHBot.settings.doDungeons) && (BHBot.settings.doWorldBoss)) {
@@ -901,14 +904,23 @@ public class MainThread implements Runnable {
 	}
 
 	private void scrollGameIntoView() {
+		WebElement element = driver.findElement(By.id("maingame"));
+
+		String scrollElementIntoMiddle = "var viewPortHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);"
+		                                            + "var elementTop = arguments[0].getBoundingClientRect().top;"
+		                                            + "window.scrollBy(0, elementTop-(viewPortHeight/2));";
+
+		((JavascriptExecutor) driver).executeScript(scrollElementIntoMiddle, element);
+		sleep(3000);
 		/*
 		 * Bellow code doesn't work well (it does not scroll horizontally):
 		 *
 		 * ((JavascriptExecutor)driver).executeScript("arguments[0].scrollIntoView(true);", game);
 		 */
-		Actions actions = new Actions(driver);
-		actions.moveToElement(game);
-		actions.perform();
+//		Actions actions = new Actions(driver);
+//		actions.moveToElement(game);
+//		sleep(5000);
+//		actions.perform();
 	}
 
 	public void run() {
@@ -1447,7 +1459,8 @@ public class MainThread implements Runnable {
 							seg = detectCue(cues.get("X"),1*SECOND);
 							clickOnSeg(seg);
 							sleep(1*SECOND);
-
+							if (BHBot.scheduler.doTrialsOrGauntletImmediately)
+								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // if we don't have resources to run we need to disable force it
 							continue;
 						} else {
 							// do the trials/gauntlet!
@@ -2886,7 +2899,7 @@ public class MainThread implements Runnable {
 		} else {
 			if (closeItemsPopup) {
 				sleep(5*SECOND);
-				scrollGameIntoView();
+				//scrollGameIntoView();
 				readScreen();
 
 				MarvinSegment seg = detectCue(cues.get("Items"), 5*SECOND);
@@ -2911,7 +2924,6 @@ public class MainThread implements Runnable {
 	 * - trial <br>
 	 * - gauntlet <br>
 	 */
-	@SuppressWarnings("unused")
 	private void processDungeon() {
 		MarvinSegment seg;
 		
@@ -2958,33 +2970,44 @@ public class MainThread implements Runnable {
 		
 		seg = detectCue(cues.get("AutoOff"));
 		if (seg != null) {
-			BHBot.log("Auto-pilot has been disabled. Checking for dead team members...");
-			if (state == State.Trials || state == State.Gauntlet) {
-				clickInGame(40,420);
+			if ((state == State.Trials || state == State.Gauntlet) && (BHBot.settings.autoRevive == 1 || BHBot.settings.autoRevive == 3)) {
+				BHBot.log("Auto-pilot disabled. Checking for revivable team members...");
+				clickInGame(40,420); //click potion button
 				readScreen();
-				seg = detectCue(cues.get("UhOh"),2*SECOND);
-				if (seg != null) {
-					clickInGame(400,365);
-					BHBot.log("No revives needed, enabling auto..");
+				MarvinSegment seg1 = detectCue(cues.get("UhOh"),2*SECOND); //UhOh dialogue box when everyone is full HP 
+				MarvinSegment seg2 = detectCue(cues.get("Defeat")); //if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
+				if (seg1 != null) {
+					clickInGame(400,365); //dismiss pop-up / bit risky is if clicks on something on complete screen
+					if (BHBot.settings.autoRevive == 0) {
+						BHBot.log("AutoRevive disabled, reenabling auto..");
+					} else BHBot.log("No revives needed, reenabling auto..");
 					sleep(500);
 					readScreen();
 					seg = detectCue(cues.get("AutoOff"));
 					clickOnSeg(seg);
+				if (seg2 != null) {
+					if (BHBot.settings.autoRevive == 0) BHBot.log("AutoRevive disabled, reenabling auto..");
+					sleep(500);
+					readScreen();
+					seg = detectCue(cues.get("AutoOff"));
+					clickOnSeg(seg);
+				}
 					
-				} else {			
+				} else {
 					
-					clickInGame(290,315);
+					clickInGame(290,315); //slot #1
 					sleep(2000);
 					readScreen();
-					seg = detectCue(cues.get("Revive60"));
+					seg = detectCue(cues.get("ReviveAverage"));
 					if (seg != null) {
-						BHBot.log("Attempting to revive member #1");
-						clickInGame(400,256);
-						sleep(1000);
-						clickInGame(320,360);
-						//TODO Check potion availability by greenyes button
+						useRevive(1);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						return;
+//						//TODO Check if potions are actually available
 					} else {
-						BHBot.log("Slot #1 not revivable, checking next..");
+						BHBot.log("Slot #1 not revivable");
 						clickInGame(700,90); //close window
 						sleep(500);
 					}
@@ -2992,14 +3015,15 @@ public class MainThread implements Runnable {
 					clickInGame(200,340);
 					sleep(2000);
 					readScreen();
-					seg = detectCue(cues.get("Revive60"));
+					seg = detectCue(cues.get("ReviveAverage"));
 					if (seg != null) {
-						BHBot.log("Attempting to revive member #2");
-						clickInGame(400,256);
-						sleep(1000);
-						clickInGame(320,360);
+						useRevive(2);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						return;
 					} else {
-						BHBot.log("Slot #2 not revivable, checking next..");
+						BHBot.log("Slot #2 not revivable");
 						clickInGame(700,90); //close window
 						sleep(500);
 					}
@@ -3007,12 +3031,12 @@ public class MainThread implements Runnable {
 					clickInGame(115,285);
 					sleep(2000);
 					readScreen();
-					seg = detectCue(cues.get("Revive60"));
+					seg = detectCue(cues.get("ReviveAverage"));
 					if (seg != null) {
-						BHBot.log("Attempting to revive member #3");
-						clickInGame(400,256);
-						sleep(1000);
-						clickInGame(320,360);
+						useRevive(3);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
 						return;
 					} else {
 						BHBot.log("Slot #3 not revivable");
@@ -3021,12 +3045,117 @@ public class MainThread implements Runnable {
 					}
 					
 					sleep(1000);
-					BHBot.log("Revive check complete, re-enabling auto");
+					BHBot.log("Revive checking complete");
 					readScreen();
 					seg = detectCue(cues.get("AutoOff"));
-					clickOnSeg(seg);
-//					sleep(500);
-//					clickInGame(780,250);
+					if (seg != null) clickOnSeg(seg); //reenable auto if necessary
+					return;
+				}
+			}
+			if ((state == State.Raid) && (BHBot.settings.autoRevive == 2 || BHBot.settings.autoRevive == 3)) {
+				BHBot.log("Auto-pilot disabled. Checking for revivable team members...");
+				clickInGame(40,420); //click potion button
+				readScreen();
+				MarvinSegment seg1 = detectCue(cues.get("UhOh"),2*SECOND); //UhOh dialogue box when everyone is full HP 
+				MarvinSegment seg2 = detectCue(cues.get("Defeat")); //if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
+				if (seg1 != null || seg2!= null) {
+					clickInGame(400,365); //dismiss pop-up / bit risky is if clicks on something on complete screen
+					if (BHBot.settings.autoRevive == 0) {
+						BHBot.log("AutoRevive disabled, reenabling auto..");
+					} else BHBot.log("No revives needed, reenabling auto..");
+					sleep(500);
+					readScreen();
+					seg = detectCue(cues.get("AutoOff"));
+					if (seg != null) clickOnSeg(seg);
+					
+				} else {
+					
+					clickInGame(305,320); //slot #1
+					sleep(2000);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null) {
+						useRevive(1);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						return;
+//						//TODO Check if potions are actually available
+					} else {
+						BHBot.log("Slot #1 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+					}
+					
+					clickInGame(250,345); //slot 2
+					sleep(2000);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null) {
+						useRevive(2);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						return;
+					} else {
+						BHBot.log("Slot #2 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+					}
+					
+					clickInGame(200,267); //slot 3
+					sleep(2000);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null) {
+						useRevive(3);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						return;
+					} else {
+						BHBot.log("Slot #3 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+					}
+					
+					clickInGame(150,325); //slot 4
+					sleep(2000);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null) {
+						useRevive(4);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						return;
+					} else {
+						BHBot.log("Slot #4 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+					}
+					
+					clickInGame(90,295); //slot 5
+					sleep(2000);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null) {
+						useRevive(5);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						return;
+					} else {
+						BHBot.log("Slot #5 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+					}
+					
+					sleep(1000);
+					BHBot.log("Revive checking complete");
+					readScreen();
+					seg = detectCue(cues.get("AutoOff"));
+					if (seg != null) clickOnSeg(seg); //reenable auto if necessary
 					return;
 				}
 			}
@@ -3034,18 +3163,6 @@ public class MainThread implements Runnable {
 		}
 //	}
 		
-		/*
-		 * Disabled for testing auto-potion
-		 * 
-		// check for auto-pilot disabled:
-		seg = detectCue(cues.get("AutoOff"));
-		if (seg != null) {
-			clickOnSeg(seg);
-			BHBot.log("Auto-pilot is disabled. Enabling...");
-
-			return;
-		}
-		*/
 
 		// check for ad treasure:
 		
@@ -3336,6 +3453,88 @@ public class MainThread implements Runnable {
 
 		// at the end of this method, revert idle time change (in order for idle detection to function properly):
 		BHBot.scheduler.restoreIdleTime();
+	}
+	
+	private void useRevive(int position) {
+		MarvinSegment seg;
+		
+		boolean revived = false;
+		
+		//TODO No potions failsafe
+		seg = detectCue(cues.get("Play")); //placeholder, should be no potion popup
+		
+		//this is bad practise but was a lazy way of importing the settings string
+		int firstPotion = Character.getNumericValue((BHBot.settings.potionOrder.charAt(0)));
+		int secondPotion = Character.getNumericValue((BHBot.settings.potionOrder.charAt(1)));
+		int thirdPotion = Character.getNumericValue((BHBot.settings.potionOrder.charAt(2)));
+		
+		if ((position == 1) && (BHBot.settings.tankPriority)) {
+			BHBot.log("Attempting to revive member #" + position + " with Major Revive (tank priority setting)");
+			clickInGame(580,260); //major revive
+			sleep(1000);
+			if (seg != null) {
+				BHBot.log("No " + (firstPotion == 1 ? "Minor" : firstPotion == 2 ? "Average" : "Major")  + " Revives available.");
+			} else {
+				clickInGame(320,360); //confirm button
+				revived = true;
+			}
+		}
+		
+		if (!revived) { //attempt to us first potion
+			BHBot.log("Attempting to revive member #" + position + " with " + (firstPotion == 1 ? "Minor" : firstPotion == 2 ? "Average" : "Major") + " Revive");
+			Point potion = potionDecider(firstPotion);
+			clickInGame(potion.x, potion.y);
+			sleep(1000);
+			if (seg != null) {
+				BHBot.log("No " + (firstPotion == 1 ? "Minor" : firstPotion == 2 ? "Average" : "Major")  + " Revives available.");
+			} else {
+				clickInGame(320,360); //confirm button
+				revived = true;
+			}
+		}
+		
+		if (!revived) { //attempt to use second potion
+			BHBot.log("Attempting to revive member #" + position + " with " + (secondPotion == 1 ? "Minor" : secondPotion == 2 ? "Average" : "Major") + " Revive");
+			Point potion = potionDecider(secondPotion);
+			clickInGame(potion.x, potion.y);
+			sleep(1000);
+			if (seg != null) {
+				BHBot.log("No " + (secondPotion == 1 ? "Minor" : secondPotion == 2 ? "Average" : "Major")  + " Revives available.");
+			} else {
+				clickInGame(320,360); //confirm button
+				revived = true;
+			}
+		}
+		
+		if (!revived) { //attempt to use third potion
+			BHBot.log("Attempting to revive member #" + position + " with " + (thirdPotion == 1 ? "Minor" : thirdPotion == 2 ? "Average" : "Major") + " Revive");
+			Point potion = potionDecider(thirdPotion);
+			clickInGame(potion.x, potion.y);
+			sleep(1000);
+			if (seg != null) {
+				BHBot.log("No " + (thirdPotion == 1 ? "Minor" : thirdPotion == 2 ? "Average" : "Major")  + " Revives available.");
+			} else {
+				clickInGame(320,360); //confirm button
+				revived = true;
+			}
+			
+			if (!revived) { //no potions found
+				BHBot.log("No Potions available, skipping");
+				return;
+				}
+			}
+	}
+	
+	private Point potionDecider(int potion) {
+		switch (potion) {
+		case 1:
+			return new Point(220,260); //minor
+		case 2:
+			return new Point(400,260); //average
+		case 3:
+			return new Point(580,260); //mahor
+		}
+		return null;
 	}
 
 	public void closeWorldBoss() {
