@@ -228,6 +228,12 @@ public class MainThread implements Runnable {
 	private static int globalTickets;
 	private static int globalTokens;
 	
+	public boolean oneRevived = false;
+	public boolean twoRevived = false;
+	public boolean threeRevived = false;
+	public boolean fourRevived = false;
+	public boolean fiveRevived = false;
+	
 	private static final int MAX_LAST_AD_OFFER_TIME = 17*MINUTE; // after this time, restart() will get called since ads are not coming through anymore
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
@@ -816,8 +822,8 @@ public class MainThread implements Runnable {
 
 		int vw = (int)(0+(Long)(((JavascriptExecutor)driver).executeScript("return window.outerWidth - window.innerWidth + arguments[0];", game.getSize().width)));
 		int vh = (int)(0+(Long)(((JavascriptExecutor)driver).executeScript("return window.outerHeight - window.innerHeight + arguments[0];", game.getSize().height)));
-		vw += 45; // compensate for scrollbars 70
-		vh += 32; // compensate for scrollbars 50
+		vw += 50; // compensate for scrollbars 70
+		vh += 30; // compensate for scrollbars 50
 		driver.manage().window().setSize(new Dimension(vw, vh));
 		scrollGameIntoView();
 
@@ -904,7 +910,7 @@ public class MainThread implements Runnable {
 	}
 
 	private void scrollGameIntoView() {
-		WebElement element = driver.findElement(By.id("maingame"));
+		WebElement element = driver.findElement(By.id("game"));
 
 		String scrollElementIntoMiddle = "var viewPortHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);"
 		                                            + "var elementTop = arguments[0].getBoundingClientRect().top;"
@@ -2451,33 +2457,33 @@ public class MainThread implements Runnable {
 			sleep(wait);
 		img = takeScreenshot(game);
 
-		// detect and handle "Loading" message (this is optional operation though):
-		Cue cue = cues.get("Loading");
-		int counter = 0;
-		while (true) {
-			List<MarvinSegment> result = FindSubimage.findSubimage(
-					img,
-					cue.im,
-					1.0,
-					false,
-					true, // treat transparent pixels as obscured background
-					cue.bounds != null ? cue.bounds.x1 : 0,
-					cue.bounds != null ? cue.bounds.y1 : 0,
-					cue.bounds != null ? cue.bounds.x2 : 0,
-					cue.bounds != null ? cue.bounds.y2 : 0
-			);
-
-			if (result.size() == 0)
-				break; // we're clear of "Loading" message
-
-			sleep(5*SECOND); // wait a bit for the "Loading" to go away
-			img = takeScreenshot(game);
-			counter++;
-			if (counter > 20) {
-				BHBot.log("Problem detected: loading screen detected, however timeout reached while waiting for it to go away. Ignoring...");
-				break; // taking too long... will probably not load at all. We must restart it (we won't restart it from here, but idle detection mechanism will)
-			}
-		}
+//		// detect and handle "Loading" message (this is optional operation though):
+//		Cue cue = cues.get("Loading");
+//		int counter = 0;
+//		while (true) {
+//			List<MarvinSegment> result = FindSubimage.findSubimage(
+//					img,
+//					cue.im,
+//					1.0,
+//					false,
+//					true, // treat transparent pixels as obscured background
+//					cue.bounds != null ? cue.bounds.x1 : 0,
+//					cue.bounds != null ? cue.bounds.y1 : 0,
+//					cue.bounds != null ? cue.bounds.x2 : 0,
+//					cue.bounds != null ? cue.bounds.y2 : 0
+//			);
+//
+//			if (result.size() == 0)
+//				break; // we're clear of "Loading" message
+//
+//			sleep(5*SECOND); // wait a bit for the "Loading" to go away
+//			img = takeScreenshot(game);
+//			counter++;
+//			if (counter > 20) {
+//				BHBot.log("Problem detected: loading screen detected, however timeout reached while waiting for it to go away. Ignoring...");
+//				break; // taking too long... will probably not load at all. We must restart it (we won't restart it from here, but idle detection mechanism will)
+//			}
+//		}
 	}
 
 	// https://stackoverflow.com/questions/297762/find-known-sub-image-in-larger-image
@@ -2972,12 +2978,14 @@ public class MainThread implements Runnable {
 		if (seg != null) {
 			if ((state == State.Trials || state == State.Gauntlet) && (BHBot.settings.autoRevive == 1 || BHBot.settings.autoRevive == 3)) {
 				BHBot.log("Auto-pilot disabled. Checking for revivable team members...");
-				clickInGame(40,420); //click potion button
+				sleep(500);
+				clickInGame(35,415); //click potion button
 				readScreen();
 				MarvinSegment seg1 = detectCue(cues.get("UhOh"),2*SECOND); //UhOh dialogue box when everyone is full HP 
 				MarvinSegment seg2 = detectCue(cues.get("Defeat")); //if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
 				if (seg1 != null) {
-					clickInGame(400,365); //dismiss pop-up / bit risky is if clicks on something on complete screen
+					sleep(1000);
+					clickInGame(400,365); //dismiss pop-up
 					if (BHBot.settings.autoRevive == 0) {
 						BHBot.log("AutoRevive disabled, reenabling auto..");
 					} else BHBot.log("No revives needed, reenabling auto..");
@@ -2985,13 +2993,15 @@ public class MainThread implements Runnable {
 					readScreen();
 					seg = detectCue(cues.get("AutoOff"));
 					clickOnSeg(seg);
+					
 				if (seg2 != null) {
 					if (BHBot.settings.autoRevive == 0) BHBot.log("AutoRevive disabled, reenabling auto..");
 					sleep(500);
 					readScreen();
 					seg = detectCue(cues.get("AutoOff"));
 					clickOnSeg(seg);
-				}
+					return;
+					}
 					
 				} else {
 					
@@ -3012,7 +3022,7 @@ public class MainThread implements Runnable {
 						sleep(500);
 					}
 					
-					clickInGame(200,340);
+					clickInGame(200,340); //slot 2
 					sleep(2000);
 					readScreen();
 					seg = detectCue(cues.get("ReviveAverage"));
@@ -3028,7 +3038,7 @@ public class MainThread implements Runnable {
 						sleep(500);
 					}
 					
-					clickInGame(115,285);
+					clickInGame(115,285); //slot 3
 					sleep(2000);
 					readScreen();
 					seg = detectCue(cues.get("ReviveAverage"));
@@ -3053,32 +3063,47 @@ public class MainThread implements Runnable {
 				}
 			}
 			if ((state == State.Raid) && (BHBot.settings.autoRevive == 2 || BHBot.settings.autoRevive == 3)) {
+				boolean defeated = false;
 				BHBot.log("Auto-pilot disabled. Checking for revivable team members...");
-				clickInGame(40,420); //click potion button
+				sleep(500);
+				clickInGame(35,415); //click potion button
 				readScreen();
 				MarvinSegment seg1 = detectCue(cues.get("UhOh"),2*SECOND); //UhOh dialogue box when everyone is full HP 
 				MarvinSegment seg2 = detectCue(cues.get("Defeat")); //if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
-				if (seg1 != null || seg2!= null) {
-					clickInGame(400,365); //dismiss pop-up / bit risky is if clicks on something on complete screen
-					if (BHBot.settings.autoRevive == 0) {
-						BHBot.log("AutoRevive disabled, reenabling auto..");
-					} else BHBot.log("No revives needed, reenabling auto..");
-					sleep(500);
-					readScreen();
-					seg = detectCue(cues.get("AutoOff"));
-					if (seg != null) clickOnSeg(seg);
+				if (seg1 != null || seg2 != null) {
+					if (seg2 != null) {
+						if (BHBot.settings.autoRevive == 0) BHBot.log("AutoRevive disabled, reenabling auto..");
+						sleep(500);
+						readScreen();
+						BHBot.log("Defeated screen, lets try and skip checking");
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						defeated = true; // so we don't check all 5 dead players at the defeated screen
+						return;
+					} else if (seg1 != null ) {
+						sleep(1000);
+						clickInGame(400,365); //dismiss pop-up
+						if (BHBot.settings.autoRevive == 0) {
+							BHBot.log("AutoRevive disabled, reenabling auto..");
+						} else BHBot.log("No revives needed, reenabling auto..");
+						sleep(500);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+					}
 					
 				} else {
-					
+					if (defeated) return; // if we are at defeated screen skip checking all 5 players for obvious reasons
 					clickInGame(305,320); //slot #1
 					sleep(2000);
 					readScreen();
 					seg = detectCue(cues.get("ReviveAverage"));
-					if (seg != null) {
+					if (seg != null && (!oneRevived)) {
 						useRevive(1);
 						readScreen();
 						seg = detectCue(cues.get("AutoOff"));
 						clickOnSeg(seg);
+						oneRevived = true;
 						return;
 //						//TODO Check if potions are actually available
 					} else {
@@ -3091,11 +3116,12 @@ public class MainThread implements Runnable {
 					sleep(2000);
 					readScreen();
 					seg = detectCue(cues.get("ReviveAverage"));
-					if (seg != null) {
+					if (seg != null && (!twoRevived)) {
 						useRevive(2);
 						readScreen();
 						seg = detectCue(cues.get("AutoOff"));
 						clickOnSeg(seg);
+						twoRevived = true;
 						return;
 					} else {
 						BHBot.log("Slot #2 not revivable");
@@ -3107,11 +3133,12 @@ public class MainThread implements Runnable {
 					sleep(2000);
 					readScreen();
 					seg = detectCue(cues.get("ReviveAverage"));
-					if (seg != null) {
+					if (seg != null && (!threeRevived)) {
 						useRevive(3);
 						readScreen();
 						seg = detectCue(cues.get("AutoOff"));
 						clickOnSeg(seg);
+						threeRevived = true;
 						return;
 					} else {
 						BHBot.log("Slot #3 not revivable");
@@ -3123,11 +3150,12 @@ public class MainThread implements Runnable {
 					sleep(2000);
 					readScreen();
 					seg = detectCue(cues.get("ReviveAverage"));
-					if (seg != null) {
+					if (seg != null && (!fourRevived)) {
 						useRevive(4);
 						readScreen();
 						seg = detectCue(cues.get("AutoOff"));
 						clickOnSeg(seg);
+						fourRevived = true;
 						return;
 					} else {
 						BHBot.log("Slot #4 not revivable");
@@ -3139,11 +3167,12 @@ public class MainThread implements Runnable {
 					sleep(2000);
 					readScreen();
 					seg = detectCue(cues.get("ReviveAverage"));
-					if (seg != null) {
+					if (seg != null && (!fiveRevived)) {
 						useRevive(5);
 						readScreen();
 						seg = detectCue(cues.get("AutoOff"));
 						clickOnSeg(seg);
+						fiveRevived = true;
 						return;
 					} else {
 						BHBot.log("Slot #5 not revivable");
@@ -3156,6 +3185,13 @@ public class MainThread implements Runnable {
 					readScreen();
 					seg = detectCue(cues.get("AutoOff"));
 					if (seg != null) clickOnSeg(seg); //reenable auto if necessary
+					return;
+				}
+			} else {
+				seg = detectCue(cues.get("AutoOff"));
+				if (seg != null) {
+					clickOnSeg(seg);
+					BHBot.log("Auto-pilot is disabled. Enabling...");
 					return;
 				}
 			}
@@ -3389,6 +3425,7 @@ public class MainThread implements Runnable {
 				BHBot.log(state.getName() + " completed successfully. Result: Defeat");
 			}
 			resetAppropriateTimers();
+			resetRevives();
 			if (state == State.PVP) dressUp();
 			state = State.Main; // reset state
 			return;
@@ -3423,6 +3460,7 @@ public class MainThread implements Runnable {
 				updateActivityCounter(state.getName());
 			}
 			resetAppropriateTimers();
+			resetRevives();
 			state = State.Main; // reset state
 			return;
 		}
@@ -5478,5 +5516,13 @@ public class MainThread implements Runnable {
 		if ( (globalTokens - BHBot.settings.costTrials) > BHBot.settings.minTokens && (state == State.Trials) ) timeLastTokensCheck = 0;
 		
 		if ( (globalTokens - BHBot.settings.costGauntlet) > BHBot.settings.minTokens && (state == State.Gauntlet) ) timeLastTokensCheck = 0;
+	}
+	
+	private void resetRevives() {
+		oneRevived = false;
+		twoRevived = false;
+		threeRevived = false;
+		fourRevived = false;
+		fiveRevived = false;
 	}
 }

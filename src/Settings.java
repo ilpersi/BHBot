@@ -123,14 +123,14 @@ public class Settings {
 	
 	public Settings() {
 		dungeons = new ArrayList<String>();
-		setDungeons(""); // some default value
+		setDungeons("z1d4 3 100"); // some default value
 		thursdayDungeons = new ArrayList<String>();
-		setThursdayDungeons(""); // some default value
+		setThursdayDungeons(""); // default is empty, else if people delete the line it will load this value 
 		raids = new ArrayList<String>();
-		setRaids(""); // some default value
+		setRaids("1 3 100"); // some default value
 		thursdayRaids = new ArrayList<String>();
 		thursdayDungeons = new ArrayList<String>();
-		setThursdayRaids(""); // some default value("z1d1 3 100"); // some default value
+		setThursdayRaids(""); // default is empty, else if people delete the line it will load this value 
 		expeditions = new ArrayList<String>();
 		setExpeditions("h1 100"); // some default value
 		pvpstrip = new ArrayList<String>();
