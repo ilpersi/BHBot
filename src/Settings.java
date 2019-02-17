@@ -91,7 +91,7 @@ public class Settings {
 	
 	/** Autorevive Settings **/
 	public int autoRevive = 0;
-	public String potionOrder = "";
+	public String potionOrder = "123";
 	public boolean tankPriority = false;
 	
 	/**
