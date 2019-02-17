@@ -241,7 +241,7 @@ public class MainThread implements Runnable {
 	public static WebElement game;
 	public State state; // at which stage of the game/menu are we currently?
 	public BufferedImage img; // latest screen capture
-	public boolean collectedFishingRewards = false;  // set fishing reward collection to false on setup.
+	public boolean firstAutoEable;
 
 	long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
 	final long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
@@ -376,6 +376,9 @@ public class MainThread implements Runnable {
 		addCue("TokenBar", loadImage("cues/cueTokenBar.png"), null);
 		addCue("CloseGreen", loadImage("cues/cueCloseGreen.png"), null); // close button used with "You have been defeated" popup in gauntlet and also "Victory" window in gauntlet
 		addCue("Victory", loadImage("cues/cueVictory.png"), null); // victory window cue found upon completing gauntlet
+		
+		addCue("UhOh", loadImage("cues/cueUhoh.png"), new Bounds(319, 122, 526, 184));
+		addCue("Revive60", loadImage("cues/cueRevive60.png"), null);
 
 		addCue("Quest", loadImage("cues/cueQuest.png"), new Bounds(0, 0, 40, 40)); // cue for quest (dungeons) button
 		addCue("ZonesButton", loadImage("cues/cueZonesButton.png"), new Bounds(105, 60, 125, 75));
@@ -2908,8 +2911,12 @@ public class MainThread implements Runnable {
 	 * - trial <br>
 	 * - gauntlet <br>
 	 */
+	@SuppressWarnings("unused")
 	private void processDungeon() {
 		MarvinSegment seg;
+		
+//		final long startTime = Misc.getTime();
+//		BHBot.log(Long.toString(startTime));
 		
 		readScreen();
 
@@ -2947,6 +2954,89 @@ public class MainThread implements Runnable {
 //			return;
 //		}
 
+		//todo Trials revive
+		
+		seg = detectCue(cues.get("AutoOff"));
+		if (seg != null) {
+			BHBot.log("Auto-pilot has been disabled. Checking for dead team members...");
+			if (state == State.Trials || state == State.Gauntlet) {
+				clickInGame(40,420);
+				readScreen();
+				seg = detectCue(cues.get("UhOh"),2*SECOND);
+				if (seg != null) {
+					clickInGame(400,365);
+					BHBot.log("No revives needed, enabling auto..");
+					sleep(500);
+					readScreen();
+					seg = detectCue(cues.get("AutoOff"));
+					clickOnSeg(seg);
+					
+				} else {			
+					
+					clickInGame(290,315);
+					sleep(2000);
+					readScreen();
+					seg = detectCue(cues.get("Revive60"));
+					if (seg != null) {
+						BHBot.log("Attempting to revive member #1");
+						clickInGame(400,256);
+						sleep(1000);
+						clickInGame(320,360);
+						//TODO Check potion availability by greenyes button
+					} else {
+						BHBot.log("Slot #1 not revivable, checking next..");
+						clickInGame(700,90); //close window
+						sleep(500);
+					}
+					
+					clickInGame(200,340);
+					sleep(2000);
+					readScreen();
+					seg = detectCue(cues.get("Revive60"));
+					if (seg != null) {
+						BHBot.log("Attempting to revive member #2");
+						clickInGame(400,256);
+						sleep(1000);
+						clickInGame(320,360);
+					} else {
+						BHBot.log("Slot #2 not revivable, checking next..");
+						clickInGame(700,90); //close window
+						sleep(500);
+					}
+					
+					clickInGame(115,285);
+					sleep(2000);
+					readScreen();
+					seg = detectCue(cues.get("Revive60"));
+					if (seg != null) {
+						BHBot.log("Attempting to revive member #3");
+						clickInGame(400,256);
+						sleep(1000);
+						clickInGame(320,360);
+						return;
+					} else {
+						BHBot.log("Slot #3 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+					}
+					
+					sleep(1000);
+					BHBot.log("Revive check complete, re-enabling auto");
+					readScreen();
+					seg = detectCue(cues.get("AutoOff"));
+					clickOnSeg(seg);
+//					sleep(500);
+//					clickInGame(780,250);
+					return;
+				}
+			}
+		return;
+		}
+//	}
+		
+		/*
+		 * Disabled for testing auto-potion
+		 * 
 		// check for auto-pilot disabled:
 		seg = detectCue(cues.get("AutoOff"));
 		if (seg != null) {
@@ -2955,6 +3045,7 @@ public class MainThread implements Runnable {
 
 			return;
 		}
+		*/
 
 		// check for ad treasure:
 		

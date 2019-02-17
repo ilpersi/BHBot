@@ -351,9 +351,6 @@ public class BHBot {
 		} else if (params[0].equals("adtest")) {
 			main.trySkippingAd();
 		}
-		else if (params[0].equals("ptest")) {
-			main.getTickets();
-		}
 	}
 	
 	public static void printSet(Set<String> set) {
