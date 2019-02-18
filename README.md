@@ -20,6 +20,7 @@ This bot will automatically farm items, familiars and schematics running the fol
 The level/difficulty for each activity can be defined in the settings file. The bot can also:
 
 * Automatically bribe specific familiars defined in the settings file (with limits so you dont waste gems)
+* Automatically revive fallen teammates in Trials/Gauntlets/Raids
 * Use consumables to keep 25% IF/XP/Gold boosts running unattended
 * Strip items for PvP to lower TS
 * Solo certain zones for bounty requirements
