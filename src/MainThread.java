@@ -361,6 +361,7 @@ public class MainThread implements Runnable {
 		addCue("View", loadImage("cues/cueView.png"), null);
 		addCue("Bribe", loadImage("cues/cueBribe.png"), null);
 		addCue("SkeletonTreasure", loadImage("cues/cueSkeletonTreasure.png"), null); // skeleton treasure found in dungeons (it's a dialog/popup cue)
+		addCue("Open", loadImage("cues/cueOpen.png"), null); // skeleton treasure open button
 		addCue("AdTreasure", loadImage("cues/cueAdTreasure.png"), null); // ad treasure found in dungeons (it's a dialog/popup cue)
 		addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
 		addCue("Merchant", loadImage("cues/cueMerchant.png"), null); // cue for merchant dialog/popup
@@ -750,6 +751,13 @@ public class MainThread implements Runnable {
 		driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
 		BHBot.log("Chrome window has been hidden.");
 	}
+	
+	public void hideBrowserStartup() {
+		sleep(10000);
+		driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
+		BHBot.log("Chrome window has been hidden.");
+	}
+	
 
 	public void showBrowser() {
 		driver.manage().window().setPosition(new Point(0, 0));
@@ -829,7 +837,7 @@ public class MainThread implements Runnable {
 
 		int counter = 0;
 		boolean restart = false;
-		while (true) {
+		while (true) { 
 			try {
 				detectLoginFormAndHandleIt();
 			} catch (Exception e) {
@@ -890,6 +898,8 @@ public class MainThread implements Runnable {
 //		if (new SimpleDateFormat("EEE").format(new Date()).equals("Tue")) {
 //			BHBot.log("Tuesday");
 //		} else BHBot.log("Not Tuesday");
+		
+		BHBot.log(Integer.toString(BHBot.settings.openSkeleton));
 		
 
 		
@@ -2932,10 +2942,6 @@ public class MainThread implements Runnable {
 	 */
 	private void processDungeon() {
 		MarvinSegment seg;
-		
-//		final long startTime = Misc.getTime();
-//		BHBot.log(Long.toString(startTime));
-		
 		readScreen();
 
 		// handle "Not enough energy" popup:
@@ -2971,9 +2977,8 @@ public class MainThread implements Runnable {
 //			BHBot.log("Increased battle speed (old speed=" + speed + "X).");
 //			return;
 //		}
-
-		//todo Trials revive
 		
+		//trials/raid revive code + auto-off check
 		seg = detectCue(cues.get("AutoOff"));
 		if (seg != null) {
 			if ((state == State.Trials || state == State.Gauntlet) && (BHBot.settings.autoRevive == 1 || BHBot.settings.autoRevive == 3)) {
@@ -2991,7 +2996,6 @@ public class MainThread implements Runnable {
 						BHBot.log("Defeat screen, skipping revive check");
 						seg = detectCue(cues.get("AutoOff"));
 						clickOnSeg(seg);
-//						defeated = true; // so we don't check all 5 dead players at the defeated screen
 						return;
 					} else if (seg1 != null ) {
 						sleep(1000);
@@ -3074,7 +3078,6 @@ public class MainThread implements Runnable {
 				}
 			}
 			if ((state == State.Raid) && (BHBot.settings.autoRevive == 2 || BHBot.settings.autoRevive == 3)) {
-				boolean defeated = false;
 				BHBot.log("Auto-pilot disabled. Checking for revivable team members...");
 				sleep(500);
 				clickInGame(35,415); //click potion button
@@ -3089,7 +3092,6 @@ public class MainThread implements Runnable {
 						BHBot.log("Defeat screen, skipping revive check");
 						seg = detectCue(cues.get("AutoOff"));
 						clickOnSeg(seg);
-						defeated = true; // so we don't check all 5 dead players at the defeated screen
 						return;
 					} else if (seg1 != null ) {
 						sleep(1000);
@@ -3104,7 +3106,7 @@ public class MainThread implements Runnable {
 					}
 					return;
 				} else {
-					if (defeated) return; // if we are at defeated screen skip checking all 5 players for obvious reasons
+//					if (defeated) return; // if we are at defeated screen skip checking all 5 players for obvious reasons
 					
 					if (!oneRevived) {
 						clickInGame(305,320); //slot #1
@@ -3219,7 +3221,6 @@ public class MainThread implements Runnable {
 			}
 		return;
 		}
-//	}
 		
 
 		// check for ad treasure:
@@ -3319,22 +3320,58 @@ public class MainThread implements Runnable {
 			return;
 		}
 
-		// check for skeleton treasure chest (and decline it):
+		// check for skeleton treasure chest:
 		seg = detectCue(cues.get("SkeletonTreasure"));
 		if (seg != null) {
 			if (BHBot.settings.openSkeleton == 0) {
+				BHBot.log("Skeleton treasure found, declining.");
 				seg = detectCue(cues.get("Decline"), 5*SECOND);
 				clickOnSeg(seg);
 				readScreen(1*SECOND);
 				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 				clickOnSeg(seg);
 				return;
+				
 			} else if (BHBot.settings.openSkeleton == 1) {
-			//TODO
-			BHBot.log("Using skeleton key globally");
+				BHBot.log("Skeleton treasure found, attemping to use key");
+				seg = detectCue(cues.get("Open"), 5*SECOND);
+				if (seg == null) {
+					BHBot.log("Open button not found, restarting");
+					saveGameScreen("skeleton-open-cue-test");
+					restart();
+				}
+				clickOnSeg(seg);
+				readScreen(1*SECOND);
+				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
+				if (seg == null) {
+					BHBot.log("Yes button not found, restarting");
+					saveGameScreen("skeleton-yes-cue-test");
+					restart();
+				}
+				clickOnSeg(seg);
+				saveGameScreen("key-used-succesfully-dungeonraid");
+				return;
+				
 			} else if (BHBot.settings.openSkeleton == 2 && state == state.Raid) {
-			//TODO
-			BHBot.log("Using skeleton key in raid");
+				BHBot.log("Raid Skeleton treasure found, attemping to use key");
+				seg = detectCue(cues.get("Open"), 5*SECOND);
+				if (seg == null) {
+					BHBot.log("Open button not found, restarting");
+					saveGameScreen("skeleton-open-cue-test");
+					restart();
+				}
+				clickOnSeg(seg);
+				readScreen(1*SECOND);
+				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
+				if (seg == null) {
+					BHBot.log("Yes button not found, restarting");
+					saveGameScreen("skeleton-yes-cue-test");
+					restart();
+				}
+				clickOnSeg(seg);
+				saveGameScreen("key-used-succesfully-raid");
+				return;
+				
 			} else
 				BHBot.log("Skeleton Key error");
 				return;
@@ -3512,6 +3549,8 @@ public class MainThread implements Runnable {
 			return;
 		}
 
+		sleep(1000); //baby sleep so this function isn't too taxing on performance
+		
 		// at the end of this method, revert idle time change (in order for idle detection to function properly):
 		BHBot.scheduler.restoreIdleTime();
 	}
@@ -3593,7 +3632,7 @@ public class MainThread implements Runnable {
 		case 2:
 			return new Point(400,260); //average
 		case 3:
-			return new Point(580,260); //mahor
+			return new Point(580,260); //major
 		}
 		return null;
 	}
@@ -3675,7 +3714,7 @@ public class MainThread implements Runnable {
 
 //	        BHBot.log(inputStr); // check that it's inputted right
 
-	        //find containing string and update with the output from the function above
+	        //find containing string and update with the output string from the function above
 	        if (inputStr.contains(familiarToUpdate)) {
 	            inputStr = inputStr.replace(familiarToUpdate, updatedFamiliar);
 	        }
@@ -3963,6 +4002,7 @@ public class MainThread implements Runnable {
 			}
 			break;
 		case 2: // Inferno dimension
+			//TODO NExt time inferno comes around get XY's
 			switch (n) {
 			case 1:
 				return new Point(0,0);
