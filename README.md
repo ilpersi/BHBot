@@ -31,11 +31,8 @@ The level/difficulty for each activity can be defined in the settings file. The 
 * Open skeleton chests
 * Handle incomplete teams
 
-If the bot detects a "Disconnected" dialog, it will pause its execution for 1 hour giving the user a chance to play manually.
+If the bot detects a "Disconnected" dialog, it will pause its execution for a settings-configured time giving the user a chance to play manually.
 Disconnects are usually result of another instance logging into the game. This is why bot pauses in case it detects it.
-
-## Upcoming Features
-* None currently required, I'm open to suggestions.
 
 ## First time setup
 
@@ -87,7 +84,6 @@ https://github.com/Betalord/BHBot/releases
 For the latest functionality it is recommended to compile your own version as there are frequent commits with bug-fixes and new functionality between major releases.
 
 ## Notes
-* The current ad system needs to be completely rewritten and is unlikely to work.
 * The image recognition engine can have trouble with high resolution / non-standard DPI. If you're having issues with the bot not starting
 try setting scaling to 100% and resolution 1920*1080 or less.
 
