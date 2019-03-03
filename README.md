@@ -21,20 +21,21 @@ The level/difficulty for each activity can be defined in the settings file. The 
 
 * Bribe specific familiars defined in the settings file (with limits so you dont waste gems)
 * Revive fallen party members in Trials/Gauntlets/Raids
+* Save shrines for use before the boss in Trials and Raids
 * Use consumables to keep 25% IF/XP/Gold boosts running unattended
 * Strip items for PvP to lower TS
 * Solo certain zones for bounty requirements
 * Collect completed bounties
 * Claim all weekly rewards
 * Screenshot and close PMs
+* Open skeleton chests
 * Handle incomplete teams
 
 If the bot detects a "Disconnected" dialog, it will pause its execution for 1 hour giving the user a chance to play manually.
 Disconnects are usually result of another instance logging into the game. This is why bot pauses in case it detects it.
 
 ## Upcoming Features
-* Watching and Collecting Ads
-* Opening skeleton chests
+* None currently required, I'm open to suggestions.
 
 ## First time setup
 
