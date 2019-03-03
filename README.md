@@ -31,7 +31,7 @@ The level/difficulty for each activity can be defined in the settings file. The 
 * Open skeleton chests
 * Handle incomplete teams
 
-If the bot detects a "Disconnected" dialog, it will pause its execution for a settings-configured time giving the user a chance to play manually.
+If the bot detects a "Disconnected" dialog, it will pause its execution for an hour giving the user a chance to play manually.
 Disconnects are usually result of another instance logging into the game. This is why bot pauses in case it detects it.
 
 ## First time setup
