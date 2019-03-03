@@ -14,6 +14,9 @@ public class Settings {
 	public boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
 	public boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
 	public boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
+	public int reconnectTimer = 60;
+	
+	//Various settings
 	public int openSkeleton = 0;
 	public boolean autoBribe  = false;
 	public boolean collectBounties  = false;
@@ -94,6 +97,11 @@ public class Settings {
 	public String potionOrder = "123";
 	public boolean tankPriority = false;
 	
+	/** Autoshrine settings **/
+	public boolean autoShrine = false;
+	public int battleDelay = 20;
+	public int shrineDelay = 20;
+	
 	/**
 	 * List of equipment that should be stripped before attempting PvP (and dressed up again after PvP is done).
 	 * Allowed tokens:
@@ -119,7 +127,7 @@ public class Settings {
 	public String worldBossRun = "worldbossrun 0";
 
 	/** This tells us how much time will we sleep when disconnect has been detected (which happens when a user logs in). This interval should be an hour or so, so that user can play the game in peace without being disconnected due to us reconnecting to the game. */
-	public int pauseOnDisconnect = 60*MainThread.MINUTE;
+	public int pauseOnDisconnect = reconnectTimer*MainThread.MINUTE;
 	
 	public Settings() {
 		dungeons = new ArrayList<String>();
@@ -208,6 +216,10 @@ public class Settings {
 		this.autoRevive = settings.autoRevive;
 		this.potionOrder = settings.potionOrder;
 		this.tankPriority = settings.tankPriority;
+		
+		this.autoShrine = settings.autoShrine;
+		this.battleDelay = settings.battleDelay;
+		this.shrineDelay = settings.shrineDelay;
 	}
 	
 	// a handy shortcut for some debug settings:
@@ -504,7 +516,7 @@ public class Settings {
 		debugDetectionTimes = map.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("0") ? false : true ;
 		hideWindowOnRestart = map.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("0") ? false : true ;
 		resetTimersOnBattleEnd = map.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("0") ? false : true ;
-		
+		reconnectTimer = Integer.parseInt(map.getOrDefault("reconnectTimer", ""+reconnectTimer));
 		
 		doRaids = map.getOrDefault("doRaids", doRaids ? "1" : "0").equals("0") ? false : true;
 		doDungeons = map.getOrDefault("doDungeons", doDungeons ? "1" : "0").equals("0") ? false : true;
@@ -545,6 +557,8 @@ public class Settings {
 		tankPriority = map.getOrDefault("tankPriority", tankPriority ? "1" : "0").equals("0") ? false : true;
 		potionOrder  = map.getOrDefault("potionOrder", potionOrder);
 		
+		
+		
 		difficulty = Integer.parseInt(map.getOrDefault("difficulty", ""+difficulty));
 		expeditionDifficulty = Integer.parseInt(map.getOrDefault("expeditionDifficulty", ""+expeditionDifficulty));
 		minSolo  = Integer.parseInt(map.getOrDefault("minSolo", ""+minSolo));
@@ -570,6 +584,9 @@ public class Settings {
 		dungeonsRun = "dungeonsrun " + map.getOrDefault("dungeonsrun", dungeonsRun);
 		worldBossRun = "worldbossrun " + map.getOrDefault("worldbossrun", worldBossRun);
 		
+		autoShrine = map.getOrDefault("autoShrine", autoShrine ? "1" : "0").equals("0") ? false : true;
+		battleDelay = Integer.parseInt(map.getOrDefault("battleDelay", ""+battleDelay));
+		shrineDelay = Integer.parseInt(map.getOrDefault("shrineDelay", ""+shrineDelay));
 		
 	}
 	

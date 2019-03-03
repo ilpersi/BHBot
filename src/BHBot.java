@@ -23,7 +23,7 @@ import com.assertthat.selenium_shutterbug.core.Shutterbug;
 public class BHBot {
 
 	public static final String PROGRAM_NAME = "BHBot";
-	public static final String PROGRAM_VERSION = "31.2";
+	public static final String PROGRAM_VERSION = "32";
 	public static final boolean REQUIRES_ACCESS_TOKEN = false; // obsolete since public release (was used to restrict bot usage)
 	
 	public static Thread mainThread;
@@ -338,8 +338,8 @@ public class BHBot {
 				boolean result = main.selectCost(current, goal);
 				log("Cost change result: " + result);
 			}
-		} else if (params[0].equals("mtest")) {
-			main.handleTeamMalformedWarning();
+		} else if (params[0].equals("shrinetest")) {
+			main.checkShrineSettings("disable");
 		} else if (params[0].equals("rtest")) {
 			main.raidReadTest();
 		} else if (params[0].equals("etest")) {

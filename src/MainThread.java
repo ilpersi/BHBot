@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -234,6 +235,17 @@ public class MainThread implements Runnable {
 	public boolean fourRevived = false;
 	public boolean fiveRevived = false;
 	
+	private boolean startTimeCheck = false;
+	private boolean shrinesChecked = false;
+	private boolean autoShrined = false;
+	private long activityStartTime;
+	private long activityDuration;
+	private long outOfEncounterTimestamp = 0;
+	private long inEncounterTimestamp = 0;
+	
+	public int dungeonCounter = 0;
+	public int raidCounter = 0;
+	
 	private static final int MAX_LAST_AD_OFFER_TIME = 17*MINUTE; // after this time, restart() will get called since ads are not coming through anymore
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
@@ -386,6 +398,11 @@ public class MainThread implements Runnable {
 		
 		addCue("UhOh", loadImage("cues/cueUhoh.png"), new Bounds(319, 122, 526, 184));
 		addCue("ReviveAverage", loadImage("cues/cueReviveAverage.png"), null);
+		
+		addCue("GuildButton", loadImage("cues/cueGuildButton.png"), new Bounds(500, 420, 590, 520));
+		addCue("IgnoreShrines", loadImage("cues/cueIgnoreShrines.png"), new Bounds(120, 250, 675, 475));
+		addCue("IgnoreBoss", loadImage("cues/cueIgnoreBoss.png"), new Bounds(120, 250, 675, 475));
+
 
 		addCue("Quest", loadImage("cues/cueQuest.png"), new Bounds(0, 0, 40, 40)); // cue for quest (dungeons) button
 		addCue("ZonesButton", loadImage("cues/cueZonesButton.png"), new Bounds(105, 60, 125, 75));
@@ -899,7 +916,11 @@ public class MainThread implements Runnable {
 //			BHBot.log("Tuesday");
 //		} else BHBot.log("Not Tuesday");
 		
-		BHBot.log(Integer.toString(BHBot.settings.openSkeleton));
+//		BHBot.log(Integer.toString(BHBot.settings.openSkeleton));
+		
+//		BHBot.log(Boolean.toString(BHBot.settings.autoShrine));
+//		BHBot.log(Integer.toString(BHBot.settings.battleDelay));
+//		BHBot.log(Integer.toString(BHBot.settings.shrineDelay));
 		
 
 		
@@ -1198,6 +1219,15 @@ public class MainThread implements Runnable {
 					// check for shards:
 					if (BHBot.scheduler.doRaidImmediately || (BHBot.settings.doRaids && Misc.getTime() - timeLastShardsCheck > SHARDS_CHECK_INTERVAL)) {
 						timeLastShardsCheck = Misc.getTime();
+						
+						if ((BHBot.settings.autoShrine) && (!shrinesChecked)) {
+							checkShrineSettings("enable");
+							continue;
+						} else if ((!BHBot.settings.autoShrine) && (!shrinesChecked)) {
+							checkShrineSettings("disable");
+							continue;
+						}
+						
 						seg = detectCue(cues.get("RaidButton"));
 
 						if (seg == null) { // if null, then raid button is transparent meaning that raiding is not enabled (we have not achieved it yet, for example)
@@ -1292,7 +1322,8 @@ public class MainThread implements Runnable {
 							readScreen(2*SECOND);
 							seg = detectCue(cues.get("Accept"), 5*SECOND);
 							clickOnSeg(seg);
-							sleep(5*SECOND);
+							//TODO Change this back to 5 second sleep if it breaks something
+							readScreen(2*SECOND);
 
 							handleTeamMalformedWarning();
 							if (handleTeamMalformedWarning()) {
@@ -1452,6 +1483,14 @@ public class MainThread implements Runnable {
 							BHBot.scheduler.restoreIdleTime();
 							continue;
 						}
+						
+						if ((BHBot.settings.autoShrine) && (!shrinesChecked)) {
+							checkShrineSettings("enable");
+							continue;
+						} else if ((!BHBot.settings.autoShrine) && (!shrinesChecked)) {
+							checkShrineSettings("disable");
+							continue;
+						}
 
 						clickOnSeg(seg);
 						sleep(2*SECOND);
@@ -1560,7 +1599,7 @@ public class MainThread implements Runnable {
 					// check for energy:
 					if (BHBot.scheduler.doDungeonImmediately || (BHBot.settings.doDungeons && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
 						timeLastEnergyCheck = Misc.getTime();
-
+						
 						int energy = getEnergy();
 						globalEnergy = energy;
 						BHBot.log("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
@@ -2281,6 +2320,62 @@ public class MainThread implements Runnable {
 		BHBot.log(Integer.toString(t));
 	}
 
+	public void checkShrineSettings(String set) {
+		MarvinSegment seg;
+		
+		if (set == "enable") { 
+			//open settings
+			clickInGame(675,482);
+			sleep(1000);
+			readScreen();
+			
+			seg = detectCue(cues.get("IgnoreBoss"));
+			if (seg != null) {
+				clickInGame(194,366);
+				BHBot.log("Enabling Ignore Boss");
+			} else {
+				BHBot.log("Ignore Boss Enabled");
+			}
+			sleep(500);
+			
+			seg = detectCue(cues.get("IgnoreShrines"));
+			if (seg != null) {
+				clickInGame(194,402);
+				BHBot.log("Enabling Ignore Shrine");
+			} else {
+				BHBot.log("Ignore Shrine Enabled");
+			}
+			sleep(500);
+			clickInGame(660,80);
+			shrinesChecked = true;
+			BHBot.log("autoShrine autoConfigured");
+			sleep(1500); //sleep so we can ready activity button again from main menu
+		} else if (set == "disable") {
+			//open settings
+			clickInGame(675,482);
+			sleep(1000);
+			readScreen();
+			
+			seg = detectCue(cues.get("IgnoreBoss"));
+			if (seg == null) {
+				clickInGame(194,366);
+				BHBot.log("Disabling Ignore Boss");
+			}
+			sleep(500);
+			
+			seg = detectCue(cues.get("IgnoreShrines"));
+			if (seg == null) {
+				clickInGame(194,402);
+				BHBot.log("Disabling Ignore Shrine");
+			}
+			sleep(500);
+			clickInGame(660,80);
+			shrinesChecked = true;
+			BHBot.log("autoShrine disabled");
+			sleep(1500); //sleep so we can ready activity button again from main menu
+		}
+
+	}
 	
 	/**
 	 * This form opens only seldom (haven't figured out what triggers it exactly - perhaps some cookie expired?). We need to handle it!
@@ -2950,11 +3045,11 @@ public class MainThread implements Runnable {
 			state = State.Main; // reset state
 			return;
 		}
-
-		// check for any character dialog:
-		/* This is nearly half of the processing time of proccessDungeon(); so trying to minimize its usage */
-		if (state == State.Dungeon || state == State.Raid) {
-		detectCharacterDialogAndHandleIt();
+		
+		if (!startTimeCheck) {
+			activityStartTime = (System.currentTimeMillis() / 1000L);
+//			BHBot.log("Start time: " + Long.toString(activityStartTime));
+			startTimeCheck = true;
 		}
 
 		// check for 1X and 3X speed (and increase it):
@@ -2977,6 +3072,65 @@ public class MainThread implements Runnable {
 //			BHBot.log("Increased battle speed (old speed=" + speed + "X).");
 //			return;
 //		}
+		
+		//We use guild button visibility to determine whether we are in an encounter or not
+		seg = detectCue(cues.get("GuildButton"));
+		if (seg != null) {
+			outOfEncounterTimestamp = System.currentTimeMillis() / 1000L;
+//			BHBot.log("Out of combat");
+//			BHBot.log(Long.toString(outOfEncounterTimestamp));
+		} else {
+			inEncounterTimestamp = System.currentTimeMillis() / 1000L;
+//			BHBot.log("In combat");
+//			BHBot.log(Long.toString(inEncounterTimestamp));
+		}
+		
+		activityDuration = ((System.currentTimeMillis() / 1000L) - activityStartTime);
+//		BHBot.log("Duration: " + Long.toString(activityDuration));
+//		BHBot.log("Time since last encounter: " + Long.toString(outOfEncounterTimestamp - inEncounterTimestamp));
+		if (state == State.Trials || state == State.Raid) {
+			if (activityDuration > 30 && !autoShrined) { //if we're past 30 seconds into the activity
+				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) { //and it's been the battleDelay setting since last encounter
+					BHBot.log("No activity for " + Integer.toString(BHBot.settings.battleDelay) + "s , enabing shrines");
+					//open settings
+					clickInGame(675,482);
+					sleep(1500);
+					readScreen();
+					
+					seg = detectCue(cues.get("IgnoreShrines"));
+					if (seg == null) {
+						clickInGame(194,402);
+						BHBot.log("Disabling Ignore Shrine");
+					}
+					sleep(500);
+					clickInGame(660,80); //close settings
+					sleep(500);
+					clickInGame(780,270); //auto off
+					sleep(500);
+					clickInGame(780,270); //auto on again
+					
+					BHBot.log("Waiting " + Integer.toString(BHBot.settings.shrineDelay) + "s to use shrines");
+					sleep(BHBot.settings.shrineDelay); //long sleep while we activate shrines
+					
+					//open settings
+					clickInGame(675,482);
+					sleep(1000);
+					readScreen();
+					seg = detectCue(cues.get("IgnoreBoss"));
+					if (seg == null) {
+						clickInGame(194,366);
+						BHBot.log("Disabling Ignore Boss");
+					}
+					sleep(500);
+					clickInGame(660,80); //close settings
+					sleep(500);
+					clickInGame(780,270); //auto off
+					sleep(500);
+					clickInGame(780,270); //auto on again
+					autoShrined = true;
+				}
+			}
+		}
 		
 		//trials/raid revive code + auto-off check
 		seg = detectCue(cues.get("AutoOff"));
@@ -3321,6 +3475,7 @@ public class MainThread implements Runnable {
 		}
 
 		// check for skeleton treasure chest:
+		//TODO Add no key "Uh Oh" failsafe
 		seg = detectCue(cues.get("SkeletonTreasure"));
 		if (seg != null) {
 			if (BHBot.settings.openSkeleton == 0) {
@@ -3337,7 +3492,7 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("Open"), 5*SECOND);
 				if (seg == null) {
 					BHBot.log("Open button not found, restarting");
-					saveGameScreen("skeleton-open-cue-test");
+//					saveGameScreen("skeleton-open-cue-test");
 					restart();
 				}
 				clickOnSeg(seg);
@@ -3345,11 +3500,11 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 				if (seg == null) {
 					BHBot.log("Yes button not found, restarting");
-					saveGameScreen("skeleton-yes-cue-test");
+//					saveGameScreen("skeleton-yes-cue-test");
 					restart();
 				}
 				clickOnSeg(seg);
-				saveGameScreen("key-used-succesfully-dungeonraid");
+//				saveGameScreen("key-used-succesfully-dungeonraid");
 				return;
 				
 			} else if (BHBot.settings.openSkeleton == 2 && state == state.Raid) {
@@ -3357,7 +3512,7 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("Open"), 5*SECOND);
 				if (seg == null) {
 					BHBot.log("Open button not found, restarting");
-					saveGameScreen("skeleton-open-cue-test");
+//					saveGameScreen("skeleton-open-cue-test");
 					restart();
 				}
 				clickOnSeg(seg);
@@ -3365,15 +3520,17 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 				if (seg == null) {
 					BHBot.log("Yes button not found, restarting");
-					saveGameScreen("skeleton-yes-cue-test");
+//					saveGameScreen("skeleton-yes-cue-test");
 					restart();
 				}
 				clickOnSeg(seg);
-				saveGameScreen("key-used-succesfully-raid");
+//				saveGameScreen("key-used-succesfully-raid");
 				return;
 				
 			} else
-				BHBot.log("Skeleton Key error");
+				BHBot.log("Skeleton Key error, restarting");
+				saveGameScreen("skeletonkeyerror");
+				restart();
 				return;
 		}
 		// check for merchant's offer (and decline it):
@@ -3386,6 +3543,12 @@ public class MainThread implements Runnable {
 			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 			clickOnSeg(seg);
 			return;
+		}
+		
+		// check for any character dialog:
+		/* This is nearly half of the processing time of proccessDungeon(); so trying to minimize its usage */
+		if (state == State.Dungeon || state == State.Raid) {
+		detectCharacterDialogAndHandleIt();
 		}
 
 		// check if we're done (cleared):
@@ -3419,7 +3582,15 @@ public class MainThread implements Runnable {
 				clickOnSeg(seg);
 				sleep(1*SECOND);
 			}
+			if (state == State.Dungeon) {
+				dungeonCounter++;
+				BHBot.log("Dungeon #" + dungeonCounter + " completed successfully");
+			} else if (state == State.Raid) {
+				raidCounter++;
+				BHBot.log("Raid #" + raidCounter + " completed successfully");
+			} else {
 			BHBot.log(state.getName() + " completed successfully. Result: Victory");
+			}
 			if (state == state.Dungeon && (BHBot.settings.countActivities)) {
 				updateActivityCounter(state.getName());
 			}
@@ -5563,7 +5734,13 @@ public class MainThread implements Runnable {
 	
 	/* This will only reset timers for activities we still have resources to run */
 	/* This saves cycling through the list of all activities to run every time we finish one */
+	/* It's also useful for other related settings to be reset on activity finish */
 	public void resetAppropriateTimers() {
+		startTimeCheck = false;
+		autoShrined = false;
+		
+		if (BHBot.settings.autoShrine) shrinesChecked = false; //re-check ignore shrine/boss for next activity if it's enabled
+		
 		if ( (globalShards - 1) > BHBot.settings.minShards && state == State.Raid ) timeLastShardsCheck = 0;
 	
 		if ( (globalBadges - BHBot.settings.costExpedition) > BHBot.settings.minBadges && (state == State.Expedition) ) timeLastBadgesCheck = 0;
