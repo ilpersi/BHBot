@@ -918,7 +918,7 @@ public class MainThread implements Runnable {
 		
 //		BHBot.log(Integer.toString(BHBot.settings.openSkeleton));
 		
-//		BHBot.log(Boolean.toString(BHBot.settings.autoShrine));
+//		BHBot.log(Boolean.toString(BHBot.settings.worldBossSolo));
 //		BHBot.log(Integer.toString(BHBot.settings.battleDelay));
 //		BHBot.log(Integer.toString(BHBot.settings.shrineDelay));
 		
@@ -1222,12 +1222,11 @@ public class MainThread implements Runnable {
 						
 						if ((BHBot.settings.autoShrine) && (!shrinesChecked)) {
 							checkShrineSettings("enable");
-							continue;
 						} else if ((!BHBot.settings.autoShrine) && (!shrinesChecked)) {
 							checkShrineSettings("disable");
-							continue;
 						}
 						
+						readScreen();
 						seg = detectCue(cues.get("RaidButton"));
 
 						if (seg == null) { // if null, then raid button is transparent meaning that raiding is not enabled (we have not achieved it yet, for example)
@@ -1484,12 +1483,10 @@ public class MainThread implements Runnable {
 							continue;
 						}
 						
-						if ((BHBot.settings.autoShrine) && (!shrinesChecked)) {
+						if ((BHBot.settings.autoShrine) && (!shrinesChecked) && (trials)) {
 							checkShrineSettings("enable");
-							continue;
 						} else if ((!BHBot.settings.autoShrine) && (!shrinesChecked)) {
 							checkShrineSettings("disable");
-							continue;
 						}
 
 						clickOnSeg(seg);
@@ -2079,10 +2076,22 @@ public class MainThread implements Runnable {
 							clickOnSeg(seg); //selected world boss
 							
 							readScreen();
-							seg = detectCue(cues.get("Private"),1*SECOND);
-							if (seg != null) {
-								BHBot.log("Unchecking private lobby");
-								clickOnSeg(seg);
+							if (!BHBot.settings.worldBossSolo) {
+								seg = detectCue(cues.get("Private"),1*SECOND);
+								if (seg != null) {
+									BHBot.log("Unchecking private lobby");
+									clickOnSeg(seg);
+								}
+							} 
+								
+							if (BHBot.settings.worldBossSolo) {
+								seg = detectCue(cues.get("Private"),1*SECOND);
+								if (seg == null) {
+									BHBot.log("Enabling private lobby for solo World Boss");
+									sleep(500);
+									clickInGame(340,350);
+									sleep(500);
+								}
 							}
 							
 							//world boss tier selection
@@ -2108,6 +2117,26 @@ public class MainThread implements Runnable {
 							clickOnSeg(seg); //accept current settings
 							BHBot.log("Starting lobby");
 							
+							if (BHBot.settings.worldBossSolo) { //if solo option is enabled things are a lot easier ..
+								readScreen();
+								MarvinSegment segStart = detectCue(cues.get("Start"), 2*SECOND);
+								if (segStart != null) {
+									clickOnSeg(segStart); //start World Boss
+									sleep(2*SECOND); //wait for dropdown animation to finish
+									seg = detectCue(cues.get("YesGreen"), 2*SECOND); //clear empty team prompt
+									if (seg == null) {
+										sleep(500);
+										clickInGame(330,360); //yesgreen cue has issues so we use pos to click on Yes as a backup
+									} else {
+										clickOnSeg(seg);
+										clickInGame(330,360); //click anyway this cue has issues
+									}
+									BHBot.log(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
+									state = State.WorldBoss;
+									return;
+								}
+							}
+							
 							//this part gets messy
 							//as WB is much more dynamic its harder to automate
 							//I've tried to introduce as many error catchers with restarts(); as possible to keep things running smoothly
@@ -2125,7 +2154,7 @@ public class MainThread implements Runnable {
 											int timeLeft = worldBossTimer - i;
 											BHBot.log("Waiting for full team. Time out in " + Integer.toString(timeLeft) + " seconds.");
 										}
-									if (i == (worldBossTimer - 1)) {
+									if (i == (worldBossTimer - 1)) { //out of time
 										if (BHBot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
 											BHBot.log("Lobby timed out, running dungeon instead");
 											closeWorldBoss();
@@ -2349,7 +2378,7 @@ public class MainThread implements Runnable {
 			clickInGame(660,80);
 			shrinesChecked = true;
 			BHBot.log("autoShrine autoConfigured");
-			sleep(1500); //sleep so we can ready activity button again from main menu
+			sleep(2000); //sleep so we can ready activity button again from main menu
 		} else if (set == "disable") {
 			//open settings
 			clickInGame(675,482);
@@ -2372,7 +2401,7 @@ public class MainThread implements Runnable {
 			clickInGame(660,80);
 			shrinesChecked = true;
 			BHBot.log("autoShrine disabled");
-			sleep(1500); //sleep so we can ready activity button again from main menu
+			sleep(2000); //sleep so we can ready activity button again from main menu
 		}
 
 	}

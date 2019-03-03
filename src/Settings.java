@@ -91,6 +91,7 @@ public class Settings {
 	public int worldBossTier  =  0;
 	public int worldBossTimer = 0;
 	public int worldBossDifficulty = 0;
+	public boolean worldBossSolo = false;
 	
 	/** Autorevive Settings **/
 	public int autoRevive = 0;
@@ -212,6 +213,7 @@ public class Settings {
 		this.worldBossTier  =  settings.worldBossTier;
 		this.worldBossTimer = settings.worldBossTimer;
 		this.worldBossDifficulty = settings.worldBossTimer;
+		this.worldBossSolo = settings.worldBossSolo;
 		
 		this.autoRevive = settings.autoRevive;
 		this.potionOrder = settings.potionOrder;
@@ -552,6 +554,7 @@ public class Settings {
 		worldBossTier = Integer.parseInt(map.getOrDefault("worldBossTier", ""+worldBossTier));
 		worldBossTimer = Integer.parseInt(map.getOrDefault("worldBossTimer", ""+worldBossTimer));
 		dungeonOnTimeout = map.getOrDefault("dungeonOnTimeout", dungeonOnTimeout ? "1" : "0").equals("0") ? false : true;
+		worldBossSolo = map.getOrDefault("worldBossSolo", worldBossSolo ? "1" : "0").equals("0") ? false : true;
 		
 		autoRevive = Integer.parseInt(map.getOrDefault("autoRevive", ""+autoRevive));
 		tankPriority = map.getOrDefault("tankPriority", tankPriority ? "1" : "0").equals("0") ? false : true;
