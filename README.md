@@ -65,22 +65,6 @@ command input box):
 - `set`: sets a setting line, just like from a 'settings.ini' file. Example: "set raids 1 3 100", or "set difficulty 70". Note that this overwritten setting is NOT saved to the 'settings.ini' file! Once you issue <reload> command, it will get discharged.
 - `readouts`: will reset readout timers (and hence immediately commence reading out resources).
 
-## Multiple Instances
-
-If you want to run 2 instances of bot in parallel (or even more), then you'll probably need to run two instances of
-chromedriver as well (at least on Windows). That can be done, but needs some adjustments. First of all, you'll need to run your
-chromedriver like this:
-`chromedriver.exe --port=9550`
-(in case you want your chromedriver to run on port 9550). The next chromedriver instance will run e.g. on port 9551,
-so we'll run it like this: `chromedriver.exe --port=9551`.
-You will  need to run the chromedrivers in separate folders as they create a chrome_profile settings folder in the current directory.
-Now, in order to tell the bot to connect to chromedriver on one of these ports, you'll need to run it like this:
-`bhbot.jar chromedriveraddress 127.0.0.1:9550`. This will make sure that the bot will connect to the first chromedriver instance.
-The second bot instance should be run like this:
-`bhbot.jar chromedriveraddress 127.0.0.1:9551`. This should make two bots run in parallel without disturbing each other.
-
-Note that due to Flash this can be quiet resource intensive. Due to the slow nature of energy regeneration if you wish to run multiple accounts on Windows it is more effective to use a cron-like service (E.G [Z-Cron](https://www.z-cron.com/)) to stagger running and stopping multiple accounts, generally you only need to run the bot for 30 minutes to use 8 hours of shards/energy/tokens/tickets regeneration.
-
 ## Finally
 
 Hopefully this bot will prove useful to you, if you have any questions just raise an issue! Enjoy :-)
