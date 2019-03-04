@@ -77,9 +77,7 @@ The second bot instance should be run like this:
 Note that due to Flash this can be quiet resource intensive. Due to the slow nature of energy regeneration if you wish to run multiple accounts on Windows it is more effective to use a cron-like service (E.G [Z-Cron](https://www.z-cron.com/)) to stagger running and stopping multiple accounts, generally you only need to run the bot for 30 minutes to use 8 hours of shards/energy/tokens/tickets regeneration.
 
 ## Download
-You can download a release ready BHBot.jar from the RELEASES page:
-
-https://github.com/Betalord/BHBot/releases
+You can download a release ready BHBot.jar from the [releases](https://github.com/Betalord/BHBot/releases) page.
 
 For the latest functionality it is recommended to compile your own version as there are frequent commits with bug-fixes and new functionality between major releases.
 
