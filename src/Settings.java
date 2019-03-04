@@ -100,7 +100,7 @@ public class Settings {
 	
 	/** Autoshrine settings **/
 	public boolean autoShrine = false;
-	public int battleDelay = 20;
+	public int battleDelay = 30;
 	public int shrineDelay = 20;
 	
 	/**
@@ -257,6 +257,7 @@ public class Settings {
 		doWorldBoss = false;
 		autoConsume = false;
 		collectBounties = false;
+		BHBot.main.idleMode = true;
 		BHBot.log("Idle mode started, no actions will be taken");
 		
 		return this; // for chaining

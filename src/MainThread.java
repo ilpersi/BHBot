@@ -223,6 +223,8 @@ public class MainThread implements Runnable {
 	public static final int MINUTE = 60 * SECOND;
 	public static final int HOUR = 60 * MINUTE;
 	
+	public boolean idleMode = false;
+	
 	private static int globalShards;
 	private static int globalBadges;
 	private static int globalEnergy;
@@ -1200,7 +1202,7 @@ public class MainThread implements Runnable {
 					} // adds
 
 					//Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
-					if (state == State.Main) {
+					if (state == State.Main && !idleMode) {
 						seg = detectCue(cues.get("AutoOn")); //if we're in Main state, with auto button visible, then we need to change state
 							if (seg != null) {
 							state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
@@ -2053,15 +2055,17 @@ public class MainThread implements Runnable {
 							int worldBossDifficulty = BHBot.settings.worldBossDifficulty;
 							
 							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
-							BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s.");
-//							BHBot.log("World Boss Testing, running last ran settings. Lobby timeout is " + worldBossTimer + " seconds");
+							if (!BHBot.settings.worldBossSolo) {
+								BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s.");
+							} else {
+								BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " Solo");
+							}
 							
 							seg = detectCue(cues.get("BlueSummon"),1*SECOND);
 							clickOnSeg(seg);
 							sleep(1*SECOND); //wait for screen to stablise
 							
 							//world boss type selection
-							
 							readScreen();
 							String selectedWB = readSelectedWorldBoss();
 							if (!worldBossType.equals(selectedWB)) {
@@ -2070,7 +2074,7 @@ public class MainThread implements Runnable {
 								clickInGame(644, 303); //check if we have the right boss selected, else change it
 							}
 							
-							sleep(1*SECOND); //more stablising if we changed world boss type
+							sleep(1*SECOND); //more stabilising if we changed world boss type
 							readScreen();
 							seg = detectCue(cues.get("LargeGreenSummon"),2*SECOND);
 							clickOnSeg(seg); //selected world boss
@@ -2115,9 +2119,102 @@ public class MainThread implements Runnable {
 							sleep(1*SECOND); //wait for screen to stablise
 							seg = detectCue(cues.get("SmallGreenSummon"),1*SECOND);
 							clickOnSeg(seg); //accept current settings
-							BHBot.log("Starting lobby");
+							BHBot.log("Starting lobby");							
 							
-							if (BHBot.settings.worldBossSolo) { //if solo option is enabled things are a lot easier ..
+							/*
+							 * 
+							 * this part gets messy as WB is much more dynamic and harder to automate with human players
+							 * I've tried to introduce as many error catchers with restarts(); as possible to keep things running smoothly
+							 * 
+							 */
+							
+							//wait for lobby to fill with a timer
+							if (!BHBot.settings.worldBossSolo) {
+								for (int i = 0; i < worldBossTimer; i++) {
+									sleep(1*SECOND);
+									readScreen();
+									if (worldBossType.equals("Orlag")) { //shouldn't have this inside the loop but it doesn't work if its outside
+										seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
+									} else seg = detectCue(cues.get("InviteNether")); // 3rd Invite button for Nether
+	
+									if (seg != null) {
+										if (i != 0 && (i % 15) == 0) { //every 15 seconds
+												int timeLeft = worldBossTimer - i;
+												BHBot.log("Waiting for full team. Time out in " + Integer.toString(timeLeft) + " seconds.");
+											}
+										if (i == (worldBossTimer - 1)) { //out of time
+											if (BHBot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
+												BHBot.log("Lobby timed out, running dungeon instead");
+												closeWorldBoss();
+												sleep(4*SECOND); //make sure we're stable on the main screen
+												BHBot.scheduler.doDungeonImmediately = true;
+											} else {
+											BHBot.log("Lobby timed out, returning to main screen.");
+											closeWorldBoss();
+											continue;
+											}
+										}
+										continue;
+									} else if (seg == null) {
+										BHBot.log("Lobby filled in " + Integer.toString(i) + " seconds!");
+										i = worldBossTimer; // end the for loop
+										
+										//check that all players are ready
+										BHBot.log("Making sure everyones ready..");
+										int j = 1;
+										while (j != 20) { //ready check for 10 seconds
+											seg = detectCue(cues.get("Unready"), 2*SECOND); //this checks all 4 ready statuses
+											readScreen();
+											if (seg == null) {// no red X's found
+												break;
+											} else if (seg != null) { //red X's found
+												//BHBot.log(Integer.toString(j));
+												j++;
+												sleep(500); //check every 500ms
+											}
+										}
+										
+										if (j >= 20) {
+											BHBot.log("Ready check not passed after 10 seconds, restarting");
+											restart();
+										}
+										
+										readScreen();
+										MarvinSegment segStart = detectCue(cues.get("Start"), 2*SECOND);
+										if (segStart != null) {
+											clickOnSeg(segStart); //start World Boss
+											readScreen();
+											seg = detectCue(cues.get("TeamNotFull"), 2*SECOND); //check if we have the team not full screen an clear it
+												if (seg != null) {
+													sleep(2*SECOND); //wait for animation to finish
+													clickInGame(330,360); //yesgreen cue has issues so we use XY to click on Yes
+												}
+											BHBot.log(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
+											state = State.WorldBoss;
+											sleep(6*SECOND); //long wait to make sure we are in the world boss dungeon
+											readScreen();
+											seg = detectCue(cues.get("AutoOff")); // takes processDungeon too long so we do it manually
+											if (seg != null) {
+												clickOnSeg(seg);
+												BHBot.log("Auto-pilot is disabled. Enabling...");
+											}
+											sleep(4*SECOND);
+											readScreen();
+											MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
+											if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
+												BHBot.log("World Boss started but no encounter detected, restarting");
+												restart();
+											}
+										} else { //generic error / unknown action restart
+											BHBot.log("Something went wrong while attempting to start the World Boss, restarting");
+											restart();
+											timeLastEnergyCheck = 1*MINUTE; // leave it a minute before trying again
+										}
+										
+									}
+									continue;
+								}
+							} else {
 								readScreen();
 								MarvinSegment segStart = detectCue(cues.get("Start"), 2*SECOND);
 								if (segStart != null) {
@@ -2131,100 +2228,11 @@ public class MainThread implements Runnable {
 										clickOnSeg(seg);
 										clickInGame(330,360); //click anyway this cue has issues
 									}
-									BHBot.log(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
+									BHBot.log(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " Solo started!");
 									state = State.WorldBoss;
-									return;
-								}
-							}
-							
-							//this part gets messy
-							//as WB is much more dynamic its harder to automate
-							//I've tried to introduce as many error catchers with restarts(); as possible to keep things running smoothly
-							
-							//wait for lobby to fill with a timer
-							for (int i = 0; i < worldBossTimer; i++) {
-								sleep(1*SECOND);
-								readScreen();
-								if (worldBossType.equals("Orlag")) { //shouldn't have this inside the loop but it doesn't work if its outside
-									seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
-								} else seg = detectCue(cues.get("InviteNether")); // 3rd Invite button for Nether
-
-								if (seg != null) {
-									if (i != 0 && (i % 15) == 0) { //every 15 seconds
-											int timeLeft = worldBossTimer - i;
-											BHBot.log("Waiting for full team. Time out in " + Integer.toString(timeLeft) + " seconds.");
-										}
-									if (i == (worldBossTimer - 1)) { //out of time
-										if (BHBot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
-											BHBot.log("Lobby timed out, running dungeon instead");
-											closeWorldBoss();
-											sleep(4*SECOND); //make sure we're stable on the main screen
-											BHBot.scheduler.doDungeonImmediately = true;
-										} else {
-										BHBot.log("Lobby timed out, returning to main screen.");
-										closeWorldBoss();
-										continue;
-										}
-									}
-									continue;
-								} else if (seg == null) {
-									BHBot.log("Lobby filled in " + Integer.toString(i) + " seconds!");
-									i = worldBossTimer; // end the for loop
-									
-									//check that all players are ready
-									BHBot.log("Making sure everyones ready..");
-									int j = 1;
-									while (j != 20) { //ready check for 10 seconds
-										seg = detectCue(cues.get("Unready"), 2*SECOND); //this checks all 4 ready statuses
-										readScreen();
-										if (seg == null) {// no red X's found
-											break;
-										} else if (seg != null) { //red X's found
-											//BHBot.log(Integer.toString(j));
-											j++;
-											sleep(500); //check every 500ms
-										}
-									}
-									
-									if (j >= 20) {
-										BHBot.log("Ready check not passed after 10 seconds, restarting");
-										restart();
-									}
-									
-									readScreen();
-									MarvinSegment segStart = detectCue(cues.get("Start"), 2*SECOND);
-									if (segStart != null) {
-										clickOnSeg(segStart); //start World Boss
-										readScreen();
-										seg = detectCue(cues.get("TeamNotFull"), 2*SECOND); //check if we have the team not full screen an clear it
-											if (seg != null) {
-												sleep(2*SECOND); //wait for animation to finish
-												clickInGame(330,360); //yesgreen cue has issues so we use pos to click on Yes
-											}
-										BHBot.log(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
-										state = State.WorldBoss;
-										sleep(6*SECOND); //long wait to make sure we are in the world boss dungeon
-										readScreen();
-										seg = detectCue(cues.get("AutoOff")); // takes processDungeon too long so we do it manually
-										if (seg != null) {
-											clickOnSeg(seg);
-											BHBot.log("Auto-pilot is disabled. Enabling...");
-										}
-										sleep(4*SECOND);
-										readScreen();
-										MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
-										if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
-											BHBot.log("World Boss started but no encounter detected, restarting");
-											restart();
-										}
-									} else { //generic error / unknown action restart
-										BHBot.log("Something went wrong while attempting to start the World Boss, restarting");
-										restart();
-										timeLastEnergyCheck = 1*MINUTE; // leave it a minute before trying again
-									}
-									
-								}
 								continue;
+								}
+							continue;
 							}
 						}
 						continue;
@@ -3120,7 +3128,7 @@ public class MainThread implements Runnable {
 		if (state == State.Trials || state == State.Raid) {
 			if (activityDuration > 30 && !autoShrined) { //if we're past 30 seconds into the activity
 				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) { //and it's been the battleDelay setting since last encounter
-					BHBot.log("No activity for " + Integer.toString(BHBot.settings.battleDelay) + "s , enabing shrines");
+					BHBot.log("No activity for " + Integer.toString(BHBot.settings.battleDelay) + "s, enabing shrines");
 					//open settings
 					clickInGame(675,482);
 					sleep(1500);
@@ -3139,7 +3147,7 @@ public class MainThread implements Runnable {
 					clickInGame(780,270); //auto on again
 					
 					BHBot.log("Waiting " + Integer.toString(BHBot.settings.shrineDelay) + "s to use shrines");
-					sleep(BHBot.settings.shrineDelay); //long sleep while we activate shrines
+					sleep(BHBot.settings.shrineDelay*SECOND); //long sleep while we activate shrines
 					
 					//open settings
 					clickInGame(675,482);
