@@ -34,6 +34,11 @@ The level/difficulty for each activity can be defined in the settings file. The 
 If the bot detects a "Disconnected" dialog, it will pause its execution for an hour giving the user a chance to play manually.
 Disconnects are usually result of another instance logging into the game. This is why bot pauses in case it detects it.
 
+## Download
+You can download a release ready BHBot.jar from the [releases](https://github.com/Betalord/BHBot/releases) page.
+
+For the latest functionality it is recommended to compile your own version as there are frequent commits with bug-fixes and new functionality between major releases.
+
 ## First time setup
 
 See [the wiki](https://github.com/Betalord/BHBot/wiki) for the first time setup guide.
@@ -75,11 +80,6 @@ The second bot instance should be run like this:
 `bhbot.jar chromedriveraddress 127.0.0.1:9551`. This should make two bots run in parallel without disturbing each other.
 
 Note that due to Flash this can be quiet resource intensive. Due to the slow nature of energy regeneration if you wish to run multiple accounts on Windows it is more effective to use a cron-like service (E.G [Z-Cron](https://www.z-cron.com/)) to stagger running and stopping multiple accounts, generally you only need to run the bot for 30 minutes to use 8 hours of shards/energy/tokens/tickets regeneration.
-
-## Download
-You can download a release ready BHBot.jar from the [releases](https://github.com/Betalord/BHBot/releases) page.
-
-For the latest functionality it is recommended to compile your own version as there are frequent commits with bug-fixes and new functionality between major releases.
 
 ## Finally
 
