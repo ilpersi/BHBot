@@ -83,10 +83,6 @@ https://github.com/Betalord/BHBot/releases
 
 For the latest functionality it is recommended to compile your own version as there are frequent commits with bug-fixes and new functionality between major releases.
 
-## Notes
-* The image recognition engine can have trouble with high resolution / non-standard DPI. If you're having issues with the bot not starting
-try setting scaling to 100% and resolution 1920*1080 or less.
-
 ## Finally
 
 Hopefully this bot will prove useful to you, if you have any questions just raise an issue! Enjoy :-)
