@@ -3173,7 +3173,7 @@ public class MainThread implements Runnable {
 		seg = detectCue(cues.get("AutoOff"));
 		if (seg != null) {
 			if ((state == State.Trials || state == State.Gauntlet) && (BHBot.settings.autoRevive == 1 || BHBot.settings.autoRevive == 3)) {
-				BHBot.log("Auto-pilot disabled. Checking for revivable team members...");
+				BHBot.log("Auto-pilot disabled. Checking for revivable team members");
 				sleep(500);
 				clickInGame(35,415); //click potion button
 				readScreen();
@@ -3269,7 +3269,7 @@ public class MainThread implements Runnable {
 				}
 			}
 			if ((state == State.Raid) && (BHBot.settings.autoRevive == 2 || BHBot.settings.autoRevive == 3)) {
-				BHBot.log("Auto-pilot disabled. Checking for revivable team members...");
+				BHBot.log("Auto-pilot disabled. Checking for revivable team members");
 				sleep(500);
 				clickInGame(35,415); //click potion button
 				readScreen();
