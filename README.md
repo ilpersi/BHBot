@@ -2,7 +2,7 @@
 
 ## What is BHBot?
 BHBot is a program that automates different aspects of the [Bit Heroes](http://www.kongregate.com/games/juppiomenz/bit-heroes) game.
-It is a non intrusive program that works by opening up a Chromium window and controls it as a normal user would. It works by taking a screenshot every 500 ms, detecting cues from the screenshot and
+It is a non intrusive program that works by opening up a Chromium window and controls it as a normal user would. It works by taking a screenshot every few seconds, detecting cues from the screenshot and
 then simulating mouse clicks. BHBot is a good example of how to create such bots to automate flash games or other browser games
 (it can be easily adjusted to play some other game).
 
