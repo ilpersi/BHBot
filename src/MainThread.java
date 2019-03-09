@@ -416,6 +416,7 @@ public class MainThread implements Runnable {
 		addCue("Zone6", loadImage("cues/cueZone6.png"), null);
 		addCue("Zone7", loadImage("cues/cueZone7.png"), null);
 		addCue("Zone8", loadImage("cues/cueZone8.png"), null);
+		addCue("Zone8", loadImage("cues/cueZone9.png"), null);
 		addCue("RightArrow", loadImage("cues/cueRightArrow.png"), null); // arrow used in quest screen to change zone
 		addCue("LeftArrow", loadImage("cues/cueLeftArrow.png"), null); // arrow used in quest screen to change zone
 		addCue("Enter", loadImage("cues/cueEnter.png"), null); // "Enter" button found on d4 window
@@ -4014,7 +4015,7 @@ public class MainThread implements Runnable {
 		if (dungeon.charAt(2) != 'd') return null;
 		int z = Integer.parseInt(""+dungeon.charAt(1));
 		int d = Integer.parseInt(""+dungeon.charAt(3));
-		if (z < 1 || z > 8) return null;
+		if (z < 1 || z > 9) return null;
 		if (d < 1 || d > 4) return null;
 
 		switch (z) {
@@ -4110,7 +4111,16 @@ public class MainThread implements Runnable {
 		 		return new Point(250, 390);
 		 	}
 		 	break;
+		 case 9:
+			 switch (d) {
+				 case 1:
+					 return new Point(310, 165);
+				 case 2:
+					 return new Point(610, 190);
+			 }
+		 	break;
 		 }
+
 
 		return null;
 	}
@@ -4395,6 +4405,8 @@ public class MainThread implements Runnable {
 			return 7;
 		else if (detectCue(cues.get("Zone8")) != null)
 			return 8;
+		else if (detectCue(cues.get("Zone9")) != null)
+			return 9;
 		else
 			return 0;
 	}
