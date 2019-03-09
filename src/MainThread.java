@@ -539,6 +539,10 @@ public class MainThread implements Runnable {
 		addCue("WorldBossDifficultyHard", loadImage("cues/cueWorldBossDifficultyHard.png"), new Bounds(325, 277, 444, 320));
 		addCue("WorldBossDifficultyHeroic", loadImage("cues/cueWorldBossDifficultyHeroic.png"), new Bounds(325, 277, 444, 320));
 		
+		addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(185, 340, 485, 395));
+		addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(185, 340, 485, 395));
+		addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(185, 340, 485, 395));
+		
 		
 		//fishing related
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
@@ -2089,8 +2093,7 @@ public class MainThread implements Runnable {
 							String selectedWB = readSelectedWorldBoss();
 							if (!worldBossType.equals(selectedWB)) {
 								BHBot.log(selectedWB + " selected, changing..");
-								sleep(1*SECOND); //wait for screen to stablise
-								clickInGame(644, 303); //check if we have the right boss selected, else change it
+								changeSelectedWorldBoss(worldBossType);
 							}
 							
 							sleep(1*SECOND); //more stabilising if we changed world boss type
@@ -2372,7 +2375,7 @@ public class MainThread implements Runnable {
 
 	// World boss invite button debugging
 	public void wbTest() {
-		int t = detectWorldBossDifficulty();
+		int t = detectWorldBossTier();
 		BHBot.log(Integer.toString(t));
 	}
 
@@ -4274,7 +4277,7 @@ public class MainThread implements Runnable {
 		int passed = 0;
 		
 		//check name
-		if (BHBot.settings.worldBossType.equals("Orlag") || BHBot.settings.worldBossType.equals("Nether")) {
+		if (BHBot.settings.worldBossType.equals("Orlag") || BHBot.settings.worldBossType.equals("Nether") || BHBot.settings.worldBossType.equals("Melvin")) {
 			passed++;
 		} else {
 			BHBot.log("Invalid world boss name, check settings file");
@@ -4282,7 +4285,7 @@ public class MainThread implements Runnable {
 		}
 		
 		//check tier
-		if (BHBot.settings.worldBossTier <= 9 || BHBot.settings.worldBossTier >= 1) {
+		if (BHBot.settings.worldBossTier <= 10 || BHBot.settings.worldBossTier >= 1) {
 			passed++;
 		} else {
 			BHBot.log("Invalid world boss tier, must between 1 and 9");
@@ -4496,12 +4499,22 @@ public class MainThread implements Runnable {
 	/** Read Selected World Boss **/
 	
 	public String readSelectedWorldBoss() {
-		MarvinSegment seg;
-		seg = detectCue(cues.get("OrlagSelected"));
-		if (seg != null)
+		if (detectCue(cues.get("OrlagWB")) != null)
 			return "Orlag";
-		else
+		else if (detectCue(cues.get("NetherWB")) != null)
 			return "Nether";
+		else if (detectCue(cues.get("MelvinWB")) != null)
+			return "Melvin";
+		else return "Error";
+	}
+	
+	public void changeSelectedWorldBoss(String bossname) {
+		if (bossname.contentEquals("Orlag"))
+			clickInGame(376, 445);
+		else if (bossname.contentEquals("Nether"))
+			clickInGame(401, 445);
+		else if (bossname.contentEquals("Melvin"))
+			clickInGame(426, 445);
 	}
 	
 	/**
@@ -4735,6 +4748,9 @@ public class MainThread implements Runnable {
 	
 	/* World boss reading and changing section */
 	public int detectWorldBossTier() {
+		
+		if (BHBot.settings.worldBossType.equals("Marvin")) return 10; //quick fix for reading Marvin WB tier
+		
 		readScreen();
 		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),1*SECOND);
 		if (seg == null) {
@@ -4742,6 +4758,7 @@ public class MainThread implements Runnable {
 			saveGameScreen("early_error");
 			return 0; // error
 		}
+		
 
 		MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 98, seg.y1 + 9, 134, 31));
 
