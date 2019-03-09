@@ -4109,6 +4109,9 @@ public class MainThread implements Runnable {
 				return new Point(650, 400);
 			case 3:
 				return new Point(400, 430);
+			case 4:
+				BHBot.log("Zone 7 only has 3 dungeons, falling back to z7d2");
+				return new Point(650, 400);
 			}
 			break;
 		 case 8: // zone 8
@@ -4119,6 +4122,9 @@ public class MainThread implements Runnable {
 		 		return new Point(570, 340);
 		 	case 3:
 		 		return new Point(250, 390);
+			case 4:
+				BHBot.log("Zone 8 only has 3 dungeons, falling back to z8d2");
+				return new Point(570, 340);
 		 	}
 		 	break;
 		 case 9:
@@ -4127,6 +4133,11 @@ public class MainThread implements Runnable {
 					 return new Point(310, 165);
 				 case 2:
 					 return new Point(610, 190);
+				 case 3:
+					 return new Point(375, 415);
+				 case 4:
+				 	BHBot.log("Zone 9 only has 3 dungeons, falling back to z9d2");
+					return new Point(610, 190);
 			 }
 		 	break;
 		 }
