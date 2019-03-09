@@ -361,6 +361,15 @@ public class MainThread implements Runnable {
 		addCue("RaidSummon", loadImage("cues/cueRaidSummon.png"), new Bounds(480, 360, 540, 380));
 		addCue("RaidLevel", loadImage("cues/cueRaidLevel.png"), new Bounds(320, 430, 480, 460)); // selected raid type button cue
 
+		// New Raid level detection logic
+		addCue("Raid1Name", loadImage("cues/raid/r1Name.png"), new Bounds(185, 340, 485, 395));// Raid 1 Name
+		addCue("Raid2Name", loadImage("cues/raid/r2Name.png"), new Bounds(185, 340, 485, 395));// Raid 2 Name
+		addCue("Raid3Name", loadImage("cues/raid/r3Name.png"), new Bounds(185, 340, 485, 395));// Raid 3 Name
+		addCue("Raid4Name", loadImage("cues/raid/r4Name.png"), new Bounds(185, 340, 485, 395));// Raid 4 Name
+		addCue("Raid5Name", loadImage("cues/raid/r5Name.png"), new Bounds(185, 340, 485, 395));// Raid 5 Name
+		addCue("Raid6Name", loadImage("cues/raid/r6Name.png"), new Bounds(185, 340, 485, 395));// Raid 6 Name
+		addCue("Raid7Name", loadImage("cues/raid/r7Name.png"), new Bounds(185, 340, 485, 395));// Raid 7 Name
+
 		addCue("R1Only", loadImage("cues/cueR1Only.png"), null); // cue for R1 type selected when R2 (and R3) is not open yet (in that case it won't show raid type selection buttons)
 
 		addCue("Normal", loadImage("cues/cueNormal.png"), null);
@@ -4532,99 +4541,20 @@ public class MainThread implements Runnable {
 	 * Note that the raid window must be open for this method to work (or else it will simply return 0).
 	 */
 	public int readSelectedRaidTier() {
-		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
-		if (seg == null) {
-//			int currentRaidTier = readUnlockedRaidTier(); //get max unlocked tier
-//			BHBot.log("Raid Detection: R"  + Integer.toString(currentRaidTier) + " unlocked");
-//			// either we don't have R2 open yet (hence there is not selection button) or an error occured:
-//			int currentRaidTier = readUnlockedRaidTier(); //get current unlocked tier
-//			BHBot.log("Raid Detection: R"  + Integer.toString(currentRaidTier) + " unlocked");
+		if (detectCue(cues.get("Raid1Name")) != null)
 			return 1;
-		}
-
-		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
-
-		Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
-
-		// these are the locations of the raid dots  (center to center is 26px)
-		Point r1 = center.moveBy(26, 0); // one button to the right coords
-		Point r2 = center.moveBy(52, 0); // two to the right coords
-		Point r3 = center.moveBy(78, 0); // three to the right coords
-		Point r4 = center.moveBy(104, 0); // four to the right coords
-		Point r5 = center.moveBy(130, 0); // five to the right coords
-//		Point r6 = center.moveBy(156, 0); // six to the right coords
-
-		Point l1 = center.moveBy(-26, 0); // one button to the left coords
-		Point l2 = center.moveBy(-52, 0); // two to the left coords
-		Point l3 = center.moveBy(-78, 0); // three to the left coords
-		Point l4 = center.moveBy(-100, 0); // four to the left coords
-		Point l5 = center.moveBy(-124, 0); // five to the left coords
-//		Point l6 = center.moveBy(-156, 0); // six to the right coords
-
-		//  these define the unselected dots to the right and left of the green selected raid dot, will return false if the dot does not exist
-		boolean r1Off = (new Color(img.getRGB(r1.x, r1.y))).equals(off);
-		boolean r2Off = (new Color(img.getRGB(r2.x, r2.y))).equals(off);
-		boolean r3Off = (new Color(img.getRGB(r3.x, r3.y))).equals(off);
-		boolean r4Off = (new Color(img.getRGB(r4.x, r4.y))).equals(off);
-		boolean r5Off = (new Color(img.getRGB(r5.x, r5.y))).equals(off);
-//		boolean r6Off = (new Color(img.getRGB(r6.x, r6.y))).equals(off);
-
-		boolean l1Off = (new Color(img.getRGB(l1.x, l1.y))).equals(off);
-		boolean l2Off = (new Color(img.getRGB(l2.x, l2.y))).equals(off);
-		boolean l3Off = (new Color(img.getRGB(l3.x, l3.y))).equals(off);
-		boolean l4Off = (new Color(img.getRGB(l4.x, l4.y))).equals(off);
-		boolean l5Off = (new Color(img.getRGB(l5.x, l5.y))).equals(off);
-//		boolean l6Off = (new Color(img.getRGB(l6.x, l6.y))).equals(off);
-
-		seg = null;
-
-		int currentRaidTier = readUnlockedRaidTier(); //get current unlocked tier
-//		int currentRaidTier = BHBot.settings.currentRaidTier;
-//		BHBot.log("Settings file: R"  + Integer.toString(currentRaidTier) + " unlocked");
-
-		//using the calculated unlocked tier, calculate the currently selected raid
-		if (currentRaidTier == 1)
-			return 1;
-		else if ((currentRaidTier == 2) && (r1Off))
-			return 1; //r1
-		else if ((currentRaidTier == 2) && (l1Off))
-			return 2; //r2
-		else if ((currentRaidTier == 3) && (r1Off && r2Off))
-			return 1; //r1
-		else if ((currentRaidTier == 3) && (r1Off && l1Off))
-			return 2; //r2
-		else if ((currentRaidTier == 3) && (l1Off && l2Off))
-			return 3; //r3
-		else if ((currentRaidTier == 4) && (r1Off && r2Off && r3Off))
-			return 1; //r1
-		else if ((currentRaidTier == 4) && (r1Off && r2Off && l1Off))
-			return 2; //r2
-		else if ((currentRaidTier == 4) && (r1Off && l2Off && l1Off))
-			return 3; //r3
-		else if ((currentRaidTier == 4) && (l1Off && l2Off && l3Off))
-			return 4; //r4
-		else if ((currentRaidTier == 5) && (r1Off && r2Off && r3Off && r4Off))
-			return 1; //r2
-		else if ((currentRaidTier == 5) && (r1Off && r2Off && r3Off && l1Off))
-			return 2; //r1
-		else if ((currentRaidTier == 5) && (r2Off && l2Off))
-			return 3; //r3
-		else if ((currentRaidTier == 5) && (r1Off && l3Off))
-			return 4; //r4
-		else if ((currentRaidTier == 5) && (l4Off))
-			return 5; //r5
-		else if ((currentRaidTier == 6) && (r1Off && r2Off && r3Off && r4Off && r5Off))
-			return 1; //r1
-		else if ((currentRaidTier == 6) && (l1Off && r1Off && r2Off && r3Off && r4Off))
-			return 2; //r2
-		else if ((currentRaidTier == 6) && (l1Off && l2Off && r1Off && r2Off && r3Off))
-			return 3; //r3
-		else if ((currentRaidTier == 6) && (l3Off && r2Off))
-			return 4; //r4
-		else if ((currentRaidTier == 6) && (l4Off && r1Off))
-			return 5; //r5
-		else if ((currentRaidTier == 6) && (l5Off))
-			return 6; //r6
+		else if (detectCue(cues.get("Raid2Name")) != null)
+			return 2;
+		else if (detectCue(cues.get("Raid3Name")) != null)
+			return 3;
+		else if (detectCue(cues.get("Raid4Name")) != null)
+			return 4;
+		else if (detectCue(cues.get("Raid5Name")) != null)
+			return 5;
+		else if (detectCue(cues.get("Raid6Name")) != null)
+			return 6;
+		else if (detectCue(cues.get("Raid7Name")) != null)
+			return 7;
 		else
 			return 0; // error
 	}
