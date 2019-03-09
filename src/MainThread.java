@@ -4574,7 +4574,7 @@ public class MainThread implements Runnable {
 	 *
 	 * @return name of the file to which the screenshot has been saved (successfully or not)
 	 */
-	private String saveGameScreen(String prefix) {
+	String saveGameScreen(String prefix) {
 		Date date = new Date();
 		String name = prefix + "_" + dateFormat.format(date) + ".png";
 		int num = 0;

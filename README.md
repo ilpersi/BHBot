@@ -54,10 +54,10 @@ Here is a list of most common commands used with the bot (must be typed in the c
 command input box):
 
 - `stop`: stops the bot execution (may take a few seconds. Once it is stopped, the console will close automatically).
-- `pause`: pauses bot's execution. Useful when you want to play the game yourself (either from the same Chromium window, or by starting another Chromium window).
+- `pause [mins]`: pauses bot's execution. Useful when you want to play the game yourself (either from the same Chromium window, or by starting another Chromium window). The bots is paused untill are resue command is issued of for a number of minutes equal to _mins_
 - `resume`: resumes bot's execution.
 - `reload`: will reload the 'settings.ini' file from disk and apply any changes on-the-fly.
-- `shot`: takes a screenshot of the game and saves it to 'shot.png'.
+- `shot [prefix]`: takes a screenshot of the game and saves it to 'shot.png'. If a _prefix_ is specified it will be used instead of the default _shot_ one.
 - `restart`: restarts the chromedriver (closes Chromium and opens a fresh Chromium window). Use only when something goes wrong (should restart automatically after some time in that case though).
 - `hide`: hides Chromium window.
 - `show`: shows Chromium window again after it has been hidden.
