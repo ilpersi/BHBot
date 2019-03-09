@@ -4,70 +4,70 @@ import java.util.List;
 import java.util.Map;
 
 public class Settings {
-	public static final String DEFAULT_SETTINGS_FILE = "settings.ini";
+	static final String DEFAULT_SETTINGS_FILE = "settings.ini";
 	
-	public String username = "";
-	public String password = "";
+	String username = "";
+	String password = "";
 	/** Experimental feature. Better use 'false' for now. */
-	public boolean useHeadlessMode = false; // run Chrome with --headless switch?
-	public boolean restartAfterAdOfferTimeout = true; // if true, then bot will automatically restart itself if it hasn't claimed any ad offer in a time longer than defined. This is needed because ads don't appear anymore if Chrome doesn't get restarted.
-	public boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
-	public boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
-	public boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
-	public int reconnectTimer = 60;
+    private boolean useHeadlessMode = false; // run Chrome with --headless switch?
+	boolean restartAfterAdOfferTimeout = true; // if true, then bot will automatically restart itself if it hasn't claimed any ad offer in a time longer than defined. This is needed because ads don't appear anymore if Chrome doesn't get restarted.
+	boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
+	boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
+	private boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
+	private int reconnectTimer = 60;
 	
 	//Various settings
-	public int openSkeleton = 0;
-	public boolean autoBribe  = false;
-	public boolean collectBounties  = false;
-	public boolean collectFishingBaits  = false;
-	public boolean dungeonOnTimeout = true;
-	public boolean countActivities = false;
+    int openSkeleton = 0;
+	boolean autoBribe  = false;
+	boolean collectBounties  = false;
+	boolean collectFishingBaits  = false;
+	boolean dungeonOnTimeout = true;
+	boolean countActivities = false;
 	
-	public boolean doRaids = false;
-	public boolean doDungeons = false;
-	public boolean doTrials = false;
-	public boolean doGauntlet = false;
-	public boolean doPVP = false;
-	public boolean doGVG = false;
-	public boolean doAds = false;
-	public boolean doInvasion = false;
-	public boolean doExpedition = false;
-	public boolean doWorldBoss = false;
+	boolean doRaids = false;
+	boolean doDungeons = false;
+	boolean doTrials = false;
+	boolean doGauntlet = false;
+	boolean doPVP = false;
+	boolean doGVG = false;
+	boolean doAds = false;
+	boolean doInvasion = false;
+	boolean doExpedition = false;
+	boolean doWorldBoss = false;
 	
 	/** This is the minimum amount of shards that the bot must leave for the user. If shards get above this value, bot will play the raids in case raiding is enabled of course. */
-	public int minShards = 2;
+    int minShards = 2;
 	/** This is the minimum amount of tokens that the bot must leave for the user. If tokens get above this value, bot will play the trials/gauntlet in case trials/gauntlet is enabled of course. */
-	public int minTokens = 5;
+    int minTokens = 5;
 	/** This is the minimum amount of energy as percentage that the bot must leave for the user. If energy is higher than that, then bot will attempt to play dungeons. */
-	public int minEnergyPercentage = 70;
+    int minEnergyPercentage = 70;
 	/** This is the minimum amount of tickets that the bot must leave for the user. If tickets get above this value, bot will play the pvp in case pvp is enabled of course. */
-	public int minTickets = 5;
+    int minTickets = 5;
 	/** This is the minimum amount of badges that the bot must leave for the user. If badges get above this value, bot will play the gvg in case gvg is enabled of course. */
-	public int minBadges = 5;
+    int minBadges = 5;
 	
 	// Max for various expendables for correct calculation if not default
-	public int maxShards = 4;
-	public int maxTokens =  10;
-	public int maxTickets = 10;
-	public int maxBadges = 10;
+    int maxShards = 4;
+	int maxTokens =  10;
+	int maxTickets = 10;
+	int maxBadges = 10;
 	
 	// costs (1..5) for various events:
-	public int costPVP = 1;
-	public int costGVG = 1;
-	public int costTrials = 1;
-	public int costGauntlet = 1;
-	public int costInvasion = 1;
-	public int costExpedition = 1;
+    int costPVP = 1;
+	int costGVG = 1;
+	int costTrials = 1;
+	int costGauntlet = 1;
+	int costInvasion = 1;
+	int costExpedition = 1;
 	
 	/** The trials/gauntlet difficulty */
-	public int difficulty = 60;
+    int difficulty = 60;
 	
 	/** The Expedition difficulty */
-	public int expeditionDifficulty = 50;
+    int expeditionDifficulty = 50;
 	
 	/** list of expedtion portals and chance to run, similar formatting to dungeons */
-	public List<String> expeditions;
+    List<String> expeditions;
 	
 	/**
 	 * List of dungeons with percentages that we will attempt to do. Dungeon name must be in standard format, i.e. 'd2z4',
@@ -75,8 +75,8 @@ public class Settings {
 	 * and followed by a space character and percentage, e.g. '50'.
 	 * Example of full string: 'z2d4 3 50'.
 	 */
-	public List<String> dungeons;
-	public List<String> thursdayDungeons;
+    List<String> dungeons;
+	List<String> thursdayDungeons;
 	
 	/**
 	 * List of raids we want to do (there are 3 raids: 1, 2 and 3) with a difficulty level and percentage.
@@ -84,25 +84,25 @@ public class Settings {
 	 * '1 3 70;2 1 30' ==> in 70% of cases it will do R1 on heroic, in 30% of cases it will do R2 normal
 	 * '1 3 100' ==> in 100% of cases it will do R1 on heroic
 	 */
-	public List<String> raids;
-	public List<String> thursdayRaids;
+    List<String> raids;
+	List<String> thursdayRaids;
 	
 	/** World Boss Settings **/
-	public String worldBossType = "";
-	public int worldBossTier  =  0;
-	public int worldBossTimer = 0;
-	public int worldBossDifficulty = 0;
-	public boolean worldBossSolo = false;
+    String worldBossType = "";
+	int worldBossTier  =  0;
+	int worldBossTimer = 0;
+	int worldBossDifficulty = 0;
+	boolean worldBossSolo = false;
 	
 	/** Autorevive Settings **/
-	public int autoRevive = 0;
-	public String potionOrder = "123";
-	public boolean tankPriority = false;
+    int autoRevive = 0;
+	String potionOrder = "123";
+	boolean tankPriority = false;
 	
 	/** Autoshrine settings **/
-	public boolean autoShrine = false;
-	public int battleDelay = 30;
-	public int shrineDelay = 20;
+    boolean autoShrine = false;
+	int battleDelay = 30;
+	int shrineDelay = 20;
 	
 	/**
 	 * List of equipment that should be stripped before attempting PvP (and dressed up again after PvP is done).
@@ -114,43 +114,43 @@ public class Settings {
 	 * n = neck
 	 * r = ring
 	 */
-	public List<String> pvpstrip;
+    List<String> pvpstrip;
 	List<String> gvgstrip;
 	
 	/** If true, then bot will try to auto consume consumables as specified by the 'consumables' list. */
-	public boolean autoConsume = false;
+    boolean autoConsume = false;
 	/** List of consumables that we want activate at all times. */
-	public List<String> consumables;
-	public List<String> familiars;
+    List<String> consumables;
+	List<String> familiars;
 	
 	/** Development Settings **/
-	public boolean familiarScreenshot = false;
-	public int minSolo = 2;
-	public String dungeonsRun = "dungeonsrun 0";
-	public String worldBossRun = "worldbossrun 0";
+    boolean familiarScreenshot = false;
+	int minSolo = 2;
+	String dungeonsRun = "dungeonsrun 0";
+	String worldBossRun = "worldbossrun 0";
 
 	/** This tells us how much time will we sleep when disconnect has been detected (which happens when a user logs in). This interval should be an hour or so, so that user can play the game in peace without being disconnected due to us reconnecting to the game. */
-	public int pauseOnDisconnect = reconnectTimer*MainThread.MINUTE;
+    int pauseOnDisconnect = reconnectTimer*MainThread.MINUTE;
 	
 	public Settings() {
-		dungeons = new ArrayList<String>();
+		dungeons = new ArrayList<>();
 		setDungeons("z1d4 3 100"); // some default value
-		thursdayDungeons = new ArrayList<String>();
+		thursdayDungeons = new ArrayList<>();
 		setThursdayDungeons(""); // default is empty, else if people delete the line it will load this value 
-		raids = new ArrayList<String>();
+		raids = new ArrayList<>();
 		setRaids("1 3 100"); // some default value
-		thursdayRaids = new ArrayList<String>();
-		thursdayDungeons = new ArrayList<String>();
+		thursdayRaids = new ArrayList<>();
+		thursdayDungeons = new ArrayList<>();
 		setThursdayRaids(""); // default is empty, else if people delete the line it will load this value 
-		expeditions = new ArrayList<String>();
+		expeditions = new ArrayList<>();
 		setExpeditions("h1 100"); // some default value
-		pvpstrip = new ArrayList<String>();
-		gvgstrip = new ArrayList<String>();
-		consumables = new ArrayList<String>();
-		familiars = new ArrayList<String>();
+		pvpstrip = new ArrayList<>();
+		gvgstrip = new ArrayList<>();
+		consumables = new ArrayList<>();
+		familiars = new ArrayList<>();
 	}
 	
-	public void set(Settings settings) {
+	/*public void set(Settings settings) {
 		this.username = settings.username;
 		this.password = settings.password;
 		this.useHeadlessMode = settings.useHeadlessMode;
@@ -192,20 +192,20 @@ public class Settings {
 		this.difficulty = settings.difficulty;
 		this.expeditionDifficulty = settings.expeditionDifficulty;
 		
-		this.dungeons = new ArrayList<String>(settings.dungeons);
-		this.raids = new ArrayList<String>(settings.raids);
-		this.thursdayDungeons = new ArrayList<String>(settings.thursdayDungeons);
-		this.thursdayRaids = new ArrayList<String>(settings.thursdayRaids);
-		this.expeditions = new ArrayList<String>(settings.expeditions);	
-		this.pvpstrip = new ArrayList<String>(settings.pvpstrip);
+		this.dungeons = new ArrayList<>(settings.dungeons);
+		this.raids = new ArrayList<>(settings.raids);
+		this.thursdayDungeons = new ArrayList<>(settings.thursdayDungeons);
+		this.thursdayRaids = new ArrayList<>(settings.thursdayRaids);
+		this.expeditions = new ArrayList<>(settings.expeditions);
+		this.pvpstrip = new ArrayList<>(settings.pvpstrip);
 		this.gvgstrip = new ArrayList<>(settings.gvgstrip);
 		this.minSolo  = settings.minSolo;
 		
 		this.autoConsume = settings.autoConsume;
-		this.consumables = new ArrayList<String>(settings.consumables);
+		this.consumables = new ArrayList<>(settings.consumables);
 		
 		this.autoBribe = settings.autoBribe;
-		this.familiars = new ArrayList<String>(settings.familiars);
+		this.familiars = new ArrayList<>(settings.familiars);
 		
 		this.pauseOnDisconnect = settings.pauseOnDisconnect;
 		this.openSkeleton = settings.openSkeleton;
@@ -227,10 +227,10 @@ public class Settings {
 		this.autoShrine = settings.autoShrine;
 		this.battleDelay = settings.battleDelay;
 		this.shrineDelay = settings.shrineDelay;
-	}
+	}*/
 	
 	// a handy shortcut for some debug settings:
-	public Settings setDebug() {
+    Settings setDebug() {
 		doRaids = true;
 		doDungeons = true;
 		doGauntlet = true;
@@ -249,7 +249,7 @@ public class Settings {
 	}
 	
 	/** Does nothing except collect ads */
-	public Settings setIdle() {
+    void setIdle() {
 		doRaids = false;
 		doDungeons = false;
 		doTrials = false;
@@ -265,13 +265,11 @@ public class Settings {
 		collectFishingBaits = false;
 //		BHBot.main.idleMode = true;
 		BHBot.log("Idle mode started, no actions will be taken");
-		
-		return this; // for chaining
 	}
 	
 	/* Cleans the data from the input and saves it at a string */
 	
-	public void setDungeons(String... dungeons) {
+	private void setDungeons(String... dungeons) {
 		this.dungeons.clear();
 		for (String d : dungeons) {
 			String add = d.trim();
@@ -281,7 +279,7 @@ public class Settings {
 		}
 	}
 	
-	public void setThursdayDungeons(String... thursdayDungeons) {
+	private void setThursdayDungeons(String... thursdayDungeons) {
 		this.thursdayDungeons.clear();
 		for (String td : thursdayDungeons) {
 			String add = td.trim();
@@ -291,7 +289,7 @@ public class Settings {
 		}
 	}
 	
-	public void setExpeditions(String... expeditions) {
+	private void setExpeditions(String... expeditions) {
 		this.expeditions.clear();
 		for (String e : expeditions) {
 			String add = e.trim();
@@ -301,7 +299,7 @@ public class Settings {
 		}
 	}
 	
-	public void setRaids(String... raids) {
+	private void setRaids(String... raids) {
 		this.raids.clear();
 		for (String r : raids) {
 			String add = r.trim();
@@ -311,7 +309,7 @@ public class Settings {
 		}
 	}
 	
-	public void setThursdayRaids(String... thursdayRaids) {
+	private void setThursdayRaids(String... thursdayRaids) {
 		this.thursdayRaids.clear();
 		for (String tr : thursdayRaids) {
 			String add = tr.trim();
@@ -321,7 +319,7 @@ public class Settings {
 		}
 	}
 	
-	public void setStrips(String... types) {
+	private void setStrips(String... types) {
 		this.pvpstrip.clear();
 		for (String t : types) {
 			String add = t.trim();
@@ -341,7 +339,7 @@ public class Settings {
 		}
 	}
 	
-	public void setConsumables(String... items) {
+	private void setConsumables(String... items) {
 		this.consumables.clear();
 		for (String i : items) {
 			String add = i.trim();
@@ -351,7 +349,7 @@ public class Settings {
 		}
 	}
 	
-	public void setFamiliars(String... fams) {
+	private void setFamiliars(String... fams) {
 		this.familiars.clear();
 		for (String f : fams) {
 			String add = f.trim();
@@ -363,58 +361,58 @@ public class Settings {
 	
 	/* Gets the string from the previous method and creates a list if there are multiple items */
 	
-	public String getDungeonsAsString() {
-		String result = "";
+	private String getDungeonsAsString() {
+		StringBuilder result = new StringBuilder();
 		for (String d : dungeons)
-			result += d + ";";
+			result.append(d).append(";");
 		if (result.length() > 0)
-			result = result.substring(0, result.length()-1); // remove last ";" character
-		return result;
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
+		return result.toString();
 	}
 	
-	public String getThursdayDungeonsAsString() {
-		String result = "";
+	private String getThursdayDungeonsAsString() {
+		StringBuilder result = new StringBuilder();
 		for (String td : thursdayDungeons)
-			result += td + ";";
+			result.append(td).append(";");
 		if (result.length() > 0)
-			result = result.substring(0, result.length()-1); // remove last ";" character
-		return result;
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
+		return result.toString();
 	}
 	
-	public String getExpeditionsAsString() {
-		String result = "";
+	private String getExpeditionsAsString() {
+		StringBuilder result = new StringBuilder();
 		for (String e : expeditions)
-			result += e + ";";
+			result.append(e).append(";");
 		if (result.length() > 0)
-			result = result.substring(0, result.length()-1); // remove last ";" character
-		return result;
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
+		return result.toString();
 	}
 
-	public String getRaidsAsString() {
-		String result = "";
+	private String getRaidsAsString() {
+		StringBuilder result = new StringBuilder();
 		for (String r : raids)
-			result += r + ";";
+			result.append(r).append(";");
 		if (result.length() > 0)
-			result = result.substring(0, result.length()-1); // remove last ";" character
-		return result;
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
+		return result.toString();
 	}
 	
-	public String getThursdayRaidsAsString() {
-		String result = "";
+	private String getThursdayRaidsAsString() {
+		StringBuilder result = new StringBuilder();
 		for (String tr : thursdayRaids)
-			result += tr + ";";
+			result.append(tr).append(";");
 		if (result.length() > 0)
-			result = result.substring(0, result.length()-1); // remove last ";" character
-		return result;
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
+		return result.toString();
 	}
 
-	public String getStripsAsString() {
-		String result = "";
+	private String getStripsAsString() {
+		StringBuilder result = new StringBuilder();
 		for (String s : pvpstrip)
-			result += s + " ";
+			result.append(s).append(" ");
 		if (result.length() > 0)
-			result = result.substring(0, result.length()-1); // remove last " " character
-		return result;
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+		return result.toString();
 	}
 
 	private String getGVGStripsAsString() {
@@ -426,27 +424,27 @@ public class Settings {
 		return result.toString();
 	}
 	
-	public String getConsumablesAsString() {
-		String result = "";
+	private String getConsumablesAsString() {
+		StringBuilder result = new StringBuilder();
 		for (String s : consumables)
-			result += s + " ";
+			result.append(s).append(" ");
 		if (result.length() > 0)
-			result = result.substring(0, result.length()-1); // remove last " " character
-		return result;
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+		return result.toString();
 	}
 	
-	public String getFamiliarsAsString() {
-		String result = "";
+	private String getFamiliarsAsString() {
+		StringBuilder result = new StringBuilder();
 		for (String f : familiars)
-			result += f + ";";
+			result.append(f).append(";");
 		if (result.length() > 0)
-			result = result.substring(0, result.length()-1); // remove last ";" character
-		return result;
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
+		return result.toString();
 	}
 	
 	/* Cleans up the data in the list again */
 	
-	public void setDungeonsFromString(String s) {
+	private void setDungeonsFromString(String s) {
 		setDungeons(s.split(";"));
 		// clean up (trailing spaces and remove if empty):
 		for (int i = dungeons.size()-1; i >= 0; i--) {
@@ -456,7 +454,7 @@ public class Settings {
 		}
 	}
 	
-	public void setThursdayDungeonsFromString(String s) {
+	private void setThursdayDungeonsFromString(String s) {
 		setThursdayDungeons(s.split(";"));
 		// clean up (trailing spaces and remove if empty):
 		for (int i = thursdayDungeons.size()-1; i >= 0; i--) {
@@ -466,7 +464,7 @@ public class Settings {
 		}
 	}
 	
-	public void setExpeditionsFromString(String s) {
+	private void setExpeditionsFromString(String s) {
 		setExpeditions(s.split(";"));
 		// clean up (trailing spaces and remove if empty):
 		for (int i = expeditions.size()-1; i >= 0; i--) {
@@ -476,7 +474,7 @@ public class Settings {
 		}
 	}
 	
-	public void setRaidsFromString(String s) {
+	private void setRaidsFromString(String s) {
 		setRaids(s.split(";"));
 		// clean up (trailing spaces and remove if empty):
 		for (int i = raids.size()-1; i >= 0; i--) {
@@ -486,7 +484,7 @@ public class Settings {
 		}
 	}
 	
-	public void setThursdayRaidsFromString(String s) {
+	private void setThursdayRaidsFromString(String s) {
 		setThursdayRaids(s.split(";"));
 		// clean up (trailing spaces and remove if empty):
 		for (int i = thursdayRaids.size()-1; i >= 0; i--) {
@@ -496,7 +494,7 @@ public class Settings {
 		}
 	}
 
-	public void setStripsFromString(String s) {
+	private void setStripsFromString(String s) {
 		setStrips(s.split(" "));
 		// clean up (trailing spaces and remove if empty):
 		for (int i = pvpstrip.size()-1; i >= 0; i--) {
@@ -516,7 +514,7 @@ public class Settings {
 		}
 	}
 	
-	public void setConsumablesFromString(String s) {
+	private void setConsumablesFromString(String s) {
 		setConsumables(s.split(" "));
 		// clean up (trailing spaces and remove if empty):
 		for (int i = consumables.size()-1; i >= 0; i--) {
@@ -526,7 +524,7 @@ public class Settings {
 		}
 	}
 	
-	public void setFamiliarsFromString(String s) {
+	private void setFamiliarsFromString(String s) {
 		setFamiliars(s.split(";"));
 		// clean up (trailing spaces and remove if empty):
 		for (int i = familiars.size()-1; i >= 0; i--) {
@@ -540,7 +538,7 @@ public class Settings {
 	 * Loads settings from list of string arguments (which are lines of the settings.ini file, for example)
 	 */
 	public void load(List<String> lines) {
-		Map<String, String> map = new HashMap<String, String>();
+		Map<String, String> map = new HashMap<>();
 		for (String line : lines) {
 			if (line.trim().equals("")) continue;
 			if (line.startsWith("#")) continue; // a comment
@@ -549,23 +547,23 @@ public class Settings {
 		
 		username = map.getOrDefault("username", username);
 		password = map.getOrDefault("password", password);
-		useHeadlessMode = map.getOrDefault("headlessmode", useHeadlessMode ? "1" : "0").equals("0") ? false : true ;
-		restartAfterAdOfferTimeout = map.getOrDefault("restartAfterAdOfferTimeout", restartAfterAdOfferTimeout ? "1" : "0").equals("0") ? false : true ;
-		debugDetectionTimes = map.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("0") ? false : true ;
-		hideWindowOnRestart = map.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("0") ? false : true ;
-		resetTimersOnBattleEnd = map.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("0") ? false : true ;
+		useHeadlessMode = map.getOrDefault("headlessmode", useHeadlessMode ? "1" : "0").equals("1");
+		restartAfterAdOfferTimeout = map.getOrDefault("restartAfterAdOfferTimeout", restartAfterAdOfferTimeout ? "1" : "0").equals("1");
+		debugDetectionTimes = map.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("1");
+		hideWindowOnRestart = map.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("1");
+		resetTimersOnBattleEnd = map.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("1");
 		reconnectTimer = Integer.parseInt(map.getOrDefault("reconnectTimer", ""+reconnectTimer));
 		
-		doRaids = map.getOrDefault("doRaids", doRaids ? "1" : "0").equals("0") ? false : true;
-		doDungeons = map.getOrDefault("doDungeons", doDungeons ? "1" : "0").equals("0") ? false : true;
-		doTrials = map.getOrDefault("doTrials", doTrials ? "1" : "0").equals("0") ? false : true;
-		doGauntlet = map.getOrDefault("doGauntlet", doGauntlet ? "1" : "0").equals("0") ? false : true;
-		doPVP = map.getOrDefault("doPVP", doPVP ? "1" : "0").equals("0") ? false : true;
-		doGVG = map.getOrDefault("doGVG", doGVG ? "1" : "0").equals("0") ? false : true;
-		doInvasion = map.getOrDefault("doInvasion", doInvasion ? "1" : "0").equals("0") ? false : true;
-		doExpedition = map.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("0") ? false : true;
-		doWorldBoss = map.getOrDefault("doWorldBoss", doWorldBoss ? "1" : "0").equals("0") ? false : true;
-		doAds = map.getOrDefault("doAds", doAds ? "1" : "0").equals("0") ? false : true;
+		doRaids = map.getOrDefault("doRaids", doRaids ? "1" : "0").equals("1");
+		doDungeons = map.getOrDefault("doDungeons", doDungeons ? "1" : "0").equals("1");
+		doTrials = map.getOrDefault("doTrials", doTrials ? "1" : "0").equals("1");
+		doGauntlet = map.getOrDefault("doGauntlet", doGauntlet ? "1" : "0").equals("1");
+		doPVP = map.getOrDefault("doPVP", doPVP ? "1" : "0").equals("1");
+		doGVG = map.getOrDefault("doGVG", doGVG ? "1" : "0").equals("1");
+		doInvasion = map.getOrDefault("doInvasion", doInvasion ? "1" : "0").equals("1");
+		doExpedition = map.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("1");
+		doWorldBoss = map.getOrDefault("doWorldBoss", doWorldBoss ? "1" : "0").equals("1");
+		doAds = map.getOrDefault("doAds", doAds ? "1" : "0").equals("1");
 		
 		maxShards = Integer.parseInt(map.getOrDefault("maxShards", ""+minShards));
 		maxTokens = Integer.parseInt(map.getOrDefault("maxTokens", ""+minTokens));
@@ -589,11 +587,11 @@ public class Settings {
 		worldBossDifficulty = Integer.parseInt(map.getOrDefault("worldBossDifficulty", ""+worldBossDifficulty));
 		worldBossTier = Integer.parseInt(map.getOrDefault("worldBossTier", ""+worldBossTier));
 		worldBossTimer = Integer.parseInt(map.getOrDefault("worldBossTimer", ""+worldBossTimer));
-		dungeonOnTimeout = map.getOrDefault("dungeonOnTimeout", dungeonOnTimeout ? "1" : "0").equals("0") ? false : true;
-		worldBossSolo = map.getOrDefault("worldBossSolo", worldBossSolo ? "1" : "0").equals("0") ? false : true;
+		dungeonOnTimeout = map.getOrDefault("dungeonOnTimeout", dungeonOnTimeout ? "1" : "0").equals("1");
+		worldBossSolo = map.getOrDefault("worldBossSolo", worldBossSolo ? "1" : "0").equals("1");
 		
 		autoRevive = Integer.parseInt(map.getOrDefault("autoRevive", ""+autoRevive));
-		tankPriority = map.getOrDefault("tankPriority", tankPriority ? "1" : "0").equals("0") ? false : true;
+		tankPriority = map.getOrDefault("tankPriority", tankPriority ? "1" : "0").equals("1");
 		potionOrder  = map.getOrDefault("potionOrder", potionOrder);
 		
 		
@@ -610,14 +608,14 @@ public class Settings {
 		setStripsFromString(map.getOrDefault("pvpstrip", getStripsAsString()));
 		setGVGStripsFromString(map.getOrDefault("gvgstrip", getGVGStripsAsString()));
 		
-		autoConsume = map.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("0") ? false : true;
+		autoConsume = map.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("1");
 		setConsumablesFromString(map.getOrDefault("consumables", getConsumablesAsString()));
 		
-		autoBribe = map.getOrDefault("autoBribe", autoBribe ? "1" : "0").equals("0") ? false : true ;
+		autoBribe = map.getOrDefault("autoBribe", autoBribe ? "1" : "0").equals("1");
 		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
-		familiarScreenshot = map.getOrDefault("familiarScreenshot", familiarScreenshot ? "1" : "0").equals("0") ? false : true;
+		familiarScreenshot = map.getOrDefault("familiarScreenshot", familiarScreenshot ? "1" : "0").equals("1");
 		
-		collectBounties = map.getOrDefault("collectBounties", collectBounties ? "1" : "0").equals("0") ? false : true ;
+		collectBounties = map.getOrDefault("collectBounties", collectBounties ? "1" : "0").equals("1");
 		collectFishingBaits = map.getOrDefault("collectFishingBaits", collectFishingBaits ? "1" : "0").equals("1");
 
 		openSkeleton = Integer.parseInt(map.getOrDefault("openSkeletonChest", ""+openSkeleton));	
@@ -625,7 +623,7 @@ public class Settings {
 		dungeonsRun = "dungeonsrun " + map.getOrDefault("dungeonsrun", dungeonsRun);
 		worldBossRun = "worldbossrun " + map.getOrDefault("worldbossrun", worldBossRun);
 		
-		autoShrine = map.getOrDefault("autoShrine", autoShrine ? "1" : "0").equals("0") ? false : true;
+		autoShrine = map.getOrDefault("autoShrine", autoShrine ? "1" : "0").equals("1");
 		battleDelay = Integer.parseInt(map.getOrDefault("battleDelay", ""+battleDelay));
 		shrineDelay = Integer.parseInt(map.getOrDefault("shrineDelay", ""+shrineDelay));
 		
