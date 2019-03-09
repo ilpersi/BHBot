@@ -529,8 +529,9 @@ public class MainThread implements Runnable {
 		addCue("BlueSummon", loadImage("cues/cueBlueSummon.png"),  null);
 		addCue("LargeGreenSummon", loadImage("cues/cueLargeGreenSummon.png"),  null);
 		addCue("SmallGreenSummon", loadImage("cues/cueSmallGreenSummon.png"),  null);
-		addCue("Invite", loadImage("cues/cueInvite.png"),  new Bounds(336, 387, 452, 422)); //bounds defined 5th invite button
-		addCue("InviteNether", loadImage("cues/cueInviteAny.png"), new Bounds(334, 275, 456, 323)); //bounds defined 3rd invite button for Nether
+		addCue("Invite3rd", loadImage("cues/cueInviteAny.png"), new Bounds(334, 275, 456, 323)); //bounds defined 3rd invite button for Nether
+		addCue("Invite4th", loadImage("cues/cueInviteAny.png"), new Bounds(330, 330, 460, 380)); //bounds defined 4th invite button for Melvin
+		addCue("Invite", loadImage("cues/cueInvite.png"),  new Bounds(336, 387, 452, 422)); //bounds defined 5th invite button for Orlag
 		addCue("Start", loadImage("cues/cueStart.png"),  null);
 		addCue("WorldBossVictory", loadImage("cues/cueWorldBossVictory.png"), null);
 		addCue("OrlagSelected", loadImage("cues/cueOrlagSelected.png"), new Bounds(360, 430, 440, 460));
@@ -1250,6 +1251,7 @@ public class MainThread implements Runnable {
 						if ((BHBot.settings.autoShrine) && (!shrinesChecked)) {
 							checkShrineSettings("enable");
 						} else if ((!BHBot.settings.autoShrine) && (!shrinesChecked)) {
+							BHBot.log("One time check to make sure that ignore shrines/boss is disabled");
 							checkShrineSettings("disable");
 						}
 						
@@ -1287,7 +1289,9 @@ public class MainThread implements Runnable {
 							clickOnSeg(seg);
 							sleep(1*SECOND);
 							
+							if (!shrinesChecked) {
 							checkShrineSettings("disable");
+							}
 							
 							continue;
 							
@@ -2176,9 +2180,14 @@ public class MainThread implements Runnable {
 								for (int i = 0; i < worldBossTimer; i++) {
 									sleep(1*SECOND);
 									readScreen();
+									
 									if (worldBossType.equals("Orlag")) { //shouldn't have this inside the loop but it doesn't work if its outside
 										seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
-									} else seg = detectCue(cues.get("InviteNether")); // 3rd Invite button for Nether
+									} else if (worldBossType.equals("Nether")) {
+										seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether
+									} else if (worldBossType.equals("Melvin")) {
+										seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
+									}
 	
 									if (seg != null) {
 										if (i != 0 && (i % 15) == 0) { //every 15 seconds
@@ -4775,7 +4784,8 @@ public class MainThread implements Runnable {
 	/* World boss reading and changing section */
 	public int detectWorldBossTier() {
 		
-		if (BHBot.settings.worldBossType.equals("Marvin")) return 10; //quick fix for reading Marvin WB tier
+		//Melvins only available in T10 so we don't need to read the image
+		if (BHBot.settings.worldBossType.equals("Melvin")) return 10;
 		
 		readScreen();
 		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),1*SECOND);

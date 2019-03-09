@@ -14,7 +14,7 @@ public class Settings {
 	boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
 	boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
 	private boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
-	private int reconnectTimer = 60;
+	private int reconnectTimer = 10;
 	
 	//Various settings
     int openSkeleton = 0;
@@ -593,8 +593,6 @@ public class Settings {
 		autoRevive = Integer.parseInt(map.getOrDefault("autoRevive", ""+autoRevive));
 		tankPriority = map.getOrDefault("tankPriority", tankPriority ? "1" : "0").equals("1");
 		potionOrder  = map.getOrDefault("potionOrder", potionOrder);
-		
-		
 		
 		difficulty = Integer.parseInt(map.getOrDefault("difficulty", ""+difficulty));
 		expeditionDifficulty = Integer.parseInt(map.getOrDefault("expeditionDifficulty", ""+expeditionDifficulty));
