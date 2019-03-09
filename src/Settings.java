@@ -20,6 +20,7 @@ public class Settings {
 	public int openSkeleton = 0;
 	public boolean autoBribe  = false;
 	public boolean collectBounties  = false;
+	public boolean collectFishingBaits  = false;
 	public boolean dungeonOnTimeout = true;
 	public boolean countActivities = false;
 	
@@ -209,6 +210,7 @@ public class Settings {
 		this.pauseOnDisconnect = settings.pauseOnDisconnect;
 		this.openSkeleton = settings.openSkeleton;
 		this.collectBounties = settings.collectBounties;
+		this.collectFishingBaits = settings.collectFishingBaits;
 		this.dungeonsRun = settings.dungeonsRun;
 		this.worldBossRun = settings.worldBossRun;
 		
@@ -260,6 +262,7 @@ public class Settings {
 		doWorldBoss = false;
 		autoConsume = false;
 		collectBounties = false;
+		collectFishingBaits = false;
 //		BHBot.main.idleMode = true;
 		BHBot.log("Idle mode started, no actions will be taken");
 		
@@ -615,7 +618,8 @@ public class Settings {
 		familiarScreenshot = map.getOrDefault("familiarScreenshot", familiarScreenshot ? "1" : "0").equals("0") ? false : true;
 		
 		collectBounties = map.getOrDefault("collectBounties", collectBounties ? "1" : "0").equals("0") ? false : true ;
-		
+		collectFishingBaits = map.getOrDefault("collectFishingBaits", collectFishingBaits ? "1" : "0").equals("1");
+
 		openSkeleton = Integer.parseInt(map.getOrDefault("openSkeletonChest", ""+openSkeleton));	
 		pauseOnDisconnect = Integer.parseInt(map.getOrDefault("pauseOnDisconnect", ""+pauseOnDisconnect));
 		dungeonsRun = "dungeonsrun " + map.getOrDefault("dungeonsrun", dungeonsRun);

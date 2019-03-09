@@ -222,7 +222,8 @@ public class MainThread implements Runnable {
 	public static final int SECOND = 1000;
 	public static final int MINUTE = 60 * SECOND;
 	public static final int HOUR = 60 * MINUTE;
-	
+	public static final int DAY = 24 * HOUR;
+
 	public boolean idleMode = false;
 	
 	private static int globalShards;
@@ -277,6 +278,8 @@ public class MainThread implements Runnable {
 	final long BOUNTY_CHECK_INTERVAL = 360 * MINUTE;
 	long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
 	final long BONUS_CHECK_INTERVAL = 10 * MINUTE;
+	private final long FISHING_CHECK_INTERVAL = DAY;
+	long timeLastFishingCheck = 0; // when did we check for fishing baits the last time?
 
 	public final long MAX_IDLE_TIME = 30*MINUTE;
 	/** Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale. */
@@ -547,6 +550,7 @@ public class MainThread implements Runnable {
 		//fishing related
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
+		addCue("Fishing", loadImage("cues/cueFishing.png"), new Bounds(720, 200, 799, 519));
 
 		//Familiar bribing cues
 
@@ -1230,6 +1234,12 @@ public class MainThread implements Runnable {
 					if (BHBot.settings.autoConsume && (Misc.getTime() - timeLastBonusCheck > BONUS_CHECK_INTERVAL)) {
 						timeLastBonusCheck = Misc.getTime();
 						handleConsumables();
+					}
+
+					// collect any fishing bait
+					if (BHBot.settings.collectFishingBaits && ((Misc.getTime() - timeLastFishingCheck > FISHING_CHECK_INTERVAL) || timeLastFishingCheck == 0)) {
+						timeLastFishingCheck = Misc.getTime();
+						handleFishingBaits();
 					}
 
 
@@ -5454,6 +5464,52 @@ public class MainThread implements Runnable {
         }
         Collections.reverse(striplist);
 	}
+
+    /**
+     * Daily collection of fishing baits!
+     */
+    private void handleFishingBaits() {
+        MarvinSegment seg;
+
+        seg = detectCue(cues.get("Fishing"), SECOND * 5);
+        if (seg != null) {
+            clickOnSeg(seg);
+            sleep(SECOND * 2); // we allow some seconds as maybe the reward popup is sliding down
+
+            detectCharacterDialogAndHandleIt();
+
+            seg = detectCue(cues.get("WeeklyRewards"), SECOND * 5);
+            if (seg != null) {
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) {
+                    saveGameScreen("fishing-baits");
+                    clickOnSeg(seg);
+                    BHBot.log("Correctly collected fishing baits");
+                    sleep(SECOND * 2);
+                    readScreen();
+                } else {
+                    BHBot.log("Something weng wrong while collecting fishing baits, restarting...");
+                    saveGameScreen("fishing-error-baits");
+                    restart();
+                }
+            }
+
+            seg = detectCue(cues.get("X"), 5 * SECOND);
+            if (seg != null) {
+                clickOnSeg(seg);
+                sleep(SECOND * 2);
+                readScreen();
+            } else {
+                BHBot.log("Something went wrong while closing the fishing dialog, restarting...");
+                saveGameScreen("fishing-error-closing");
+                restart();
+            }
+
+        } else {
+            BHBot.log("Impossible to find the fishing button");
+        }
+        readScreen(SECOND *2);
+    }
 
 	/**
 	 * We must be in main menu for this to work!
