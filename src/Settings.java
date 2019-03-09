@@ -114,6 +114,7 @@ public class Settings {
 	 * r = ring
 	 */
 	public List<String> pvpstrip;
+	List<String> gvgstrip;
 	
 	/** If true, then bot will try to auto consume consumables as specified by the 'consumables' list. */
 	public boolean autoConsume = false;
@@ -143,6 +144,7 @@ public class Settings {
 		expeditions = new ArrayList<String>();
 		setExpeditions("h1 100"); // some default value
 		pvpstrip = new ArrayList<String>();
+		gvgstrip = new ArrayList<String>();
 		consumables = new ArrayList<String>();
 		familiars = new ArrayList<String>();
 	}
@@ -195,6 +197,7 @@ public class Settings {
 		this.thursdayRaids = new ArrayList<String>(settings.thursdayRaids);
 		this.expeditions = new ArrayList<String>(settings.expeditions);	
 		this.pvpstrip = new ArrayList<String>(settings.pvpstrip);
+		this.gvgstrip = new ArrayList<>(settings.gvgstrip);
 		this.minSolo  = settings.minSolo;
 		
 		this.autoConsume = settings.autoConsume;
@@ -324,6 +327,16 @@ public class Settings {
 			this.pvpstrip.add(add);
 		}
 	}
+
+	private void setGVGStrips(String... types) {
+		this.gvgstrip.clear();
+		for (String t : types) {
+			String add = t.trim();
+			if (add.equals(""))
+				continue;
+			this.gvgstrip.add(add);
+		}
+	}
 	
 	public void setConsumables(String... items) {
 		this.consumables.clear();
@@ -399,6 +412,15 @@ public class Settings {
 		if (result.length() > 0)
 			result = result.substring(0, result.length()-1); // remove last " " character
 		return result;
+	}
+
+	private String getGVGStripsAsString() {
+		StringBuilder result = new StringBuilder();
+		for (String s : gvgstrip)
+			result.append(s).append(" ");
+		if (result.length() > 0)
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+		return result.toString();
 	}
 	
 	public String getConsumablesAsString() {
@@ -478,6 +500,16 @@ public class Settings {
 			pvpstrip.set(i, pvpstrip.get(i).trim());
 			if (pvpstrip.get(i).equals(""))
 				pvpstrip.remove(i);
+		}
+	}
+
+	private void setGVGStripsFromString(String s) {
+		setGVGStrips(s.split(" "));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = gvgstrip.size() - 1; i >= 0; i--) {
+			gvgstrip.set(i, gvgstrip.get(i).trim());
+			if (gvgstrip.get(i).equals(""))
+				gvgstrip.remove(i);
 		}
 	}
 	
@@ -573,6 +605,7 @@ public class Settings {
 		setThursdayRaidsFromString(map.getOrDefault("thursdayRaids", getThursdayRaidsAsString()));
 		setExpeditionsFromString(map.getOrDefault("expeditions", getExpeditionsAsString()));
 		setStripsFromString(map.getOrDefault("pvpstrip", getStripsAsString()));
+		setGVGStripsFromString(map.getOrDefault("gvgstrip", getGVGStripsAsString()));
 		
 		autoConsume = map.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("0") ? false : true;
 		setConsumablesFromString(map.getOrDefault("consumables", getConsumablesAsString()));

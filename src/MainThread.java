@@ -1776,12 +1776,12 @@ public class MainThread implements Runnable {
 								BHBot.scheduler.doPVPImmediately = false; // reset it
 
 							BHBot.log("Attempting PVP...");
-							stripDown();
+							stripDown(BHBot.settings.pvpstrip);
 
 							seg = detectCue(cues.get("PVP"));
 							if (seg == null) {
 								BHBot.log("PVP button not found. Skipping PVP...");
-								dressUp();
+								dressUp(BHBot.settings.pvpstrip);
 								continue; // should not happen though
 							}
 							clickOnSeg(seg);
@@ -1792,7 +1792,7 @@ public class MainThread implements Runnable {
 							if (cost == 0) { // error!
 								BHBot.log("Due to an error#1 in cost detection, PVP will be skipped.");
 								closePopupSecurely(cues.get("PVPWindow"), cues.get("X"));
-								dressUp();
+								dressUp(BHBot.settings.pvpstrip);
 								continue;
 							}
 							if (cost != BHBot.settings.costPVP) {
@@ -1807,7 +1807,7 @@ public class MainThread implements Runnable {
 									if (seg != null)
 										closePopupSecurely(cues.get("PVPWindow"), cues.get("X"));
 									BHBot.log("Due to an error#2 in cost selection, PVP will be skipped.");
-									dressUp();
+									dressUp(BHBot.settings.pvpstrip);
 									continue;
 								}
 							}
@@ -1892,6 +1892,16 @@ public class MainThread implements Runnable {
 
 								BHBot.log("Attempting GVG...");
 
+								if (BHBot.settings.gvgstrip.size() > 0){
+									// If we need to strip down for GVG, we need to close the GVG gump and open it again
+									seg = detectCue(cues.get("X"), SECOND * 2);
+									clickOnSeg(seg);
+									readScreen(2*SECOND);
+									stripDown(BHBot.settings.gvgstrip);
+									seg = detectCue(cues.get("GVG"), SECOND * 3);
+									clickOnSeg(seg);
+								}
+
 								// select cost if needed:
 								readScreen(2*SECOND); // wait for the popup to stabilize a bit
 								int cost = detectCost();
@@ -1912,6 +1922,7 @@ public class MainThread implements Runnable {
 										if (seg != null)
 											result = closePopupSecurely(cues.get("GVGWindow"), cues.get("X"));
 										BHBot.log("Due to an error#2 in cost selection, GVG will be skipped.");
+										dressUp(BHBot.settings.gvgstrip);
 										continue;
 									}
 								}
@@ -3658,7 +3669,8 @@ public class MainThread implements Runnable {
 			}
 			resetAppropriateTimers();
 			resetRevives();
-			if (state == State.PVP) dressUp();
+			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
+			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
 			state = State.Main; // reset state
 			return;
 		}
@@ -3683,7 +3695,8 @@ public class MainThread implements Runnable {
 
 			if (!closed) {
 				BHBot.log("Problem: 'Defeat' popup detected but no 'Close' button detected. Ignoring...");
-				if (state == State.PVP) dressUp();
+				if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
+				if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
 				return;
 			}
 
@@ -3719,7 +3732,8 @@ public class MainThread implements Runnable {
 			}
 			resetAppropriateTimers();
 			resetRevives();
-			if (state == State.PVP) dressUp();
+			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
+			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
 			state = State.Main; // reset state
 			return;
 		}
@@ -3754,6 +3768,7 @@ public class MainThread implements Runnable {
 			}
 			resetAppropriateTimers();
 			resetRevives();
+			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
 			state = State.Main; // reset state
 			return;
 		}
@@ -3777,7 +3792,8 @@ public class MainThread implements Runnable {
 			sleep(1*SECOND);
 			BHBot.log(state.getName() + " completed successfully. Result: Victory");
 			resetAppropriateTimers();
-			if (state == State.PVP) dressUp();
+			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
+			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
 			state = State.Main; // reset state
 			return;
 		}
@@ -5404,36 +5420,39 @@ public class MainThread implements Runnable {
 		closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
 	}
 
-	private void stripDown() {
-		if (BHBot.settings.pvpstrip.size() == 0)
-			return;
+	private void stripDown(List<String> striplist) {
+        if (striplist.size() == 0)
+            return;
 
-		String list = "";
-		for (String type : BHBot.settings.pvpstrip) {
-			list += EquipmentType.letterToName(type) + ", ";
-		}
-		list = list.substring(0, list.length()-2);
-		BHBot.log("Stripping down for PvP (" + list + ")...");
+        StringBuilder list = new StringBuilder();
+        for (String type : striplist) {
+            list.append(EquipmentType.letterToName(type)).append(", ");
+        }
+        list = new StringBuilder(list.substring(0, list.length() - 2));
+        BHBot.log("Stripping down for PvP/GVG (" + list + ")...");
 
-		for (String type : BHBot.settings.pvpstrip) {
-			strip(EquipmentType.letterToType(type), StripDirection.StripDown);
-		}
+        for (String type : striplist) {
+            strip(EquipmentType.letterToType(type), StripDirection.StripDown);
+        }
 	}
 
-	private void dressUp() {
-		if (BHBot.settings.pvpstrip.size() == 0)
-			return;
+	private void dressUp(List<String> striplist) {
+        if (striplist.size() == 0)
+            return;
 
-		String list = "";
-		for (String type : BHBot.settings.pvpstrip) {
-			list += EquipmentType.letterToName(type) + ", ";
-		}
-		list = list.substring(0, list.length()-2);
-		BHBot.log("Dressing back up (" + list + ")...");
+        StringBuilder list = new StringBuilder();
+        for (String type : striplist) {
+            list.append(EquipmentType.letterToName(type)).append(", ");
+        }
+        list = new StringBuilder(list.substring(0, list.length() - 2));
+        BHBot.log("Dressing back up (" + list + ")...");
 
-		for (String type : BHBot.settings.pvpstrip) {
-			strip(EquipmentType.letterToType(type), StripDirection.DressUp);
-		}
+        // we reverse the order so that we have to make less clicks to dress up equipment
+        Collections.reverse(striplist);
+        for (String type : striplist) {
+            strip(EquipmentType.letterToType(type), StripDirection.DressUp);
+        }
+        Collections.reverse(striplist);
 	}
 
 	/**
