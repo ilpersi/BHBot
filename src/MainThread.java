@@ -120,7 +120,7 @@ public class MainThread implements Runnable {
 		}
 
 		public int minPos() {
-			return 3 + ordinal();
+			return 4 + ordinal();
 		}
 
 		public int maxPos() {
@@ -128,7 +128,7 @@ public class MainThread implements Runnable {
 		}
 
 		public int getButtonPos() {
-			return 7 + ordinal();
+			return 8 + ordinal();
 		}
 
 		public static String letterToName(String s) {
@@ -5402,7 +5402,7 @@ public class MainThread implements Runnable {
 	 */
 	private int detectEquipmentFilterScrollerPos() {
 //		final int[] yScrollerPositions = {146, 165, 187, 207, 227, 247, 267, 288, 309, 329}; // top scroller positions
-		final int[] yScrollerPositions = {146, 165, 184, 203, 222, 241, 259, 278, 297, 315, 335}; // top scroller positions
+		final int[] yScrollerPositions = {146, 164, 181, 199, 217, 235, 252, 270, 288, 306, 323, 341}; // top scroller positions
 
 		MarvinSegment seg = detectCue(cues.get("StripScrollerTopPos"), 2*SECOND);
 		if (seg == null) {
