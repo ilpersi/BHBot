@@ -359,7 +359,8 @@ public class MainThread implements Runnable {
 		addCue("RaidButton", loadImage("cues/cueRaidButton.png"), new Bounds(0, 200, 40, 400));
 		addCue("RaidPopup", loadImage("cues/cueRaidPopup.png"), new Bounds(300, 35, 340, 70));
 		addCue("RaidSummon", loadImage("cues/cueRaidSummon.png"), new Bounds(480, 360, 540, 380));
-		addCue("RaidLevel", loadImage("cues/cueRaidLevel.png"), new Bounds(320, 430, 480, 460)); // selected raid type button cue
+		addCue("RaidLevel", loadImage("cues/cueRaidLevel.png"), new Bounds(300, 435, 510, 455)); // selected raid type button cue
+		addCue("cueRaidLevelEmpty", loadImage("cues/cueRaidLevelEmpty.png"), new Bounds(300, 435, 510, 455)); // selected raid type button cue
 
 		// New Raid level detection logic
 		addCue("Raid1Name", loadImage("cues/raid/r1Name.png"), new Bounds(185, 340, 485, 395));// Raid 1 Name
@@ -4436,104 +4437,15 @@ public class MainThread implements Runnable {
 	 * Returns 0 in case of error
 	 */
 	public int readUnlockedRaidTier() {
+		int result = 0;
+
+		List<MarvinSegment> list = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
+		result += list.size();
+
 		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
-		if (seg == null) {
-			//if there is no green raid dot, we only have R1 unlocked
-			BHBot.log("R1 Unlocked");
-			return 1;
-		}
-		final Color exists = new Color(147, 147, 147); // color of center pixel of turned off button
-		Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
+		if (seg != null) result += 1;
 
-
-		// these are the locations of the raid dots  (center to center is 26px)
-		Point r1 = center.moveBy(26, 0); // one button to the right coords
-		Point r2 = center.moveBy(52, 0); // two to the right coords
-		Point r3 = center.moveBy(78, 0); // three to the right coords
-		Point r4 = center.moveBy(100, 0); // four to the right coords
-		Point r5 = center.moveBy(124, 0); // five to the right coords
-		Point r6 = center.moveBy(156, 0); // six to the right coords
-		
-		//v26,52,78,104,130,156
-
-		Point l1 = center.moveBy(-26, 0); // one button to the left coords
-		Point l2 = center.moveBy(-52, 0); // two to the left coords
-		Point l3 = center.moveBy(-78, 0); // three to the left coords
-		Point l4 = center.moveBy(-100, 0); // four to the left coords
-		Point l5 = center.moveBy(-124, 0); // five to the left coords
-		Point l6 = center.moveBy(-156, 0); // six to the right coords
-
-		//  these define the unselected dots to the right and left of the green selected raid dot, will return false if the dot does not exist
-		boolean r1Exists = (new Color(img.getRGB(r1.x, r1.y))).equals(exists);
-		boolean r2Exists = (new Color(img.getRGB(r2.x, r2.y))).equals(exists);
-		boolean r3Exists = (new Color(img.getRGB(r3.x, r3.y))).equals(exists);
-		boolean r4Exists = (new Color(img.getRGB(r4.x, r4.y))).equals(exists);
-		boolean r5Exists = (new Color(img.getRGB(r5.x, r5.y))).equals(exists);
-		boolean r6Exists = (new Color(img.getRGB(r6.x, r6.y))).equals(exists);
-
-		boolean l1Exists = (new Color(img.getRGB(l1.x, l1.y))).equals(exists);
-		boolean l2Exists = (new Color(img.getRGB(l2.x, l2.y))).equals(exists);
-		boolean l3Exists = (new Color(img.getRGB(l3.x, l3.y))).equals(exists);
-		boolean l4Exists = (new Color(img.getRGB(l4.x, l4.y))).equals(exists);
-		boolean l5Exists = (new Color(img.getRGB(l5.x, l5.y))).equals(exists);
-		boolean l6Exists = (new Color(img.getRGB(l6.x, l6.y))).equals(exists);
-
-		//Calculating the currently unlocked tier by all the combinations of dots that exist at each tier, confirming by checking false for the surrounding dots
-		//E.G OOXO
-		//Where X is the selected green dot
-		//we can confirm that two dots to the left exist, and that a third does not, and that one dot to the right exists but a second does not
-		//So four dots detected (three plus green) = R4 unlocked
-		//Calculate for combinations XOOO/OXOO/OOXO/OOOX etc
-
-		//(Must be a simpler way of doing this)
-
-		if (!l2Exists && l1Exists && !r1Exists) //R2 detection
-			return 2;
-		else if (!l1Exists && r1Exists && !r2Exists)
-			return 2;
-		else if (!l3Exists && l2Exists && l1Exists && !r1Exists) //R3 detection
-			return 3;
-		else if (!l2Exists && l1Exists && r1Exists && !r2Exists)
-			return 3;
-		else if (!l1Exists && r1Exists && r2Exists && !r3Exists)
-			return 3;
-		else if (!l4Exists && l3Exists && l2Exists && l1Exists && !r1Exists) //R4 Detection
-			return 4;
-		else if (!l3Exists && l2Exists && l1Exists && r1Exists && !r2Exists)
-			return 4;
-		else if (!l2Exists && l1Exists && r1Exists && r2Exists && !r3Exists)
-			return 4;
-		else if (!l1Exists && r1Exists && r2Exists && r3Exists && !r4Exists)
-			return 4;
-		
-		/* When raid 6 is unlocked its starts to return false results, using static int from settings file until I can work out why */
-		
-		else if (!l5Exists && !r1Exists) //R5 Detection
-			return 5;
-		else if (!l4Exists && !r2Exists)
-			return 5;
-		else if (!l3Exists && l2Exists && l1Exists && r1Exists && r2Exists && !r3Exists)
-			return 5;
-		else if (!l2Exists && l1Exists && r1Exists && r2Exists && r3Exists && !r4Exists)
-			return 5;
-		else if (!l1Exists && r1Exists && r2Exists && r3Exists && r4Exists && !r5Exists)
-			return 5;
-		else if (!l6Exists && l5Exists && l4Exists && l3Exists && l2Exists && l1Exists && !r1Exists) //R6 Detection
-			return 6;
-		else if (!l5Exists && l4Exists && l3Exists && l2Exists && l1Exists && r1Exists && !r2Exists)
-			return 6;
-		else if (!l4Exists && l3Exists && l2Exists && l1Exists && r1Exists && r2Exists && !r3Exists)
-			return 6;
-		else if (!l3Exists && l2Exists && l1Exists && r1Exists && r2Exists && r3Exists && !r4Exists)
-			return 6;
-		else if (!l2Exists && !r5Exists)
-			return 6;
-		else if (!l1Exists && !r6Exists)
-			return 6;
-		else
-			//On error return 0
-			return 0;
-
+		return result;
 	}
 
 	/**
