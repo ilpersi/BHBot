@@ -416,7 +416,7 @@ public class MainThread implements Runnable {
 		addCue("Zone6", loadImage("cues/cueZone6.png"), null);
 		addCue("Zone7", loadImage("cues/cueZone7.png"), null);
 		addCue("Zone8", loadImage("cues/cueZone8.png"), null);
-		addCue("Zone8", loadImage("cues/cueZone9.png"), null);
+		addCue("Zone9", loadImage("cues/cueZone9.png"), null);
 		addCue("RightArrow", loadImage("cues/cueRightArrow.png"), null); // arrow used in quest screen to change zone
 		addCue("LeftArrow", loadImage("cues/cueLeftArrow.png"), null); // arrow used in quest screen to change zone
 		addCue("Enter", loadImage("cues/cueEnter.png"), null); // "Enter" button found on d4 window
