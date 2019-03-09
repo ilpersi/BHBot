@@ -1272,6 +1272,9 @@ public class MainThread implements Runnable {
 							seg = detectCue(cues.get("X"),1*SECOND);
 							clickOnSeg(seg);
 							sleep(1*SECOND);
+							
+							checkShrineSettings("disable");
+							
 							continue;
 							
 							//pre speed boost code
@@ -1524,6 +1527,11 @@ public class MainThread implements Runnable {
 							seg = detectCue(cues.get("X"),1*SECOND);
 							clickOnSeg(seg);
 							sleep(1*SECOND);
+							
+							if (trials) {
+								checkShrineSettings("disable");
+								}
+							
 							if (BHBot.scheduler.doTrialsOrGauntletImmediately)
 								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // if we don't have resources to run we need to disable force it
 							continue;
@@ -3464,43 +3472,47 @@ public class MainThread implements Runnable {
 			//click view
 			sleep(2*SECOND);
 			//open view window and check familiar array for match
-			seg = detectCue(cues.get("View"));
-			if (seg != null) {
-				clickOnSeg(seg);
-				for (String f : BHBot.settings.familiars) { //cycle through array
-					readScreen();
-					String fam = f.toUpperCase().split(" ")[0];
-					seg = detectCue(cues.get(fam), 1*SECOND);
-					int bribeCount = checkFamiliarCounter(fam);
-					if (seg != null && !(bribeCount < 1) && (BHBot.settings.autoBribe)) {
-						BHBot.log("Bribing " + fam);
+			if (BHBot.settings.autoBribe) {
+				seg = detectCue(cues.get("View"));
+				if (seg != null) {
+					clickOnSeg(seg);
+					for (String f : BHBot.settings.familiars) { //cycle through array
 						readScreen();
-						seg = detectCue(cues.get("X"), 2*SECOND); // the sleep at the end is the timeout, else it will click as soon as its available
-						if (seg != null) {
-							clickOnSeg(seg);
-						} else restart();  //failsafe to restart if the bot can't find the button
-						readScreen();
-						seg = detectCue(cues.get("Bribe"), 2*SECOND);
-						if (seg != null) {
-							clickOnSeg(seg);
-						} else restart();
-						// TODO Add not enough gems fail-safe
-						readScreen();
-						seg = detectCue(cues.get("YesGreen"), 2*SECOND);
-						if (seg != null) {
-							sleep(1*SECOND);
-							clickInGame(330,360); //click in game as the drop down was too inconsistent to find the cue
-						} else restart();
-						saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
-						updateFamiliarCounter(fam, bribeCount);
-						return;
+						String fam = f.toUpperCase().split(" ")[0];
+						seg = detectCue(cues.get(fam), 1*SECOND);
+						int bribeCount = checkFamiliarCounter(fam);
+						if (seg != null && !(bribeCount < 1) && (BHBot.settings.autoBribe)) {
+							BHBot.log("Bribing " + fam);
+							readScreen();
+							seg = detectCue(cues.get("X"), 2*SECOND); // the sleep at the end is the timeout, else it will click as soon as its available
+							if (seg != null) {
+								clickOnSeg(seg);
+							} else restart();  //failsafe to restart if the bot can't find the button
+							readScreen();
+							seg = detectCue(cues.get("Bribe"), 2*SECOND);
+							if (seg != null) {
+								clickOnSeg(seg);
+							} else restart();
+							// TODO Add not enough gems fail-safe
+							readScreen();
+							seg = detectCue(cues.get("YesGreen"), 2*SECOND);
+							if (seg != null) {
+								sleep(1*SECOND);
+								clickInGame(330,360); //click in game as the drop down was too inconsistent to find the cue
+							} else restart();
+							saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
+							updateFamiliarCounter(fam, bribeCount);
+							return;
+							}
+						}
 					}
 				}
-				BHBot.log("No bribe flags were met, persuading");
+				BHBot.log("Persuading familiar");
 				sleep(1*SECOND);
 				if (BHBot.settings.familiarScreenshot) {
 					saveGameScreen("familiar-cue-test"); //If the familiar is unknown we might not have an image for it yet, so save a screenshot to create a cue from
 				}
+				
 				readScreen();
 				seg = detectCue(cues.get("X"), 2*SECOND);
 				if (seg != null) {
@@ -3518,7 +3530,6 @@ public class MainThread implements Runnable {
 					sleep(1*SECOND);
 					clickInGame(330,360);
 				} else restart();
-			}
 			return;
 		}
 
@@ -4433,7 +4444,7 @@ public class MainThread implements Runnable {
 	}
 
 	public void raidReadTest() {
-		int test = readUnlockedRaidTier();
+		int test = readSelectedRaidTier();
 		BHBot.log(Integer.toString(test));
 	}
 	

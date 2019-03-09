@@ -257,7 +257,7 @@ public class Settings {
 		doWorldBoss = false;
 		autoConsume = false;
 		collectBounties = false;
-		BHBot.main.idleMode = true;
+//		BHBot.main.idleMode = true;
 		BHBot.log("Idle mode started, no actions will be taken");
 		
 		return this; // for chaining
