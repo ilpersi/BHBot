@@ -479,7 +479,7 @@ public class MainThread implements Runnable {
 
 		// PvP strip related:
 		addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos.png"), new Bounds(525, 140, 540, 370));
-		addCue("StripEquipped", loadImage("cues/strip/cueStripEquipped.png"), new Bounds(460, 175, 485, 205)); // the little "E" icon upon an equipped item (the top-left item though, we want to detect just that one)
+		addCue("StripEquipped", loadImage("cues/strip/cueStripEquipped.png"), new Bounds(465, 180, 485, 200)); // the little "E" icon upon an equipped item (the top-left item though, we want to detect just that one)
 		addCue("StripItemsTitle", loadImage("cues/strip/cueStripItemsTitle.png"), new Bounds(335, 70, 360, 80));
 		addCue("StripSelectorButton", loadImage("cues/strip/cueStripSelectorButton.png"), new Bounds(450, 115, 465, 130));
 		// filter titles:
