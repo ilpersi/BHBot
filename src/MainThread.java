@@ -272,7 +272,7 @@ public class MainThread implements Runnable {
 	private final long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
 	private final long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
 	private final long BADGES_CHECK_INTERVAL = 10 * MINUTE;
-	private final long BOUNTY_CHECK_INTERVAL = 360 * MINUTE;
+	private final long BOUNTY_CHECK_INTERVAL = HOUR;
 	private final long BONUS_CHECK_INTERVAL = 10 * MINUTE;
 	private final long FISHING_CHECK_INTERVAL = DAY;
 
@@ -344,8 +344,8 @@ public class MainThread implements Runnable {
 		addCue("Items", loadImage("cues/cueItems.png"), null); // used when we clicked "claim" on daily rewards popup. Used also with main menu ads.
 		addCue("X", loadImage("cues/cueX.png"), null); // "X" close button used with claimed daily rewards popup
 		addCue("WeeklyRewards", loadImage("cues/cueWeeklyRewards.png"), new Bounds(185, 95, 250, 185)); // used with reward for GVG/PVP/Gauntlet/Trial on Friday night (when day changes into Saturday)
-		addCue("Bounties", loadImage("cues/cueBounties.png"), new Bounds(300, 60, 500, 120));
-		addCue("Loot", loadImage("cues/cueLoot.png"), new Bounds(460, 225, 630, 290));
+		addCue("Bounties", loadImage("cues/cueBounties.png"), new Bounds(320, 63, 480, 103));
+		addCue("Loot", loadImage("cues/cueLoot.png"), null);
 
 		addCue("News", loadImage("cues/cueNewsPopup.png"), new Bounds(345, 60, 365, 85)); // news popup
 		addCue("Close", loadImage("cues/cueClose.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
@@ -2332,48 +2332,9 @@ public class MainThread implements Runnable {
 					} // World Boss
 					
 					// Collect bounties:
-					// TODO I can't get a working while loop to clear all bounties available, so we simply check and clear one if available every 6 hours
-					if ((BHBot.settings.collectBounties && Misc.getTime() - timeLastBountyCheck > BOUNTY_CHECK_INTERVAL)) {
+					if (BHBot.settings.collectBounties && ((Misc.getTime() - timeLastBountyCheck > BOUNTY_CHECK_INTERVAL) || timeLastBountyCheck == 0)) {
 						timeLastBountyCheck = Misc.getTime();
-						BHBot.log("Checking bounties..");
-
-							sleep(2*SECOND); //make sure screen is stable
-							clickInGame(130, 440); // click on the bounties icon
-
-//							int bountyCounter = 0;
-							
-							readScreen();
-							seg = detectCue(cues.get("Bounties"), 2*SECOND);
-							if (seg == null) {
-								BHBot.log("Bounties window not found, skipping"); // failsafe in case bounties window didn't open
-								continue;
-							} else {
-								MarvinSegment segLoot = detectCue(cues.get("Loot"), SECOND);
-								if (segLoot != null) { // the loot cue has bounds for only the top loot button, so while there is a loot cue there there are bounties to claim
-									readScreen();
-									seg = detectCue(cues.get("Loot"), SECOND); //set cue to loot again as its changed to X underneath
-									sleep(SECOND); //wait for screen to settle
-									clickOnSeg(seg);
-									readScreen();
-									seg = detectCue(cues.get("X"), SECOND); // we have to manually close rewards window
-									sleep(SECOND);
-									clickOnSeg(seg);
-									sleep(SECOND);
-									readScreen();
-									seg = detectCue(cues.get("X"), SECOND); // once we're done close bounties window
-									clickOnSeg(seg);
-									BHBot.log("Bounty Claimed");
-//									BHBot.log(bountyCounter + " Bounties claimed.");
-									continue;
-//									bountyCounter++; // just to count how many we have claimed
-								} else {
-									seg = detectCue(cues.get("X"), SECOND); // once we're done close bounties window
-									clickOnSeg(seg);
-									BHBot.log("No bounties available");
-//									BHBot.log(bountyCounter + " Bounties claimed.");
-									continue;
-									}
-								}
+						handleBounties();
 						}
 
 				} // main screen processing
@@ -5528,6 +5489,59 @@ public class MainThread implements Runnable {
         }
         readScreen(SECOND *2);
     }
+
+	/**
+	 * Let's collect any finished bounty!
+	 */
+	private void handleBounties() {
+		MarvinSegment seg;
+
+		clickInGame(130, 440);
+
+		seg = detectCue(cues.get("Bounties"), SECOND * 5);
+		if (seg != null) {
+			readScreen();
+			seg = detectCue(cues.get("Loot"), SECOND * 5, new Bounds(505, 245, 585, 275));
+			while (seg != null) {
+				clickOnSeg(seg);
+				seg = detectCue(cues.get("WeeklyRewards"), SECOND * 5, new Bounds(190, 100, 615, 400));
+				if (seg != null) {
+					seg = detectCue(cues.get("X"), 5 * SECOND);
+					if (seg != null) {
+						saveGameScreen("bounty-loot");
+						clickOnSeg(seg);
+						BHBot.log("Collected bounties");
+						sleep(SECOND * 2);
+					} else {
+						BHBot.log("Error when collecting bounty items, restarting...");
+						saveGameScreen("bounties-error-collect");
+						restart();
+					}
+				} else {
+					BHBot.log("Error finding bounty item dialog, restarting...");
+					saveGameScreen("bounties-error-item");
+					restart();
+				}
+
+				seg = detectCue(cues.get("Loot"), SECOND * 5, new Bounds(505, 245, 585, 275));
+			}
+
+			seg = detectCue(cues.get("X"), 5 * SECOND);
+			if (seg != null) {
+				clickOnSeg(seg);
+				readScreen();
+			} else {
+				BHBot.log("Impossible to close the bounties dialog, restarting...");
+				saveGameScreen("bounties-error-closing");
+				restart();
+			}
+		} else {
+			BHBot.log("Impossible to detect the Bounties dialog, restarting...");
+			saveGameScreen("bounties-error-dialog");
+			restart();
+		}
+		readScreen(SECOND *2);
+	}
 
 	/**
 	 * We must be in main menu for this to work!
