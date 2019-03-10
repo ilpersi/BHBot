@@ -444,8 +444,8 @@ public class MainThread implements Runnable {
 		addCue("DialogRight", loadImage("cues/cueDialogRight.png"), null); // cue for the dialog window (when arrow is at the right side of the window)
 		addCue("DialogLeft", loadImage("cues/cueDialogLeft.png"), null); // cue for the dialog window (when arrow is at the left side of the window)
 
-		addCue("1Xspeed", loadImage("cues/cue1Xspeed.png"), new Bounds(0, 250, 40, 480));
-		addCue("3Xspeed", loadImage("cues/cue3Xspeed.png"), new Bounds(0, 250, 40, 480));
+		addCue("SpeedCheck", loadImage("cues/cueSpeedCheck.png"), new Bounds(0, 450, 100, 520));
+		addCue("Switch", loadImage("cues/cueSwitch.png"), new Bounds(0, 450, 100, 520)); //unused
 
 		// GVG related:
 		addCue("GVG", loadImage("cues/cueGVG.png"), null); // main GVG button cue
@@ -1295,13 +1295,7 @@ public class MainThread implements Runnable {
 							
 							continue;
 							
-							//pre speed boost code
-//							seg = detectCue(cues.get("X"));
-//							clickOnSeg(seg);
-//							sleep(2*SECOND);
-							
-						} else {
-							// do the raiding!
+						} else { // do the raiding!			
 
 							if (BHBot.scheduler.doRaidImmediately)
 								BHBot.scheduler.doRaidImmediately = false; // reset it
@@ -1329,7 +1323,7 @@ public class MainThread implements Runnable {
 
 							if (currentType != raidType) {
 								if 	(raidUnlocked < raidType) {
-									BHBot.log("Raid selected in settings (R" + raidType + ") higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
+									BHBot.log("Raid selected in settings (R" + raidType + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
 									BHBot.log("If this is incorrect update your current unlocked tier in settings!");
 									setRaidType(raidType, raidUnlocked);
 									readScreen(2*SECOND);
@@ -1684,18 +1678,19 @@ public class MainThread implements Runnable {
 							while (vec != 0) { // move to the correct zone
 								if (vec > 0) {
 									// note that moving to the right will fail in case player has not unlocked the zone yet!
-									readScreen(500); // wait for screen to stabilise
+									sleep(500);
+									readScreen(); // wait for screen to stabilise
 									seg = detectCue(cues.get("RightArrow"));
 									if (seg == null) {
 										BHBot.log("Right button not found, zone unlocked?");
 										break; // happens for example when player hasn't unlock the zone yet
 									}
-									//coords used as moving multiple screens would crash the bot using images
+									//coords are used as moving multiple screens would crash the bot when using the arrow cues
 									clickInGame(740,275);
 									vec--;
 								} else if (vec < 0) {
-									readScreen(500); // wait for screen to stabilise
-									//coords used as moving multiple screens would crash the bot using button cue
+									sleep(500);
+									//coords are used as moving multiple screens would crash the bot when using the arrow cues
 									clickInGame(55,275);
 									vec++;
 								}
@@ -2189,7 +2184,7 @@ public class MainThread implements Runnable {
 										seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
 									}
 	
-									if (seg != null) {
+									if (seg != null) { //while the relevant invite button exists
 										if (i != 0 && (i % 15) == 0) { //every 15 seconds
 												int timeLeft = worldBossTimer - i;
 												BHBot.log("Waiting for full team. Time out in " + Integer.toString(timeLeft) + " seconds.");
@@ -3128,55 +3123,46 @@ public class MainThread implements Runnable {
 		MarvinSegment seg;
 		readScreen();
 
-		// handle "Not enough energy" popup:
-		boolean insufficientEnergy = handleNotEnoughEnergyPopup();
-		if (insufficientEnergy) {
-			state = State.Main; // reset state
-			return;
-		}
-		
 		if (!startTimeCheck) {
 			activityStartTime = (System.currentTimeMillis() / 1000L);
 //			BHBot.log("Start time: " + Long.toString(activityStartTime));
 			startTimeCheck = true;
 		}
+		
+		activityDuration = ((System.currentTimeMillis() / 1000L) - activityStartTime);
+		
+		// handle "Not enough energy" popup:
+		if (activityDuration < 10) {
+			boolean insufficientEnergy = handleNotEnoughEnergyPopup();
+			if (insufficientEnergy) {
+				state = State.Main; // reset state
+				return;
+			}
+			return;
+		}
 
-		// check for 1X and 3X speed (and increase it):
+		// check for non max speed (and increase it):
 		
-		/* Currently not working */
-		
-//		int speed = 0; // unknown
-//		seg = detectCue(cues.get("1Xspeed"));
-//		if (seg != null)
-//			speed = 1;
-//		if (speed == 0) {
-//			seg = detectCue(cues.get("3Xspeed"));
-//			if (seg != null)
-//				speed = 3;
-//		}
-//		if (speed == 1 || speed == 3) {
-//			clickOnSeg(seg);
-//			if (speed == 1)
-//				clickOnSeg(seg); // click twice to increase speed to 5X
-//			BHBot.log("Increased battle speed (old speed=" + speed + "X).");
+//		seg = detectCue(cues.get("SpeedCheck"));
+//		if (seg == null) {
+//			BHBot.log("Changing speed..");
+//			clickInGame(40,480);
 //			return;
 //		}
+		
+		
+		/*
+		 * autoShrine Code
+		 */
 		
 		//We use guild button visibility to determine whether we are in an encounter or not
 		seg = detectCue(cues.get("GuildButton"));
 		if (seg != null) {
 			outOfEncounterTimestamp = System.currentTimeMillis() / 1000L;
-//			BHBot.log("Out of combat");
-//			BHBot.log(Long.toString(outOfEncounterTimestamp));
 		} else {
 			inEncounterTimestamp = System.currentTimeMillis() / 1000L;
-//			BHBot.log("In combat");
-//			BHBot.log(Long.toString(inEncounterTimestamp));
 		}
 		
-		activityDuration = ((System.currentTimeMillis() / 1000L) - activityStartTime);
-//		BHBot.log("Duration: " + Long.toString(activityDuration));
-//		BHBot.log("Time since last encounter: " + Long.toString(outOfEncounterTimestamp - inEncounterTimestamp));
 		if (state == State.Trials || state == State.Raid) {
 			if (activityDuration > 30 && !autoShrined) { //if we're past 30 seconds into the activity
 				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) { //and it's been the battleDelay setting since last encounter
@@ -3220,6 +3206,10 @@ public class MainThread implements Runnable {
 				}
 			}
 		}
+		
+		/*
+		 * autoRevive code
+		 */
 		
 		//trials/raid revive code + auto-off check
 		seg = detectCue(cues.get("AutoOff"));
@@ -3320,6 +3310,7 @@ public class MainThread implements Runnable {
 					return;
 				}
 			}
+			
 			if ((state == State.Raid) && (BHBot.settings.autoRevive == 2 || BHBot.settings.autoRevive == 3)) {
 				BHBot.log("Auto-pilot disabled. Checking for revivable team members");
 				sleep(500);
@@ -3349,7 +3340,6 @@ public class MainThread implements Runnable {
 					}
 					return;
 				} else {
-//					if (defeated) return; // if we are at defeated screen skip checking all 5 players for obvious reasons
 					
 					if (!oneRevived) {
 						clickInGame(305,320); //slot #1
@@ -3464,40 +3454,11 @@ public class MainThread implements Runnable {
 			}
 		return;
 		}
-		
 
-		// check for ad treasure:
+		/*
+		 * autoBribe code
+		 */
 		
-		/* Disabling until Ads are back */
-		
-//		seg = detectCue(cues.get("AdTreasure"));
-//		if (seg != null) {
-//			BHBot.log("Ad detected, attempting to run");
-//			seg = detectCue(cues.get("Watch2"), 5*SECOND);
-//			clickOnSeg(seg);
-//
-//			sleep(5*SECOND);
-//
-//			trySkippingAd();
-//
-////			sleep(40 * SECOND);
-//
-////			ReturnResult result = waitForAdAndCloseIt(false);
-////			if (result.msg != null) {
-////				Misc.log("Error: " + result.msg);
-////			}
-//
-//			sleep(5*SECOND);
-//
-//			// note that the reward window closes automatically inside dungeons (when autopilot is enabled)
-//
-//			scrollGameIntoView();
-//
-//			sleep(2 * SECOND);
-//
-//			return;
-//		}
-
 		// check for persuasions:
 		seg = detectCue(cues.get("Persuade"));
 		if (seg != null) {
@@ -3565,6 +3526,10 @@ public class MainThread implements Runnable {
 				} else restart();
 			return;
 		}
+		
+		/*
+		 * Skeleton key code
+		 */
 
 		// check for skeleton treasure chest:
 		//TODO Add no key "Uh Oh" failsafe
@@ -4178,15 +4143,15 @@ public class MainThread implements Runnable {
 		 	break;
 		 case 9:
 			 switch (d) {
-				 case 1:
-					 return new Point(310, 165);
-				 case 2:
-					 return new Point(610, 190);
-				 case 3:
-					 return new Point(375, 415);
-				 case 4:
-				 	BHBot.log("Zone 9 only has 3 dungeons, falling back to z9d2");
-					return new Point(610, 190);
+			 case 1:
+				 return new Point(310, 165);
+			 case 2:
+				 return new Point(610, 190);
+			 case 3:
+				 return new Point(375, 415);
+			 case 4:
+			 	BHBot.log("Zone 9 only has 3 dungeons, falling back to z9d2");
+				return new Point(610, 190);
 			 }
 		 	break;
 		 }
@@ -4323,7 +4288,7 @@ public class MainThread implements Runnable {
 		if (BHBot.settings.worldBossTier <= 10 || BHBot.settings.worldBossTier >= 1) {
 			passed++;
 		} else {
-			BHBot.log("Invalid world boss tier, must between 1 and 9");
+			BHBot.log("Invalid world boss tier, must between 1 and 10");
 			failed = true;
 		}
 		
@@ -4482,7 +4447,7 @@ public class MainThread implements Runnable {
 	}
 
 	public void raidReadTest() {
-		int test = readSelectedRaidTier();
+		int test = readUnlockedRaidTier();
 		BHBot.log(Integer.toString(test));
 	}
 	
@@ -4499,6 +4464,7 @@ public class MainThread implements Runnable {
 	public int readUnlockedRaidTier() {
 		int result = 0;
 
+		readScreen();
 		List<MarvinSegment> list = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
 		result += list.size();
 
@@ -4513,6 +4479,7 @@ public class MainThread implements Runnable {
 	 * Note that the raid window must be open for this method to work (or else it will simply return 0).
 	 */
 	public int readSelectedRaidTier() {
+		readScreen();
 		if (detectCue(cues.get("Raid1Name")) != null)
 			return 1;
 		else if (detectCue(cues.get("Raid2Name")) != null)

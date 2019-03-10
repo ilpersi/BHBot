@@ -14,7 +14,7 @@ public class Settings {
 	boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
 	boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
 	private boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
-	private int reconnectTimer = 10;
+	private int reconnectTimer = 60;
 	
 	//Various settings
     int openSkeleton = 0;
@@ -101,7 +101,7 @@ public class Settings {
 	
 	/** Autoshrine settings **/
     boolean autoShrine = false;
-	int battleDelay = 30;
+	int battleDelay = 60;
 	int shrineDelay = 20;
 	
 	/**
