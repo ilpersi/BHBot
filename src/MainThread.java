@@ -3511,7 +3511,7 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("X"), 2*SECOND);
 				if (seg != null) {
 					clickOnSeg(seg);
-				} else restart();  //failsafe to restart if the bot can't find the button
+				} // else restart();  //failsafe to restart if the bot can't find the button (Not needed now if we don't open the View window with autoBribe 0)
 				readScreen();
 				seg = detectCue(cues.get("Persuade"), 2*SECOND);
 				if (seg != null) {
@@ -3549,7 +3549,6 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("Open"), 5*SECOND);
 				if (seg == null) {
 					BHBot.log("Open button not found, restarting");
-//					saveGameScreen("skeleton-open-cue-test");
 					restart();
 				}
 				clickOnSeg(seg);
@@ -3557,11 +3556,9 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 				if (seg == null) {
 					BHBot.log("Yes button not found, restarting");
-//					saveGameScreen("skeleton-yes-cue-test");
 					restart();
 				}
 				clickOnSeg(seg);
-//				saveGameScreen("key-used-succesfully-dungeonraid");
 				return;
 				
 			} else if (BHBot.settings.openSkeleton == 2 && state == state.Raid) {
@@ -3569,7 +3566,7 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("Open"), 5*SECOND);
 				if (seg == null) {
 					BHBot.log("Open button not found, restarting");
-//					saveGameScreen("skeleton-open-cue-test");
+
 					restart();
 				}
 				clickOnSeg(seg);
@@ -3577,19 +3574,21 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 				if (seg == null) {
 					BHBot.log("Yes button not found, restarting");
-//					saveGameScreen("skeleton-yes-cue-test");
 					restart();
 				}
 				clickOnSeg(seg);
-//				saveGameScreen("key-used-succesfully-raid");
 				return;
 				
 			} else
-				BHBot.log("Skeleton Key error, restarting");
-				saveGameScreen("skeletonkeyerror");
-				restart();
+				BHBot.log("Skeleton treasure found, declining.");
+				seg = detectCue(cues.get("Decline"), 5*SECOND);
+				clickOnSeg(seg);
+				readScreen(1*SECOND);
+				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
+				clickOnSeg(seg);
 				return;
 		}
+		
 		// check for merchant's offer (and decline it):
 		seg = detectCue(cues.get("Merchant"));
 		if (seg != null) {
