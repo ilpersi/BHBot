@@ -10,9 +10,9 @@ Once configured and running the bot is designed to run unattended indefinitely.
 
 ## Features
 This bot will automatically farm items, familiars and schematics running the following:
-* Dungeons
-* World Bosses
-* Raids
+* Dungeons (zones 1 to 9)
+* World Bosses (Orlag, Nether or Melvin)
+* Raids (1 to 7)
 * Gauntlet / Trials
 * PvP / GvG
 * Expedition / Invasion
@@ -26,6 +26,7 @@ The level/difficulty for each activity can be defined in the settings file. The 
 * Strip items for PvP to lower TS
 * Solo certain zones for bounty requirements
 * Collect completed bounties
+* Collect fishing baits
 * Claim all weekly rewards
 * Screenshot and close PMs
 * Open skeleton chests
