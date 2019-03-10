@@ -9,10 +9,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
@@ -42,7 +41,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import com.assertthat.selenium_shutterbug.core.Shutterbug;
 
 public class MainThread implements Runnable {
-	public static enum State {
+	public enum State {
 		Loading("Loading..."),
 		Main("Main screen"),
 		Raid("Raid"),
@@ -58,7 +57,7 @@ public class MainThread implements Runnable {
 
 		private String name;
 
-		private State(String name) {
+		State(String name) {
 			this.name = name;
 		}
 
@@ -71,9 +70,9 @@ public class MainThread implements Runnable {
 		String msg;
 		boolean needsRestart;
 
-		public ReturnResult() { }
+//		public ReturnResult() { }
 
-		public ReturnResult(String msg, boolean needsRestart) {
+		ReturnResult(String msg, boolean needsRestart) {
 			this.msg = msg;
 			this.needsRestart = needsRestart;
 		}
@@ -85,20 +84,20 @@ public class MainThread implements Runnable {
 			return new ReturnResult(msg, true);
 		}
 
-		public static ReturnResult ok() {
+		static ReturnResult ok() {
 			return new ReturnResult(null, false);
 		}
 	}
 
 	/** Events that use badges as "fuel". */
-	public static enum BadgeEvent {
+	public enum BadgeEvent {
 		None,
 		GVG,
 		Expedition,
-		Invasion;
+		Invasion
 	}
 
-	public static enum EquipmentType {
+	public enum EquipmentType {
 		Mainhand ("StripTypeMainhand"),
 		Offhand ("StripTypeOffhand"),
 		Head ("StripTypeHead"),
@@ -108,7 +107,7 @@ public class MainThread implements Runnable {
 
 		private String cueName;
 
-		private EquipmentType(String cueName) {
+		EquipmentType(String cueName) {
 			this.cueName = cueName;
 		}
 
@@ -132,46 +131,50 @@ public class MainThread implements Runnable {
 		}
 
 		public static String letterToName(String s) {
-			if (s.equals("m"))
-				return "mainhand";
-			else if (s.equals("o"))
-				return "offhand";
-			else if (s.equals("h"))
-				return "head";
-			else if (s.equals("b"))
-				return "body";
-			else if (s.equals("n"))
-				return "neck";
-			else if (s.equals("r"))
-				return "ring";
-			else
-				return "unknown_item";
+			switch (s) {
+				case "m":
+					return "mainhand";
+				case "o":
+					return "offhand";
+				case "h":
+					return "head";
+				case "b":
+					return "body";
+				case "n":
+					return "neck";
+				case "r":
+					return "ring";
+				default:
+					return "unknown_item";
+			}
 		}
 
 		public static EquipmentType letterToType(String s) {
-			if (s.equals("m"))
-				return Mainhand;
-			else if (s.equals("o"))
-				return Offhand;
-			else if (s.equals("h"))
-				return Head;
-			else if (s.equals("b"))
-				return Body;
-			else if (s.equals("n"))
-				return Neck;
-			else if (s.equals("r"))
-				return Ring;
-			else
-				return null; // should not happen!
+			switch (s) {
+				case "m":
+					return Mainhand;
+				case "o":
+					return Offhand;
+				case "h":
+					return Head;
+				case "b":
+					return Body;
+				case "n":
+					return Neck;
+				case "r":
+					return Ring;
+				default:
+					return null; // should not happen!
+			}
 		}
 	}
 
-	public static enum StripDirection {
+	public enum StripDirection {
 		StripDown,
-		DressUp;
+		DressUp
 	}
 
-	private static enum ConsumableType {
+	private enum ConsumableType {
 		EXP_MINOR("exp_minor", "ConsumableExpMinor"), // experience tome
 		EXP_AVERAGE("exp_average", "ConsumableExpAverage"),
 		EXP_MAJOR("exp_major", "ConsumableExpMajor"),
@@ -191,7 +194,7 @@ public class MainThread implements Runnable {
 		private String name;
 		private String inventoryCue;
 
-		private ConsumableType(String name, String inventoryCue) {
+		ConsumableType(String name, String inventoryCue) {
 			this.name = name;
 			this.inventoryCue = inventoryCue;
 		}
@@ -219,24 +222,24 @@ public class MainThread implements Runnable {
 		}
 	}
 
-	public static final int SECOND = 1000;
-	public static final int MINUTE = 60 * SECOND;
-	public static final int HOUR = 60 * MINUTE;
-	public static final int DAY = 24 * HOUR;
+	static final int SECOND = 1000;
+	static final int MINUTE = 60 * SECOND;
+	private static final int HOUR = 60 * MINUTE;
+	private static final int DAY = 24 * HOUR;
 
-	public boolean idleMode = false;
-	
+	private boolean idleMode = false;
+
 	private static int globalShards;
 	private static int globalBadges;
 	private static int globalEnergy;
 	private static int globalTickets;
 	private static int globalTokens;
 	
-	public boolean oneRevived = false;
-	public boolean twoRevived = false;
-	public boolean threeRevived = false;
-	public boolean fourRevived = false;
-	public boolean fiveRevived = false;
+	private boolean oneRevived = false;
+	private boolean twoRevived = false;
+	private boolean threeRevived = false;
+	private boolean fourRevived = false;
+	private boolean fiveRevived = false;
 	
 	private boolean startTimeCheck = false;
 	private boolean shrinesChecked = false;
@@ -246,49 +249,51 @@ public class MainThread implements Runnable {
 	private long outOfEncounterTimestamp = 0;
 	private long inEncounterTimestamp = 0;
 	
-	public int dungeonCounter = 0;
-	public int raidCounter = 0;
+	private int dungeonCounter = 0;
+	private int raidCounter = 0;
 	
 	private static final int MAX_LAST_AD_OFFER_TIME = 17*MINUTE; // after this time, restart() will get called since ads are not coming through anymore
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
-	public static Map<String, Cue> cues = new HashMap<String, Cue>();
+	static Map<String, Cue> cues = new HashMap<String, Cue>();
 
-	public boolean finished = false;
+	boolean finished = false;
 	private int numFailedRestarts = 0; // in a row
 	private final int MAX_NUM_FAILED_RESTARTS = 5;
 	private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
-	public static WebDriver driver;
-	public static WebElement game;
-	public State state; // at which stage of the game/menu are we currently?
+	static WebDriver driver;
+	private static JavascriptExecutor jsExecutor;
+	private static WebElement game;
+	private State state; // at which stage of the game/menu are we currently?
 	public BufferedImage img; // latest screen capture
-	public boolean firstAutoEable;
 
-	long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
-	final long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
-	long timeLastShardsCheck = 0; // when did we check for Shards the last time?
-	final long SHARDS_CHECK_INTERVAL = 15 * MINUTE;
-	long timeLastTicketsCheck = 0; // when did we check for Tickets the last time?
-	final long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
-	long timeLastTokensCheck = 0; // when did we check for Tokens the last time?
-	final long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
-	long timeLastBadgesCheck = 0; // when did we check for badges the last time?
-	final long BADGES_CHECK_INTERVAL = 10 * MINUTE;
-	long timeLastBountyCheck = 0; // when did we check for bounties the last time?
-	final long BOUNTY_CHECK_INTERVAL = 360 * MINUTE;
-	long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
-	final long BONUS_CHECK_INTERVAL = 10 * MINUTE;
+	private final long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
+	private final long SHARDS_CHECK_INTERVAL = 15 * MINUTE;
+	private final long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
+	private final long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
+	private final long BADGES_CHECK_INTERVAL = 10 * MINUTE;
+	private final long BOUNTY_CHECK_INTERVAL = 360 * MINUTE;
+	private final long BONUS_CHECK_INTERVAL = 10 * MINUTE;
 	private final long FISHING_CHECK_INTERVAL = DAY;
-	long timeLastFishingCheck = 0; // when did we check for fishing baits the last time?
 
-	public final long MAX_IDLE_TIME = 30*MINUTE;
+	private final long MAX_IDLE_TIME = 30*MINUTE;
+	private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
+
+	private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
+	private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
+	private long timeLastTicketsCheck = 0; // when did we check for Tickets the last time?
+	private long timeLastTokensCheck = 0; // when did we check for Tokens the last time?
+	private long timeLastBadgesCheck = 0; // when did we check for badges the last time?
+	private long timeLastBountyCheck = 0; // when did we check for bounties the last time?
+	private long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
+	private long timeLastFishingCheck = 0; // when did we check for fishing baits the last time?
+
 	/** Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale. */
 	private int numConsecutiveException = 0;
-	private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 	/** Amount of ads that were offered in main screen since last restart. We need it in order to do restart() after 2 ads, since sometimes ads won't get offered anymore after two restarts. */
-	public int numAdOffers = 0;
+	private int numAdOffers = 0;
 	/** Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through! */
-	public long timeLastAdOffer;
+	long timeLastAdOffer;
 
 	/*
 	public ChromeDriver createNewServer() {
@@ -300,11 +305,11 @@ public class MainThread implements Runnable {
 		return (RemoteWebDriver)driver;
 	}
 
-	public JavascriptExecutor getJS() {
+	private JavascriptExecutor getJS() {
 		return (JavascriptExecutor)driver;
 	}
 
-	public static BufferedImage loadImage(String f) {
+	static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
 		try {
 		    img = ImageIO.read(new File(f));
@@ -318,7 +323,7 @@ public class MainThread implements Runnable {
 		cues.put(name, new Cue(name, im, bounds));
 	}
 
-	public static void loadCues() {
+	static void loadCues() {
 		addCue("Main", loadImage("cues/cueMainScreen.png"), new Bounds(90, 5, 100, 10));
 
 		addCue("Login", loadImage("cues/cueLogin.png"), new Bounds(270, 260, 330, 300)); // login window (happens seldom)
@@ -644,7 +649,7 @@ public class MainThread implements Runnable {
 
 	}
 
-	public static void connectDriver() throws MalformedURLException {
+	private static void connectDriver() throws MalformedURLException {
 		ChromeOptions options = new ChromeOptions();
 
 		options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
@@ -718,23 +723,25 @@ public class MainThread implements Runnable {
 		DesiredCapabilities capabilities = DesiredCapabilities.chrome();
 		capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 		driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
+		jsExecutor = (JavascriptExecutor) driver;
 	}
 
 	// http://www.qaautomationsimplified.com/selenium/selenium-webdriver-get-cookies-from-an-existing-session-and-add-those-to-a-newly-instantiated-webdriver-browser-instance/
 	// http://www.guru99.com/handling-cookies-selenium-webdriver.html
-	public static void saveCookies() {
+	static void saveCookies() {
 		// create file named Cookies to store Login Information
 		File file = new File("Cookies.data");
 		try
 		{
 			// Delete old file if exists
-			file.delete();
-			file.createNewFile();
+			Files.deleteIfExists(file.toPath());
+			boolean isCookieFile = file.createNewFile();
+			if (!isCookieFile) throw new Exception("Impossible to create cookie file!");
 			FileWriter fileWrite = new FileWriter(file);
 			BufferedWriter Bwrite = new BufferedWriter(fileWrite);
 			// loop for getting the cookie information
-			for(Cookie ck : driver.manage().getCookies()) {
-				Bwrite.write((ck.getName()+";"+ck.getValue()+";"+ck.getDomain()+";"+ck.getPath()+";"+(ck.getExpiry()==null ? 0 : ck.getExpiry().getTime())+";"+ck.isSecure()));
+			for (Cookie ck : driver.manage().getCookies()) {
+				Bwrite.write((ck.getName() + ";" + ck.getValue() + ";" + ck.getDomain() + ";" + ck.getPath() + ";" + (ck.getExpiry() == null ? 0 : ck.getExpiry().getTime()) + ";" + ck.isSecure()));
 				Bwrite.newLine();
 			}
 			Bwrite.flush();
@@ -747,7 +754,7 @@ public class MainThread implements Runnable {
 		BHBot.log("Cookies saved to disk.");
 	}
 
-	public static void loadCookies() {
+	static void loadCookies() {
 		try{
 			File file = new File("Cookies.data");
 			FileReader fileReader = new FileReader(file);
@@ -767,8 +774,7 @@ public class MainThread implements Runnable {
 					{
 						new Date(Long.parseLong(val));
 					}
-					Boolean isSecure = new Boolean(token.nextToken()).
-							booleanValue();
+					Boolean isSecure = Boolean.valueOf(token.nextToken());
 					Cookie ck = new Cookie(name,value,domain,path,expiry,isSecure);
 					try {
 						driver.manage().addCookie(ck); // This will add the stored cookie to your current session
@@ -786,19 +792,19 @@ public class MainThread implements Runnable {
 		BHBot.log("Cookies loaded.");
 	}
 
-	public void hideBrowser() {
+	void hideBrowser() {
 		driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
 		BHBot.log("Chrome window has been hidden.");
 	}
 	
-	public void hideBrowserStartup() {
+	/*public void hideBrowserStartup() {
 		sleep(10000);
 		driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
 		BHBot.log("Chrome window has been hidden.");
-	}
+	}*/
 	
 
-	public void showBrowser() {
+	void showBrowser() {
 		driver.manage().window().setPosition(new Point(0, 0));
 		BHBot.log("Chrome window has been restored.");
 	}
@@ -811,7 +817,7 @@ public class MainThread implements Runnable {
 		Misc.saveTextFile(file.substring(0, file.length()-4) + ".txt", Misc.getStackTrace());
 	}
 
-	public void restart() {
+	private void restart() {
 		restart(true); // assume emergency restart
 	}
 
@@ -819,7 +825,7 @@ public class MainThread implements Runnable {
 	 *
 	 * @param emergency true in case something bad happened (some kind of an error for which we had to do a restart)
 	 */
-	public void restart(boolean emergency) {
+	void restart(boolean emergency) {
 		// take emergency screenshot (which will have the developer to debug the problem):
 		if (emergency) {
 			BHBot.log("Doing driver emergency restart...");
@@ -827,8 +833,9 @@ public class MainThread implements Runnable {
 		}
 
 		try {
-			driver.quit();
+			if (driver != null) driver.quit();
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		// disable some annoying INFO messages:
@@ -867,8 +874,8 @@ public class MainThread implements Runnable {
 
 		detectSignInFormAndHandleIt(); // just in case (happens seldom though)
 
-		int vw = (int)(0+(Long)(((JavascriptExecutor)driver).executeScript("return window.outerWidth - window.innerWidth + arguments[0];", game.getSize().width)));
-		int vh = (int)(0+(Long)(((JavascriptExecutor)driver).executeScript("return window.outerHeight - window.innerHeight + arguments[0];", game.getSize().height)));
+		int vw = Math.toIntExact ((Long) jsExecutor.executeScript("return window.outerWidth - window.innerWidth + arguments[0];", game.getSize().width));
+		int vh = Math.toIntExact ((Long) jsExecutor.executeScript("return window.outerHeight - window.innerHeight + arguments[0];", game.getSize().height));
 		vw += 50; // compensate for scrollbars 70
 		vh += 30; // compensate for scrollbars 50
 		driver.manage().window().setSize(new Dimension(vw, vh));
@@ -1105,7 +1112,7 @@ public class MainThread implements Runnable {
 					}
 
 					readScreen(5*SECOND);
-					seg = detectCue(cues.get("Items"), 1*SECOND);
+					seg = detectCue(cues.get("Items"), SECOND);
 					if (seg == null) {
 						// we must terminate this thread... something happened that should not (unexpected). We must restart the thread!
 						BHBot.log("Error: there is no 'Items' dialog open upon clicking on the 'Claim' button. Restarting...");
@@ -1285,9 +1292,9 @@ public class MainThread implements Runnable {
 								BHBot.scheduler.doRaidImmediately = false; // reset it
 							
 							readScreen();
-							seg = detectCue(cues.get("X"),1*SECOND);
+							seg = detectCue(cues.get("X"),SECOND);
 							clickOnSeg(seg);
-							sleep(1*SECOND);
+							sleep(SECOND);
 							
 							if (!shrinesChecked) {
 							checkShrineSettings("disable");
@@ -1301,15 +1308,20 @@ public class MainThread implements Runnable {
 								BHBot.scheduler.doRaidImmediately = false; // reset it
 
 							String raid = decideRaidRandomly();
+							if (raid == null) {
+								BHBot.settings.doRaids = false;
+								BHBot.log("It was impossible to choose a raid randomly, raids are disabled!");
+								continue;
+							}
+
 							int difficulty = Integer.parseInt(raid.split(" ")[1]);
 							int raidType = Integer.parseInt(raid.split(" ")[0]);
 							int raidUnlocked = readUnlockedRaidTier();
 //							BHBot.log("Detected: R" + Integer.toString(raidUnlocked) + " unlocked");
 //							int raidUnlocked = BHBot.settings.currentRaidTier;
 							BHBot.log("Attempting R" + raidType + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
-
-							sleep(1*SECOND);
-							readScreen();
+							
+							readScreen(SECOND);
 
 							int currentType = readSelectedRaidTier();
 							String currentRaid = Integer.toString(currentType);
@@ -1325,7 +1337,10 @@ public class MainThread implements Runnable {
 								if 	(raidUnlocked < raidType) {
 									BHBot.log("Raid selected in settings (R" + raidType + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
 									BHBot.log("If this is incorrect update your current unlocked tier in settings!");
-									setRaidType(raidType, raidUnlocked);
+									if (!setRaidType(raidType, raidUnlocked)){
+										BHBot.log("Impossible to set the raid type!");
+										continue;
+									}
 									readScreen(2*SECOND);
 								} else {
 								// we need to change the raid type!
@@ -1393,9 +1408,9 @@ public class MainThread implements Runnable {
 
 						if (!BHBot.scheduler.doExpeditionImmediately && expeditionBadges <= BHBot.settings.minBadges) {
 							readScreen();
-							seg = detectCue(cues.get("X"),1*SECOND);
+							seg = detectCue(cues.get("X"),SECOND);
 							clickOnSeg(seg);
-							sleep(1*SECOND);
+							sleep(SECOND);
 							continue;
 						} else {
 							if (BHBot.scheduler.doExpeditionImmediately)
@@ -1416,7 +1431,7 @@ public class MainThread implements Runnable {
 								boolean result = selectCost(cost, BHBot.settings.costExpedition);
 								if (!result) { // error!
 									// see if drop down menu is still open and close it:
-									readScreen(1*SECOND);
+									readScreen(SECOND);
 									tryClosingWindow(cues.get("CostDropDown"));
 									readScreen(5*SECOND);
 									seg = detectCue(cues.get("X"));
@@ -1433,6 +1448,12 @@ public class MainThread implements Runnable {
 
 							//Select Expedition and write portal to a variable
 							String expedition = decideExpeditionRandomly();
+							if (expedition == null) {
+								BHBot.settings.doExpedition = false;
+								BHBot.log("It was impossible to randomly choose an expedtion. Expedtions are disabled.");
+								continue;
+							}
+
 							expedition = expedition.split(" ")[0];
 							String expedName = getExpeditionName(expedition);
 //							BHBot.log("Expedition chosen: " + expedition);
@@ -1440,6 +1461,12 @@ public class MainThread implements Runnable {
 
 							// click on the chosen portal:
 							Point p = getExpeditionIconPos(expedition);
+							if (p == null) {
+								BHBot.settings.doExpedition = false;
+								BHBot.log("It was impossible to get portal position for " + expedition + ". Expedtions are now disabled!");
+								continue;
+							}
+
 							clickInGame(p.x, p.y);
 							
 							// select difficulty if needed:
@@ -1447,12 +1474,11 @@ public class MainThread implements Runnable {
 							if (difficulty == 0) { // error!
 								BHBot.log("Due to an error in difficulty detection, Expedition will be skipped.");
 								seg = detectCue(cues.get("X"));
-								clickOnSeg(seg);
-								sleep(2*SECOND);
-								clickOnSeg(seg);
-								sleep(2*SECOND);
-								clickOnSeg(seg);
-								sleep(2*SECOND);
+								while (seg != null) {
+									clickOnSeg(seg);
+									readScreen(2*SECOND);
+									seg = detectCue(cues.get("X"));
+								}
 								continue;
 							}
 							if (difficulty != BHBot.settings.expeditionDifficulty) {
@@ -1462,12 +1488,11 @@ public class MainThread implements Runnable {
 									// see if drop down menu is still open and close it:
 									readScreen();
 									seg = detectCue(cues.get("X"));
-									clickOnSeg(seg);
-									sleep(2*SECOND);
-									clickOnSeg(seg);
-									sleep(2*SECOND);
-									clickOnSeg(seg);
-									sleep(2*SECOND);
+									while (seg != null) {
+										clickOnSeg(seg);
+										readScreen(2*SECOND);
+										seg = detectCue(cues.get("X"));
+									}
 									BHBot.log("Due to an error in difficulty selection, Expedition will be skipped.");
 									continue;
 								}
@@ -1518,10 +1543,9 @@ public class MainThread implements Runnable {
 						}
 
 						clickOnSeg(seg);
-						sleep(2*SECOND);
 
 						// dismiss character dialog if it pops up:
-						readScreen();
+						readScreen(2 * SECOND);
 						detectCharacterDialogAndHandleIt();
 
 						readScreen();
@@ -1536,9 +1560,9 @@ public class MainThread implements Runnable {
 
 						if ((!BHBot.scheduler.doTrialsOrGauntletImmediately && (tokens <= BHBot.settings.minTokens)) || (tokens < (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet))) {
 							readScreen();
-							seg = detectCue(cues.get("X"),1*SECOND);
+							seg = detectCue(cues.get("X"),SECOND);
 							clickOnSeg(seg);
-							sleep(1*SECOND);
+							sleep(SECOND);
 							
 							if (trials) {
 								checkShrineSettings("disable");
@@ -1567,7 +1591,7 @@ public class MainThread implements Runnable {
 								boolean result = selectDifficulty(difficulty, BHBot.settings.difficulty);
 								if (!result) { // error!
 									// see if drop down menu is still open and close it:
-									readScreen(1*SECOND);
+									readScreen(SECOND);
 									tryClosingWindow(cues.get("DifficultyDropDown"));
 									readScreen(5*SECOND);
 									tryClosingWindow(cues.get("TrialsOrGauntletWindow"));
@@ -1589,7 +1613,7 @@ public class MainThread implements Runnable {
 								boolean result = selectCost(cost, (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet));
 								if (!result) { // error!
 									// see if drop down menu is still open and close it:
-									readScreen(1*SECOND);
+									readScreen(SECOND);
 									tryClosingWindow(cues.get("CostDropDown"));
 									readScreen(5*SECOND);
 									tryClosingWindow(cues.get("TrialsOrGauntletWindow"));
@@ -1652,7 +1676,7 @@ public class MainThread implements Runnable {
 						}
 
 						if (!BHBot.scheduler.doDungeonImmediately && (energy <= BHBot.settings.minEnergyPercentage || BHBot.settings.dungeons.size() == 0)) {
-							sleep(1*SECOND);
+							sleep(SECOND);
 							continue;
 						} else {
 							// do the dungeon!
@@ -1665,6 +1689,13 @@ public class MainThread implements Runnable {
 							readScreen(5*SECOND);
 
 							String dungeon = decideDungeonRandomly();
+							if (dungeon == null) {
+								BHBot.settings.doDungeons = false;
+								BHBot.log("It was impossible to choose a dungeon randomly, dungeons are disabled!");
+								continue;
+							}
+
+
 							int difficulty = Integer.parseInt(dungeon.split(" ")[1]);
 							String difficultyName = (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic");
 							dungeon = dungeon.split(" ")[0].toLowerCase(); //in case the settings file is input in upper case
@@ -1678,8 +1709,7 @@ public class MainThread implements Runnable {
 							while (vec != 0) { // move to the correct zone
 								if (vec > 0) {
 									// note that moving to the right will fail in case player has not unlocked the zone yet!
-									sleep(500);
-									readScreen(); // wait for screen to stabilise
+									readScreen(SECOND); // wait for screen to stabilise
 									seg = detectCue(cues.get("RightArrow"));
 									if (seg == null) {
 										BHBot.log("Right button not found, zone unlocked?");
@@ -1688,7 +1718,7 @@ public class MainThread implements Runnable {
 									//coords are used as moving multiple screens would crash the bot when using the arrow cues
 									clickInGame(740,275);
 									vec--;
-								} else if (vec < 0) {
+								} else {
 									sleep(500);
 									//coords are used as moving multiple screens would crash the bot when using the arrow cues
 									clickInGame(55,275);
@@ -1700,6 +1730,12 @@ public class MainThread implements Runnable {
 
 							// click on the dungeon:
 							Point p = getDungeonIconPos(dungeon);
+							if (p == null) {
+								BHBot.settings.doDungeons = false;
+								BHBot.log("It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!");
+								continue;
+							}
+
 							clickInGame(p.x, p.y);
 
 							readScreen(3*SECOND);
@@ -1717,12 +1753,12 @@ public class MainThread implements Runnable {
 							int soloThreshold = Character.getNumericValue(dungeon.charAt(1)); //convert the zone char to int so we can compare
 							if (soloThreshold <= BHBot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
 								BHBot.log("Zone less than dungeon solo threshold, attempting solo");
-								sleep(1*SECOND);
+								sleep(SECOND);
 								readScreen();
-								seg = detectCue(cues.get("Clear"), 1*SECOND);
+								seg = detectCue(cues.get("Clear"), SECOND);
 								clickOnSeg(seg);
 								readScreen();
-								seg = detectCue(cues.get("Accept"), 1*SECOND);
+								seg = detectCue(cues.get("Accept"), SECOND);
 								clickOnSeg(seg);
 								readScreen();
 								sleep(2*SECOND); //wait for dropdown animation to finish
@@ -1740,7 +1776,7 @@ public class MainThread implements Runnable {
 								continue;
 								
 							} else { // d1-d3
-								readScreen(1*SECOND);
+								readScreen(SECOND);
 								seg = detectCue(cues.get("D4Accept")); //D4's accept button is a few pixels different for reasons
 								if (seg == null) {
 									seg = detectCue(cues.get("Accept")); //standard accept button
@@ -1776,7 +1812,7 @@ public class MainThread implements Runnable {
 						}
 
 						if ((!BHBot.scheduler.doPVPImmediately && (tickets <= BHBot.settings.minTickets)) || (tickets < BHBot.settings.costPVP)) {
-							sleep(1*SECOND);
+							sleep(SECOND);
 							continue;
 						} else {
 							// do the pvp!
@@ -1809,7 +1845,7 @@ public class MainThread implements Runnable {
 								boolean result = selectCost(cost, BHBot.settings.costPVP);
 								if (!result) { // error!
 									// see if drop down menu is still open and close it:
-									readScreen(1*SECOND);
+									readScreen(SECOND);
 									tryClosingWindow(cues.get("CostDropDown"));
 									readScreen(5*SECOND);
 									seg = detectCue(cues.get("PVPWindow"), 15*SECOND);
@@ -1856,17 +1892,23 @@ public class MainThread implements Runnable {
 						BadgeEvent badgeEvent = BadgeEvent.None;
 
 						seg = detectCue(cues.get("GVG"));
-						if (seg == null) {
-							seg = detectCue(cues.get("Invasion"));
-							if (seg != null)
-								badgeEvent = BadgeEvent.Invasion;
-						} else {
+						if (seg != null) {
 							badgeEvent = BadgeEvent.GVG;
+						} else {
+							seg = detectCue(cues.get("Invasion"));
+							if (seg != null) {
+								badgeEvent = BadgeEvent.Invasion;
+							} else {
+								seg = detectCue(cues.get("ExpeditionButton"));
+								if (seg != null) {
+									badgeEvent = BadgeEvent.Expedition;
+								}
+							}
 						}
 
 						if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion event?)
 							BHBot.scheduler.restoreIdleTime();
-							BHBot.log("GvG or Invasion buttons not found, skipping");
+							BHBot.log("No badge event found, skipping");
 							continue;
 						}
 
@@ -1889,9 +1931,9 @@ public class MainThread implements Runnable {
 						if (badgeEvent == BadgeEvent.GVG) {
 							if ((!BHBot.scheduler.doGVGImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costGVG)) {
 								readScreen();
-								seg = detectCue(cues.get("X"),1*SECOND);
+								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
-								sleep(1*SECOND);
+								sleep(SECOND);
 								continue;
 							} else {
 								// do the GVG!
@@ -1924,12 +1966,12 @@ public class MainThread implements Runnable {
 									boolean result = selectCost(cost, BHBot.settings.costGVG);
 									if (!result) { // error!
 										// see if drop down menu is still open and close it:
-										readScreen(1*SECOND);
+										readScreen(SECOND);
 										tryClosingWindow(cues.get("CostDropDown"));
 										readScreen(5*SECOND);
 										seg = detectCue(cues.get("GVGWindow"), 15*SECOND);
 										if (seg != null)
-											result = closePopupSecurely(cues.get("GVGWindow"), cues.get("X"));
+											closePopupSecurely(cues.get("GVGWindow"), cues.get("X"));
 										BHBot.log("Due to an error#2 in cost selection, GVG will be skipped.");
 										dressUp(BHBot.settings.gvgstrip);
 										continue;
@@ -1946,7 +1988,7 @@ public class MainThread implements Runnable {
 								seg = detectCue(cues.get("GVGWarning"), 3*SECOND);
 								if (seg != null) {
 									BHBot.log("Initial GvG run warning found, closing");
-									sleep(1*SECOND); //wait to stabilise just in case
+									sleep(SECOND); //wait to stabilise just in case
 									seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 									clickOnSeg(seg);
 								}
@@ -1976,9 +2018,9 @@ public class MainThread implements Runnable {
 						else if (badgeEvent == BadgeEvent.Invasion) {
 							if ((!BHBot.scheduler.doInvasionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costInvasion)) {
 								readScreen();
-								seg = detectCue(cues.get("X"),1*SECOND);
+								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
-								sleep(1*SECOND);
+								sleep(SECOND);
 
 								continue;
 							} else {
@@ -2002,12 +2044,12 @@ public class MainThread implements Runnable {
 									boolean result = selectCost(cost, BHBot.settings.costInvasion);
 									if (!result) { // error!
 										// see if drop down menu is still open and close it:
-										readScreen(1*SECOND);
+										readScreen(SECOND);
 										tryClosingWindow(cues.get("CostDropDown"));
 										readScreen(5*SECOND);
 										seg = detectCue(cues.get("InvasionWindow"), 15*SECOND);
 										if (seg != null)
-											result = closePopupSecurely(cues.get("InvasionWindow"), cues.get("X"));
+											closePopupSecurely(cues.get("InvasionWindow"), cues.get("X"));
 										BHBot.log("Due to an error#2 in cost selection, invasion will be skipped.");
 										continue;
 									}
@@ -2068,7 +2110,7 @@ public class MainThread implements Runnable {
 						}
 
 						if (!BHBot.scheduler.doWorldBossImmediately && (energy <= BHBot.settings.minEnergyPercentage)) {
-							sleep(1*SECOND);
+							sleep(SECOND);
 							continue;
 						} else { 
 							// do the WorldBoss!
@@ -2104,9 +2146,9 @@ public class MainThread implements Runnable {
 								BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " Solo");
 							}
 							
-							seg = detectCue(cues.get("BlueSummon"),1*SECOND);
+							seg = detectCue(cues.get("BlueSummon"),SECOND);
 							clickOnSeg(seg);
-							sleep(1*SECOND); //wait for screen to stablise
+							sleep(SECOND); //wait for screen to stablise
 							
 							//world boss type selection
 							readScreen();
@@ -2116,14 +2158,14 @@ public class MainThread implements Runnable {
 								changeSelectedWorldBoss(worldBossType);
 							}
 							
-							sleep(1*SECOND); //more stabilising if we changed world boss type
+							sleep(SECOND); //more stabilising if we changed world boss type
 							readScreen();
 							seg = detectCue(cues.get("LargeGreenSummon"),2*SECOND);
 							clickOnSeg(seg); //selected world boss
 							
 							readScreen();
 							if (!BHBot.settings.worldBossSolo) {
-								seg = detectCue(cues.get("Private"),1*SECOND);
+								seg = detectCue(cues.get("Private"),SECOND);
 								if (seg != null) {
 									BHBot.log("Unchecking private lobby");
 									clickOnSeg(seg);
@@ -2131,7 +2173,7 @@ public class MainThread implements Runnable {
 							} 
 								
 							if (BHBot.settings.worldBossSolo) {
-								seg = detectCue(cues.get("Private"),1*SECOND);
+								seg = detectCue(cues.get("Private"),SECOND);
 								if (seg == null) {
 									BHBot.log("Enabling private lobby for solo World Boss");
 									sleep(500);
@@ -2158,8 +2200,8 @@ public class MainThread implements Runnable {
 								changeWorldBossDifficulty(BHBot.settings.worldBossDifficulty);
 							}
 						
-							sleep(1*SECOND); //wait for screen to stablise
-							seg = detectCue(cues.get("SmallGreenSummon"),1*SECOND);
+							sleep(SECOND); //wait for screen to stablise
+							seg = detectCue(cues.get("SmallGreenSummon"),SECOND);
 							clickOnSeg(seg); //accept current settings
 							BHBot.log("Starting lobby");							
 							
@@ -2173,21 +2215,28 @@ public class MainThread implements Runnable {
 							//wait for lobby to fill with a timer
 							if (!BHBot.settings.worldBossSolo) {
 								for (int i = 0; i < worldBossTimer; i++) {
-									sleep(1*SECOND);
+									sleep(SECOND);
 									readScreen();
-									
-									if (worldBossType.equals("Orlag")) { //shouldn't have this inside the loop but it doesn't work if its outside
-										seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
-									} else if (worldBossType.equals("Nether")) {
-										seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether
-									} else if (worldBossType.equals("Melvin")) {
-										seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
+
+									switch (worldBossType) {
+										case "Orlag":  //shouldn't have this inside the loop but it doesn't work if its outside
+											seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
+
+											break;
+										case "Nether":
+											seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether
+
+											break;
+										case "Melvin":
+											seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
+
+											break;
 									}
 	
 									if (seg != null) { //while the relevant invite button exists
 										if (i != 0 && (i % 15) == 0) { //every 15 seconds
 												int timeLeft = worldBossTimer - i;
-												BHBot.log("Waiting for full team. Time out in " + Integer.toString(timeLeft) + " seconds.");
+												BHBot.log("Waiting for full team. Time out in " + timeLeft + " seconds.");
 											}
 										if (i == (worldBossTimer - 1)) { //out of time
 											if (BHBot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
@@ -2198,12 +2247,10 @@ public class MainThread implements Runnable {
 											} else {
 											BHBot.log("Lobby timed out, returning to main screen.");
 											closeWorldBoss();
-											continue;
 											}
 										}
-										continue;
-									} else if (seg == null) {
-										BHBot.log("Lobby filled in " + Integer.toString(i) + " seconds!");
+									} else {
+										BHBot.log("Lobby filled in " + i + " seconds!");
 										i = worldBossTimer; // end the for loop
 										
 										//check that all players are ready
@@ -2214,7 +2261,7 @@ public class MainThread implements Runnable {
 											readScreen();
 											if (seg == null) {// no red X's found
 												break;
-											} else if (seg != null) { //red X's found
+											} else { //red X's found
 												//BHBot.log(Integer.toString(j));
 												j++;
 												sleep(500); //check every 500ms
@@ -2255,11 +2302,10 @@ public class MainThread implements Runnable {
 										} else { //generic error / unknown action restart
 											BHBot.log("Something went wrong while attempting to start the World Boss, restarting");
 											restart();
-											timeLastEnergyCheck = 1*MINUTE; // leave it a minute before trying again
+											timeLastEnergyCheck = MINUTE; // leave it a minute before trying again
 										}
 										
 									}
-									continue;
 								}
 							} else {
 								readScreen();
@@ -2286,7 +2332,7 @@ public class MainThread implements Runnable {
 					} // World Boss
 					
 					// Collect bounties:
-					/** I can't get a working while loop to clear all bounties available, so we simply check and clear one if available every 6 hours **/
+					// TODO I can't get a working while loop to clear all bounties available, so we simply check and clear one if available every 6 hours
 					if ((BHBot.settings.collectBounties && Misc.getTime() - timeLastBountyCheck > BOUNTY_CHECK_INTERVAL)) {
 						timeLastBountyCheck = Misc.getTime();
 						BHBot.log("Checking bounties..");
@@ -2302,26 +2348,26 @@ public class MainThread implements Runnable {
 								BHBot.log("Bounties window not found, skipping"); // failsafe in case bounties window didn't open
 								continue;
 							} else {
-								MarvinSegment segLoot = detectCue(cues.get("Loot"), 1*SECOND);
+								MarvinSegment segLoot = detectCue(cues.get("Loot"), SECOND);
 								if (segLoot != null) { // the loot cue has bounds for only the top loot button, so while there is a loot cue there there are bounties to claim
 									readScreen();
-									seg = detectCue(cues.get("Loot"), 1*SECOND); //set cue to loot again as its changed to X underneath
-									sleep(1*SECOND); //wait for screen to settle
+									seg = detectCue(cues.get("Loot"), SECOND); //set cue to loot again as its changed to X underneath
+									sleep(SECOND); //wait for screen to settle
 									clickOnSeg(seg);
 									readScreen();
-									seg = detectCue(cues.get("X"), 1*SECOND); // we have to manually close rewards window
-									sleep(1*SECOND);
+									seg = detectCue(cues.get("X"), SECOND); // we have to manually close rewards window
+									sleep(SECOND);
 									clickOnSeg(seg);
-									sleep(1*SECOND);
+									sleep(SECOND);
 									readScreen();
-									seg = detectCue(cues.get("X"), 1*SECOND); // once we're done close bounties window
+									seg = detectCue(cues.get("X"), SECOND); // once we're done close bounties window
 									clickOnSeg(seg);
 									BHBot.log("Bounty Claimed");
 //									BHBot.log(bountyCounter + " Bounties claimed.");
 									continue;
 //									bountyCounter++; // just to count how many we have claimed
 								} else {
-									seg = detectCue(cues.get("X"), 1*SECOND); // once we're done close bounties window
+									seg = detectCue(cues.get("X"), SECOND); // once we're done close bounties window
 									clickOnSeg(seg);
 									BHBot.log("No bounties available");
 //									BHBot.log(bountyCounter + " Bounties claimed.");
@@ -2365,7 +2411,7 @@ public class MainThread implements Runnable {
 					BHBot.log("Error: ElementOutsideViewportException. Ignoring...");
 					//added this 1 second delay as attempting ads often triggers this
 					//will trigger the restart in the if statement below after 30 seconds
-					sleep(1*SECOND);
+					sleep(SECOND);
 					// we must not call 'continue' here, because this error could be a loop error, this is why we need to increase numConsecutiveException bellow in the code!
 				} else {
 					// unknown error!
@@ -2399,15 +2445,15 @@ public class MainThread implements Runnable {
 	}
 
 	// World boss invite button debugging
-	public void wbTest() {
+	void wbTest() {
 		int t = detectWorldBossTier();
 		BHBot.log(Integer.toString(t));
 	}
 
-	public void checkShrineSettings(String set) {
+	void checkShrineSettings(String set) {
 		MarvinSegment seg;
 		
-		if (set == "enable") { 
+		if ("enable".equals(set)) {
 			//open settings
 			clickInGame(675,482);
 			sleep(1000);
@@ -2434,7 +2480,7 @@ public class MainThread implements Runnable {
 			shrinesChecked = true;
 			BHBot.log("autoShrine autoConfigured");
 			sleep(2000); //sleep so we can ready activity button again from main menu
-		} else if (set == "disable") {
+		} else if ("disable".equals(set)) {
 			//open settings
 			clickInGame(675,482);
 			sleep(1000);
@@ -2554,8 +2600,6 @@ public class MainThread implements Runnable {
 		BHBot.log("Signed-in manually (we were signed-out).");
 
 		scrollGameIntoView();
-
-		return;
 	}
 
 	/**
@@ -2610,9 +2654,9 @@ public class MainThread implements Runnable {
 			BHBot.log("Character dialog dismissed.");
 	}
 
-	private BufferedImage takeScreenshot() {
+	/*private BufferedImage takeScreenshot() {
 		return takeScreenshot(true);
-	}
+	}*/
 
 	private BufferedImage takeScreenshot(boolean ofGame) {
 		if (ofGame)
@@ -2621,7 +2665,7 @@ public class MainThread implements Runnable {
 			return Shutterbug.shootPage(driver).getImage();
 	}
 
-	public void readScreen() {
+	void readScreen() {
 		readScreen(true);
 	}
 
@@ -2676,7 +2720,7 @@ public class MainThread implements Runnable {
 	}
 
 	// https://stackoverflow.com/questions/297762/find-known-sub-image-in-larger-image
-	public static MarvinSegment findSubimage(BufferedImage src, Cue cue) {
+	static MarvinSegment findSubimage(BufferedImage src, Cue cue) {
 		long timer = Misc.getTime();
 
 		MarvinSegment seg;
@@ -2700,7 +2744,7 @@ public class MainThread implements Runnable {
         return seg;
 	}
 
-	public MarvinSegment detectCue(Cue cue) {
+	private MarvinSegment detectCue(Cue cue) {
 		return detectCue(cue, 0, true);
 	}
 
@@ -2712,7 +2756,7 @@ public class MainThread implements Runnable {
 		return detectCue(new Cue(cue, bounds), 0, true);
 	}
 
-	public MarvinSegment detectCue(Cue cue, int timeout) {
+	private MarvinSegment detectCue(Cue cue, int timeout) {
 		return detectCue(cue, timeout, true);
 	}
 
@@ -2720,7 +2764,7 @@ public class MainThread implements Runnable {
 	 * Will try (and retry) to detect cue from image until timeout is reached. May return null if cue has not been detected within given 'timeout' time. If 'timeout' is 0,
 	 * then it will attempt at cue detection only once and return the result immediately.
 	 */
-	public MarvinSegment detectCue(Cue cue, int timeout, boolean game) {
+	private MarvinSegment detectCue(Cue cue, int timeout, boolean game) {
 		long timer = Misc.getTime();
 		MarvinSegment seg = findSubimage(img, cue);
 
@@ -2779,7 +2823,7 @@ public class MainThread implements Runnable {
 		act.perform();
 	}
 
-	public void sleep(int milliseconds) {
+	void sleep(int milliseconds) {
 		try {
 			Thread.sleep(milliseconds);
 		} catch (InterruptedException e) {
@@ -2948,8 +2992,8 @@ public class MainThread implements Runnable {
 	 */
 
 	//TODO Farm ads again
-	
-	public ReturnResult trySkippingAd() {
+
+	ReturnResult trySkippingAd() {
 			
 //			Actions act = new Actions(driver);
 //			act.moveToElement(adWindow, 1, 1);
@@ -2958,7 +3002,7 @@ public class MainThread implements Runnable {
 //			act.perform();
 			
 			//save current tab to variable
-			String oldTab = driver.getWindowHandle();
+//			String oldTab = driver.getWindowHandle();
 			BHBot.log(driver.getWindowHandle());
 			
 			//set Read Article xpath to variable and click using selenium
@@ -2973,7 +3017,7 @@ public class MainThread implements Runnable {
 			
 			sleep(2000);
 			
-			Actions act = new Actions(driver);
+//			Actions act = new Actions(driver);
 //			act.sendKeys(Keys.chord(Keys.CONTROL, "a"));
 			
 			driver.switchTo().window("Bit Heroes");
@@ -3064,7 +3108,9 @@ public class MainThread implements Runnable {
 
 						return ReturnResult.ok();
 					}
-				} catch (Exception e) { }
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 
 				done = driver.findElement(By.cssSelector("#play > div.ironrv-container.open > div.ironrv-container-header.complete > div.ironrv-title > span")).getText().equalsIgnoreCase("You can now claim your reward!");
 				if (done) {
@@ -3086,6 +3132,7 @@ public class MainThread implements Runnable {
 					break;
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		} while (!done);
 
@@ -3166,7 +3213,7 @@ public class MainThread implements Runnable {
 		if (state == State.Trials || state == State.Raid) {
 			if (activityDuration > 30 && !autoShrined) { //if we're past 30 seconds into the activity
 				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) { //and it's been the battleDelay setting since last encounter
-					BHBot.log("No activity for " + Integer.toString(BHBot.settings.battleDelay) + "s, enabing shrines");
+					BHBot.log("No activity for " + BHBot.settings.battleDelay + "s, enabing shrines");
 					//open settings
 					clickInGame(675,482);
 					sleep(1500);
@@ -3184,7 +3231,7 @@ public class MainThread implements Runnable {
 					sleep(500);
 					clickInGame(780,270); //auto on again
 					
-					BHBot.log("Waiting " + Integer.toString(BHBot.settings.shrineDelay) + "s to use shrines");
+					BHBot.log("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
 					sleep(BHBot.settings.shrineDelay*SECOND); //long sleep while we activate shrines
 					
 					//open settings
@@ -3230,7 +3277,7 @@ public class MainThread implements Runnable {
 						seg = detectCue(cues.get("AutoOff"));
 						clickOnSeg(seg);
 						return;
-					} else if (seg1 != null ) {
+					} else {
 						sleep(1000);
 						clickInGame(400,365); //dismiss pop-up
 						if (BHBot.settings.autoRevive == 0) {
@@ -3327,7 +3374,7 @@ public class MainThread implements Runnable {
 						seg = detectCue(cues.get("AutoOff"));
 						clickOnSeg(seg);
 						return;
-					} else if (seg1 != null ) {
+					} else {
 						sleep(1000);
 						clickInGame(400,365); //dismiss pop-up
 						if (BHBot.settings.autoRevive == 0) {
@@ -3473,7 +3520,7 @@ public class MainThread implements Runnable {
 					for (String f : BHBot.settings.familiars) { //cycle through array
 						readScreen();
 						String fam = f.toUpperCase().split(" ")[0];
-						seg = detectCue(cues.get(fam), 1*SECOND);
+						seg = detectCue(cues.get(fam), SECOND);
 						int bribeCount = checkFamiliarCounter(fam);
 						if (seg != null && !(bribeCount < 1) && (BHBot.settings.autoBribe)) {
 							BHBot.log("Bribing " + fam);
@@ -3491,7 +3538,7 @@ public class MainThread implements Runnable {
 							readScreen();
 							seg = detectCue(cues.get("YesGreen"), 2*SECOND);
 							if (seg != null) {
-								sleep(1*SECOND);
+								sleep(SECOND);
 								clickInGame(330,360); //click in game as the drop down was too inconsistent to find the cue
 							} else restart();
 							saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
@@ -3502,7 +3549,7 @@ public class MainThread implements Runnable {
 					}
 				}
 				BHBot.log("Persuading familiar");
-				sleep(1*SECOND);
+				sleep(SECOND);
 				if (BHBot.settings.familiarScreenshot) {
 					saveGameScreen("familiar-cue-test"); //If the familiar is unknown we might not have an image for it yet, so save a screenshot to create a cue from
 				}
@@ -3521,7 +3568,7 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("YesGreen"), 2*SECOND);
 				if (seg != null) {
 //					clickOnSeg(seg);
-					sleep(1*SECOND);
+					sleep(SECOND);
 					clickInGame(330,360);
 				} else restart();
 			return;
@@ -3539,7 +3586,7 @@ public class MainThread implements Runnable {
 				BHBot.log("Skeleton treasure found, declining.");
 				seg = detectCue(cues.get("Decline"), 5*SECOND);
 				clickOnSeg(seg);
-				readScreen(1*SECOND);
+				readScreen(SECOND);
 				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 				clickOnSeg(seg);
 				return;
@@ -3552,7 +3599,7 @@ public class MainThread implements Runnable {
 					restart();
 				}
 				clickOnSeg(seg);
-				readScreen(1*SECOND);
+				readScreen(SECOND);
 				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 				if (seg == null) {
 					BHBot.log("Yes button not found, restarting");
@@ -3561,7 +3608,7 @@ public class MainThread implements Runnable {
 				clickOnSeg(seg);
 				return;
 				
-			} else if (BHBot.settings.openSkeleton == 2 && state == state.Raid) {
+			} else if (BHBot.settings.openSkeleton == 2 && state == State.Raid) {
 				BHBot.log("Raid Skeleton treasure found, attemping to use key");
 				seg = detectCue(cues.get("Open"), 5*SECOND);
 				if (seg == null) {
@@ -3570,7 +3617,7 @@ public class MainThread implements Runnable {
 					restart();
 				}
 				clickOnSeg(seg);
-				readScreen(1*SECOND);
+				readScreen(SECOND);
 				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 				if (seg == null) {
 					BHBot.log("Yes button not found, restarting");
@@ -3583,7 +3630,7 @@ public class MainThread implements Runnable {
 				BHBot.log("Skeleton treasure found, declining.");
 				seg = detectCue(cues.get("Decline"), 5*SECOND);
 				clickOnSeg(seg);
-				readScreen(1*SECOND);
+				readScreen(SECOND);
 				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 				clickOnSeg(seg);
 				return;
@@ -3595,7 +3642,7 @@ public class MainThread implements Runnable {
 			seg = detectCue(cues.get("Decline"), 5*SECOND);
 			clickOnSeg(seg);
 
-			readScreen(1*SECOND);
+			readScreen(SECOND);
 			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 			clickOnSeg(seg);
 			return;
@@ -3614,29 +3661,29 @@ public class MainThread implements Runnable {
 
 			// close the raid/dungeon/trials/gauntlet window:
 			readScreen(2*SECOND);
-			seg = detectCue(cues.get("X"), 15*SECOND);
+			detectCue(cues.get("X"), 15*SECOND);
 			sleep(2*SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
-			seg = detectCue(cues.get("X"), 1*SECOND);
+			seg = detectCue(cues.get("X"), SECOND);
 			if (seg != null)
 				clickOnSeg(seg);
 			else
 				BHBot.log("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 
-			sleep(1*SECOND);
-			if (state == state.Expedition) {
-				sleep(1*SECOND);
+			sleep(SECOND);
+			if (state == State.Expedition) {
+				sleep(SECOND);
 
 				// Close Portal Map after expedition
 				readScreen(2*SECOND);
 				seg = detectCue(cues.get("X"));
 				clickOnSeg(seg);
-				sleep(1*SECOND);
+				sleep(SECOND);
 
 				// close Expedition window after Expedition
 				readScreen(2*SECOND);
 				seg = detectCue(cues.get("X"));
 				clickOnSeg(seg);
-				sleep(1*SECOND);
+				sleep(SECOND);
 			}
 			if (state == State.Dungeon) {
 				dungeonCounter++;
@@ -3647,7 +3694,7 @@ public class MainThread implements Runnable {
 			} else {
 			BHBot.log(state.getName() + " completed successfully. Result: Victory");
 			}
-			if (state == state.Dungeon && (BHBot.settings.countActivities)) {
+			if (state == State.Dungeon && (BHBot.settings.countActivities)) {
 				updateActivityCounter(state.getName());
 			}
 			resetAppropriateTimers();
@@ -3685,30 +3732,30 @@ public class MainThread implements Runnable {
 
 			// close the raid/dungeon/trials/gauntlet window:
 			readScreen(2*SECOND);
-			seg = detectCue(cues.get("X"), 15*SECOND);
-			sleep(1*SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
-			seg = detectCue(cues.get("X"), 1*SECOND);
+			detectCue(cues.get("X"), 15*SECOND);
+			sleep(SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
+			seg = detectCue(cues.get("X"), SECOND);
 			if (seg != null)
 				clickOnSeg(seg);
 			else
 				BHBot.log("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
-			sleep(1*SECOND);
-			if (state == state.Expedition) {
-				sleep(1*SECOND);
+			sleep(SECOND);
+			if (state == State.Expedition) {
+				sleep(SECOND);
 
 				// Close Portal Map after expedition
 				readScreen(2*SECOND);
 				seg = detectCue(cues.get("X"));
 				clickOnSeg(seg);
-				sleep(1*SECOND);
+				sleep(SECOND);
 
 				// close Expedition window after Expedition
 				readScreen(2*SECOND);
 				seg = detectCue(cues.get("X"));
 				clickOnSeg(seg);
-				sleep(1*SECOND);
+				sleep(SECOND);
 			}
-			if (state == state.Invasion) {
+			if (state == State.Invasion) {
 				BHBot.log("Invasion completed successfully");
 			} else {
 				BHBot.log(state.getName() + " completed successfully. Result: Defeat");
@@ -3736,17 +3783,17 @@ public class MainThread implements Runnable {
 
 			// close the raid/dungeon/trial/gauntlet window:
 			readScreen(2*SECOND);
-			seg = detectCue(cues.get("X"), 15*SECOND);
-			sleep(1*SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
-			seg = detectCue(cues.get("X"), 1*SECOND);
+			detectCue(cues.get("X"), 15*SECOND);
+			sleep(SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
+			seg = detectCue(cues.get("X"), SECOND);
 			if (seg != null)
 				clickOnSeg(seg);
 			else
 				BHBot.log("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 
-			sleep(1*SECOND);
+			sleep(SECOND);
 			BHBot.log(state.getName() + " completed successfully. Result: Victory");
-			if (state == state.WorldBoss && (BHBot.settings.countActivities)) {
+			if (state == State.WorldBoss && (BHBot.settings.countActivities)) {
 				updateActivityCounter(state.getName());
 			}
 			resetAppropriateTimers();
@@ -3772,7 +3819,7 @@ public class MainThread implements Runnable {
 			seg = detectCue(cues.get("PVPWindow"), 15*SECOND);
 			if (seg != null)
 				closePopupSecurely(cues.get("PVPWindow"), cues.get("X")); // ignore failure
-			sleep(1*SECOND);
+			sleep(SECOND);
 			BHBot.log(state.getName() + " completed successfully. Result: Victory");
 			resetAppropriateTimers();
 			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
@@ -3799,13 +3846,14 @@ public class MainThread implements Runnable {
 		int firstPotion = Character.getNumericValue((BHBot.settings.potionOrder.charAt(0)));
 		int secondPotion = Character.getNumericValue((BHBot.settings.potionOrder.charAt(1)));
 		int thirdPotion = Character.getNumericValue((BHBot.settings.potionOrder.charAt(2)));
-		
+
+		String noReviveStr = "No " + (firstPotion == 1 ? "Minor" : firstPotion == 2 ? "Average" : "Major") + " Revives available.";
 		if ((position == 1) && (BHBot.settings.tankPriority)) {
 			BHBot.log("Reviving slot #" + position + " with Major Revive (tankPriority enabled)");
 			clickInGame(580,260); //major revive
 			sleep(1000);
 			if (seg != null) {
-				BHBot.log("No " + (firstPotion == 1 ? "Minor" : firstPotion == 2 ? "Average" : "Major")  + " Revives available.");
+				BHBot.log(noReviveStr);
 			} else {
 				clickInGame(320,360); //confirm button
 				revived = true;
@@ -3815,45 +3863,50 @@ public class MainThread implements Runnable {
 		if (!revived) { //attempt to us first potion
 			BHBot.log("Reviving slot #" + position + " with " + (firstPotion == 1 ? "Minor" : firstPotion == 2 ? "Average" : "Major") + " Revive");
 			Point potion = potionDecider(firstPotion);
-			clickInGame(potion.x, potion.y);
-			sleep(1000);
-			if (seg != null) {
-				BHBot.log("No " + (firstPotion == 1 ? "Minor" : firstPotion == 2 ? "Average" : "Major")  + " Revives available.");
-			} else {
-				clickInGame(320,360); //confirm button
-				revived = true;
+			if (potion!= null) {
+				clickInGame(potion.x, potion.y);
+				sleep(1000);
+				if (seg != null) {
+					BHBot.log(noReviveStr);
+				} else {
+					clickInGame(320, 360); //confirm button
+					revived = true;
+				}
 			}
 		}
 		
 		if (!revived) { //attempt to use second potion
 			BHBot.log("Reviving slot #" + position + " with " + (secondPotion == 1 ? "Minor" : secondPotion == 2 ? "Average" : "Major") + " Revive");
 			Point potion = potionDecider(secondPotion);
-			clickInGame(potion.x, potion.y);
-			sleep(1000);
-			if (seg != null) {
-				BHBot.log("No " + (secondPotion == 1 ? "Minor" : secondPotion == 2 ? "Average" : "Major")  + " Revives available.");
-			} else {
-				clickInGame(320,360); //confirm button
-				revived = true;
+			if (potion != null) {
+				clickInGame(potion.x, potion.y);
+				sleep(1000);
+				if (seg != null) {
+					BHBot.log("No " + (secondPotion == 1 ? "Minor" : secondPotion == 2 ? "Average" : "Major")  + " Revives available.");
+				} else {
+					clickInGame(320,360); //confirm button
+					revived = true;
+				}
 			}
 		}
 		
 		if (!revived) { //attempt to use third potion
 			BHBot.log("Reviving slot #" + position + " with " + (thirdPotion == 1 ? "Minor" : thirdPotion == 2 ? "Average" : "Major") + " Revive");
 			Point potion = potionDecider(thirdPotion);
-			clickInGame(potion.x, potion.y);
-			sleep(1000);
-			if (seg != null) {
-				BHBot.log("No " + (thirdPotion == 1 ? "Minor" : thirdPotion == 2 ? "Average" : "Major")  + " Revives available.");
-			} else {
-				clickInGame(320,360); //confirm button
-				revived = true;
+			if (potion != null) {
+				clickInGame(potion.x, potion.y);
+				sleep(1000);
+				if (seg != null) {
+					BHBot.log("No " + (thirdPotion == 1 ? "Minor" : thirdPotion == 2 ? "Average" : "Major")  + " Revives available.");
+				} else {
+					clickInGame(320,360); //confirm button
+					revived = true;
+				}
 			}
-			
+
 			if (!revived) { //no potions found
 				BHBot.log("No Potions available, skipping");
-				return;
-				}
+			}
 			}
 	}
 	
@@ -3869,10 +3922,10 @@ public class MainThread implements Runnable {
 		return null;
 	}
 
-	public void closeWorldBoss() {
+	private void closeWorldBoss() {
 		MarvinSegment seg;
 		
-		sleep(1*SECOND);
+		sleep(SECOND);
 		seg = detectCue(cues.get("X"), 2*SECOND);
 		if (seg != null) {
 			clickOnSeg(seg);
@@ -3881,7 +3934,7 @@ public class MainThread implements Runnable {
 //			return false;
 		}
 		
-		sleep(1*SECOND);
+		sleep(SECOND);
 		seg = detectCue(cues.get("YesGreen"), 2*SECOND);
 		if (seg != null) {
 			clickOnSeg(seg);
@@ -3890,7 +3943,7 @@ public class MainThread implements Runnable {
 //			return false;
 		}
 		
-		sleep(1*SECOND);
+		sleep(SECOND);
 		seg = detectCue(cues.get("X"), 2*SECOND);
 		if (seg != null) {
 			clickOnSeg(seg);
@@ -3902,7 +3955,7 @@ public class MainThread implements Runnable {
 //		return true;
 	}
 	
-	public int checkFamiliarCounter(String fam) { //returns current catch count for given familiar from the settings file
+	private int checkFamiliarCounter(String fam) { //returns current catch count for given familiar from the settings file
 		int catchCount = 0;
 		for (String f : BHBot.settings.familiars) { //cycle familiars defined in settings
 				String fString = f.toUpperCase().split(" ")[0]; //stringify the familiar name
@@ -3913,7 +3966,7 @@ public class MainThread implements Runnable {
 		return catchCount;
 		}
 
-	public void updateFamiliarCounter(String fam, int currentCounter) {
+	private void updateFamiliarCounter(String fam, int currentCounter) {
         String familiarToUpdate = "";
         String updatedFamiliar = "";
 
@@ -3923,7 +3976,6 @@ public class MainThread implements Runnable {
 			if (fam.equals(fString)) { //when match is found from the function
 				familiarToUpdate = fa; //write current status to String
 				currentCounter--; // decrease the counter
-				Integer.toString(currentCounter); //make the int to string
 				updatedFamiliar = (fString.toLowerCase() + " " + currentCounter); //update new string with familiar name and decrease counter
 //				BHBot.log("Before: " + familiarToUpdate);
 //				BHBot.log("Updated: " + updatedFamiliar);
@@ -3934,7 +3986,7 @@ public class MainThread implements Runnable {
 	        // input the file content to the StringBuffer "input"
 	        BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
 	        String line;
-	        StringBuffer inputBuffer = new StringBuffer();
+	        StringBuilder inputBuffer = new StringBuilder();
 
 	        //print lines to string with linebreaks
 	        while ((line = file.readLine()) != null) {
@@ -3964,27 +4016,25 @@ public class MainThread implements Runnable {
 	    }
 }
 	
-	public void updateActivityCounter(String activity) {
+	void updateActivityCounter(String activity) {
         String typeToUpdate = "";
         String updatedType = "";
         
-		if (activity == "Dungeon") {
+		if ("Dungeon".equals(activity)) {
 			String numberRun = BHBot.settings.dungeonsRun.split(" ")[0]; //case sensitive for a match so convert to upper case
 			int currentCounter = Integer.parseInt(BHBot.settings.dungeonsRun.split(" ")[1]); //set the bribe counter to an int
 			typeToUpdate = numberRun + " " + currentCounter; //write current status to String
 			currentCounter++; // decrease the counter
-			Integer.toString(currentCounter); //make the int to string
 			updatedType = (numberRun + " " + currentCounter); //update new string with familiar name and decrease counter
 				BHBot.log("Before: " + typeToUpdate);
 				BHBot.log("Updated: " + updatedType);
 		}
 		
-		if (activity == "World Boss") {
+		if ("World Boss".equals(activity)) {
 			String numberRun = BHBot.settings.worldBossRun.split(" ")[0]; //case sensitive for a match so convert to upper case
 			int currentCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]); //set the bribe counter to an int
 			typeToUpdate = numberRun + " " + currentCounter; //write current status to String
 			currentCounter++; // decrease the counter
-			Integer.toString(currentCounter); //make the int to string
 			updatedType = (numberRun + " " + currentCounter); //update new string with familiar name and decrease counter
 				BHBot.log("Before: " + typeToUpdate);
 				BHBot.log("Updated: " + updatedType);
@@ -3997,7 +4047,7 @@ public class MainThread implements Runnable {
 	        // input the file content to the StringBuffer "input"
 	        BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
 	        String line;
-	        StringBuffer inputBuffer = new StringBuffer();
+	        StringBuilder inputBuffer = new StringBuilder();
 
 	        //print lines to string with linebreaks
 	        while ((line = file.readLine()) != null) {
@@ -4171,7 +4221,7 @@ public class MainThread implements Runnable {
 			return null;
 		}
 		/* I can't get the switch to work with a string so this if statement makes a new int with 1 for Hallowed and 2 for Inferno, forgive me for my sins */
-		int e = 0;
+		int e;
 		char ex = expedition.charAt(0);
 			if (ex == 'h') {
 				e = 1; // Hallowed
@@ -4228,7 +4278,7 @@ public class MainThread implements Runnable {
 		}
 
 		/* I can't get the switch to work with a string so this if statement makes a new int with 1 for Hallowed and 2 for Inferno, forgive me for my sins */
-		int e = 0;
+		int e;
 		char ex = expedition.charAt(0);
 			if (ex == 'h') {
 				e = 1; // Hallowed
@@ -4290,19 +4340,15 @@ public class MainThread implements Runnable {
 			BHBot.log("Invalid world boss tier, must between 1 and 10");
 			failed = true;
 		}
-		
+
 		//warn user if timer is over 5 minutes
 		if (BHBot.settings.worldBossTimer <= 300) {
 			passed++;
 		} else {
 			BHBot.log("Warning: Timer longer than 5 minutes");
 		}
-		
-		if (!failed && passed == 3) {
-			return true;
-		} else {
-			return false;
-		}
+
+		return !failed && passed == 3;
 			
 		
 	}
@@ -4445,25 +4491,27 @@ public class MainThread implements Runnable {
 			return 0;
 	}
 
-	public void raidReadTest() {
+	void raidReadTest() {
 		int test = readUnlockedRaidTier();
 		BHBot.log(Integer.toString(test));
 	}
 	
-	public void expeditionReadTest() {
+	void expeditionReadTest() {
 		String expedition = decideExpeditionRandomly();
-		expedition = expedition.split(" ")[0];
-		BHBot.log("Expedition chosen: " + expedition);
+		if (expedition != null) {
+			expedition = expedition.split(" ")[0];
+			BHBot.log("Expedition chosen: " + expedition);
+		}
 	}
 	
 	/**
 	 * Returns the current max tier of raid the player has unlocked, so we can calculate which raid we are selecting via the dot menu
 	 * Returns 0 in case of error
 	 */
-	public int readUnlockedRaidTier() {
+	private int readUnlockedRaidTier() {
 		int result = 0;
 
-		readScreen();
+		readScreen(SECOND);
 		List<MarvinSegment> list = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
 		result += list.size();
 
@@ -4477,8 +4525,8 @@ public class MainThread implements Runnable {
 	 * Returns raid type, that is value between 1 and 4 (Corresponding to the raid tiers) that is currently selected in the raid window.
 	 * Note that the raid window must be open for this method to work (or else it will simply return 0).
 	 */
-	public int readSelectedRaidTier() {
-		readScreen();
+	private int readSelectedRaidTier() {
+		readScreen(SECOND);
 		if (detectCue(cues.get("Raid1Name")) != null)
 			return 1;
 		else if (detectCue(cues.get("Raid2Name")) != null)
@@ -4498,8 +4546,8 @@ public class MainThread implements Runnable {
 	}
 
 	/** Read Selected World Boss **/
-	
-	public String readSelectedWorldBoss() {
+
+	private String readSelectedWorldBoss() {
 		if (detectCue(cues.get("OrlagWB")) != null)
 			return "Orlag";
 		else if (detectCue(cues.get("NetherWB")) != null)
@@ -4509,7 +4557,7 @@ public class MainThread implements Runnable {
 		else return "Error";
 	}
 	
-	public void changeSelectedWorldBoss(String bossname) {
+	private void changeSelectedWorldBoss(String bossname) {
 		if (bossname.contentEquals("Orlag"))
 			clickInGame(376, 445);
 		else if (bossname.contentEquals("Nether"))
@@ -4564,6 +4612,7 @@ public class MainThread implements Runnable {
 		try {
 			Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length()-4)).save("./screenshots/");
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		return name;
@@ -4599,7 +4648,7 @@ public class MainThread implements Runnable {
 	 *
 	 * @return true in case emergency restart is needed.
 	 */
-	public boolean handleTeamMalformedWarning() {
+	private boolean handleTeamMalformedWarning() {
 		readScreen();
 		if (detectCue(cues.get("TeamNotFull")) != null || detectCue(cues.get("TeamNotOrdered")) != null) {
 			sleep(500); // in case popup is still sliding downward
@@ -4663,7 +4712,7 @@ public class MainThread implements Runnable {
 	 * @return 0 in case of error.
 	 */
 	private int readNumFromImg(BufferedImage im) {
-		List<ScreenNum> nums = new ArrayList<ScreenNum>();
+		List<ScreenNum> nums = new ArrayList<>();
 
 		//MarvinImageIO.saveImage(im, "difficulty_test.png");
 		//Misc.saveImage(imb, "difficulty_test2.png");
@@ -4719,7 +4768,7 @@ public class MainThread implements Runnable {
 	 * NOTE: Trials/gauntlet window must be open for this to work! <br>
 	 * @return 0 in case of an error, or the selected difficulty level instead.
 	 */
-	public int detectDifficulty() {
+	int detectDifficulty() {
 		sleep(2*SECOND); // note that sometimes the cue will be gray (disabled) since the game is fetching data from the server - in that case we'll have to wait a bit
 		
 		MarvinSegment seg = detectCue(cues.get("Difficulty"));
@@ -4748,13 +4797,13 @@ public class MainThread implements Runnable {
 	}
 	
 	/* World boss reading and changing section */
-	public int detectWorldBossTier() {
+	private int detectWorldBossTier() {
 		
 		//Melvins only available in T10 so we don't need to read the image
 		if (BHBot.settings.worldBossType.equals("Melvin")) return 10;
 		
 		readScreen();
-		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),1*SECOND);
+		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),SECOND);
 		if (seg == null) {
 			BHBot.log("Error: unable to detect world boss difficulty selection box!");
 			saveGameScreen("early_error");
@@ -4777,8 +4826,8 @@ public class MainThread implements Runnable {
 		return d;
 	}
 	
-	public void changeWorldBossTier(int target) {
-		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),1*SECOND);
+	private void changeWorldBossTier(int target) {
+		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),SECOND);
 		if (seg == null) {
 			BHBot.log("Error: unable to detect world boss difficulty selection box!");
 			saveGameScreen("early_error");
@@ -4789,18 +4838,20 @@ public class MainThread implements Runnable {
 		//get known screen position for difficulty screen selection
 		if (target >= 5) { //top most
 			readScreen();
-			MarvinSegment up = detectCue(cues.get("DropDownUp"),1*SECOND);
+			MarvinSegment up = detectCue(cues.get("DropDownUp"),SECOND);
 			clickOnSeg(up);
 			clickOnSeg(up);
 		} else { //bottom most
 			readScreen();
-			MarvinSegment down = detectCue(cues.get("DropDownDown"),1*SECOND);
+			MarvinSegment down = detectCue(cues.get("DropDownDown"),SECOND);
 			clickOnSeg(down);
 			clickOnSeg(down);
 			}
-		sleep(1*SECOND); //wait for screen to stabilize
+		sleep(SECOND); //wait for screen to stabilize
 		Point diff = getDifficultyButtonXY(target);
-		clickInGame(diff.y, diff.x);
+		if (diff != null) {
+			clickInGame(diff.y, diff.x);
+		}
 	}
 	
 	private Point getDifficultyButtonXY(int target) {
@@ -4825,9 +4876,9 @@ public class MainThread implements Runnable {
 	
 	private int detectWorldBossDifficulty() {
 		readScreen();
-		MarvinSegment normal = detectCue(cues.get("WorldBossDifficultyNormal"),1*SECOND);
-		MarvinSegment hard = detectCue(cues.get("WorldBossDifficultyHard"),1*SECOND);
-		MarvinSegment heroic = detectCue(cues.get("WorldBossDifficultyHeroic"),1*SECOND);
+		MarvinSegment normal = detectCue(cues.get("WorldBossDifficultyNormal"),SECOND);
+		MarvinSegment hard = detectCue(cues.get("WorldBossDifficultyHard"),SECOND);
+		MarvinSegment heroic = detectCue(cues.get("WorldBossDifficultyHeroic"),SECOND);
 		if (normal != null) {
 			return 1;
 		} else if (hard != null) {
@@ -4841,13 +4892,13 @@ public class MainThread implements Runnable {
 	private void changeWorldBossDifficulty(int target) {
 		
 		/* Cant get dynamic cue name working below so this is a quick fix */
-		sleep(1*SECOND); //screen stabilising
+		sleep(SECOND); //screen stabilising
 		clickInGame(480,300); //difficulty button
-		sleep(1*SECOND); //screen stabilising
+		sleep(SECOND); //screen stabilising
 		
 //		String targetName = (target == 1 ? "Normal" : target == 2 ? "Hard" : "Heroic"); //get current difficulty name so we can load the right cue
 //		String cueName = "WorldBossDifficulty" + targetName;
-//		MarvinSegment button = detectCue(cues.get(cueName),1*SECOND);
+//		MarvinSegment button = detectCue(cues.get(cueName),SECOND);
 //		clickOnSeg(button);
 		
 		if (target == 1) {
@@ -4863,7 +4914,7 @@ public class MainThread implements Runnable {
 	 * Detects selected difficulty in expedition window. <br>
 	 * @return 0 in case of an error, or the selected difficulty level instead.
 	 */
-	public int detectDifficultyExpedition() {
+	private int detectDifficultyExpedition() {
 		sleep(2*SECOND); // note that sometimes the cue will be gray (disabled) since the game is fetching data from the server - in that case we'll have to wait a bit
 		readScreen();
 		
@@ -4898,7 +4949,7 @@ public class MainThread implements Runnable {
 	 *
 	 * @return false in case of an error (unable to change difficulty).
 	 */
-	public boolean selectDifficulty(int oldDifficulty, int newDifficulty) {
+	boolean selectDifficulty(int oldDifficulty, int newDifficulty) {
 		if (oldDifficulty == newDifficulty)
 			return true; // no change
 
@@ -4915,7 +4966,7 @@ public class MainThread implements Runnable {
 		return selectDifficultyFromDropDown(oldDifficulty, newDifficulty);
 	}
 	
-	public boolean selectDifficultyExpedition(int oldDifficulty, int newDifficulty) {
+	private boolean selectDifficultyExpedition(int oldDifficulty, int newDifficulty) {
 		if (oldDifficulty == newDifficulty)
 			return true; // no change
 
@@ -4950,7 +5001,7 @@ public class MainThread implements Runnable {
 		// horizontal position of the 5 buttons:
 		final int posx = 390;
 		// vertical positions of the 5 buttons:
-		final int posy[] = new int[]{170, 230, 290, 350, 410};
+		final int[] posy = new int[]{170, 230, 290, 350, 410};
 
 		if (recursionDepth > 5) {
 			BHBot.log("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
@@ -4998,7 +5049,7 @@ public class MainThread implements Runnable {
 			// OK, we should have a target value on screen now, in the first spot. Let's click it!
 			readScreen(5*SECOND); //*** should we increase this time?
 			return selectDifficultyFromDropDown(oldDifficulty, newDifficulty, recursionDepth+1); // recursively select new difficulty
-		} else if (move < 0) {
+		} else {
 			// move down
 			seg = detectCue(cues.get("DropDownDown"));
 			if (seg == null) {
@@ -5015,9 +5066,6 @@ public class MainThread implements Runnable {
 			// OK, we should have a target value on screen now, in the first spot. Let's click it!
 			readScreen(5*SECOND); //*** should we increase this time?
 			return selectDifficultyFromDropDown(oldDifficulty, newDifficulty, recursionDepth+1); // recursively select new difficulty
-		} else {
-			assert false; // must not happen (we check for 0 earlier on)
-			return false;
 		}
 	}
 	
@@ -5037,7 +5085,7 @@ public class MainThread implements Runnable {
 		// horizontal position of the 5 buttons:
 		final int posx = 390;
 		// vertical positions of the 5 buttons:
-		final int posy[] = new int[]{170, 230, 290, 350, 410};
+		final int[] posy = new int[]{170, 230, 290, 350, 410};
 
 		if (recursionDepth > 5) {
 			BHBot.log("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
@@ -5086,7 +5134,7 @@ public class MainThread implements Runnable {
 			// OK, we should have a target value on screen now, in the first spot. Let's click it!
 			readScreen(5*SECOND); //*** should we increase this time?
 			return selectDifficultyFromDropDown(oldDifficulty, newDifficulty, recursionDepth+1); // recursively select new difficulty
-		} else if (move < 0) {
+		} else {
 			// move down
 			seg = detectCue(cues.get("DropDownDown"));
 			if (seg == null) {
@@ -5103,14 +5151,11 @@ public class MainThread implements Runnable {
 			// OK, we should have a target value on screen now, in the first spot. Let's click it!
 			readScreen(5*SECOND); //*** should we increase this time?
 			return selectDifficultyFromDropDown(oldDifficulty, newDifficulty, recursionDepth+1); // recursively select new difficulty
-		} else {
-			assert false; // must not happen (we check for 0 earlier on)
-			return false;
 		}
 	}
 
 	//*** for DEBUG only!
-	public void numTest() {
+	/*public void numTest() {
 		MarvinSegment seg;
 
 		while (true) {
@@ -5134,7 +5179,7 @@ public class MainThread implements Runnable {
 			}
 			clickOnSeg(seg);
 		}
-	}
+	}*/
 
 	/**
 	 * This method detects the select cost in PvP/GvG/Trials/Gauntlet window. <p>
@@ -5144,7 +5189,7 @@ public class MainThread implements Runnable {
 	 *
 	 * @return 0 in case of an error, or cost value in interval [1..5]
 	 */
-	public int detectCost() {
+	int detectCost() {
 		MarvinSegment seg = detectCue(cues.get("Cost"), 15*SECOND);
 		if (seg == null) {
 			BHBot.log("Error: unable to detect cost selection box!");
@@ -5153,7 +5198,7 @@ public class MainThread implements Runnable {
 		}
 
 		// because the popup may still be sliding down and hence cue could be changing position, we try to read cost in a loop (until a certain timeout):
-		int d = 0;
+		int d;
 		int counter = 0;
 		boolean success = true;
 		while (true) {
@@ -5169,7 +5214,7 @@ public class MainThread implements Runnable {
 				success = false;
 				break;
 			}
-			sleep(1*SECOND); // sleep a bit in order for the popup to slide down
+			sleep(SECOND); // sleep a bit in order for the popup to slide down
 			readScreen();
 			seg = detectCue(cues.get("Cost"));
 		}
@@ -5189,7 +5234,7 @@ public class MainThread implements Runnable {
 	 *
 	 * @return false in case of an error (unable to change cost).
 	 */
-	public boolean selectCost(int oldCost, int newCost) {
+	boolean selectCost(int oldCost, int newCost) {
 		if (oldCost == newCost)
 			return true; // no change
 
@@ -5206,7 +5251,7 @@ public class MainThread implements Runnable {
 		// horizontal position of the 5 buttons:
 		final int posx = 390;
 		// vertical positions of the 5 buttons:
-		final int posy[] = new int[]{170, 230, 290, 350, 410};
+		final int[] posy = new int[]{170, 230, 290, 350, 410};
 
 		clickInGame(posx, posy[newCost-1]); // will auto-close the drop down (but it takes a second or so, since it's animated)
 		sleep(2*SECOND);
@@ -5238,6 +5283,7 @@ public class MainThread implements Runnable {
 			if (seg != null)
 				clickOnSeg(seg);
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -5266,14 +5312,13 @@ public class MainThread implements Runnable {
 				BHBot.log("Error: unable to close popup <" + popup.name + "> securely: popup cue not detected!");
 				return false;
 			}
-			readScreen(1*SECOND);
+			readScreen(SECOND);
 			seg2 = detectCue(popup);
 		}
 
 		counter = 0;
-		while (true) {
-			if (seg2 == null)
-				break; // there is no more popup window, so we're finished!
+		// there is no more popup window, so we're finished!
+		while (seg2 != null) {
 			if (seg1 != null)
 				clickOnSeg(seg1);
 
@@ -5283,7 +5328,7 @@ public class MainThread implements Runnable {
 				return false;
 			}
 
-			readScreen(1*SECOND);
+			readScreen(SECOND);
 			seg1 = detectCue(close);
 			seg2 = detectCue(popup);
 		}
@@ -5296,7 +5341,6 @@ public class MainThread implements Runnable {
 	 * @return -1 on error
 	 */
 	private int detectEquipmentFilterScrollerPos() {
-//		final int[] yScrollerPositions = {146, 165, 187, 207, 227, 247, 267, 288, 309, 329}; // top scroller positions
 		final int[] yScrollerPositions = {146, 164, 181, 199, 217, 235, 252, 270, 288, 306, 323, 341}; // top scroller positions
 
 		MarvinSegment seg = detectCue(cues.get("StripScrollerTopPos"), 2*SECOND);
@@ -5334,7 +5378,7 @@ public class MainThread implements Runnable {
 			seg = detectCue(cues.get("StripSelectorButton"));
 			clickOnSeg(seg);
 
-			seg = detectCue(cues.get("StripItemsTitle"), 10*SECOND); // waits until "Items" popup is detected
+			detectCue(cues.get("StripItemsTitle"), 10*SECOND); // waits until "Items" popup is detected
 			readScreen(500); // to stabilize sliding popup a bit
 
 			int scrollerPos = detectEquipmentFilterScrollerPos();
@@ -5347,9 +5391,7 @@ public class MainThread implements Runnable {
 			int[] yButtonPositions = {170, 230, 290, 350, 410}; // center y positions of the 5 buttons
 			int xButtonPosition = 390;
 
-			if (scrollerPos >= type.minPos() && scrollerPos <= type.maxPos()) {
-				// scroller is already at the right position!
-			} else if (scrollerPos < type.minPos()) {
+			if (scrollerPos < type.minPos()) {
 				// we must scroll down!
 				int move = type.minPos() - scrollerPos;
 				seg = detectCue(cues.get("DropDownDown"), 5*SECOND);
@@ -5376,13 +5418,13 @@ public class MainThread implements Runnable {
 					BHBot.log("Problem detected: unable to adjust scroller position in the character window (scroller position: " + newScrollerPos + ", should be: " + scrollerPos + ")! Skipping strip down/up...");
 					return ;
 				}
-				readScreen(1*SECOND);
+				readScreen(SECOND);
 				newScrollerPos = detectEquipmentFilterScrollerPos();
 				counter++;
 			}
 			clickInGame(xButtonPosition, yButtonPositions[type.getButtonPos() - scrollerPos]);
 			// clicking on the button will close the window automatically... we just need to wait a bit for it to close
-			seg = detectCue(cues.get("StripSelectorButton"), 5*SECOND); // we do this just in order to wait for the previous menu to reappear
+			detectCue(cues.get("StripSelectorButton"), 5*SECOND); // we do this just in order to wait for the previous menu to reappear
 		}
 
 		waitForInventoryIconsToLoad(); // first of all, lets make sure that all icons are loaded
@@ -5555,7 +5597,7 @@ public class MainThread implements Runnable {
 			seg = detectCue(cues.get("StripSelectorButton"));
 			clickOnSeg(seg);
 
-			seg = detectCue(cues.get("StripItemsTitle"), 10*SECOND); // waits until "Items" popup is detected
+			detectCue(cues.get("StripItemsTitle"), 10*SECOND); // waits until "Items" popup is detected
 			readScreen(500); // to stabilize sliding popup a bit
 
 			int scrollerPos = detectEquipmentFilterScrollerPos();
@@ -5586,13 +5628,13 @@ public class MainThread implements Runnable {
 					BHBot.log("Problem detected: unable to adjust scroller position in the character window (scroller position: " + newScrollerPos + ", should be: " + scrollerPos + ")! Skipping consumption of consumables...");
 					return ;
 				}
-				readScreen(1*SECOND);
+				readScreen(SECOND);
 				newScrollerPos = detectEquipmentFilterScrollerPos();
 				counter++;
 			}
 			clickInGame(xButtonPosition, yButtonPositions[1]);
 			// clicking on the button will close the window automatically... we just need to wait a bit for it to close
-			seg = detectCue(cues.get("StripSelectorButton"), 5*SECOND); // we do this just in order to wait for the previous menu to reappear
+			detectCue(cues.get("StripSelectorButton"), 5*SECOND); // we do this just in order to wait for the previous menu to reappear
 		}
 
 		// now consume the consumable(s):
@@ -5634,7 +5676,7 @@ public class MainThread implements Runnable {
 						// consume the consumable:
 						closePopupSecurely(cues.get("ConsumableTitle"), cues.get("YesGreen"));
 					}
-					seg = detectCue(cues.get("StripSelectorButton"), 5*SECOND); // we do this just in order to wait for the previous menu to reappear
+					detectCue(cues.get("StripSelectorButton"), 5*SECOND); // we do this just in order to wait for the previous menu to reappear
 					i.remove();
 				}
 			}
@@ -5648,7 +5690,7 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("DropDownDown"), 5*SECOND);
 				clickOnSeg(seg);
 
-				readScreen(1*SECOND); // so that the scroller stabilizes a bit
+				readScreen(SECOND); // so that the scroller stabilizes a bit
 			}
 		}
 
@@ -5686,7 +5728,7 @@ public class MainThread implements Runnable {
 		int counter = 0;
 		seg = detectCue(cue);
 		while (seg != null) {
-			readScreen(1*SECOND);
+			readScreen(SECOND);
 
 			seg = detectCue(cues.get("StripSelectorButton"));
 			if (seg == null) {
@@ -5704,7 +5746,7 @@ public class MainThread implements Runnable {
 	}
 
 	/** Will reset readout timers. */
-	public void resetTimers() {
+	void resetTimers() {
 		timeLastBadgesCheck = 0;
 		timeLastEnergyCheck = 0;
 		timeLastShardsCheck = 0;
@@ -5716,7 +5758,7 @@ public class MainThread implements Runnable {
 	/* This will only reset timers for activities we still have resources to run */
 	/* This saves cycling through the list of all activities to run every time we finish one */
 	/* It's also useful for other related settings to be reset on activity finish */
-	public void resetAppropriateTimers() {
+	private void resetAppropriateTimers() {
 		startTimeCheck = false;
 		autoShrined = false;
 		
