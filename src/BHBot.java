@@ -17,7 +17,7 @@ import org.openqa.selenium.WebElement;
 public class BHBot {
 
 	private static final String PROGRAM_NAME = "BHBot";
-	private static final String PROGRAM_VERSION = "33";
+	private static final String PROGRAM_VERSION = "33.2";
 	private static final boolean REQUIRES_ACCESS_TOKEN = false; // obsolete since public release (was used to restrict bot usage)
 	
 	private static Thread mainThread;

@@ -389,10 +389,10 @@ public class MainThread implements Runnable {
 		addCue("Cleared", loadImage("cues/cueCleared.png"), null); // used for example when raid has been finished
 		addCue("Defeat", loadImage("cues/cueDefeat.png"), null); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
 		addCue("YesGreen", loadImage("cues/cueYesGreen.png"), null); // used for example when raid has been finished ("Cleared" popup)
-		addCue("Persuade", loadImage("cues/cuePersuade.png"), null);
-		addCue("View", loadImage("cues/cueView.png"), null);
-		addCue("Bribe", loadImage("cues/cueBribe.png"), null);
-		addCue("SkeletonTreasure", loadImage("cues/cueSkeletonTreasure.png"), null); // skeleton treasure found in dungeons (it's a dialog/popup cue)
+		addCue("Persuade", loadImage("cues/cuePersuade.png"), new Bounds(116, 311, 286, 380));
+		addCue("View", loadImage("cues/cueView.png"), new Bounds(390, 415, 600, 486));
+		addCue("Bribe", loadImage("cues/cueBribe.png"), new Bounds(505, 305, 684, 375));
+		addCue("SkeletonTreasure", loadImage("cues/cueSkeletonTreasure.png"), new Bounds(185, 165, 295, 280)); // skeleton treasure found in dungeons (it's a dialog/popup cue)
 		addCue("Open", loadImage("cues/cueOpen.png"), null); // skeleton treasure open button
 		addCue("AdTreasure", loadImage("cues/cueAdTreasure.png"), null); // ad treasure found in dungeons (it's a dialog/popup cue)
 		addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
@@ -1364,7 +1364,6 @@ public class MainThread implements Runnable {
 							readScreen(2*SECOND);
 							seg = detectCue(cues.get("Accept"), 5*SECOND);
 							clickOnSeg(seg);
-							//TODO Change this back to 5 second sleep if it breaks something
 							readScreen(2*SECOND);
 
 							handleTeamMalformedWarning();
@@ -1564,7 +1563,7 @@ public class MainThread implements Runnable {
 							clickOnSeg(seg);
 							sleep(SECOND);
 							
-							if (trials) {
+							if (trials && BHBot.settings.autoShrine) {
 								checkShrineSettings("disable");
 								}
 							
@@ -3148,72 +3147,13 @@ public class MainThread implements Runnable {
 			}
 			return;
 		}
-
-		// check for non max speed (and increase it):
-		
-//		seg = detectCue(cues.get("SpeedCheck"));
-//		if (seg == null) {
-//			BHBot.log("Changing speed..");
-//			clickInGame(40,480);
-//			return;
-//		}
-		
+	
 		
 		/*
 		 * autoShrine Code
 		 */
 		
-		//We use guild button visibility to determine whether we are in an encounter or not
-		seg = detectCue(cues.get("GuildButton"));
-		if (seg != null) {
-			outOfEncounterTimestamp = System.currentTimeMillis() / 1000L;
-		} else {
-			inEncounterTimestamp = System.currentTimeMillis() / 1000L;
-		}
-		
-		if (state == State.Trials || state == State.Raid) {
-			if (activityDuration > 30 && !autoShrined) { //if we're past 30 seconds into the activity
-				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) { //and it's been the battleDelay setting since last encounter
-					BHBot.log("No activity for " + BHBot.settings.battleDelay + "s, enabing shrines");
-					//open settings
-					clickInGame(675,482);
-					sleep(1500);
-					readScreen();
-					
-					seg = detectCue(cues.get("IgnoreShrines"));
-					if (seg == null) {
-						clickInGame(194,402);
-						BHBot.log("Disabling Ignore Shrine");
-					}
-					sleep(500);
-					clickInGame(660,80); //close settings
-					sleep(500);
-					clickInGame(780,270); //auto off
-					sleep(500);
-					clickInGame(780,270); //auto on again
-					
-					BHBot.log("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
-					sleep(BHBot.settings.shrineDelay*SECOND); //long sleep while we activate shrines
-					
-					//open settings
-					clickInGame(675,482);
-					sleep(1000);
-					readScreen();
-					seg = detectCue(cues.get("IgnoreBoss"));
-					if (seg == null) {
-						clickInGame(194,366);
-						BHBot.log("Disabling Ignore Boss");
-					}
-					sleep(500);
-					clickInGame(660,80); //close settings
-					sleep(500);
-					clickInGame(780,270); //auto off
-					sleep(500);
-					clickInGame(780,270); //auto on again
-					autoShrined = true;
-				}
-			}
-		}
+		handleAutoShrine();
 		
 		/*
 		 * autoRevive code
@@ -3222,245 +3162,7 @@ public class MainThread implements Runnable {
 		//trials/raid revive code + auto-off check
 		seg = detectCue(cues.get("AutoOff"));
 		if (seg != null) {
-			if ((state == State.Trials || state == State.Gauntlet) && (BHBot.settings.autoRevive == 1 || BHBot.settings.autoRevive == 3)) {
-				BHBot.log("Auto-pilot disabled. Checking for revivable team members");
-				sleep(500);
-				clickInGame(35,415); //click potion button
-				readScreen();
-				MarvinSegment seg1 = detectCue(cues.get("UhOh"),2*SECOND); //UhOh dialogue box when everyone is full HP 
-				MarvinSegment seg2 = detectCue(cues.get("Defeat")); //if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
-				if (seg1 != null || seg2 != null) {
-					if (seg2 != null) {
-						if (BHBot.settings.autoRevive == 0) BHBot.log("AutoRevive disabled, reenabling auto..");
-						sleep(500);
-						readScreen();
-						BHBot.log("Defeat screen, skipping revive check");
-						seg = detectCue(cues.get("AutoOff"));
-						clickOnSeg(seg);
-						return;
-					} else {
-						sleep(1000);
-						clickInGame(400,365); //dismiss pop-up
-						if (BHBot.settings.autoRevive == 0) {
-							BHBot.log("AutoRevive disabled, reenabling auto..");
-						} else BHBot.log("No revives needed, reenabling auto..");
-						sleep(500);
-						readScreen();
-						seg = detectCue(cues.get("AutoOff"));
-						clickOnSeg(seg);
-					}
-					return;
-				} else {
-					
-					if (!oneRevived) { // speed boost so we're not checking slots that have been revived already
-						clickInGame(290,315); //slot #1
-						sleep(1500);
-						readScreen();
-						seg = detectCue(cues.get("ReviveAverage"));
-						if (seg != null) {
-							useRevive(1);
-							readScreen();
-							seg = detectCue(cues.get("AutoOff"));
-							clickOnSeg(seg);
-							oneRevived = true;
-							return;
-						//TODO Check if potions are actually available
-						} else {
-							BHBot.log("Slot #1 not revivable");
-							clickInGame(700,90); //close window
-							sleep(500);
-						}
-					} else BHBot.log("Slot #1 already revived");
-					
-					if (!twoRevived) { // speed boost so we're not checking slots that have been revived already
-						clickInGame(200,340); //slot 2
-						sleep(1500);
-						readScreen();
-						seg = detectCue(cues.get("ReviveAverage"));
-						if (seg != null) {
-							useRevive(2);
-							readScreen();
-							seg = detectCue(cues.get("AutoOff"));
-							clickOnSeg(seg);
-							twoRevived = true;
-							return;
-						} else {
-							BHBot.log("Slot #2 not revivable");
-							clickInGame(700,90); //close window
-							sleep(500);
-						}
-					} else BHBot.log("Slot #2 already revived");
-					
-					if (!threeRevived) { // speed boost so we're not checking slots that have been revived already
-						clickInGame(115,285); //slot 3
-						sleep(1500);
-						readScreen();
-						seg = detectCue(cues.get("ReviveAverage"));
-						if (seg != null) {
-							useRevive(3);
-							readScreen();
-							seg = detectCue(cues.get("AutoOff"));
-							clickOnSeg(seg);
-							threeRevived = true;
-							return;
-						} else {
-							BHBot.log("Slot #3 not revivable");
-							clickInGame(700,90); //close window
-							sleep(500);
-						}
-					} else BHBot.log("Slot #3 already revived");
-					
-					sleep(1000);
-					BHBot.log("Revive checking complete");
-					readScreen();
-					seg = detectCue(cues.get("AutoOff"));
-					if (seg != null) clickOnSeg(seg); //re-enable auto if necessary
-					return;
-				}
-			}
-			
-			if ((state == State.Raid) && (BHBot.settings.autoRevive == 2 || BHBot.settings.autoRevive == 3)) {
-				BHBot.log("Auto-pilot disabled. Checking for revivable team members");
-				sleep(500);
-				clickInGame(35,415); //click potion button
-				readScreen();
-				MarvinSegment seg1 = detectCue(cues.get("UhOh"),2*SECOND); //UhOh dialogue box when everyone is full HP 
-				MarvinSegment seg2 = detectCue(cues.get("Defeat")); //if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
-				if (seg1 != null || seg2 != null) {
-					if (seg2 != null) {
-						if (BHBot.settings.autoRevive == 0) BHBot.log("AutoRevive disabled, reenabling auto..");
-						sleep(500);
-						readScreen();
-						BHBot.log("Defeat screen, skipping revive check");
-						seg = detectCue(cues.get("AutoOff"));
-						clickOnSeg(seg);
-						return;
-					} else {
-						sleep(1000);
-						clickInGame(400,365); //dismiss pop-up
-						if (BHBot.settings.autoRevive == 0) {
-							BHBot.log("AutoRevive disabled, reenabling auto..");
-						} else BHBot.log("No revives needed, reenabling auto..");
-						sleep(500);
-						readScreen();
-						seg = detectCue(cues.get("AutoOff"));
-						clickOnSeg(seg);
-					}
-					return;
-				} else {
-					
-					if (!oneRevived) {
-						clickInGame(305,320); //slot #1
-						sleep(1500);
-						readScreen();
-						seg = detectCue(cues.get("ReviveAverage"));
-						if (seg != null && (!oneRevived)) {
-							useRevive(1);
-							readScreen();
-							seg = detectCue(cues.get("AutoOff"));
-							clickOnSeg(seg);
-							oneRevived = true;
-							return;
-	//						//TODO Check if potions are actually available ...
-						} else { 
-							BHBot.log("Slot #1 not revivable");
-							clickInGame(700,90); //close window
-							sleep(500);
-							}
-					} else BHBot.log("Slot #1 already revived");
-					
-					if (!twoRevived) {
-						clickInGame(250,345); //slot 2
-						sleep(1500);
-						readScreen();
-						seg = detectCue(cues.get("ReviveAverage"));
-						if (seg != null && (!twoRevived)) {
-							useRevive(2);
-							readScreen();
-							seg = detectCue(cues.get("AutoOff"));
-							clickOnSeg(seg);
-							twoRevived = true;
-							return;
-						} else {
-							BHBot.log("Slot #2 not revivable");
-							clickInGame(700,90); //close window
-							sleep(500);
-							}
-					} else BHBot.log("Slot #2 already revived");
-					
-					if (!threeRevived) {
-						clickInGame(200,267); //slot 3
-						sleep(1500);
-						readScreen();
-						seg = detectCue(cues.get("ReviveAverage"));
-						if (seg != null && (!threeRevived)) {
-							useRevive(3);
-							readScreen();
-							seg = detectCue(cues.get("AutoOff"));
-							clickOnSeg(seg);
-							threeRevived = true;
-							return;
-						} else {
-							BHBot.log("Slot #3 not revivable");
-							clickInGame(700,90); //close window
-							sleep(500);
-							}
-					} else BHBot.log("Slot #3 already revived");
-					
-					if (!fourRevived) {
-						clickInGame(150,325); //slot 4
-						sleep(1500);
-						readScreen();
-						seg = detectCue(cues.get("ReviveAverage"));
-						if (seg != null && (!fourRevived)) {
-							useRevive(4);
-							readScreen();
-							seg = detectCue(cues.get("AutoOff"));
-							clickOnSeg(seg);
-							fourRevived = true;
-							return;
-						} else {
-							BHBot.log("Slot #4 not revivable");
-							clickInGame(700,90); //close window
-							sleep(500);
-							}
-					} else BHBot.log("Slot #4 already revived");
-					
-					if (!fiveRevived) {
-						clickInGame(90,295); //slot 5
-						sleep(1500);
-						readScreen();
-						seg = detectCue(cues.get("ReviveAverage"));
-						if (seg != null && (!fiveRevived)) {
-							useRevive(5);
-							readScreen();
-							seg = detectCue(cues.get("AutoOff"));
-							clickOnSeg(seg);
-							fiveRevived = true;
-							return;
-						} else {
-							BHBot.log("Slot #5 not revivable");
-							clickInGame(700,90); //close window
-							sleep(500);
-							}
-					} else BHBot.log("Slot #5 already revived");
-					
-					sleep(1000);
-					BHBot.log("Revive checking complete");
-					readScreen();
-					seg = detectCue(cues.get("AutoOff"));
-					if (seg != null) clickOnSeg(seg); //reenable auto if necessary
-					return;
-				}
-			} else {
-				seg = detectCue(cues.get("AutoOff"));
-				if (seg != null) {
-					clickOnSeg(seg);
-					BHBot.log("Auto-pilot is disabled. Enabling...");
-					return;
-				}
-			}
-		return;
+			handleAutoRevive();
 		}
 
 		/*
@@ -3470,144 +3172,18 @@ public class MainThread implements Runnable {
 		// check for persuasions:
 		seg = detectCue(cues.get("Persuade"));
 		if (seg != null) {
-			BHBot.log("Familiar encountered");
-			//click view
-			sleep(2*SECOND);
-			//open view window and check familiar array for match
-			if (BHBot.settings.autoBribe) {
-				seg = detectCue(cues.get("View"));
-				if (seg != null) {
-					clickOnSeg(seg);
-					for (String f : BHBot.settings.familiars) { //cycle through array
-						readScreen();
-						String fam = f.toUpperCase().split(" ")[0];
-						seg = detectCue(cues.get(fam), SECOND);
-						int bribeCount = checkFamiliarCounter(fam);
-						if (seg != null && !(bribeCount < 1) && (BHBot.settings.autoBribe)) {
-							BHBot.log("Bribing " + fam);
-							readScreen();
-							seg = detectCue(cues.get("X"), 2*SECOND); // the sleep at the end is the timeout, else it will click as soon as its available
-							if (seg != null) {
-								clickOnSeg(seg);
-							} else restart();  //failsafe to restart if the bot can't find the button
-							readScreen();
-							seg = detectCue(cues.get("Bribe"), 2*SECOND);
-							if (seg != null) {
-								clickOnSeg(seg);
-							} else restart();
-							// TODO Add not enough gems fail-safe
-							readScreen();
-							seg = detectCue(cues.get("YesGreen"), 2*SECOND);
-							if (seg != null) {
-								sleep(SECOND);
-								clickInGame(330,360); //click in game as the drop down was too inconsistent to find the cue
-							} else restart();
-							saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
-							updateFamiliarCounter(fam, bribeCount);
-							return;
-							}
-						}
-					}
-				}
-				BHBot.log("Persuading familiar");
-				sleep(SECOND);
-				if (BHBot.settings.familiarScreenshot) {
-					saveGameScreen("familiar-cue-test"); //If the familiar is unknown we might not have an image for it yet, so save a screenshot to create a cue from
-				}
-				
-				readScreen();
-				seg = detectCue(cues.get("X"), 2*SECOND);
-				if (seg != null) {
-					clickOnSeg(seg);
-				} // else restart();  //failsafe to restart if the bot can't find the button (Not needed now if we don't open the View window with autoBribe 0)
-				readScreen();
-				seg = detectCue(cues.get("Persuade"), 2*SECOND);
-				if (seg != null) {
-					clickOnSeg(seg);
-				} else restart();
-				readScreen();
-				seg = detectCue(cues.get("YesGreen"), 2*SECOND);
-				if (seg != null) {
-//					clickOnSeg(seg);
-					sleep(SECOND);
-					clickInGame(330,360);
-				} else restart();
-			return;
+			handleFamiliarEncounter();
 		}
 		
 		/*
 		 * Skeleton key code
 		 */
 
-		// check for skeleton treasure chest:
-		//TODO Add no key "Uh Oh" failsafe
 		seg = detectCue(cues.get("SkeletonTreasure"));
 		if (seg != null) {
-			if (BHBot.settings.openSkeleton == 0) {
-				BHBot.log("Skeleton treasure found, declining.");
-				seg = detectCue(cues.get("Decline"), 5*SECOND);
-				clickOnSeg(seg);
-				readScreen(SECOND);
-				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-				clickOnSeg(seg);
-				return;
-				
-			} else if (BHBot.settings.openSkeleton == 1) {
-				BHBot.log("Skeleton treasure found, attemping to use key");
-				seg = detectCue(cues.get("Open"), 5*SECOND);
-				if (seg == null) {
-					BHBot.log("Open button not found, restarting");
-					restart();
-				}
-				clickOnSeg(seg);
-				readScreen(SECOND);
-				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-				if (seg == null) {
-					BHBot.log("Yes button not found, restarting");
-					restart();
-				}
-				clickOnSeg(seg);
-				return;
-				
-			} else if (BHBot.settings.openSkeleton == 2 && state == State.Raid) {
-				BHBot.log("Raid Skeleton treasure found, attemping to use key");
-				seg = detectCue(cues.get("Open"), 5*SECOND);
-				if (seg == null) {
-					BHBot.log("Open button not found, restarting");
-
-					restart();
-				}
-				clickOnSeg(seg);
-				readScreen(SECOND);
-				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-				if (seg == null) {
-					BHBot.log("Yes button not found, restarting");
-					restart();
-				}
-				clickOnSeg(seg);
-				return;
-				
-			} else
-				BHBot.log("Skeleton treasure found, declining.");
-				seg = detectCue(cues.get("Decline"), 5*SECOND);
-				clickOnSeg(seg);
-				readScreen(SECOND);
-				seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-				clickOnSeg(seg);
-				return;
+			handleSkeletonKey();
 		}
 		
-		// check for merchant's offer (and decline it):
-		seg = detectCue(cues.get("Merchant"));
-		if (seg != null) {
-			seg = detectCue(cues.get("Decline"), 5*SECOND);
-			clickOnSeg(seg);
-
-			readScreen(SECOND);
-			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-			clickOnSeg(seg);
-			return;
-		}
 		
 		// check for any character dialog:
 		/* This is nearly half of the processing time of proccessDungeon(); so trying to minimize its usage */
@@ -3764,14 +3340,14 @@ public class MainThread implements Runnable {
 			return;
 		}
 
-		//
 		/*
 		 * Check if we're done (victory in PVP mode) - this may also close local fights in dungeons, this is why we check if state is State.PVP and react only to that one.
 		 * There were some crashing and clicking on SHOP problems with this one in dungeons and raids (and possibly elsewhere).
 		 * Hence I fixed it by checking if state==State.PVP.
 		 */
+		if (state == State.PVP) {
 		seg = detectCue(cues.get("VictoryPopup"));
-		if (state == State.PVP && seg != null) {
+		if (seg != null) {
 			closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
 
 			// close the PVP window, in case it is open:
@@ -3787,12 +3363,436 @@ public class MainThread implements Runnable {
 			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
 			state = State.Main; // reset state
 			return;
+			}
 		}
 
-		sleep(1000); //baby sleep so this function isn't too taxing on performance
+		//small sleep so this function isn't too taxing on performance
+		sleep(2000);
 		
 		// at the end of this method, revert idle time change (in order for idle detection to function properly):
 		BHBot.scheduler.restoreIdleTime();
+	}
+	
+	private void handleAutoShrine() {
+		MarvinSegment seg;
+		//We use guild button visibility to determine whether we are in an encounter or not
+		seg = detectCue(cues.get("GuildButton"));
+		if (seg != null) {
+			outOfEncounterTimestamp = System.currentTimeMillis() / 1000L;
+		} else {
+			inEncounterTimestamp = System.currentTimeMillis() / 1000L;
+		}
+		
+		if (state == State.Trials || state == State.Raid) {
+			if (activityDuration > 30 && !autoShrined) { //if we're past 30 seconds into the activity
+				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) { //and it's been the battleDelay setting since last encounter
+					BHBot.log("No activity for " + BHBot.settings.battleDelay + "s, enabing shrines");
+					//open settings
+					clickInGame(675,482);
+					sleep(1500);
+					readScreen();
+					
+					seg = detectCue(cues.get("IgnoreShrines"));
+					if (seg == null) {
+						clickInGame(194,402);
+						BHBot.log("Disabling Ignore Shrine");
+					}
+					sleep(500);
+					clickInGame(660,80); //close settings
+					sleep(500);
+					clickInGame(780,270); //auto off
+					sleep(500);
+					clickInGame(780,270); //auto on again
+					
+					BHBot.log("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
+					sleep(BHBot.settings.shrineDelay*SECOND); //long sleep while we activate shrines
+					
+					//open settings
+					clickInGame(675,482);
+					sleep(1000);
+					readScreen();
+					seg = detectCue(cues.get("IgnoreBoss"));
+					if (seg == null) {
+						clickInGame(194,366);
+						BHBot.log("Disabling Ignore Boss");
+					}
+					sleep(500);
+					clickInGame(660,80); //close settings
+					sleep(500);
+					clickInGame(780,270); //auto off
+					sleep(500);
+					clickInGame(780,270); //auto on again
+					autoShrined = true;
+				}
+			}
+		}
+	}
+	
+	private void handleSkeletonKey() {
+		//TODO Add no key "Uh Oh" failsafe
+		MarvinSegment seg;
+		if (BHBot.settings.openSkeleton == 0) {
+			BHBot.log("Skeleton treasure found, declining.");
+			seg = detectCue(cues.get("Decline"), 5*SECOND);
+			clickOnSeg(seg);
+			readScreen(SECOND);
+			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
+			clickOnSeg(seg);
+			return;
+			
+		} else if (BHBot.settings.openSkeleton == 1) {
+			BHBot.log("Skeleton treasure found, attemping to use key");
+			seg = detectCue(cues.get("Open"), 5*SECOND);
+			if (seg == null) {
+				BHBot.log("Open button not found, restarting");
+				restart();
+			}
+			clickOnSeg(seg);
+			readScreen(SECOND);
+			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
+			if (seg == null) {
+				BHBot.log("Yes button not found, restarting");
+				restart();
+			}
+			clickOnSeg(seg);
+			return;
+			
+		} else if (BHBot.settings.openSkeleton == 2 && state == State.Raid) {
+			BHBot.log("Raid Skeleton treasure found, attemping to use key");
+			seg = detectCue(cues.get("Open"), 5*SECOND);
+			if (seg == null) {
+				BHBot.log("Open button not found, restarting");
+
+				restart();
+			}
+			clickOnSeg(seg);
+			readScreen(SECOND);
+			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
+			if (seg == null) {
+				BHBot.log("Yes button not found, restarting");
+				restart();
+			}
+			clickOnSeg(seg);
+			return;
+			
+		} else
+			BHBot.log("Skeleton treasure found, declining.");
+			seg = detectCue(cues.get("Decline"), 5*SECOND);
+			clickOnSeg(seg);
+			readScreen(SECOND);
+			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
+			clickOnSeg(seg);
+			return;
+	}
+	
+	private void handleFamiliarEncounter() {
+		MarvinSegment seg;
+		BHBot.log("Familiar encountered");
+		//click view
+		sleep(2*SECOND);
+		//open view window and check familiar array for match
+		if (BHBot.settings.autoBribe) {
+			seg = detectCue(cues.get("View"));
+			if (seg != null) {
+				clickOnSeg(seg);
+				for (String f : BHBot.settings.familiars) { //cycle through array
+					readScreen();
+					String fam = f.toUpperCase().split(" ")[0];
+					seg = detectCue(cues.get(fam), SECOND);
+					int bribeCount = checkFamiliarCounter(fam);
+					if (seg != null && !(bribeCount < 1) && (BHBot.settings.autoBribe)) {
+						BHBot.log("Bribing " + fam);
+						readScreen();
+						seg = detectCue(cues.get("X"), 2*SECOND); // the sleep at the end is the timeout, else it will click as soon as its available
+						if (seg != null) {
+							clickOnSeg(seg);
+						} else restart();  //failsafe to restart if the bot can't find the button
+						readScreen();
+						seg = detectCue(cues.get("Bribe"), 2*SECOND);
+						if (seg != null) {
+							clickOnSeg(seg);
+						} else restart();
+						// TODO Add not enough gems fail-safe
+						readScreen();
+						seg = detectCue(cues.get("YesGreen"), 2*SECOND);
+						if (seg != null) {
+							sleep(SECOND);
+							clickInGame(330,360); //click in game as the drop down was too inconsistent to find the cue
+						} else restart();
+						saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
+						updateFamiliarCounter(fam, bribeCount);
+						return;
+						}
+					}
+				}
+			}
+			BHBot.log("Persuading familiar");
+			sleep(SECOND);
+			if (BHBot.settings.familiarScreenshot) {
+				saveGameScreen("familiar-cue-test"); //If the familiar is unknown we might not have an image for it yet, so save a screenshot to create a cue from
+			}
+			
+			readScreen();
+			seg = detectCue(cues.get("X"), 2*SECOND);
+			if (seg != null) {
+				clickOnSeg(seg);
+			} // else restart();  //failsafe to restart if the bot can't find the button (Not needed now if we don't open the View window with autoBribe 0)
+			readScreen();
+			seg = detectCue(cues.get("Persuade"), 2*SECOND);
+			if (seg != null) {
+				clickOnSeg(seg);
+			} else restart();
+			readScreen();
+			seg = detectCue(cues.get("YesGreen"), 2*SECOND);
+			if (seg != null) {
+//				clickOnSeg(seg);
+				sleep(SECOND);
+				clickInGame(330,360);
+			} else restart();
+		return;
+	}
+	
+	private void handleAutoRevive() {
+		MarvinSegment seg;
+		if ((state == State.Trials || state == State.Gauntlet) && (BHBot.settings.autoRevive == 1 || BHBot.settings.autoRevive == 3)) {
+			BHBot.log("Auto-pilot disabled. Checking for revivable team members");
+			sleep(500);
+			clickInGame(35,415); //click potion button
+			readScreen();
+			MarvinSegment seg1 = detectCue(cues.get("UhOh"),2*SECOND); //UhOh dialogue box when everyone is full HP 
+			MarvinSegment seg2 = detectCue(cues.get("Defeat")); //if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
+			if (seg1 != null || seg2 != null) {
+				if (seg2 != null) {
+					if (BHBot.settings.autoRevive == 0) BHBot.log("AutoRevive disabled, reenabling auto..");
+					sleep(500);
+					readScreen();
+					BHBot.log("Defeat screen, skipping revive check");
+					seg = detectCue(cues.get("AutoOff"));
+					clickOnSeg(seg);
+					return;
+				} else {
+					sleep(1000);
+					clickInGame(400,365); //dismiss pop-up
+					if (BHBot.settings.autoRevive == 0) {
+						BHBot.log("AutoRevive disabled, reenabling auto..");
+					} else BHBot.log("No revives needed, reenabling auto..");
+					sleep(500);
+					readScreen();
+					seg = detectCue(cues.get("AutoOff"));
+					clickOnSeg(seg);
+				}
+				return;
+			} else {
+				
+				if (!oneRevived) { // speed boost so we're not checking slots that have been revived already
+					clickInGame(290,315); //slot #1
+					sleep(1500);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null) {
+						useRevive(1);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						oneRevived = true;
+						return;
+					//TODO Check if potions are actually available
+					} else {
+						BHBot.log("Slot #1 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+					}
+				} else BHBot.log("Slot #1 already revived");
+				
+				if (!twoRevived) { // speed boost so we're not checking slots that have been revived already
+					clickInGame(200,340); //slot 2
+					sleep(1500);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null) {
+						useRevive(2);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						twoRevived = true;
+						return;
+					} else {
+						BHBot.log("Slot #2 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+					}
+				} else BHBot.log("Slot #2 already revived");
+				
+				if (!threeRevived) { // speed boost so we're not checking slots that have been revived already
+					clickInGame(115,285); //slot 3
+					sleep(1500);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null) {
+						useRevive(3);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						threeRevived = true;
+						return;
+					} else {
+						BHBot.log("Slot #3 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+					}
+				} else BHBot.log("Slot #3 already revived");
+				
+				sleep(1000);
+				BHBot.log("Revive checking complete");
+				readScreen();
+				seg = detectCue(cues.get("AutoOff"));
+				if (seg != null) clickOnSeg(seg); //re-enable auto if necessary
+				return;
+			}
+		}
+		
+		if ((state == State.Raid) && (BHBot.settings.autoRevive == 2 || BHBot.settings.autoRevive == 3)) {
+			BHBot.log("Auto-pilot disabled. Checking for revivable team members");
+			sleep(500);
+			clickInGame(35,415); //click potion button
+			readScreen();
+			MarvinSegment seg1 = detectCue(cues.get("UhOh"),2*SECOND); //UhOh dialogue box when everyone is full HP 
+			MarvinSegment seg2 = detectCue(cues.get("Defeat")); //if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
+			if (seg1 != null || seg2 != null) {
+				if (seg2 != null) {
+					if (BHBot.settings.autoRevive == 0) BHBot.log("AutoRevive disabled, reenabling auto..");
+					sleep(500);
+					readScreen();
+					BHBot.log("Defeat screen, skipping revive check");
+					seg = detectCue(cues.get("AutoOff"));
+					clickOnSeg(seg);
+					return;
+				} else {
+					sleep(1000);
+					clickInGame(400,365); //dismiss pop-up
+					if (BHBot.settings.autoRevive == 0) {
+						BHBot.log("AutoRevive disabled, reenabling auto..");
+					} else BHBot.log("No revives needed, reenabling auto..");
+					sleep(500);
+					readScreen();
+					seg = detectCue(cues.get("AutoOff"));
+					clickOnSeg(seg);
+				}
+				return;
+			} else {
+				
+				if (!oneRevived) {
+					clickInGame(305,320); //slot #1
+					sleep(1500);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null && (!oneRevived)) {
+						useRevive(1);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						oneRevived = true;
+						return;
+//						//TODO Check if potions are actually available ...
+					} else { 
+						BHBot.log("Slot #1 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+						}
+				} else BHBot.log("Slot #1 already revived");
+				
+				if (!twoRevived) {
+					clickInGame(250,345); //slot 2
+					sleep(1500);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null && (!twoRevived)) {
+						useRevive(2);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						twoRevived = true;
+						return;
+					} else {
+						BHBot.log("Slot #2 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+						}
+				} else BHBot.log("Slot #2 already revived");
+				
+				if (!threeRevived) {
+					clickInGame(200,267); //slot 3
+					sleep(1500);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null && (!threeRevived)) {
+						useRevive(3);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						threeRevived = true;
+						return;
+					} else {
+						BHBot.log("Slot #3 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+						}
+				} else BHBot.log("Slot #3 already revived");
+				
+				if (!fourRevived) {
+					clickInGame(150,325); //slot 4
+					sleep(1500);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null && (!fourRevived)) {
+						useRevive(4);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						fourRevived = true;
+						return;
+					} else {
+						BHBot.log("Slot #4 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+						}
+				} else BHBot.log("Slot #4 already revived");
+				
+				if (!fiveRevived) {
+					clickInGame(90,295); //slot 5
+					sleep(1500);
+					readScreen();
+					seg = detectCue(cues.get("ReviveAverage"));
+					if (seg != null && (!fiveRevived)) {
+						useRevive(5);
+						readScreen();
+						seg = detectCue(cues.get("AutoOff"));
+						clickOnSeg(seg);
+						fiveRevived = true;
+						return;
+					} else {
+						BHBot.log("Slot #5 not revivable");
+						clickInGame(700,90); //close window
+						sleep(500);
+						}
+				} else BHBot.log("Slot #5 already revived");
+				
+				sleep(1000);
+				BHBot.log("Revive checking complete");
+				readScreen();
+				seg = detectCue(cues.get("AutoOff"));
+				if (seg != null) clickOnSeg(seg); //reenable auto if necessary
+				return;
+			}
+		} else {
+			seg = detectCue(cues.get("AutoOff"));
+			if (seg != null) {
+				clickOnSeg(seg);
+				BHBot.log("Auto-pilot is disabled. Enabling...");
+				return;
+			}
+		}
+	return;
 	}
 	
 	private void useRevive(int position) {
