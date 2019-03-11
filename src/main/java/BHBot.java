@@ -23,8 +23,7 @@ public class BHBot {
 
 	private static final String PROGRAM_NAME = "BHBot";
 	private static final String PROGRAM_VERSION = "33.2";
-	private static final boolean REQUIRES_ACCESS_TOKEN = false; // obsolete since public release (was used to restrict bot usage)
-	
+
 	private static Thread mainThread;
 	static MainThread main;
 	/** Set it to true to end main loop and end program gracefully */
@@ -41,16 +40,6 @@ public class BHBot {
 		log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started.");
 		
 		MainThread.loadCues();
-		
-		if (REQUIRES_ACCESS_TOKEN) {
-			int timeout = 10000;
-			log("Requesting access token... (timeout=" + Misc.millisToHumanForm(timeout) + ")");
-			boolean access = AccessControl.check(timeout);
-			if (!access) {
-				log("Error: access token expired or was unable to retrieve a new one. Quiting...");
-				return ;
-			}
-		}
 		
 		// process launch arguments
 		boolean settingsProcessed = false;

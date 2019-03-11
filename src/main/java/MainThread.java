@@ -818,7 +818,10 @@ public class MainThread implements Runnable {
 		String file = saveGameScreen("crash");
 
 		// save stack trace:
-		Misc.saveTextFile(file.substring(0, file.length() - 4) + ".txt", Misc.getStackTrace());
+		boolean savedST = Misc.saveTextFile(file.substring(0, file.length() - 4) + ".txt", Misc.getStackTrace());
+		if (!savedST) {
+			BHBot.log("Impossible to save the stack trace in dumpCrashLog!");
+		}
 
 		if (BHBot.settings.enablePushover && BHBot.settings.poNotifyCrash) {
 			sendPushOverMessage("BHbot CRASH!",
