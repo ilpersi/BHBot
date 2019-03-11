@@ -25,6 +25,9 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
+import net.pushover.client.MessagePriority;
+import net.pushover.client.PushoverException;
+import net.pushover.client.PushoverMessage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.Dimension;
@@ -287,6 +290,7 @@ public class MainThread implements Runnable {
 	private long timeLastBountyCheck = 0; // when did we check for bounties the last time?
 	private long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
 	private long timeLastFishingCheck = 0; // when did we check for fishing baits the last time?
+	private long timeLastPOAlive = Misc.getTime(); // when did we send the last PO Notification?
 
 	/** Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale. */
 	private int numConsecutiveException = 0;
@@ -814,7 +818,13 @@ public class MainThread implements Runnable {
 		String file = saveGameScreen("crash");
 
 		// save stack trace:
-		Misc.saveTextFile(file.substring(0, file.length()-4) + ".txt", Misc.getStackTrace());
+		Misc.saveTextFile(file.substring(0, file.length() - 4) + ".txt", Misc.getStackTrace());
+
+		if (BHBot.settings.enablePushover && BHBot.settings.poNotifyCrash) {
+			sendPushOverMessage("BHbot CRASH!",
+					"BHBot has crashed and a driver emergency restart has been performed!\n\n" + Misc.getStackTrace(), "falling",
+					MessagePriority.HIGH, new File(file));
+		}
 	}
 
 	private void restart() {
@@ -1236,6 +1246,16 @@ public class MainThread implements Runnable {
 						    BHBot.log("Possible dungeon crash, activating failsafe");
 						    continue;
 							}
+					}
+
+					// check for pushover alive notifications!
+					if ((BHBot.settings.enablePushover && BHBot.settings.poNotifyAlive > 0) &&
+							((Misc.getTime() - timeLastPOAlive) > (BHBot.settings.poNotifyAlive * HOUR))) {
+						timeLastPOAlive = Misc.getTime();
+						String aliveScreenName = saveGameScreen("alive-screen");
+						File aliveScreenFile = new File(aliveScreenName);
+						sendPushOverMessage("Alive notification", "I am alive and doing fine!", MessagePriority.QUIET, aliveScreenFile);
+						if (!aliveScreenFile.delete()) BHBot.log("Impossible to delete tmp img for alive notification.");
 					}
 
 					// check for bonuses:
@@ -4582,7 +4602,7 @@ public class MainThread implements Runnable {
 	/** Will detect and handle (close) in-game private message (from the current screen capture). Returns true in case PM has been handled. */
 	private boolean handlePM() {
 		if (detectCue(cues.get("InGamePM")) != null) {
-			MarvinSegment seg = detectCue(cues.get("X"), 5*SECOND);
+			MarvinSegment seg = detectCue(cues.get("X"), 5 * SECOND);
 			if (seg == null) {
 				BHBot.log("Error: in-game PM window detected, but no close button found. Restarting...");
 				restart(); //*** problem: after a call to this, it will return to the main loop. It should call "continue" inside the main loop or else there could be other exceptions!
@@ -4590,7 +4610,10 @@ public class MainThread implements Runnable {
 			}
 
 			try {
-				saveGameScreen("pm");
+				String pmFileName = saveGameScreen("pm");
+				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyPM) {
+					sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
+				}
 				clickOnSeg(seg);
 			} catch (Exception e) {
 				// ignore it
@@ -5801,5 +5824,31 @@ public class MainThread implements Runnable {
 		threeRevived = false;
 		fourRevived = false;
 		fiveRevived = false;
+	}
+
+	private void sendPushOverMessage(String title, String msg, MessagePriority priority, File attachment) {
+		sendPushOverMessage(title, msg, "pushover", priority, attachment);
+	}
+
+	private void sendPushOverMessage(String title, String msg, String sound) {
+		sendPushOverMessage(title, msg, sound, MessagePriority.NORMAL, null);
+	}
+
+	private void sendPushOverMessage(String title, String msg, String sound, MessagePriority priority, File attachment) {
+		if (BHBot.settings.enablePushover) {
+			try {
+				BHBot.poClient.pushMessage(
+						PushoverMessage.builderWithApiToken(BHBot.settings.poAppToken)
+								.setUserId(BHBot.settings.poUserToken)
+								.setTitle(title)
+								.setMessage(msg)
+								.setPriority(priority)
+								.setSound(sound)
+								.setAttachment(attachment)
+								.build());
+			} catch (PushoverException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

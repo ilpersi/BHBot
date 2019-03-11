@@ -8,6 +8,11 @@ public class Settings {
 	
 	String username = "";
 	String password = "";
+
+	// Pushover info
+	String poAppToken = "";
+	String poUserToken = "";
+
 	/** Experimental feature. Better use 'false' for now. */
     private boolean useHeadlessMode = false; // run Chrome with --headless switch?
 	boolean restartAfterAdOfferTimeout = true; // if true, then bot will automatically restart itself if it hasn't claimed any ad offer in a time longer than defined. This is needed because ads don't appear anymore if Chrome doesn't get restarted.
@@ -34,7 +39,13 @@ public class Settings {
 	boolean doInvasion = false;
 	boolean doExpedition = false;
 	boolean doWorldBoss = false;
-	
+
+	// Pushover settings
+	boolean enablePushover = false;
+	boolean poNotifyPM = false;
+	boolean poNotifyCrash = false;
+	int poNotifyAlive = 0;
+
 	/** This is the minimum amount of shards that the bot must leave for the user. If shards get above this value, bot will play the raids in case raiding is enabled of course. */
     int minShards = 2;
 	/** This is the minimum amount of tokens that the bot must leave for the user. If tokens get above this value, bot will play the trials/gauntlet in case trials/gauntlet is enabled of course. */
@@ -153,6 +164,8 @@ public class Settings {
 	/*public void set(Settings settings) {
 		this.username = settings.username;
 		this.password = settings.password;
+		this.poAppToken = settings.poAppToken;
+		this.poUserToken = settings.poUserToken;
 		this.useHeadlessMode = settings.useHeadlessMode;
 		this.restartAfterAdOfferTimeout = settings.restartAfterAdOfferTimeout;
 		this.debugDetectionTimes = settings.debugDetectionTimes;
@@ -170,7 +183,10 @@ public class Settings {
 		this.doAds = settings.doAds;
 		this.doExpedition = settings.doExpedition;
 		this.doWorldBoss =  settings.doWorldBoss;
-		
+		this.enablePushover =  settings.enablePushover;
+		this.poNotifyPM =  settings.poNotifyPM;
+		this.poNotifyCrash =  settings.poNotifyCrash;
+
 		this.maxShards = settings.maxShards;
 		this.maxTokens = settings.maxTokens;
 		this.maxTickets = settings.maxTickets;
@@ -181,7 +197,9 @@ public class Settings {
 		this.minEnergyPercentage = settings.minEnergyPercentage;
 		this.minTickets = settings.minTickets;
 		this.minBadges = settings.minBadges;
-		
+
+		this.poNotifyAlive = settings.poNotifyAlive;
+
 		this.costPVP = settings.costPVP;
 		this.costGVG = settings.costGVG;
 		this.costTrials = settings.costTrials;
@@ -260,6 +278,9 @@ public class Settings {
 		doAds = false;
 		doExpedition = false;
 		doWorldBoss = false;
+		enablePushover = false;
+		poNotifyPM = false;
+		poNotifyCrash = false;
 		autoConsume = false;
 		collectBounties = false;
 		collectFishingBaits = false;
@@ -547,6 +568,8 @@ public class Settings {
 		
 		username = map.getOrDefault("username", username);
 		password = map.getOrDefault("password", password);
+		poAppToken = map.getOrDefault("poAppToken", poAppToken);
+		poUserToken = map.getOrDefault("poUserToken", poUserToken);
 		useHeadlessMode = map.getOrDefault("headlessmode", useHeadlessMode ? "1" : "0").equals("1");
 		restartAfterAdOfferTimeout = map.getOrDefault("restartAfterAdOfferTimeout", restartAfterAdOfferTimeout ? "1" : "0").equals("1");
 		debugDetectionTimes = map.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("1");
@@ -563,19 +586,24 @@ public class Settings {
 		doInvasion = map.getOrDefault("doInvasion", doInvasion ? "1" : "0").equals("1");
 		doExpedition = map.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("1");
 		doWorldBoss = map.getOrDefault("doWorldBoss", doWorldBoss ? "1" : "0").equals("1");
+		enablePushover = map.getOrDefault("enablePushover", enablePushover ? "1" : "0").equals("1");
+		poNotifyPM = map.getOrDefault("poNotifyPM", poNotifyPM ? "1" : "0").equals("1");
+		poNotifyCrash = map.getOrDefault("poNotifyCrash", poNotifyCrash ? "1" : "0").equals("1");
 		doAds = map.getOrDefault("doAds", doAds ? "1" : "0").equals("1");
 		
-		maxShards = Integer.parseInt(map.getOrDefault("maxShards", ""+minShards));
-		maxTokens = Integer.parseInt(map.getOrDefault("maxTokens", ""+minTokens));
-		maxTickets = Integer.parseInt(map.getOrDefault("maxTickets", ""+minTickets));
-		maxBadges = Integer.parseInt(map.getOrDefault("maxBadges", ""+minBadges));
+		maxShards = Integer.parseInt(map.getOrDefault("maxShards", ""+maxShards));
+		maxTokens = Integer.parseInt(map.getOrDefault("maxTokens", ""+maxTokens));
+		maxTickets = Integer.parseInt(map.getOrDefault("maxTickets", ""+maxTickets));
+		maxBadges = Integer.parseInt(map.getOrDefault("maxBadges", ""+maxBadges));
 		
 		minShards = Integer.parseInt(map.getOrDefault("minShards", ""+minShards));
 		minTokens = Integer.parseInt(map.getOrDefault("minTokens", ""+minTokens));
 		minEnergyPercentage = Integer.parseInt(map.getOrDefault("minEnergyPercentage", ""+minEnergyPercentage));
 		minTickets = Integer.parseInt(map.getOrDefault("minTickets", ""+minTickets));
 		minBadges = Integer.parseInt(map.getOrDefault("minBadges", ""+minBadges));
-		
+
+		poNotifyAlive = Integer.parseInt(map.getOrDefault("poNotifyAlive", ""+poNotifyAlive));
+
 		costPVP = Integer.parseInt(map.getOrDefault("costPVP", ""+costPVP));
 		costGVG = Integer.parseInt(map.getOrDefault("costGVG", ""+costGVG));
 		costTrials = Integer.parseInt(map.getOrDefault("costTrials", ""+costTrials));

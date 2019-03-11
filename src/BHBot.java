@@ -5,10 +5,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 
+import net.pushover.client.PushoverClient;
+import net.pushover.client.PushoverException;
+import net.pushover.client.PushoverMessage;
+import net.pushover.client.PushoverRestClient;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
@@ -27,6 +32,8 @@ public class BHBot {
 	
 	static Settings settings = new Settings().setDebug();
 	static Scheduler scheduler = new Scheduler();
+
+	static PushoverClient poClient = new PushoverRestClient();
 	
 	static String chromeDriverAddress = "127.0.0.1:9515";
 	
@@ -162,6 +169,27 @@ public class BHBot {
 			case "load":
 				MainThread.loadCookies();
 				break;
+			case "pomessage":
+				String message = "Test message from BHbot!";
+
+				// We split on spaces so we re-build the original message
+				if (params.length > 1)
+					message = String.join(" ", Arrays.copyOfRange(params, 1, params.length));
+
+				if (BHBot.settings.enablePushover) {
+					try {
+						poClient.pushMessage(
+								PushoverMessage.builderWithApiToken(BHBot.settings.poAppToken)
+										.setUserId(BHBot.settings.poUserToken)
+										.setMessage(message)
+										.build());
+					} catch (PushoverException e) {
+						e.printStackTrace();
+					}
+				} else {
+					BHBot.log("Pushover integration is disabled in the settings!");
+				}
+				break;	
 			case "shot":
 				String fileName = "shot";
 				if (params.length > 1)

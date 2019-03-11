@@ -73,6 +73,11 @@
             <artifactId>selenium-shutterbug</artifactId>
             <version>0.9</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.ilpersi</groupId>
+            <artifactId>pushover-client</artifactId>
+            <version>1.0.2</version>
+        </dependency>
     </dependencies>
 
 
