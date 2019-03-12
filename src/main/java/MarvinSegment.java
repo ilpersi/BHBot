@@ -10,20 +10,20 @@ import java.util.List;
  */
 public class MarvinSegment {
 
-	public int 	x1,
+	int 	x1,
 	x2,
 	y1,
 	y2;
 
 	public int width;
 	public int height;
-	public int area;
+	private int area;
 
 	public MarvinSegment(){
 		this(-1,-1,-1,-1);
 	}
 	
-	public MarvinSegment(int x1, int y1, int x2, int y2){
+	MarvinSegment(int x1, int y1, int x2, int y2){
 		this.x1 = x1;
 		this.y1 = y1;
 		this.x2 = x2;

@@ -58,7 +58,7 @@ public class MarvinColorModelConverter {
 	 * @param binaryArray pixel binary data
 	 * @return pixel integer data in RGB mode.
 	 */
-	public static int[] binaryToRgb(boolean[] binaryArray){
+	static int[] binaryToRgb(boolean[] binaryArray){
 		int[] rgbArray = new int[binaryArray.length];
 		
 		for(int i=0; i<binaryArray.length; i++){
@@ -74,7 +74,7 @@ public class MarvinColorModelConverter {
 	
 	/**
 	 * Converts rgb array [argb, argb2,...] to hsv array [h,s,v,h2,s2,v2...];
-	 * @param hsvArray
+	 * @param rgbArray rgbArray
 	 * @return
 	 */
 	public static double[] rgbToHsv(int[] rgbArray){
@@ -129,8 +129,8 @@ public class MarvinColorModelConverter {
 	
 	/**
 	 * Converts hsv array [h,s,v,h2,s2,v2...] to rgb array [argb, argb2,...];
-	 * @param hsvArray
-	 * @return
+	 * @param hsvArray hsvArray
+	 * @return rgb
 	 */
 	public static int[] hsvToRgb(double[] hsvArray){
 		int[] rgbArray = new int[hsvArray.length/3];

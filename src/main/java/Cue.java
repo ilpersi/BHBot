@@ -6,10 +6,8 @@ import java.awt.image.BufferedImage;
  */
 public class Cue {
 	public String name;
-	public BufferedImage im;
-	public Bounds bounds;
-	
-	public Cue() { }
+	BufferedImage im;
+	Bounds bounds;
 	
 	public Cue(String name, BufferedImage im) {
 		this.name = name;
@@ -17,13 +15,13 @@ public class Cue {
 		bounds = null;
 	}
 	
-	public Cue(String name, BufferedImage im, Bounds bounds) {
+	Cue(String name, BufferedImage im, Bounds bounds) {
 		this.name = name;
 		this.im = im;
 		this.bounds = bounds;
 	}
 	
-	public Cue(Cue cue, Bounds bounds) {
+	Cue(Cue cue, Bounds bounds) {
 		this.name = cue.name;
 		this.im = cue.im;
 		this.bounds = bounds;

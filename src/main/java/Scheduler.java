@@ -1,5 +1,5 @@
 
-public class Scheduler {
+class Scheduler {
 	/** Instructs bot to do 1 raid immediately (after which this flag will get reset to 'false' */
 	boolean doRaidImmediately;
 	/** Instructs bot to do 1 dungeon immediately (after which this flag will get reset to 'false' */
@@ -27,21 +27,21 @@ public class Scheduler {
 	private long idleTimeBackup = 0; // temp variable
 	
 	/** Set it to true when user logs in and we must wait for him to finish interacting. */
-	public boolean isUserInteracting = false;
+	boolean isUserInteracting = false;
 	
-	public boolean dismissReconnectOnNextIteration = false;
+	boolean dismissReconnectOnNextIteration = false;
 	
 	/**
 	 * Must be called often enough in order to update internals of the scheduler.
 	 */
-	public void process() {
+	void process() {
 		// check if pause has expired:
 		if (paused && pauseDuration != PAUSED_INDEFINITELY && (Misc.getTime() - pauseStart > pauseDuration)) {
 			resume();
 		}
 	}
 	
-	public boolean isPaused() {
+	boolean isPaused() {
 		if (!paused)
 			return false;
 		
@@ -57,20 +57,20 @@ public class Scheduler {
 		return true;
 	}
 	
-	public void pause() {
+	void pause() {
 		paused = true;
 		pauseDuration = PAUSED_INDEFINITELY;
 		BHBot.log("Paused.");
 	}
 	
-	public void pause(int duration) {
+	void pause(int duration) {
 		paused = true;
 		pauseDuration = duration;
 		pauseStart = Misc.getTime();
 		BHBot.log("Paused for " + Misc.millisToHumanForm(duration) + ".");
 	}
 	
-	public void resume() {
+	void resume() {
 		if (!paused)
 			return;
 		paused = false;
@@ -88,19 +88,19 @@ public class Scheduler {
 	}
 	
 	/** Returns time stamp (and not duration)! */
-	public long getIdleTime() {
+	long getIdleTime() {
 		return idleTime;
 	}
 	
-	public void resetIdleTime() {
+	void resetIdleTime() {
 		idleTime = Misc.getTime();
 	}
 	
-	public void backupIdleTime() {
+	void backupIdleTime() {
 		idleTimeBackup = idleTime;
 	}
 	
-	public void restoreIdleTime() {
+	void restoreIdleTime() {
 		idleTime = idleTimeBackup;
 	}
 }

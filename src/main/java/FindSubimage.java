@@ -14,17 +14,17 @@ import java.util.List;
  * @author Betalord
  *
  */
-public class FindSubimage {
+class FindSubimage {
 
-	public static MarvinSegment findImage(BufferedImage imageIn, BufferedImage subimage) {
+	/*public static MarvinSegment findImage(BufferedImage imageIn, BufferedImage subimage) {
 		List<MarvinSegment> r = findSubimage(imageIn, subimage, 1.0, false, false, 0, 0, 0, 0);
 		if (r.isEmpty())
 			return null;
 		else
 			return r.get(0);
-	}
+	}*/
 
-	public static MarvinSegment findImage(BufferedImage imageIn, BufferedImage subimage, int startX, int startY, int endX, int endY) {
+	static MarvinSegment findImage(BufferedImage imageIn, BufferedImage subimage, int startX, int startY, int endX, int endY) {
 		List<MarvinSegment> r = findSubimage(imageIn, subimage, 1.0, false, false, startX, startY, endX, endY);
 		if (r.isEmpty())
 			return null;
@@ -34,18 +34,18 @@ public class FindSubimage {
 	
 	/**
 	 * 
-	 * @param imageIn
-	 * @param subimage
-	 * @param similarity
-	 * @param findAll
+	 * @param imageIn imageIn
+	 * @param subimage subimage
+	 * @param similarity similarity
+	 * @param findAll findAll
 	 * @param treatTransparentAsObscured this is a special flag that is used rarely. When true, it will consider all transparent pixels from the 'subimage' as pixels that must be lower than 200 accumulative value in the 'imageIn'. We use it for example when detecting "Loading" superimposed message (and background is obscured, with white(255,255,255) having a value of 64,64,64, which is the maximum value with obscured background.
-	 * @param startX
-	 * @param startY
+	 * @param startX startX
+	 * @param startY startY
 	 * @param endX may be 0 (will be ignored in this case)
 	 * @param endY may be 0 (will be ignored in this case)
-	 * @return
+	 * @return a list of found subimages
 	 */
-	public static List<MarvinSegment> findSubimage(BufferedImage imageIn, BufferedImage subimage, double similarity, boolean findAll, boolean treatTransparentAsObscured, int startX, int startY, int endX, int endY) {
+	static List<MarvinSegment> findSubimage(BufferedImage imageIn, BufferedImage subimage, double similarity, boolean findAll, boolean treatTransparentAsObscured, int startX, int startY, int endX, int endY) {
 		List<MarvinSegment> segments = new ArrayList<MarvinSegment>();
 		
 		if (endX == 0) endX = imageIn.getWidth(); // endX was not set
