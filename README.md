@@ -31,6 +31,7 @@ The level/difficulty for each activity can be defined in the settings file. The 
 * Screenshot and close PMs
 * Open skeleton chests
 * Handle incomplete teams
+* Notify you on your mobile devices through [Pushover](https://github.com/Betalord/BHBot/wiki/Pushover-integration-Documentation) on how it is doing and if any issue is present
 
 If the bot detects a "Disconnected" dialog, it will pause its execution for an hour giving the user a chance to play manually.
 Disconnects are usually result of another instance logging into the game. This is why bot pauses in case it detects it.
