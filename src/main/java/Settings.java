@@ -44,6 +44,7 @@ public class Settings {
 	boolean enablePushover = false;
 	boolean poNotifyPM = false;
 	boolean poNotifyCrash = false;
+	boolean poNotifyErrors = false;
 	int poNotifyAlive = 0;
 
 	/** This is the minimum amount of shards that the bot must leave for the user. If shards get above this value, bot will play the raids in case raiding is enabled of course. */
@@ -186,6 +187,7 @@ public class Settings {
 		this.enablePushover =  settings.enablePushover;
 		this.poNotifyPM =  settings.poNotifyPM;
 		this.poNotifyCrash =  settings.poNotifyCrash;
+		this.poNotifyErrors =  settings.poNotifyErrors;
 
 		this.maxShards = settings.maxShards;
 		this.maxTokens = settings.maxTokens;
@@ -281,6 +283,7 @@ public class Settings {
 		enablePushover = false;
 		poNotifyPM = false;
 		poNotifyCrash = false;
+		poNotifyErrors = false;
 		autoConsume = false;
 		collectBounties = false;
 		collectFishingBaits = false;
@@ -589,6 +592,7 @@ public class Settings {
 		enablePushover = map.getOrDefault("enablePushover", enablePushover ? "1" : "0").equals("1");
 		poNotifyPM = map.getOrDefault("poNotifyPM", poNotifyPM ? "1" : "0").equals("1");
 		poNotifyCrash = map.getOrDefault("poNotifyCrash", poNotifyCrash ? "1" : "0").equals("1");
+		poNotifyErrors = map.getOrDefault("poNotifyErrors", poNotifyErrors ? "1" : "0").equals("1");
 		doAds = map.getOrDefault("doAds", doAds ? "1" : "0").equals("1");
 		
 		maxShards = Integer.parseInt(map.getOrDefault("maxShards", ""+maxShards));

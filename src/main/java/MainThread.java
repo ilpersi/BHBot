@@ -1334,6 +1334,8 @@ public class MainThread implements Runnable {
 							if (raid == null) {
 								BHBot.settings.doRaids = false;
 								BHBot.log("It was impossible to choose a raid randomly, raids are disabled!");
+								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+									sendPushOverMessage("Raid Error", "It was impossible to choose a raid randomly, raids are disabled!", "siren");
 								continue;
 							}
 
@@ -1473,6 +1475,8 @@ public class MainThread implements Runnable {
 							if (expedition == null) {
 								BHBot.settings.doExpedition = false;
 								BHBot.log("It was impossible to randomly choose an expedtion. Expedtions are disabled.");
+								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+									sendPushOverMessage("Expedtion error", "It was impossible to randomly choose an expedtion. Expedtions are disabled.", "siren");
 								continue;
 							}
 
@@ -1486,6 +1490,8 @@ public class MainThread implements Runnable {
 							if (p == null) {
 								BHBot.settings.doExpedition = false;
 								BHBot.log("It was impossible to get portal position for " + expedition + ". Expedtions are now disabled!");
+								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+									sendPushOverMessage("Expedtion error", "It was impossible to get portal position for " + expedition + ". Expedtions are now disabled!", "siren");
 								continue;
 							}
 
@@ -1714,6 +1720,8 @@ public class MainThread implements Runnable {
 							if (dungeon == null) {
 								BHBot.settings.doDungeons = false;
 								BHBot.log("It was impossible to choose a dungeon randomly, dungeons are disabled!");
+								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+									sendPushOverMessage("Dungeon error", "It was impossible to choose a dungeon randomly, dungeons are disabled!", "siren");
 								continue;
 							}
 
@@ -1755,6 +1763,8 @@ public class MainThread implements Runnable {
 							if (p == null) {
 								BHBot.settings.doDungeons = false;
 								BHBot.log("It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!");
+								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+									sendPushOverMessage("Dungeon error", "It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!", "siren");
 								continue;
 							}
 
@@ -3204,7 +3214,9 @@ public class MainThread implements Runnable {
 
 		seg = detectCue(cues.get("SkeletonTreasure"));
 		if (seg != null) {
-			handleSkeletonKey();
+			if (handleSkeletonKey()){
+				restart();
+			}
 		}
 		
 		
@@ -3451,7 +3463,7 @@ public class MainThread implements Runnable {
 		}
 	}
 	
-	private void handleSkeletonKey() {
+	private boolean handleSkeletonKey() {
 		//TODO Add no key "Uh Oh" failsafe
 		MarvinSegment seg;
 		if (BHBot.settings.openSkeleton == 0) {
@@ -3461,42 +3473,57 @@ public class MainThread implements Runnable {
 			readScreen(SECOND);
 			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 			clickOnSeg(seg);
-			return;
+			return false;
 			
 		} else if (BHBot.settings.openSkeleton == 1) {
 			BHBot.log("Skeleton treasure found, attemping to use key");
 			seg = detectCue(cues.get("Open"), 5*SECOND);
 			if (seg == null) {
 				BHBot.log("Open button not found, restarting");
-				restart();
+				String STScreen = saveGameScreen("skeleton-treasure-no-open");
+				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+					sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
+				}
+				return true;
 			}
 			clickOnSeg(seg);
 			readScreen(SECOND);
 			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 			if (seg == null) {
 				BHBot.log("Yes button not found, restarting");
-				restart();
+				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+					String STScreen = saveGameScreen("skeleton-treasure-no-yes");
+					sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
+				}
+				return true;
 			}
 			clickOnSeg(seg);
-			return;
+			return false;
 			
 		} else if (BHBot.settings.openSkeleton == 2 && state == State.Raid) {
 			BHBot.log("Raid Skeleton treasure found, attemping to use key");
 			seg = detectCue(cues.get("Open"), 5*SECOND);
 			if (seg == null) {
 				BHBot.log("Open button not found, restarting");
-
-				restart();
+				String STScreen = saveGameScreen("skeleton-treasure-no-open");
+				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+					sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
+				}
+				return true;
 			}
 			clickOnSeg(seg);
 			readScreen(SECOND);
 			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 			if (seg == null) {
 				BHBot.log("Yes button not found, restarting");
-				restart();
+				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+					String STScreen = saveGameScreen("skeleton-treasure-no-yes");
+					sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
+				}
+				return true;
 			}
 			clickOnSeg(seg);
-			return;
+			return false;
 			
 		} else
 			BHBot.log("Skeleton treasure found, declining.");
@@ -3505,7 +3532,7 @@ public class MainThread implements Runnable {
 			readScreen(SECOND);
 			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 			clickOnSeg(seg);
-			return;
+			return false;
 	}
 	
 	private void handleFamiliarEncounter() {
@@ -3572,7 +3599,6 @@ public class MainThread implements Runnable {
 				sleep(SECOND);
 				clickInGame(330,360);
 			} else restart();
-		return;
 	}
 	
 	private void handleAutoRevive() {
@@ -3805,17 +3831,14 @@ public class MainThread implements Runnable {
 				readScreen();
 				seg = detectCue(cues.get("AutoOff"));
 				if (seg != null) clickOnSeg(seg); //reenable auto if necessary
-				return;
 			}
 		} else {
 			seg = detectCue(cues.get("AutoOff"));
 			if (seg != null) {
 				clickOnSeg(seg);
 				BHBot.log("Auto-pilot is disabled. Enabling...");
-				return;
 			}
 		}
-	return;
 	}
 	
 	private void useRevive(int position) {
@@ -4636,34 +4659,43 @@ public class MainThread implements Runnable {
 	 * @return true in case emergency restart is needed.
 	 */
 	private boolean handleTeamMalformedWarning() {
-		readScreen();
+		readScreen(SECOND * 3); // in case popup is still sliding downward
 		if (detectCue(cues.get("TeamNotFull")) != null || detectCue(cues.get("TeamNotOrdered")) != null) {
-			sleep(500); // in case popup is still sliding downward
-			readScreen();
-			MarvinSegment seg = detectCue(cues.get("No"), 5*SECOND);
+			readScreen(SECOND);
+			MarvinSegment seg = detectCue(cues.get("No"), 5 * SECOND);
 			if (seg == null) {
 				BHBot.log("Error: 'Team not full/ordered' window detected, but no 'No' button found. Restarting...");
 				return true;
 			}
 			clickOnSeg(seg);
-			sleep(2*SECOND);
+			sleep(2 * SECOND);
 
-			seg = detectCue(cues.get("AutoTeam"), 10*SECOND);
+			seg = detectCue(cues.get("AutoTeam"), 10 * SECOND);
 			if (seg == null) {
 				BHBot.log("Error: 'Team not full/ordered' window detected, but no 'Auto' button found. Restarting...");
 				return true;
 			}
 			clickOnSeg(seg);
 
-			readScreen(10*SECOND); //this long pause is for if you have 100 friends it will take a long time to autofill the team, may need to be longer
+			readScreen(10 * SECOND);
 			seg = detectCue(cues.get("Accept"));
 			if (seg == null) {
 				BHBot.log("Error: 'Team not full/ordered' window detected, but no 'Accept' button found. Restarting...");
 				return true;
 			}
+
+			String message ="'Team not full/ordered' dialog detected and handled - team has been auto assigned!";
+
+			if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+				String teamScreen = saveGameScreen("auto-team");
+				File teamFile = new File(teamScreen);
+				sendPushOverMessage("Team auto assigned", message, "siren", MessagePriority.NORMAL, teamFile);
+				if (!teamFile.delete()) BHBot.log("Impossible to delete tmp error img file for team auto assign");
+			}
+
 			clickOnSeg(seg);
 
-			BHBot.log("'Team not full/ordered' dialog detected and handled - team has been auto assigned!");
+			BHBot.log(message);
 		}
 
 		return false; // all OK
