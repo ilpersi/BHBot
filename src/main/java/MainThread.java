@@ -4622,7 +4622,7 @@ public class MainThread implements Runnable {
 			e.printStackTrace();
 		}
 
-		return name;
+		return "./screenshots/" + name;
 	}
 
 	/** Will detect and handle (close) in-game private message (from the current screen capture). Returns true in case PM has been handled. */
@@ -5861,7 +5861,7 @@ public class MainThread implements Runnable {
 		fiveRevived = false;
 	}
 
-	private void sendPushOverMessage(String title, String msg, MessagePriority priority, File attachment) {
+	void sendPushOverMessage(String title, String msg, MessagePriority priority, File attachment) {
 		sendPushOverMessage(title, msg, "pushover", priority, attachment);
 	}
 

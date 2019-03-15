@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
@@ -10,10 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 
-import net.pushover.client.PushoverClient;
-import net.pushover.client.PushoverException;
-import net.pushover.client.PushoverMessage;
-import net.pushover.client.PushoverRestClient;
+import net.pushover.client.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
@@ -166,15 +164,11 @@ public class BHBot {
 					message = String.join(" ", Arrays.copyOfRange(params, 1, params.length));
 
 				if (BHBot.settings.enablePushover) {
-					try {
-						poClient.pushMessage(
-								PushoverMessage.builderWithApiToken(BHBot.settings.poAppToken)
-										.setUserId(BHBot.settings.poUserToken)
-										.setMessage(message)
-										.build());
-					} catch (PushoverException e) {
-						e.printStackTrace();
-					}
+					String poScreenName = main.saveGameScreen("pomessage");
+					File poScreenFile = new File(poScreenName);
+					main.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
+					if (!poScreenFile.delete()) BHBot.log("Impossible to delete tmp img for pomessage command.");
+
 				} else {
 					BHBot.log("Pushover integration is disabled in the settings!");
 				}
