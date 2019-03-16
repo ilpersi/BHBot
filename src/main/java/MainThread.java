@@ -865,12 +865,17 @@ public class MainThread implements Runnable {
 			//BHBot.processCommand("shot");
 			game = driver.findElement(By.id("game"));
 		} catch (Exception e) {
-			e.printStackTrace();
 
 			if (e instanceof org.openqa.selenium.NoSuchElementException)
 				BHBot.log("Problem: web element with id 'game' not found!");
 			if (e instanceof MalformedURLException)
 				BHBot.log("Problem: malformed url detected!");
+			if (e instanceof org.openqa.selenium.remote.UnreachableBrowserException) {
+				BHBot.log("Impossible to connect to the browser. Make sure chromedirver is started. Will retry in a few minutes... (sleeping)");
+				sleep(5*MINUTE);
+				restart();
+				return;
+			}
 
 			numFailedRestarts++;
 			if (QUIT_AFTER_MAX_FAILED_RESTARTS && numFailedRestarts > MAX_NUM_FAILED_RESTARTS) {
@@ -879,6 +884,7 @@ public class MainThread implements Runnable {
 				return;
 			} else {
 				BHBot.log("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)");
+				e.printStackTrace();
 				sleep(5*MINUTE);
 				restart();
 				return;
