@@ -519,6 +519,11 @@ public class MainThread implements Runnable {
 		addCue("ConsumableGoldMinor", loadImage("cues/cueConsumableGoldMinor.png"), null);
 		addCue("ConsumableGoldAverage", loadImage("cues/cueConsumableGoldAverage.png"), null);
 		addCue("ConsumableGoldMajor", loadImage("cues/cueConsumableGoldMajor.png"), null);
+		addCue("ConsumablePumkgor", loadImage("cues/cueConsumablePumkgor.png"), new Bounds(150, 460, 205, 519)); // Special Halloween consumable
+		addCue("ConsumableGingernaut", loadImage("cues/cueConsumableGingernaut.png"), new Bounds(150, 460, 205, 519)); // Special Chrismast consumable
+		addCue("ConsumableGreatFeast", loadImage("cues/cueConsumableGreatFeast.png"), new Bounds(150, 460, 205, 519)); // Thanksgiving consumable
+		addCue("ConsumableBroccoli", loadImage("cues/cueConsumableBroccoli.png"), new Bounds(150, 460, 205, 519)); // Special Halloween consumable
+		addCue("ConsumableCoco", loadImage("cues/cueConsumableCoco.png"), new Bounds(150, 460, 205, 519)); // Special ?? consumable
 		addCue("ScrollerAtBottom", loadImage("cues/cueScrollerAtBottom.png"), null); // cue for scroller being at the bottom-most position (we can't scroll down more than this)
 		addCue("ConsumableTitle", loadImage("cues/cueConsumableTitle.png"), new Bounds(280, 100, 310, 180)); // cue for title of the window that pops up when we want to consume a consumable. Note that vertical range is big here since sometimes is higher due to greater window size and sometimes is lower.
 		addCue("FilterConsumables", loadImage("cues/cueFilterConsumables.png"), new Bounds(460, 125, 550, 140)); // cue for filter button name
@@ -5620,6 +5625,15 @@ public class MainThread implements Runnable {
 		boolean item = detectCue(cues.get("BonusItem")) != null;
 		boolean speed = detectCue(cues.get("BonusSpeed")) != null;
 		boolean gold = detectCue(cues.get("BonusGold")) != null;
+
+        // Special consumables
+        // TODO Manage super scroll
+        if (detectCue(cues.get("ConsumablePumkgor")) != null || detectCue(cues.get("ConsumableBroccoli")) != null
+                || detectCue(cues.get("ConsumableGreatFeast")) != null || detectCue(cues.get("ConsumableGingernaut")) != null
+                || detectCue(cues.get("ConsumableCoco")) != null) {
+            exp = true; item = true; speed = true; gold = true;
+            // BHBuddy.log("Special consumable detected, skipping all the rest...");
+        }
 
 		EnumSet<ConsumableType> duplicateConsumables = EnumSet.noneOf(ConsumableType.class); // here we store consumables that we wanted to consume now but we have detected they are already active, so we skipped them (used for error reporting)
 		EnumSet<ConsumableType> consumables = EnumSet.noneOf(ConsumableType.class); // here we store consumables that we want to consume now
