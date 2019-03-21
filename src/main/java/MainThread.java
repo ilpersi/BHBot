@@ -361,17 +361,21 @@ public class MainThread implements Runnable {
 
 	static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
-		ClassLoader classLoader = MainThread.class.getClassLoader();
-		InputStream resourceURL = classLoader.getResourceAsStream(f);
-
-		if (resourceURL != null) {
-			try {
-				img = ImageIO.read(resourceURL);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} else {
-			BHBot.log("Error with resource: " + f);
+//		ClassLoader classLoader = MainThread.class.getClassLoader();
+//		InputStream resourceURL = classLoader.getResourceAsStream(f);
+//
+//		if (resourceURL != null) {
+//			try {
+//				img = ImageIO.read(resourceURL);
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		} else {
+//			BHBot.log("Error with resource: " + f);
+		try {
+			img = ImageIO.read(new File(f));
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 		return img;
