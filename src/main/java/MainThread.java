@@ -361,11 +361,19 @@ public class MainThread implements Runnable {
 
 	static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
-		try {
-		    img = ImageIO.read(new File(f));
-		} catch (IOException e) {
-			e.printStackTrace();
+		ClassLoader classLoader = MainThread.class.getClassLoader();
+		InputStream resourceURL = classLoader.getResourceAsStream(f);
+
+		if (resourceURL != null) {
+			try {
+				img = ImageIO.read(resourceURL);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			BHBot.log("Error with resource: " + f);
 		}
+
 		return img;
 	}
 
@@ -466,10 +474,10 @@ public class MainThread implements Runnable {
 		addCue("TokenBar", loadImage("cues/cueTokenBar.png"), null);
 		addCue("CloseGreen", loadImage("cues/cueCloseGreen.png"), null); // close button used with "You have been defeated" popup in gauntlet and also "Victory" window in gauntlet
 		addCue("Victory", loadImage("cues/cueVictory.png"), null); // victory window cue found upon completing gauntlet
-		
+
 		addCue("UhOh", loadImage("cues/cueUhoh.png"), new Bounds(319, 122, 526, 184));
 		addCue("ReviveAverage", loadImage("cues/cueReviveAverage.png"), null);
-		
+
 		addCue("GuildButton", loadImage("cues/cueGuildButton.png"), new Bounds(500, 420, 590, 520));
 		addCue("IgnoreShrines", loadImage("cues/cueIgnoreShrines.png"), new Bounds(120, 250, 675, 475));
 		addCue("IgnoreBoss", loadImage("cues/cueIgnoreBoss.png"), new Bounds(120, 250, 675, 475));
@@ -583,7 +591,7 @@ public class MainThread implements Runnable {
 
 		// Expedition related:
 		addCue("ExpeditionButton", loadImage("cues/cueExpeditionButton.png"),  null);
-		
+
 		//WorldBoss Related
 		addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"),  null);
 		addCue("WorldBossSelector", loadImage("cues/cueWorldBossSelector.png"),  null);
@@ -603,12 +611,12 @@ public class MainThread implements Runnable {
 		addCue("WorldBossDifficultyNormal", loadImage("cues/cueWorldBossDifficultyNormal.png"), new Bounds(325, 277, 444, 320));
 		addCue("WorldBossDifficultyHard", loadImage("cues/cueWorldBossDifficultyHard.png"), new Bounds(325, 277, 444, 320));
 		addCue("WorldBossDifficultyHeroic", loadImage("cues/cueWorldBossDifficultyHeroic.png"), new Bounds(325, 277, 444, 320));
-		
+
 		addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(185, 340, 485, 395));
 		addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(185, 340, 485, 395));
 		addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(185, 340, 485, 395));
-		
-		
+
+
 		//fishing related
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
