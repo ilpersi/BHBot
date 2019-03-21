@@ -24,6 +24,7 @@ public class Settings {
 	//Various settings
     int openSkeleton = 0;
 	boolean autoBribe  = false;
+	boolean contributeFamiliars  = true;
 	boolean collectBounties  = false;
 	boolean collectFishingBaits  = false;
 	boolean dungeonOnTimeout = true;
@@ -45,6 +46,7 @@ public class Settings {
 	boolean poNotifyPM = false;
 	boolean poNotifyCrash = false;
 	boolean poNotifyErrors = false;
+	boolean poNotifyBribe = false;
 	int poNotifyAlive = 0;
 
 	/** This is the minimum amount of shards that the bot must leave for the user. If shards get above this value, bot will play the raids in case raiding is enabled of course. */
@@ -133,10 +135,19 @@ public class Settings {
     boolean autoConsume = false;
 	/** List of consumables that we want activate at all times. */
     List<String> consumables;
+
+    // List of familiars to bribe
 	List<String> familiars;
-	
+
+	/**
+	 * The level at which we want to try to automatically persuade the familiar
+	 * 1 is for Common, 2 is for Rare, 3 is for Epic, 4 is for Legendary
+	 */
+	int persuasionLevel = 1;
+	int bribeLevel = 0;
+
 	/** Development Settings **/
-    boolean familiarScreenshot = false;
+    int familiarScreenshot = 2;
 	int minSolo = 2;
 	String dungeonsRun = "dungeonsrun 0";
 	String worldBossRun = "worldbossrun 0";
@@ -161,93 +172,6 @@ public class Settings {
 		consumables = new ArrayList<>();
 		familiars = new ArrayList<>();
 	}
-	
-	/*public void set(Settings settings) {
-		this.username = settings.username;
-		this.password = settings.password;
-		this.poAppToken = settings.poAppToken;
-		this.poUserToken = settings.poUserToken;
-		this.useHeadlessMode = settings.useHeadlessMode;
-		this.restartAfterAdOfferTimeout = settings.restartAfterAdOfferTimeout;
-		this.debugDetectionTimes = settings.debugDetectionTimes;
-		this.hideWindowOnRestart = settings.hideWindowOnRestart;
-		this.resetTimersOnBattleEnd = settings.resetTimersOnBattleEnd;
-		this.dungeonOnTimeout = settings.dungeonOnTimeout;
-		
-		this.doRaids = settings.doRaids;
-		this.doDungeons = settings.doDungeons;
-		this.doTrials = settings.doTrials;
-		this.doGauntlet = settings.doGauntlet;
-		this.doPVP = settings.doPVP;
-		this.doGVG = settings.doGVG;
-		this.doInvasion = settings.doInvasion;
-		this.doAds = settings.doAds;
-		this.doExpedition = settings.doExpedition;
-		this.doWorldBoss =  settings.doWorldBoss;
-		this.enablePushover =  settings.enablePushover;
-		this.poNotifyPM =  settings.poNotifyPM;
-		this.poNotifyCrash =  settings.poNotifyCrash;
-		this.poNotifyErrors =  settings.poNotifyErrors;
-
-		this.maxShards = settings.maxShards;
-		this.maxTokens = settings.maxTokens;
-		this.maxTickets = settings.maxTickets;
-		this.maxBadges = settings.maxBadges;		
-		
-		this.minShards = settings.minShards;
-		this.minTokens = settings.minTokens;
-		this.minEnergyPercentage = settings.minEnergyPercentage;
-		this.minTickets = settings.minTickets;
-		this.minBadges = settings.minBadges;
-
-		this.poNotifyAlive = settings.poNotifyAlive;
-
-		this.costPVP = settings.costPVP;
-		this.costGVG = settings.costGVG;
-		this.costTrials = settings.costTrials;
-		this.costGauntlet = settings.costGauntlet;
-		this.costInvasion = settings.costInvasion;
-		this.costExpedition = settings.costExpedition;
-		
-		this.difficulty = settings.difficulty;
-		this.expeditionDifficulty = settings.expeditionDifficulty;
-		
-		this.dungeons = new ArrayList<>(settings.dungeons);
-		this.raids = new ArrayList<>(settings.raids);
-		this.thursdayDungeons = new ArrayList<>(settings.thursdayDungeons);
-		this.thursdayRaids = new ArrayList<>(settings.thursdayRaids);
-		this.expeditions = new ArrayList<>(settings.expeditions);
-		this.pvpstrip = new ArrayList<>(settings.pvpstrip);
-		this.gvgstrip = new ArrayList<>(settings.gvgstrip);
-		this.minSolo  = settings.minSolo;
-		
-		this.autoConsume = settings.autoConsume;
-		this.consumables = new ArrayList<>(settings.consumables);
-		
-		this.autoBribe = settings.autoBribe;
-		this.familiars = new ArrayList<>(settings.familiars);
-		
-		this.pauseOnDisconnect = settings.pauseOnDisconnect;
-		this.openSkeleton = settings.openSkeleton;
-		this.collectBounties = settings.collectBounties;
-		this.collectFishingBaits = settings.collectFishingBaits;
-		this.dungeonsRun = settings.dungeonsRun;
-		this.worldBossRun = settings.worldBossRun;
-		
-		this.worldBossType = settings.worldBossType;
-		this.worldBossTier  =  settings.worldBossTier;
-		this.worldBossTimer = settings.worldBossTimer;
-		this.worldBossDifficulty = settings.worldBossTimer;
-		this.worldBossSolo = settings.worldBossSolo;
-		
-		this.autoRevive = settings.autoRevive;
-		this.potionOrder = settings.potionOrder;
-		this.tankPriority = settings.tankPriority;
-		
-		this.autoShrine = settings.autoShrine;
-		this.battleDelay = settings.battleDelay;
-		this.shrineDelay = settings.shrineDelay;
-	}*/
 	
 	// a handy shortcut for some debug settings:
     Settings setDebug() {
@@ -284,6 +208,7 @@ public class Settings {
 		poNotifyPM = false;
 		poNotifyCrash = false;
 		poNotifyErrors = false;
+		poNotifyBribe = false;
 		autoConsume = false;
 		collectBounties = false;
 		collectFishingBaits = false;
@@ -593,6 +518,7 @@ public class Settings {
 		poNotifyPM = map.getOrDefault("poNotifyPM", poNotifyPM ? "1" : "0").equals("1");
 		poNotifyCrash = map.getOrDefault("poNotifyCrash", poNotifyCrash ? "1" : "0").equals("1");
 		poNotifyErrors = map.getOrDefault("poNotifyErrors", poNotifyErrors ? "1" : "0").equals("1");
+		poNotifyBribe = map.getOrDefault("poNotifyBribe", poNotifyBribe ? "1" : "0").equals("1");
 		doAds = map.getOrDefault("doAds", doAds ? "1" : "0").equals("1");
 		
 		maxShards = Integer.parseInt(map.getOrDefault("maxShards", ""+maxShards));
@@ -642,8 +568,9 @@ public class Settings {
 		setConsumablesFromString(map.getOrDefault("consumables", getConsumablesAsString()));
 		
 		autoBribe = map.getOrDefault("autoBribe", autoBribe ? "1" : "0").equals("1");
+		contributeFamiliars = map.getOrDefault("contributeFamiliars", contributeFamiliars ? "1" : "0").equals("1");
 		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
-		familiarScreenshot = map.getOrDefault("familiarScreenshot", familiarScreenshot ? "1" : "0").equals("1");
+		familiarScreenshot  = Integer.parseInt(map.getOrDefault("familiarScreenshot", ""+familiarScreenshot));
 		
 		collectBounties = map.getOrDefault("collectBounties", collectBounties ? "1" : "0").equals("1");
 		collectFishingBaits = map.getOrDefault("collectFishingBaits", collectFishingBaits ? "1" : "0").equals("1");
@@ -656,7 +583,9 @@ public class Settings {
 		autoShrine = map.getOrDefault("autoShrine", autoShrine ? "1" : "0").equals("1");
 		battleDelay = Integer.parseInt(map.getOrDefault("battleDelay", ""+battleDelay));
 		shrineDelay = Integer.parseInt(map.getOrDefault("shrineDelay", ""+shrineDelay));
-		
+
+		persuasionLevel = Integer.parseInt(map.getOrDefault("persuasionLevel", ""+persuasionLevel));
+		bribeLevel = Integer.parseInt(map.getOrDefault("bribeLevel", ""+bribeLevel));
 	}
 	
 	/** Loads settings from disk. */

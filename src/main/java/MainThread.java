@@ -1,12 +1,6 @@
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -23,11 +17,19 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
 
 import net.pushover.client.MessagePriority;
 import net.pushover.client.PushoverException;
 import net.pushover.client.PushoverMessage;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.Dimension;
@@ -68,6 +70,48 @@ public class MainThread implements Runnable {
 			return name;
 		}
 	}
+
+    public enum PersuationType {
+        DECLINE("Decline"),
+        PERSUADE("Persuasion"),
+        BRIBE("Bribe");
+
+        private final String name;
+
+        PersuationType(String name) {
+            this.name = name;
+        }
+
+        public String toString() {
+            return this.name;
+        }
+
+    }
+
+    public enum FamiliarType {
+        ERROR("Error", 0),
+        COMMON("Common", 1),
+        RARE("Rare", 2),
+        EPIC("Epic", 3),
+        LEGENDARY("Legendary",4 );
+
+        private final String name;
+        private final int type;
+
+        FamiliarType(String name, int type) {
+            this.name = name;
+            this.type = type;
+        }
+
+        public int getValue(){
+            return this.type;
+        }
+
+        public String toString() {
+            return this.name;
+        }
+
+    }
 
 	public static class ReturnResult {
 		String msg;
@@ -262,6 +306,8 @@ public class MainThread implements Runnable {
 
 	boolean finished = false;
 	private int numFailedRestarts = 0; // in a row
+	// When we do not have anymore gems to use this is true
+	private boolean noGemsToBribe = false;
 	private final int MAX_NUM_FAILED_RESTARTS = 5;
 	private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
 	static WebDriver driver;
@@ -400,6 +446,7 @@ public class MainThread implements Runnable {
 		addCue("Open", loadImage("cues/cueOpen.png"), null); // skeleton treasure open button
 		addCue("AdTreasure", loadImage("cues/cueAdTreasure.png"), null); // ad treasure found in dungeons (it's a dialog/popup cue)
 		addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
+		addCue("DeclineRed", loadImage("cues/cueDeclineRed.png"), null); // decline persuation attempts
 		addCue("Merchant", loadImage("cues/cueMerchant.png"), null); // cue for merchant dialog/popup
 
 		addCue("TeamNotFull", loadImage("cues/cueTeamNotFull.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
@@ -568,94 +615,45 @@ public class MainThread implements Runnable {
 		addCue("Fishing", loadImage("cues/cueFishing.png"), new Bounds(720, 200, 799, 519));
 
 		//Familiar bribing cues
+		addCue("NotEnoughGems", loadImage("cues/cueNotEnoughGems.png"), null); // used when not enough gems are available
+		addCue("CommonFamiliar", loadImage("cues/familiars/type/cue01CommonFamiliar.png"), new Bounds(525, 240, 674, 365)); // Common Bribe cue
+		addCue("RareFamiliar", loadImage("cues/familiars/type/cue02RareFamiliar.png"), new Bounds(525, 240, 674, 365)); // Rare Bribe cue
+		addCue("EpicFamiliar", loadImage("cues/familiars/type/cue03EpicFamiliar.png"), new Bounds(525, 240, 674, 365)); // Epic Bribe cue
+		addCue("LegendaryFamiliar", loadImage("cues/familiars/type/cue04LegendaryFamiliar.png"), new Bounds(525, 240, 674, 365)); // Epic Bribe cue
 
-		//testing cues
-		addCue("PENGEY", loadImage("cues/familiars/cuePENGEY.png"), null);
-		addCue("MCGOBBLESTEIN", loadImage("cues/familiars/cueMCGOBBLESTEIN.png"), null);
+		int oldFamCnt = loadCueFolder("cues/familiars/old_format", "OLD", true, null);
+		int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
 
-		//GLOBAL
-		addCue("GOBBY", loadImage("cues/familiars/cueGOBBY.png"), null);
+		if (oldFamCnt > 0) BHBot.log("Found " + oldFamCnt + " familiar cue(s) with old format.");
+		if (newFamCnt > 0) BHBot.log("Found " + newFamCnt + " familiar cue(s) with new format.");
 
-		//Z1
-		addCue("DRYAD", loadImage("cues/familiars/cueDRYAD.png"), null);
-		addCue("GRIMZ", loadImage("cues/familiars/cueGRIMZ.png"), null);
-		addCue("LORDCERULEAN", loadImage("cues/familiars/cueLORDCERULEAN.png"), null);
+	}
 
-		//R1
-		addCue("SQUIB", loadImage("cues/familiars/cueSQUIB.png"), null);
-		addCue("RAGNAR", loadImage("cues/familiars/cueRAGNAR.png"), null);
-		addCue("SHADE", loadImage("cues/familiars/cueSHADE.png"), null);
-		addCue("OLXA", loadImage("cues/familiars/cueOLXA.png"), null);
-		addCue("ASTAROTH", loadImage("cues/familiars/cueASTAROTH.png"), null);
+	private static int loadCueFolder(String path, String prefix, boolean stripCueStr, Bounds bounds) {
+		int totalLoaded = 0;
 
-		//Z2
-		addCue("YETI", loadImage("cues/familiars/cueYETI.png"), null);
-		addCue("BLUBBER", loadImage("cues/familiars/cueBLUBBER.png"), null);
-		addCue("GEMM", loadImage("cues/familiars/cueGEMM.png"), null);
+		//Dynamically load cues
+		File[] files = new File(path).listFiles();
+		if (files != null) {
+			for (File file : files) {
+				if (file.isFile()) {
+					String fileName = file.getName();
+					int dotPosition = fileName.lastIndexOf('.');
+					String fileExtension = dotPosition > 0 ? fileName.substring(dotPosition + 1) : "";
+					if ("png".equals(fileExtension.toLowerCase())) {
+						String cueName = fileName.substring(0, dotPosition);
 
-		//R2
-		addCue("DRIFFIN", loadImage("cues/familiars/cueDRIFFIN.png"), null);
-		addCue("VIOLACE", loadImage("cues/familiars/cueVIOLACE.png"), null);
-		addCue("OEVOR", loadImage("cues/familiars/cueOEVOR.png"), null);
-		addCue("MIMZY", loadImage("cues/familiars/cueMIMZY.png"), null);
-		addCue("KALEIDO", loadImage("cues/familiars/cueKALEIDO.png"), null);
+						if (prefix != null) cueName = prefix + cueName;
+						if (stripCueStr) cueName = cueName.replace("cue", "");
 
-		//Z3
-		addCue("NOSDOODOO", loadImage("cues/familiars/cueNOSDOODOO.png"), null);
-		addCue("JEB", loadImage("cues/familiars/cueJEB.png"), null);
-		addCue("QUIRREL", loadImage("cues/familiars/cueQUIRREL.png"), null);
+						addCue(cueName.toLowerCase(), loadImage(file.getPath()), bounds);
+						totalLoaded++;
+					}
+				}
+			}
+		}
 
-		//R3
-		addCue("BARGZ", loadImage("cues/familiars/cueBARGZ.png"), null);
-		addCue("JACK", loadImage("cues/familiars/cueJACK.png"), null);
-		addCue("KRACKERS", loadImage("cues/familiars/cueKRACKERS.png"), null);
-		addCue("BULLY", loadImage("cues/familiars/cueBULLY.png"), null);
-		addCue("CAPTWOODBEARD", loadImage("cues/familiars/cueCAPTWOODBEARD.png"), null);
-
-		//Z4
-		addCue("REXIE", loadImage("cues/familiars/cueREXIE.png"), null);
-		addCue("WARTY", loadImage("cues/familiars/cueWARTY.png"), null);
-		addCue("KOVALG", loadImage("cues/familiars/cueKOVALG.png"), null);
-
-		//R4
-		addCue("J3-17", loadImage("cues/familiars/cueJ3-17.png"), null);
-		addCue("DUOBOMZ", loadImage("cues/familiars/cueDUOBOMZ.png"), null);
-		addCue("ROBOMAX-6000", loadImage("cues/familiars/cueROBOMAX-6000.png"), null);
-		addCue("X4-GOMBO", loadImage("cues/familiars/cueX4-GOMBO.png"), null);
-		addCue("XL-OMBIS400", loadImage("cues/familiars/cueXL-OMBIS400.png"), null);
-
-		//Z5
-		addCue("TORLIM", loadImage("cues/familiars/cueTORLIM.png"), null);
-		addCue("ZORUL", loadImage("cues/familiars/cueZORUL.png"), null);
-		addCue("TEALK", loadImage("cues/familiars/cueTEALK.png"), null);
-
-		//R5
-		addCue("XANTHIN", loadImage("cues/familiars/cueXANTHIN.png"), null);
-		addCue("SVIRNIC", loadImage("cues/familiars/cueSVIRNIC.png"), null);
-		addCue("GELVINS", loadImage("cues/familiars/cueGELVINS.png"), null);
-//		addCue("SVIRNAN", loadImage("cues/familiars/cueSVIRNAN.png"), null);
-		addCue("ZOL", loadImage("cues/familiars/cueZOL.png"), null);
-
-		//Z6
-		addCue("RUGUMZ", loadImage("cues/familiars/cueRUGUMZ.png"), null);
-		addCue("BLEMB", loadImage("cues/familiars/cueBLEMB.png"), null);
-		addCue("MOGHUR", loadImage("cues/familiars/cueMOGHUR.png"), null);
-
-		//R6
-		addCue("CRUM", loadImage("cues/familiars/cueCRUM.png"), null);
-		addCue("SPROUT", loadImage("cues/familiars/cueSPROUT.png"), null);
-		addCue("FLITTY", loadImage("cues/familiars/cueFLITTY.png"), null);
-//		addCue("CLOUBY", loadImage("cues/familiars/cueCLOUBY.png"), null);
-		addCue("COLUMBUS", loadImage("cues/familiars/cueCOLUMBUS.png"), null);
-
-		//Z7
-//		addCue("SCORPIUS", loadImage("cues/familiars/cueSCORPIUS.png"), null);
-		addCue("VEDAIRE", loadImage("cues/familiars/cueVEDAIRE.png"), null);
-
-		//Z8
-		addCue("GOOGAMENZ", loadImage("cues/familiars/cueGOOGAMENZ.png"), null);
-//		addCue("THETRILOGY", loadImage("cues/familiars/cueTHETRILOGY.png"), null);
-
+		return totalLoaded;
 	}
 
 	private static void connectDriver() throws MalformedURLException {
@@ -2752,7 +2750,7 @@ public class MainThread implements Runnable {
 		return detectCue(cue, 0, true);
 	}
 
-	public MarvinSegment detectCue(Cue cue, int timeout, Bounds bounds) {
+	private MarvinSegment detectCue(Cue cue, int timeout, Bounds bounds) {
 		return detectCue(new Cue(cue, bounds), timeout, true);
 	}
 
@@ -3548,68 +3546,224 @@ public class MainThread implements Runnable {
 	
 	private void handleFamiliarEncounter() {
 		MarvinSegment seg;
+
 		BHBot.log("Familiar encountered");
-		//click view
-		sleep(2*SECOND);
-		//open view window and check familiar array for match
-		if (BHBot.settings.autoBribe) {
-			seg = detectCue(cues.get("View"));
+		readScreen(2*SECOND);
+
+		FamiliarType familiarLevel;
+		if (detectCue(cues.get("CommonFamiliar")) != null) {
+            familiarLevel = FamiliarType.COMMON;
+        } else if (detectCue(cues.get("RareFamiliar")) != null) {
+            familiarLevel = FamiliarType.RARE;
+        } else if (detectCue(cues.get("EpicFamiliar")) != null) {
+            familiarLevel = FamiliarType.EPIC;
+        } else if (detectCue(cues.get("LegendaryFamiliar")) != null) {
+            familiarLevel = FamiliarType.LEGENDARY;
+        } else {
+            familiarLevel = FamiliarType.ERROR; // error
+        }
+
+		PersuationType persuasion;
+		BribeDetails bribeInfo = new BribeDetails();
+
+		// Checking familiars setting takes time and a lot of cues verifications. We try to minimize the number of times
+		// this is done
+		boolean skipBribeNames = false;
+		if ( (BHBot.settings.bribeLevel > 0 && familiarLevel.getValue() >= BHBot.settings.bribeLevel) ||
+				(BHBot.settings.familiars.size() == 0) ) {
+			skipBribeNames = true;
+		}
+
+		if (!skipBribeNames) {
+			bribeInfo = verifyBribeNames();
+		}
+
+		if ( (BHBot.settings.bribeLevel > 0 && familiarLevel.getValue() >= BHBot.settings.bribeLevel) ||
+				bribeInfo.toBribeCnt > 0 ) {
+			persuasion = PersuationType.BRIBE;
+		} else if ( (BHBot.settings.persuasionLevel > 0 && familiarLevel.getValue() >= BHBot.settings.persuasionLevel) ) {
+			persuasion = PersuationType.PERSUADE;
+		} else {
+			persuasion = PersuationType.DECLINE;
+		}
+
+		// If we're set to bribe and we don't have gems, we default to PERSUASION
+		if (persuasion == PersuationType.BRIBE && noGemsToBribe) {
+			persuasion = PersuationType.PERSUADE;
+		}
+
+		StringBuilder persuasionLog = new StringBuilder("familiar-");
+		persuasionLog.append(familiarLevel.toString().toUpperCase()).append("-");
+		persuasionLog.append(persuasion.toString().toUpperCase()).append("-");
+		persuasionLog.append("attempt");
+
+		// We save all the errors and persuasions based on settings
+		if ( (familiarLevel.getValue() >= BHBot.settings.familiarScreenshot ) || familiarLevel == FamiliarType.ERROR) {
+			saveGameScreen(persuasionLog.toString());
+
+			if (BHBot.settings.contributeFamiliars) {
+				contributeFamiliarShoot(persuasionLog.toString());
+			}
+		}
+
+		// We attempt persuasion or bribe based on settings
+		if (persuasion == PersuationType.BRIBE) {
+			if (!bribeFamiliar()) {
+				BHBot.log("Bribe attempt failed! Trying with persuasion...");
+				if (persuadeFamiliar()) {
+					BHBot.log(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
+				} else {
+					BHBot.log("Impossible to persuade familiar, restarting...");
+					restart();
+				}
+			} else {
+				updateFamiliarCounter(bribeInfo.familiarName.toUpperCase(), bribeInfo.toBribeCnt-1);
+			}
+		} else if (persuasion == PersuationType.PERSUADE) {
+			if (persuadeFamiliar()) {
+				BHBot.log(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
+			} else {
+				restart();
+			}
+		} else {
+			seg = detectCue(cues.get("DeclineRed"));
 			if (seg != null) {
+				clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
+				readScreen(SECOND * 2);
+				seg = detectCue(cues.get("YesGreen"), SECOND);
 				clickOnSeg(seg);
-				for (String f : BHBot.settings.familiars) { //cycle through array
-					readScreen();
-					String fam = f.toUpperCase().split(" ")[0];
-					seg = detectCue(cues.get(fam), SECOND);
-					int bribeCount = checkFamiliarCounter(fam);
-					if (seg != null && !(bribeCount < 1) && (BHBot.settings.autoBribe)) {
-						BHBot.log("Bribing " + fam);
-						readScreen();
-						seg = detectCue(cues.get("X"), 2*SECOND); // the sleep at the end is the timeout, else it will click as soon as its available
+				BHBot.log(familiarLevel.toString().toUpperCase() + " persuasion declined.");
+			} else {
+				BHBot.log("Impossible to find the decline button, restarting...");
+				restart();
+			}
+		}
+	}
+
+	/**
+	 * Will verify if in the current persuasion screen one of the bribeNames is present
+	 */
+	private BribeDetails verifyBribeNames() {
+		List<String> wrongNames = new ArrayList<>();
+		BribeDetails result = new BribeDetails();
+		String familiarName = "";
+		int toBribeCnt = 0;
+
+		MarvinSegment seg;
+		boolean isOldFormat = false;
+
+		for (String familiarDetails : BHBot.settings.familiars) {
+			String[] details = familiarDetails.toLowerCase().split(" ");
+			familiarName = details[0];
+			toBribeCnt = Integer.parseInt(details[1]);
+
+			Cue familiarCue = cues.getOrDefault(familiarName, null);
+			if (familiarCue == null) {
+				familiarCue = cues.getOrDefault("old" + familiarName, null);
+				if (familiarCue != null) isOldFormat = true;
+			}
+
+			if (familiarCue != null) {
+
+				readScreen(SECOND);
+				if (toBribeCnt > 0) {
+					if (isOldFormat) {
+						seg = detectCue(cues.get("View"));
 						if (seg != null) {
 							clickOnSeg(seg);
-						} else restart();  //failsafe to restart if the bot can't find the button
-						readScreen();
-						seg = detectCue(cues.get("Bribe"), 2*SECOND);
-						if (seg != null) {
-							clickOnSeg(seg);
-						} else restart();
-						// TODO Add not enough gems fail-safe
-						readScreen();
-						seg = detectCue(cues.get("YesGreen"), 2*SECOND);
-						if (seg != null) {
-							sleep(SECOND);
-							clickInGame(330,360); //click in game as the drop down was too inconsistent to find the cue
-						} else restart();
-						saveGameScreen("Bribed " + f); //drop a SS with the name in the root folder, will also catch not enough gems message on failure
-						updateFamiliarCounter(fam, bribeCount);
-						return;
+							readScreen(SECOND);
+						} else {
+							restart();
 						}
 					}
+
+					if (detectCue(familiarCue, SECOND * 3) != null) {
+						BHBot.log("Detected familiar " + familiarDetails + " as valid in familiars");
+						result.toBribeCnt = toBribeCnt;
+						result.familiarName = familiarName;
+						break;
+					}
+				} else {
+					wrongNames.add(familiarDetails);
 				}
+			} else {
+				wrongNames.add(familiarDetails);
 			}
-			BHBot.log("Persuading familiar");
-			sleep(SECOND);
-			if (BHBot.settings.familiarScreenshot) {
-				saveGameScreen("familiar-cue-test"); //If the familiar is unknown we might not have an image for it yet, so save a screenshot to create a cue from
-			}
-			
-			readScreen();
+		}
+
+		// If there is any error we update the settings
+		for (String wrongName : wrongNames) {
+			BHBot.log("Wrong familiar details '" + wrongName + "' in familiar settigs. Removing it...");
+			BHBot.settings.familiars.remove(wrongName);
+		}
+
+		if (isOldFormat && toBribeCnt > 0) {
 			seg = detectCue(cues.get("X"), 2*SECOND);
 			if (seg != null) {
 				clickOnSeg(seg);
-			} // else restart();  //failsafe to restart if the bot can't find the button (Not needed now if we don't open the View window with autoBribe 0)
-			readScreen();
-			seg = detectCue(cues.get("Persuade"), 2*SECOND);
+				readScreen(SECOND);
+			} else {
+				restart();
+			}
+		}
+
+		return result;
+	}
+
+	private boolean bribeFamiliar() {
+		readScreen();
+		MarvinSegment seg = detectCue(cues.get("Bribe"), SECOND * 3);
+		BufferedImage tmpScreen = img;
+
+		if (seg != null) {
+			clickOnSeg(seg);
+			sleep(2 * SECOND);
+
+			seg = detectCue(cues.get("YesGreen"), SECOND * 5);
 			if (seg != null) {
 				clickOnSeg(seg);
-			} else restart();
+				sleep(2 * SECOND);
+			}
+
+			if (detectCue(cues.get("NotEnoughGems"), SECOND * 5) != null) {
+				BHBot.log("Not enough gems to attempt a bribe!");
+				noGemsToBribe = true;
+				if (!closePopupSecurely(cues.get("NotEnoughGems"), cues.get("No"))) {
+					BHBot.log("Impossible to close the Not Enough gems pop-up. Restarting...");
+					restart();
+				}
+				return false;
+			}
+			if (BHBot.settings.enablePushover && BHBot.settings.poNotifyBribe) {
+				String bribeScreenName = saveGameScreen("bribe-screen", tmpScreen);
+				File bribeScreenFile = new File(bribeScreenName);
+				sendPushOverMessage("Creature Bribe", "A familiar has been bribed!", "bugle", MessagePriority.NORMAL, bribeScreenFile);
+				if(!bribeScreenFile.delete()) BHBot.log("Impossible to delete tmp img file for bribe.");
+			}
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean persuadeFamiliar() {
+
+		MarvinSegment seg;
+		seg = detectCue(cues.get("Persuade"));
+		if (seg != null) {
+
+			clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
+			sleep(2 * SECOND);
+
 			readScreen();
-			seg = detectCue(cues.get("YesGreen"), 2*SECOND);
-			if (seg != null) {
-//				clickOnSeg(seg);
-				sleep(SECOND);
-				clickInGame(330,360);
-			} else restart();
+			seg = detectCue(cues.get("YesGreen"));
+			clickOnSeg(seg);
+			sleep(2 * SECOND);
+
+			return true;
+		}
+
+		return false;
 	}
 	
 	private void handleAutoRevive() {
@@ -3973,7 +4127,7 @@ public class MainThread implements Runnable {
 //		return true;
 	}
 	
-	private int checkFamiliarCounter(String fam) { //returns current catch count for given familiar from the settings file
+	/*private int checkFamiliarCounter(String fam) { //returns current catch count for given familiar from the settings file
 		int catchCount = 0;
 		for (String f : BHBot.settings.familiars) { //cycle familiars defined in settings
 				String fString = f.toUpperCase().split(" ")[0]; //stringify the familiar name
@@ -3982,7 +4136,7 @@ public class MainThread implements Runnable {
 				}
 			}
 		return catchCount;
-		}
+		}*/
 
 	private void updateFamiliarCounter(String fam, int currentCounter) {
         String familiarToUpdate = "";
@@ -4613,7 +4767,7 @@ public class MainThread implements Runnable {
 	 * Takes screenshot of current game and saves it to disk to a file with a given prefix (date will be added, and optionally a number at the end of file name).
 	 * In case of failure, it will just ignore the error.
 	 *
-	 * @return name of the file to which the screenshot has been saved (successfully or not)
+	 * @return name of the path in which the screenshot has been saved (successfully or not)
 	 */
 	String saveGameScreen(String prefix) {
 		Date date = new Date();
@@ -4634,6 +4788,70 @@ public class MainThread implements Runnable {
 		}
 
 		return "./screenshots/" + name;
+	}
+
+	private String saveGameScreen(String prefix, BufferedImage img) {
+		Date date = new Date();
+		String name = prefix + "_" + dateFormat.format(date) + ".png";
+		int num = 0;
+		File f = new File(name);
+		while (f.exists()) {
+			num++;
+			name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
+			f = new File(name);
+		}
+
+		// save screen shot:
+		try {
+			ImageIO.write(img, "png", f);
+		} catch (Exception e) {
+			BHBot.log("Impossible to take a screenshot!");
+		}
+
+		return name;
+	}
+
+	private void contributeFamiliarShoot(String shootName)  {
+
+		HttpClient httpClient = HttpClients.custom().useSystemProperties().build();
+
+		final HttpPost post = new HttpPost("https://script.google.com/macros/s/AKfycby-tCXZ6MHt_ZSUixCcNbYFjDuri6WvljomLgGy_m5lLZw1y5fZ/exec");
+
+		// we generate a sub image with just the name of the familiar
+		readScreen(SECOND / 2);
+		BufferedImage nameImg = img.getSubimage(105, 60, 640, 105);
+
+		File nameImgFile = new File(shootName + "-ctb.png");
+		try {
+			ImageIO.write(nameImg, "png", nameImgFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		MimetypesFileTypeMap ftm = new MimetypesFileTypeMap();
+		ContentType ct = ContentType.create(ftm.getContentType(nameImgFile));
+
+		List<NameValuePair> params = new ArrayList<>(3);
+		params.add(new BasicNameValuePair("mimeType", ct.toString()));
+		params.add(new BasicNameValuePair("name", nameImgFile.getName()));
+		params.add(new BasicNameValuePair("data", Misc.encodeFileToBase64Binary(nameImgFile)));
+
+		try {
+			post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			httpClient.execute(post);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		if (!nameImgFile.delete()) {
+			BHBot.log("Impossible to delete " + nameImgFile.getAbsolutePath());
+		}
+
 	}
 
 	/** Will detect and handle (close) in-game private message (from the current screen capture). Returns true in case PM has been handled. */

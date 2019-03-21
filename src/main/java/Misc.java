@@ -1,9 +1,13 @@
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -140,6 +144,17 @@ public class Misc {
 			r.append(e).append(", ");
 		r = new StringBuilder(r.substring(0, r.length() - 2));
 		return r.toString();
+	}
+
+	static String encodeFileToBase64Binary(File toEncode)  {
+
+		byte[] encoded = new byte[0];
+		try {
+			encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(toEncode));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new String(encoded, StandardCharsets.US_ASCII);
 	}
 	
 }
