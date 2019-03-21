@@ -23,7 +23,6 @@ public class Settings {
 	
 	//Various settings
     int openSkeleton = 0;
-	boolean autoBribe  = false;
 	boolean contributeFamiliars  = true;
 	boolean collectBounties  = false;
 	boolean collectFishingBaits  = false;
@@ -493,6 +492,8 @@ public class Settings {
 			if (line.startsWith("#")) continue; // a comment
 			map.put(line.substring(0, line.indexOf(" ")), line.substring(line.indexOf(" ")+1));
 		}
+
+		checkDeprecatedSettings(map);
 		
 		username = map.getOrDefault("username", username);
 		password = map.getOrDefault("password", password);
@@ -566,8 +567,7 @@ public class Settings {
 		
 		autoConsume = map.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("1");
 		setConsumablesFromString(map.getOrDefault("consumables", getConsumablesAsString()));
-		
-		autoBribe = map.getOrDefault("autoBribe", autoBribe ? "1" : "0").equals("1");
+
 		contributeFamiliars = map.getOrDefault("contributeFamiliars", contributeFamiliars ? "1" : "0").equals("1");
 		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
 		familiarScreenshot  = Integer.parseInt(map.getOrDefault("familiarScreenshot", ""+familiarScreenshot));
@@ -600,5 +600,11 @@ public class Settings {
 			return;
 		
 		load(lines);
+	}
+
+	private void checkDeprecatedSettings(Map<String, String> map) {
+		if (map.getOrDefault("autoBribe", null) == null) {
+			BHBot.log("Deprecated setting detected: autoBribe. Ignoring it.");
+		}
 	}
 }
