@@ -1455,7 +1455,8 @@ public class MainThread implements Runnable {
 							continue;
 						}
 
-						if (!BHBot.scheduler.doExpeditionImmediately && expeditionBadges <= BHBot.settings.minBadges) {
+						if ((!BHBot.scheduler.doExpeditionImmediately && (expeditionBadges <= BHBot.settings.minBadges))
+								|| (expeditionBadges < BHBot.settings.costExpedition)) {
 							readScreen();
 							seg = detectCue(cues.get("X"),SECOND);
 							clickOnSeg(seg);
