@@ -603,7 +603,7 @@ public class Settings {
 	}
 
 	private void checkDeprecatedSettings(Map<String, String> map) {
-		if (map.getOrDefault("autoBribe", null) == null) {
+		if (map.getOrDefault("autoBribe", null) != null) {
 			BHBot.log("Deprecated setting detected: autoBribe. Ignoring it.");
 		}
 	}
