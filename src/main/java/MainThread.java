@@ -463,6 +463,8 @@ public class MainThread implements Runnable {
 
 		addCue("TeamNotFull", loadImage("cues/cueTeamNotFull.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
 		addCue("TeamNotOrdered", loadImage("cues/cueTeamNotOrdered.png"), new Bounds(230, 190, 350, 250)); // warning popup when some guild member left and your GvG team is not complete anymore
+		addCue("GuildLeaveConfirm", loadImage("cues/cueGuildLeaveConfirm.png"), new Bounds(195, 105, 605, 395)); // GVG confirm
+
 		addCue("No", loadImage("cues/cueNo.png"), null); // cue for a blue "No" button used for example with "Your team is not full" dialog, or for "Replace consumable" dialog, etc. This is why we can't put concrete borders as position varies a lot.
 		addCue("AutoTeam", loadImage("cues/cueAutoTeam.png"), null); // "Auto" button that automatically assigns team (in raid, GvG, ...)
 		addCue("Clear", loadImage("cues/cueClear.png"), null); //clear team button
@@ -1565,6 +1567,11 @@ public class MainThread implements Runnable {
 							} else {
 								state = State.Expedition;
 								BHBot.log(expedName + " portal initiated!");
+							}
+
+							if (handleGuildLeaveConfirm()) {
+								restart();
+								continue;
 							}
 						}
 						continue;
@@ -4958,6 +4965,25 @@ public class MainThread implements Runnable {
 		}
 
 		return false; // all OK
+	}
+
+	private boolean handleGuildLeaveConfirm() {
+		readScreen();
+		if (detectCue(cues.get("GuildLeaveConfirm"), SECOND * 3) != null ) {
+			sleep(500); // in case popup is still sliding downward
+			readScreen();
+			MarvinSegment seg = detectCue(cues.get("YesGreen"), 10 * SECOND);
+			if (seg == null) {
+				BHBot.log("Error: 'GVG Confirm' window detected, but no 'Yes' green button found. Restarting...");
+				return true;
+			}
+			clickOnSeg(seg);
+			sleep(2 * SECOND);
+
+			BHBot.log("'GVG' dialog detected and handled - GVG has been auto confirmed!");
+		}
+
+		return false; // all ok
 	}
 
 	/**
