@@ -4488,16 +4488,15 @@ public class MainThread implements Runnable {
 			}
 			break;
 		case 2: // Inferno dimension
-			//TODO NExt time inferno comes around get XY's
 			switch (n) {
 			case 1:
-				return new Point(0,0);
+				return new Point(215,200); //Raleib
 			case 2:
-				return new Point(0,0);
+				return new Point(600,200); //Blemo
 			case 3:
-				return new Point(0,0);
+				return new Point(415,410); //Gummy
 			case 4:
-				return new Point(0,0);
+				return new Point(415,280); //Zarlock
 			}
 			break;
 		}
