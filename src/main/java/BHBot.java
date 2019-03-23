@@ -20,7 +20,7 @@ import org.openqa.selenium.WebElement;
 public class BHBot {
 
 	private static final String PROGRAM_NAME = "BHBot";
-	private static final String PROGRAM_VERSION = "33.2";
+	private static final String PROGRAM_VERSION = "34";
 
 	private static Thread mainThread;
 	static MainThread main;
