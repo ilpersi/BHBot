@@ -595,6 +595,8 @@ public class MainThread implements Runnable {
 
 		// Expedition related:
 		addCue("ExpeditionButton", loadImage("cues/cueExpeditionButton.png"),  null);
+		addCue("Expedition1", loadImage("cues/expedition/cueExpedition1Hallowed.png"), new Bounds(168, 34, 628, 108)); // Hallowed Expedtion Title
+		addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"),  new Bounds(200, 40, 600, 100)); //Inferno Expedition
 
 		//WorldBoss Related
 		addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"),  null);
@@ -4461,14 +4463,31 @@ public class MainThread implements Runnable {
 			return null;
 		}
 
+		readScreen();
+		int currentExpedition;
+		if (detectCue(cues.get("Expedition1")) != null) {
+			currentExpedition = 1;
+		}
+		else if (detectCue(cues.get("Expedition2")) != null) {
+			currentExpedition = 2;
+		} else {
+			BHBot.log("Impossible to read current expedtion!");
+			return null;
+		}
+
 		/* I can't get the switch to work with a string so this if statement makes a new int with 1 for Hallowed and 2 for Inferno, forgive me for my sins */
 		int e;
 		char ex = expedition.charAt(0);
-			if (ex == 'h') {
-				e = 1; // Hallowed
-			}  else {
-				e = 2; // Inferno
-			}
+		if (ex == 'h') {
+			e = 1; // Hallowed
+		}  else {
+			e = 2; // Inferno
+		}
+
+		if (e!= currentExpedition) {
+			BHBot.log("Wrong expedition in settings, automatically setting it to " + currentExpedition);
+			e = currentExpedition;
+		}
 			
 		int n = Integer.parseInt(""+expedition.charAt(1));
 		
@@ -4488,16 +4507,15 @@ public class MainThread implements Runnable {
 			}
 			break;
 		case 2: // Inferno dimension
-			//TODO NExt time inferno comes around get XY's
 			switch (n) {
 			case 1:
-				return new Point(0,0);
+				return new Point(200,195);
 			case 2:
-				return new Point(0,0);
+				return new Point(420,405);
 			case 3:
-				return new Point(0,0);
+				return new Point(600,195);
 			case 4:
-				return new Point(0,0);
+				return new Point(420,270);
 			}
 			break;
 		}
