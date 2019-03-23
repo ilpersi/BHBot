@@ -1475,6 +1475,15 @@ public class MainThread implements Runnable {
 								sleep(2*SECOND);
 								continue;
 							}
+
+							if (cost > expeditionBadges) {
+								BHBot.log("Current cost " + cost + " is bigger that available badges " + expeditionBadges + ". Expedition will be skipped.");
+								seg = detectCue(cues.get("X"));
+								clickOnSeg(seg);
+								sleep(2*SECOND);
+								continue;
+							}
+
 							if (cost != BHBot.settings.costExpedition) {
 								BHBot.log("Current Expedition cost is " + cost + ", goal cost is " + BHBot.settings.costExpedition + ". Changing it...");
 								boolean result = selectCost(cost, BHBot.settings.costExpedition);
@@ -1501,7 +1510,7 @@ public class MainThread implements Runnable {
 								BHBot.settings.doExpedition = false;
 								BHBot.log("It was impossible to randomly choose an expedtion. Expedtions are disabled.");
 								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-									sendPushOverMessage("Expedtion error", "It was impossible to randomly choose an expedtion. Expedtions are disabled.", "siren");
+									sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedtion. Expedtions are disabled.", "siren");
 								continue;
 							}
 
@@ -1510,13 +1519,28 @@ public class MainThread implements Runnable {
 //							BHBot.log("Expedition chosen: " + expedition);
 							BHBot.log("Attempting " + expedName + " Portal at difficulty " + BHBot.settings.expeditionDifficulty);
 
+							readScreen();
+							int currentExpedition = 0;
+							if (detectCue(cues.get("Expedition1")) != null) {
+								currentExpedition = 1;
+							}
+							else if (detectCue(cues.get("Expedition2")) != null) {
+								currentExpedition = 2;
+							} else {
+								BHBot.settings.doExpedition = false;
+								BHBot.log("It was impossible to get the current expedition type!");
+								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+									sendPushOverMessage("Expedition error", "It was impossible to get the current expedition type. Expedtions are now disabled!", "siren");
+								continue;
+							}
+
 							// click on the chosen portal:
-							Point p = getExpeditionIconPos(expedition);
+							Point p = getExpeditionIconPos(expedition, currentExpedition);
 							if (p == null) {
 								BHBot.settings.doExpedition = false;
 								BHBot.log("It was impossible to get portal position for " + expedition + ". Expedtions are now disabled!");
 								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-									sendPushOverMessage("Expedtion error", "It was impossible to get portal position for " + expedition + ". Expedtions are now disabled!", "siren");
+									sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + expedition + ". Expedtions are now disabled!", "siren");
 								continue;
 							}
 
@@ -4457,75 +4481,91 @@ public class MainThread implements Runnable {
 	
 	/**
 	 *
-	 * @param expedition in standard format, e.g. "h4/i4".
+	 * @param targetPortal in standard format, e.g. "h4/i4".
 	 * @return null in case dungeon parameter is malformed (can even throw an exception)
 	 */
-	private Point getExpeditionIconPos(String expedition) {
-		if (expedition.length() != 2) {
+	private Point getExpeditionIconPos(String targetPortal, int currentExpedition) {
+		if (targetPortal.length() != 2) {
 			BHBot.log("Length Mismatch");
 			return null;
 		}
-		if ((expedition.charAt(0) != 'h') && (expedition.charAt(0) != 'i')) {
+		if ((targetPortal.charAt(0) != 'h') && (targetPortal.charAt(0) != 'i')) {
 			BHBot.log("Unknown Expedition prefix in settings");
 			return null;
 		}
 
-		readScreen();
-		int currentExpedition;
-		if (detectCue(cues.get("Expedition1")) != null) {
-			currentExpedition = 1;
-		}
-		else if (detectCue(cues.get("Expedition2")) != null) {
-			currentExpedition = 2;
-		} else {
-			BHBot.log("Impossible to read current expedtion!");
-			return null;
-		}
-
-		/* I can't get the switch to work with a string so this if statement makes a new int with 1 for Hallowed and 2 for Inferno, forgive me for my sins */
 		int e;
-		char ex = expedition.charAt(0);
+		String portalName;
+		char ex = targetPortal.charAt(0);
 		if (ex == 'h') {
 			e = 1; // Hallowed
+			portalName = "Hallowed";
 		}  else {
 			e = 2; // Inferno
+			portalName = "Inferno";
 		}
 
 		if (e!= currentExpedition) {
-			BHBot.log("Wrong expedition in settings, automatically setting it to " + currentExpedition);
+			BHBot.log("Wrong expedition in settings: " + portalName + " , automatically setting it to " + (currentExpedition == 1 ? "Hallowed" : "Inferno"));
 			e = currentExpedition;
 		}
 			
-		int n = Integer.parseInt(""+expedition.charAt(1));
+		int portalInt = Integer.parseInt(""+targetPortal.charAt(1));
 		
-		if (n < 1 || n > 4) return null;
-		
-		switch (e) {
-		case 1: // Hallowed Dimension
-			switch (n) {
-			case 1:
-				return new Point(200,200); //Googarum
-			case 2:
-				return new Point(520,220); //Svord
-			case 3:
-				return new Point(360,360); //Twimbo
-			case 4:
-				return new Point(650,380); //X5-T34M
-			}
-			break;
-		case 2: // Inferno dimension
-			switch (n) {
-			case 1:
-				return new Point(200,195);
-			case 2:
-				return new Point(420,405);
-			case 3:
-				return new Point(600,195);
-			case 4:
-				return new Point(420,270);
-			}
-			break;
+		if (portalInt < 1 || portalInt > 4) return null;
+
+		// we check for white border to understand if the portal is enabled
+		final Color enabledPortal = Color.WHITE;
+		Point[] portalCheck = new Point[4];
+		Point[] portalPosition = new Point[4];
+		boolean[] portalEnabled = new boolean[4];
+
+		if (e == 1) { // Hallowed
+
+			portalCheck[0] = new Point(190, 146); //Googarum
+			portalCheck[1] = new Point(484, 205); //Svord
+			portalCheck[2] = new Point(328, 339); //Twimbo
+			portalCheck[3] = new Point(641, 345); //X5-T34M
+
+			portalPosition[0] = new Point(200, 200); //Googarum
+			portalPosition[1] = new Point(520, 220); //Svord
+			portalPosition[2] = new Point(360, 360); //Twimbo
+			portalPosition[3] = new Point(650, 380); //X5-T34M
 		}
+		else if (e == 2) { // Inferno
+			portalCheck[0] = new Point(185, 206); // Raleib
+			portalCheck[1] = new Point(570, 209); // Blemo
+			portalCheck[2] = new Point(383, 395); // Gummy
+			portalCheck[3] = new Point(381, 265); // Zarlock
+
+			portalPosition[0] = new Point(200, 195); // Raleib
+			portalPosition[1] = new Point(600, 195); // Blemo
+			portalPosition[2] = new Point(420, 405); // Gummy
+			portalPosition[3] = new Point(420, 270); // Zarlock
+		} else {
+			BHBot.log("Unknown Expedtion found: " + e);
+			saveGameScreen("unknown-expedition");
+			return null;
+		}
+
+		// We check which of the portals are enabled
+		for (int i = 0; i <=3; i++){
+			Color col = new Color(img.getRGB(portalCheck[i].x, portalCheck[i].y));
+			portalEnabled[i] = col.equals(enabledPortal);
+		}
+
+		if (portalEnabled[portalInt - 1]) return portalPosition[portalInt - 1];
+
+		// If the desired portal is not enabled, we try to find the first enabled one
+		int i = 3;
+		while (i >= 0){
+			if (portalEnabled[i]) {
+				BHBot.log(portalName + " is not available! Falling back on p" + (i+1) + "...");
+				return portalPosition[i];
+			}
+			i--;
+		}
+
 		return null;
 	}
 
@@ -5906,7 +5946,7 @@ public class MainThread implements Runnable {
                 || detectCue(cues.get("ConsumableGreatFeast")) != null || detectCue(cues.get("ConsumableGingernaut")) != null
                 || detectCue(cues.get("ConsumableCoco")) != null) {
             exp = true; item = true; speed = true; gold = true;
-            // BHBuddy.log("Special consumable detected, skipping all the rest...");
+            // BHBot.log("Special consumable detected, skipping all the rest...");
         }
 
 		EnumSet<ConsumableType> duplicateConsumables = EnumSet.noneOf(ConsumableType.class); // here we store consumables that we wanted to consume now but we have detected they are already active, so we skipped them (used for error reporting)
