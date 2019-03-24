@@ -66,6 +66,7 @@ command input box):
 - `do`: force a dungeon/raid/pvp/gvg/gauntlet/trials. Example: "do raid". Used for debugging purposes more or less (bot will automatically attempt dungeons).
 - `set`: sets a setting line, just like from a 'settings.ini' file. Example: "set raids 1 3 100", or "set difficulty 70". Note that this overwritten setting is NOT saved to the 'settings.ini' file! Once you issue <reload> command, it will get discharged.
 - `readouts`: will reset readout timers (and hence immediately commence reading out resources).
+- `pomessage [message]`: use this command to verify that the Pushover integration is correctly configured. Message parameter is optional and if not specified, a standard messabe will be sent.
 
 ## Finally
 

@@ -164,8 +164,14 @@ public class BHBot {
 					message = String.join(" ", Arrays.copyOfRange(params, 1, params.length));
 
 				if (BHBot.settings.enablePushover) {
+					String poLogMessage = "Sending Pushover test message.";
+					poLogMessage += "\n\n poUserToken is: " + BHBot.settings.poUserToken;
+					poLogMessage += "\n poAppToken is: " + BHBot.settings.poAppToken;
+					BHBot.log(poLogMessage);
+
 					String poScreenName = main.saveGameScreen("pomessage");
 					File poScreenFile = new File(poScreenName);
+
 					main.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
 					if (!poScreenFile.delete()) BHBot.log("Impossible to delete tmp img for pomessage command.");
 
