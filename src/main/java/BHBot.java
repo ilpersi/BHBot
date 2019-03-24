@@ -33,7 +33,10 @@ public class BHBot {
 	static PushoverClient poClient = new PushoverRestClient();
 	
 	static String chromeDriverAddress = "127.0.0.1:9515";
-	
+
+	static String chromiumExePath = "C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe";
+	static String chromeDriverExePath = "./chromedriver.exe";
+
 	public static void main(String[] args) {
 		log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started.");
 		
@@ -53,10 +56,6 @@ public class BHBot {
 					i++;
 					break;
 				case "init":  //start bot in idle mode
-					BHBot.settings.setIdle();
-					settingsProcessed = true;
-					i++;
-					break;
 				case "idle":  //start bot in idle mode
 					BHBot.settings.setIdle();
 					settingsProcessed = true;
@@ -67,6 +66,8 @@ public class BHBot {
 		if (!settingsProcessed)
 			processCommand("loadsettings");
 		
+		if (!checkPaths()) return;
+
 		processCommand("start");
 		
 //	    Console console = System.console();
@@ -404,6 +405,35 @@ public class BHBot {
 				main.trySkippingAd();
 				break;
 		}
+	}
+
+	private static boolean checkPaths() {
+		File chromiumExe = new File(BHBot.chromiumExePath);
+		File chromeDriverExe = new File(BHBot.chromeDriverExePath);
+
+		if (!chromiumExe.exists()) {
+			log("Impossible to find Chromium executable in path " + BHBot.chromiumExePath + ". Bot will be stopped!");
+			return false;
+		} else {
+			try {
+				BHBot.log("Found Chromium in " + chromiumExe.getCanonicalPath());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		if (!chromeDriverExe.exists()) {
+			log("Impossible to find chromedriver executable in path " + BHBot.chromeDriverExePath + ". Bot will be stopped!");
+			return false;
+		} else {
+			try {
+				BHBot.log("Found chromedriver in " + chromeDriverExe.getCanonicalPath());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return true;
 	}
 	
 	/*public static void printSet(Set<String> set) {
