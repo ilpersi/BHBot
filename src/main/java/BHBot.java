@@ -31,8 +31,6 @@ public class BHBot {
 	static Scheduler scheduler = new Scheduler();
 
 	static PushoverClient poClient = new PushoverRestClient();
-	
-	static String chromeDriverAddress = "127.0.0.1:9515";
 
 	static String chromiumExePath = "C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe";
 	static String chromeDriverExePath = "./chromedriver.exe";
@@ -49,10 +47,6 @@ public class BHBot {
 				case "settings":
 					processCommand("loadsettings " + args[i + 1]);
 					settingsProcessed = true;
-					i++;
-					break;
-				case "chromedriveraddress":  //change chrome driver port
-					chromeDriverAddress = args[i + 1];
 					i++;
 					break;
 				case "init":  //start bot in idle mode

@@ -38,6 +38,7 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -676,7 +677,9 @@ public class MainThread implements Runnable {
 		ChromeOptions options = new ChromeOptions();
 
 		options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
-		options.setBinary("C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe"); //set Chromium v69 binary location
+		options.setBinary(BHBot.chromiumExePath); //set Chromium v69 binary location
+
+		System.setProperty("webdriver.chrome.driver", BHBot.chromeDriverExePath);
 
 		// disable ephemeral flash permissions flag
 		options.addArguments("--disable-features=EnableEphemeralFlashPermission");
@@ -745,7 +748,8 @@ public class MainThread implements Runnable {
 
 		DesiredCapabilities capabilities = DesiredCapabilities.chrome();
 		capabilities.setCapability(ChromeOptions.CAPABILITY, options);
-		driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
+//		driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
+		driver = new ChromeDriver(options);
 		jsExecutor = (JavascriptExecutor) driver;
 	}
 
