@@ -34,6 +34,7 @@ public class BHBot {
 
 	static String chromiumExePath = "C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe";
 	static String chromeDriverExePath = "./chromedriver.exe";
+	private static String cuesPath = "./cues";
 
 	public static void main(String[] args) {
 		log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started.");
@@ -404,6 +405,7 @@ public class BHBot {
 	private static boolean checkPaths() {
 		File chromiumExe = new File(BHBot.chromiumExePath);
 		File chromeDriverExe = new File(BHBot.chromeDriverExePath);
+		File cuePath = new File(BHBot.cuesPath);
 
 		if (!chromiumExe.exists()) {
 			log("Impossible to find Chromium executable in path " + BHBot.chromiumExePath + ". Bot will be stopped!");
@@ -426,6 +428,17 @@ public class BHBot {
 				e.printStackTrace();
 			}
 		}
+
+		if (!cuePath.exists() || cuePath.isFile()) {
+		    BHBot.log("Impossible to find cues path in " + BHBot.cuesPath + ". Bot will be stopped!");
+		    return false;
+        } else {
+            try {
+                BHBot.log("Found cues in " + cuePath.getCanonicalPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
 		return true;
 	}
