@@ -5,15 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -4637,9 +4629,14 @@ public class MainThread implements Runnable {
 	
 	/** Returns dungeon and difficulty level, e.g. 'z2d4 2'. */
 	private String decideDungeonRandomly() {
-		
-		if (new SimpleDateFormat("EEE").format(new Date()).equals("Thu") && !(BHBot.settings.thursdayDungeons.size() == 0)) { // if its thursday and thursdayRaids is not empty
-			List<String> dungeons = BHBot.settings.thursdayDungeons;
+
+		List<String> dungeons;
+		if ("4".equals(new SimpleDateFormat("u").format(new Date())) &&
+				BHBot.settings.thursdayDungeons.size() > 0) { // if its thursday and thursdayRaids is not empty
+			dungeons = BHBot.settings.thursdayDungeons;
+		} else {
+			dungeons = BHBot.settings.dungeons;
+		}
 			
 		if (dungeons.size() == 0)
 			return null;
@@ -4656,25 +4653,7 @@ public class MainThread implements Runnable {
 			if (value >= rand)
 				return d.split(" ")[0] + " " + d.split(" ")[1];
 			}
-		} else {
-			List<String> dungeons = BHBot.settings.dungeons;
-			
-			if (dungeons.size() == 0)
-				return null;
 
-			int total = 0;
-			for (String d : dungeons)
-				total += Integer.parseInt(d.split(" ")[2]);
-
-			int rand = (int)Math.round(Math.random() * total);
-
-			int value = 0;
-			for (String d : dungeons) {
-				value += Integer.parseInt(d.split(" ")[2]);
-				if (value >= rand)
-					return d.split(" ")[0] + " " + d.split(" ")[1];
-				}
-			}
 		return null; // should not come to this
 	}
 	
@@ -4704,46 +4683,34 @@ public class MainThread implements Runnable {
 
 	/** Returns raid type (1, 2 or 3) and difficulty level (1, 2 or 3, which correspond to normal, hard and heroic), e.g. '1 3'. */
 	private String decideRaidRandomly() {
-		
-		if (new SimpleDateFormat("EEE").format(new Date()).equals("Thu") && !(BHBot.settings.thursdayRaids.size() == 0)) { // if its thursday and thursdayRaids is not empty
-			List<String> raid = BHBot.settings.thursdayRaids;
-			if (raid.size() == 0)
-				return null;
 
-			int total = 0;
-			for (String r : raid)
-				total += Integer.parseInt(r.split(" ")[2]);
+		List<String> raid;
 
-			int rand = (int)Math.round(Math.random() * total);
-
-			int value = 0;
-			for (String r : raid) {
-				value += Integer.parseInt(r.split(" ")[2]);
-				if (value >= rand)
-					return r.split(" ")[0] + " " + r.split(" ")[1];
-			}
-
-			return null; // should not come to this
+		if ("4".equals(new SimpleDateFormat("u").format(new Date())) &&
+				BHBot.settings.thursdayRaids.size() > 0) { // if its thursday and thursdayRaids is not empty
+			raid = BHBot.settings.thursdayRaids;
 		} else {
-			List<String> raid = BHBot.settings.raids;
-			if (raid.size() == 0)
-				return null;
-
-			int total = 0;
-			for (String r : raid)
-				total += Integer.parseInt(r.split(" ")[2]);
-
-			int rand = (int)Math.round(Math.random() * total);
-
-			int value = 0;
-			for (String r : raid) {
-				value += Integer.parseInt(r.split(" ")[2]);
-				if (value >= rand)
-					return r.split(" ")[0] + " " + r.split(" ")[1];
-			}
-
-			return null; // should not come to this
+			raid = BHBot.settings.raids;
 		}
+
+		if (raid.size() == 0)
+			return null;
+
+		int total = 0;
+		for (String r : raid)
+			total += Integer.parseInt(r.split(" ")[2]);
+
+		int rand = (int)Math.round(Math.random() * total);
+
+		int value = 0;
+		for (String r : raid) {
+			value += Integer.parseInt(r.split(" ")[2]);
+			if (value >= rand)
+				return r.split(" ")[0] + " " + r.split(" ")[1];
+		}
+
+		return null; // should not come to this
+
 	}
 
 	/**
