@@ -3677,6 +3677,7 @@ public class MainThread implements Runnable {
 			if (persuadeFamiliar()) {
 				BHBot.log(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
 			} else {
+			    BHBot.log("Impossible to attempt persuasion, restarting.");
 				restart();
 			}
 		} else {
