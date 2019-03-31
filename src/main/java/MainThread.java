@@ -3712,14 +3712,18 @@ public class MainThread implements Runnable {
 		int toBribeCnt = 0;
 
 		MarvinSegment seg;
-		boolean isOldFormat = false;
+		boolean shouldBreak = false;
 
 		for (String familiarDetails : BHBot.settings.familiars) {
+			// familiar details from settings
 			String[] details = familiarDetails.toLowerCase().split(" ");
 			familiarName = details[0];
 			toBribeCnt = Integer.parseInt(details[1]);
 
+			// cue related stuff
+			boolean isOldFormat = false;
 			Cue familiarCue = cues.getOrDefault(familiarName, null);
+
 			if (familiarCue == null) {
 				familiarCue = cues.getOrDefault("old" + familiarName, null);
 				if (familiarCue != null) isOldFormat = true;
@@ -3729,8 +3733,10 @@ public class MainThread implements Runnable {
 
 				readScreen(SECOND);
 				if (toBribeCnt > 0) {
+
+					// Old style familiar, we need to open the view menu
 					if (isOldFormat) {
-						seg = detectCue(cues.get("View"));
+						seg = detectCue(cues.get("View"), SECOND * 3);
 						if (seg != null) {
 							clickOnSeg(seg);
 							readScreen(SECOND);
@@ -3744,12 +3750,31 @@ public class MainThread implements Runnable {
 						BHBot.log("Detected familiar " + familiarDetails + " as valid in familiars");
 						result.toBribeCnt = toBribeCnt;
 						result.familiarName = familiarName;
-						break;
+						shouldBreak = true;
+
 					}
+
+					// if it was an old format familiar, we need to close the view menu to move on with the for loop
+					if (isOldFormat) {
+						readScreen(SECOND);
+						seg = detectCue(cues.get("X"), 2*SECOND);
+						if (seg != null) {
+							clickOnSeg(seg);
+							readScreen(SECOND);
+						} else {
+							BHBot.log("Old style familiar detected with no X button to close the view menu.");
+							restart();
+						}
+					}
+
+					if (shouldBreak) break;
+
 				} else {
+					BHBot.log("Count for familiar " + familiarName + " is 0! Temporary removing it form the settings...");
 					wrongNames.add(familiarDetails);
 				}
 			} else {
+				BHBot.log("Impossible to find a cue for familiar " + familiarName + ", it will be temporary removed from settings.");
 				wrongNames.add(familiarDetails);
 			}
 		}
@@ -3758,17 +3783,6 @@ public class MainThread implements Runnable {
 		for (String wrongName : wrongNames) {
 			BHBot.log("Wrong familiar details '" + wrongName + "' in familiar settigs. Removing it...");
 			BHBot.settings.familiars.remove(wrongName);
-		}
-
-		if (isOldFormat && toBribeCnt > 0) {
-			seg = detectCue(cues.get("X"), 2*SECOND);
-			if (seg != null) {
-				clickOnSeg(seg);
-				readScreen(SECOND);
-			} else {
-				BHBot.log("Old style familiar detected with no X button to close the ");
-				restart();
-			}
 		}
 
 		return result;
