@@ -3656,7 +3656,7 @@ public class MainThread implements Runnable {
 			saveGameScreen(persuasionLog.toString());
 
 			if (BHBot.settings.contributeFamiliars) {
-				contributeFamiliarShoot(persuasionLog.toString());
+				contributeFamiliarShoot(persuasionLog.toString(), familiarLevel);
 			}
 		}
 
@@ -4914,15 +4914,67 @@ public class MainThread implements Runnable {
 		return name;
 	}
 
-	private void contributeFamiliarShoot(String shootName)  {
+	private void contributeFamiliarShoot(String shootName, FamiliarType familiarType)  {
 
 		HttpClient httpClient = HttpClients.custom().useSystemProperties().build();
 
 		final HttpPost post = new HttpPost("https://script.google.com/macros/s/AKfycby-tCXZ6MHt_ZSUixCcNbYFjDuri6WvljomLgGy_m5lLZw1y5fZ/exec");
 
 		// we generate a sub image with just the name of the familiar
-		readScreen(SECOND / 2);
-		BufferedImage nameImg = img.getSubimage(105, 60, 640, 105);
+        readScreen(SECOND);
+		int familiarTxtColor;
+		switch (familiarType) {
+			case COMMON:
+				familiarTxtColor = -6881668;
+				break;
+			case RARE:
+				familiarTxtColor = -7168525;
+				break;
+			case EPIC:
+				familiarTxtColor = -98436;
+				break;
+			case LEGENDARY:
+				familiarTxtColor = -66048;
+				break;
+			case ERROR:
+			default:
+				familiarTxtColor = 0;
+				break;
+		}
+
+		if (familiarTxtColor == 0) return;
+
+		BufferedImage zoneImg = img.getSubimage(105, 60, 640, 105);
+
+		/*File zoneImgTmp = new File("tmp-NAME-ZONE.png");
+		try {
+			ImageIO.write(zoneImg, "png", zoneImgTmp);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}*/
+
+		int minX = zoneImg.getWidth();
+		int minY = zoneImg.getHeight();
+		int maxY = 0;
+		int maxX = 0;
+
+		int[][] pixelMatrix = Misc.convertTo2D(zoneImg);
+		for (int y = 0; y<zoneImg.getHeight(); y++){
+			for (int x = 0; x<zoneImg.getWidth(); x++){
+				if (pixelMatrix[x][y] == familiarTxtColor) {
+					if (y < minY) minY = y;
+					if (x < minX) minX = x;
+					if (y > maxY) maxY = y;
+					if (x > maxX) maxX = x;
+				} else {
+					zoneImg.setRGB(x, y, 0);
+				}
+			}
+
+		}
+
+		BufferedImage nameImg = zoneImg.getSubimage(minX, minY, maxX - minX, maxY - minY);
+//		zoneImgTmp.delete();
 
 		File nameImgFile = new File(shootName + "-ctb.png");
 		try {

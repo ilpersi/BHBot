@@ -1,6 +1,7 @@
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -155,6 +156,20 @@ public class Misc {
 			e.printStackTrace();
 		}
 		return new String(encoded, StandardCharsets.US_ASCII);
+	}
+
+	static int[][] convertTo2D(BufferedImage image) {
+
+		final int w = image.getWidth();
+		final int h = image.getHeight();
+
+		int[][] pixels = new int[w][h];
+
+		for( int i = 0; i < w; i++ )
+			for( int j = 0; j < h; j++ )
+				pixels[i][j] = image.getRGB( i, j );
+
+		return pixels;
 	}
 	
 }
