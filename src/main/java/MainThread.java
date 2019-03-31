@@ -3723,6 +3723,7 @@ public class MainThread implements Runnable {
 							clickOnSeg(seg);
 							readScreen(SECOND);
 						} else {
+							BHBot.log("Old format familiar with no view button");
 							restart();
 						}
 					}
@@ -3753,6 +3754,7 @@ public class MainThread implements Runnable {
 				clickOnSeg(seg);
 				readScreen(SECOND);
 			} else {
+				BHBot.log("Old style familiar detected with no X button to close the ");
 				restart();
 			}
 		}
