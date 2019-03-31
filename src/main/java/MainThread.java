@@ -6,6 +6,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -3698,14 +3699,40 @@ public class MainThread implements Runnable {
 	 * Will verify if in the current persuasion screen one of the bribeNames is present
 	 */
 	private BribeDetails verifyBribeNames() {
+
+        BooleanSupplier openView = () -> {
+            MarvinSegment seg;
+            seg = detectCue(cues.get("View"), SECOND * 3);
+            if (seg != null) {
+                clickOnSeg(seg);
+                readScreen(SECOND * 2);
+                return true;
+            } else {
+                return false;
+            }
+        };
+
+        BooleanSupplier closeView = () -> {
+            MarvinSegment seg;
+            seg = detectCue(cues.get("X"), 2*SECOND);
+            if (seg != null) {
+                clickOnSeg(seg);
+                readScreen(SECOND);
+                return true;
+            } else {
+                return false;
+            }
+        };
+
 		List<String> wrongNames = new ArrayList<>();
 		BribeDetails result = new BribeDetails();
 		String familiarName = "";
 		int toBribeCnt = 0;
 
 		MarvinSegment seg;
-		boolean shouldBreak = false;
+        boolean viewIsOpened = false;
 
+        readScreen(SECOND);
 		for (String familiarDetails : BHBot.settings.familiars) {
 			// familiar details from settings
 			String[] details = familiarDetails.toLowerCase().split(" ");
@@ -3714,6 +3741,7 @@ public class MainThread implements Runnable {
 
 			// cue related stuff
 			boolean isOldFormat = false;
+
 			Cue familiarCue = cues.getOrDefault(familiarName, null);
 
 			if (familiarCue == null) {
@@ -3722,44 +3750,36 @@ public class MainThread implements Runnable {
 			}
 
 			if (familiarCue != null) {
-
-				readScreen(SECOND);
 				if (toBribeCnt > 0) {
-
-					// Old style familiar, we need to open the view menu
-					if (isOldFormat) {
-						seg = detectCue(cues.get("View"), SECOND * 3);
-						if (seg != null) {
-							clickOnSeg(seg);
-							readScreen(SECOND);
-						} else {
-							BHBot.log("Old format familiar with no view button");
-							restart();
-						}
-					}
+					if (isOldFormat) { // Old style familiar
+                        if (!viewIsOpened) { // we try to open the view menu if closed
+                            if (openView.getAsBoolean()) {
+                                readScreen(SECOND * 2);
+                                viewIsOpened = true;
+                            } else {
+                                BHBot.log("Old format familiar with no view button");
+                                restart();
+                            }
+                        }
+                    } else { // New style familiar
+					    if (viewIsOpened) { // we try to close the view menu if opened
+					        if (closeView.getAsBoolean()) {
+                                readScreen(SECOND);
+                                viewIsOpened = false;
+                            } else {
+                                BHBot.log("Old style familiar detected with no X button to close the view menu.");
+                                restart();
+                            }
+                        }
+                    }
 
 					if (detectCue(familiarCue, SECOND * 3) != null) {
 						BHBot.log("Detected familiar " + familiarDetails + " as valid in familiars");
 						result.toBribeCnt = toBribeCnt;
 						result.familiarName = familiarName;
-						shouldBreak = true;
+						break;
 
 					}
-
-					// if it was an old format familiar, we need to close the view menu to move on with the for loop
-					if (isOldFormat) {
-						readScreen(SECOND);
-						seg = detectCue(cues.get("X"), 2*SECOND);
-						if (seg != null) {
-							clickOnSeg(seg);
-							readScreen(SECOND);
-						} else {
-							BHBot.log("Old style familiar detected with no X button to close the view menu.");
-							restart();
-						}
-					}
-
-					if (shouldBreak) break;
 
 				} else {
 					BHBot.log("Count for familiar " + familiarName + " is 0! Temporary removing it form the settings...");
@@ -3771,9 +3791,15 @@ public class MainThread implements Runnable {
 			}
 		}
 
+		if (viewIsOpened) {
+		    if (!closeView.getAsBoolean()) {
+		        BHBot.log("Impossible to close view menu at the end of familiar setting loop!");
+		        restart();
+            }
+        }
+
 		// If there is any error we update the settings
 		for (String wrongName : wrongNames) {
-			BHBot.log("Wrong familiar details '" + wrongName + "' in familiar settigs. Removing it...");
 			BHBot.settings.familiars.remove(wrongName);
 		}
 
