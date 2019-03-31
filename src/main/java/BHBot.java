@@ -34,7 +34,8 @@ public class BHBot {
 
 	static String chromiumExePath = "C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe";
 	static String chromeDriverExePath = "./chromedriver.exe";
-	private static String cuesPath = "./cues";
+	private static String cuesPath = "./cues/";
+	static String screenshotPath = "./screenshots/";
 
 	public static void main(String[] args) {
 		log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started.");
@@ -414,6 +415,7 @@ public class BHBot {
 		File chromiumExe = new File(BHBot.chromiumExePath);
 		File chromeDriverExe = new File(BHBot.chromeDriverExePath);
 		File cuePath = new File(BHBot.cuesPath);
+		File screenPath = new File(BHBot.screenshotPath);
 
 		if (!chromiumExe.exists()) {
 			log("Impossible to find Chromium executable in path " + BHBot.chromiumExePath + ". Bot will be stopped!");
@@ -447,6 +449,25 @@ public class BHBot {
                 e.printStackTrace();
             }
         }
+
+		if (!screenPath.exists()) {
+			if (!screenPath.mkdir()) {
+				BHBot.log("Impossible to create screenshot folder in " + BHBot.screenshotPath);
+				return false;
+			} else {
+				try {
+					BHBot.log("Created screenshot folder in " + screenPath.getCanonicalPath());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		} else {
+			try {
+				BHBot.log("Found screenshots in " + screenPath.getCanonicalPath());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 
 		return true;
 	}

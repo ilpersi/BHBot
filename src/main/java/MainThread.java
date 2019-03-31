@@ -4892,12 +4892,12 @@ public class MainThread implements Runnable {
 
 		// save screen shot:
 		try {
-			Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length()-4)).save("./screenshots/");
+			Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length()-4)).save(BHBot.screenshotPath);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		return "./screenshots/" + name;
+		return BHBot.screenshotPath + name;
 	}
 
 	private String saveGameScreen(String prefix, BufferedImage img) {
