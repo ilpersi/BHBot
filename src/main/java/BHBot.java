@@ -20,7 +20,7 @@ import org.openqa.selenium.WebElement;
 public class BHBot {
 
 	private static final String PROGRAM_NAME = "BHBot";
-	private static final String PROGRAM_VERSION = "34.1";
+	private static final String PROGRAM_VERSION = "34.2";
 
 	private static Thread mainThread;
 	static MainThread main;
@@ -55,6 +55,14 @@ public class BHBot {
 					BHBot.settings.setIdle();
 					settingsProcessed = true;
 					i++;
+					break;
+				case "chromium":
+					chromiumExePath = args[i + 1];
+					BHBot.log("Changed Chromium path to: " + args[i + 1]);
+					break;
+				case "chromedriver":
+					chromeDriverExePath = args[i + 1];
+					BHBot.log("Changed chromedriver path to: " + args[i + 1]);
 					break;
 			}
 		}
