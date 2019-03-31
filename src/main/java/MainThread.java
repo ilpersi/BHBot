@@ -679,7 +679,11 @@ public class MainThread implements Runnable {
 		options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
 		options.setBinary(BHBot.chromiumExePath); //set Chromium v69 binary location
 
-		System.setProperty("webdriver.chrome.driver", BHBot.chromeDriverExePath);
+        if (BHBot.settings.autoStartChromeDriver) {
+            System.setProperty("webdriver.chrome.driver", BHBot.chromeDriverExePath);
+        } else {
+            BHBot.log("chromedriver auto start is off, make sure it is started before running BHBot");
+        }
 
 		// disable ephemeral flash permissions flag
 		options.addArguments("--disable-features=EnableEphemeralFlashPermission");

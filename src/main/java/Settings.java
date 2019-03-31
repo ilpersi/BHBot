@@ -20,7 +20,10 @@ public class Settings {
 	boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
 	private boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
 	private int reconnectTimer = 60;
-	
+
+	// chromedriver autostart
+	boolean autoStartChromeDriver = true; // if true, BHBot will automatically run chromedriver at startup
+
 	//Various settings
     int openSkeleton = 0;
 	boolean contributeFamiliars  = true;
@@ -504,6 +507,7 @@ public class Settings {
 		debugDetectionTimes = map.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("1");
 		hideWindowOnRestart = map.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("1");
 		resetTimersOnBattleEnd = map.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("1");
+		autoStartChromeDriver = map.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
 		reconnectTimer = Integer.parseInt(map.getOrDefault("reconnectTimer", ""+reconnectTimer));
 		
 		doRaids = map.getOrDefault("doRaids", doRaids ? "1" : "0").equals("1");
