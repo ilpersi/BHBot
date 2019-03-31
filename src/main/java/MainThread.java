@@ -683,6 +683,9 @@ public class MainThread implements Runnable {
             System.setProperty("webdriver.chrome.driver", BHBot.chromeDriverExePath);
         } else {
             BHBot.log("chromedriver auto start is off, make sure it is started before running BHBot");
+            if (System.getProperty("webdriver.chrome.driver", null) != null) {
+                System.clearProperty("webdriver.chrome.driver");
+            }
         }
 
 		// disable ephemeral flash permissions flag
@@ -753,7 +756,11 @@ public class MainThread implements Runnable {
 		DesiredCapabilities capabilities = DesiredCapabilities.chrome();
 		capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 //		driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
-		driver = new ChromeDriver(options);
+		if (BHBot.settings.autoStartChromeDriver) {
+			driver = new ChromeDriver(options);
+		} else {
+			driver = new RemoteWebDriver(new URL("http://127.0.0.1:9515"), capabilities);
+		}
 		jsExecutor = (JavascriptExecutor) driver;
 	}
 
