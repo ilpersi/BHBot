@@ -6298,4 +6298,46 @@ public class MainThread implements Runnable {
 			}
 		}
 	}
+
+	static void printFamiliars () {
+
+		List<String> folders = new ArrayList<>();
+		folders.add("cues/familiars/old_format");
+		folders.add("cues/familiars/new_format");
+
+		Set<String> uniqueFamiliars = new TreeSet<>();
+
+		for (String path : folders) {
+			//Dynamically load cues
+			File[] files = new File(path).listFiles();
+			if (files != null) {
+				for (File file : files) {
+					if (file.isFile()) {
+						String fileName = file.getName();
+						int dotPosition = fileName.lastIndexOf('.');
+						String fileExtension = dotPosition > 0 ? fileName.substring(dotPosition + 1) : "";
+						if ("png".equals(fileExtension.toLowerCase())) {
+							String familiarName = fileName.substring(0, dotPosition);
+
+							familiarName = familiarName.replace("cue", "");
+
+							uniqueFamiliars.add(familiarName.toLowerCase());
+						}
+					}
+				}
+			}
+		}
+
+		StringBuilder familiarString = new StringBuilder();
+		int currentFamiliar = 1;
+
+		for (String familiar : uniqueFamiliars) {
+			if (familiarString.length() >0) familiarString.append(", ");
+			if (currentFamiliar % 5 == 0) familiarString.append("\n");
+			familiarString.append(familiar);
+			currentFamiliar++;
+		}
+
+		BHBot.log(familiarString.toString());
+	}
 }

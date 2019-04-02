@@ -299,6 +299,17 @@ public class BHBot {
 				}
 				break;
 			}
+            case "print":
+                switch (params[1]) {
+                    case "familiars":
+                    case "familiar":
+                    case "fam":
+                        MainThread.printFamiliars();
+                        break;
+                    default:
+                        break;
+                }
+                break;
             case "test":
                 switch (params[1]) {
                     case "s":
