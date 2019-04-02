@@ -32,6 +32,8 @@ public class BHBot {
 
 	static PushoverClient poClient = new PushoverRestClient();
 
+	static String chromeDriverAddress = "127.0.0.1:9515";
+
 	static String chromiumExePath = "C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe";
 	static String chromeDriverExePath = "./chromedriver.exe";
 	private static String cuesPath = "./cues/";
@@ -61,9 +63,13 @@ public class BHBot {
 					chromiumExePath = args[i + 1];
 					BHBot.log("Changed Chromium path to: " + args[i + 1]);
 					break;
-				case "chromedriver":
+				case "chromedriverpath":
 					chromeDriverExePath = args[i + 1];
 					BHBot.log("Changed chromedriver path to: " + args[i + 1]);
+					break;
+				case "chromedriveraddress":  //change chrome driver port
+					chromeDriverAddress = args[i + 1];
+					i++;
 					break;
 			}
 		}

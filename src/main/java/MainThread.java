@@ -752,7 +752,7 @@ public class MainThread implements Runnable {
 		if (BHBot.settings.autoStartChromeDriver) {
 			driver = new ChromeDriver(options);
 		} else {
-			driver = new RemoteWebDriver(new URL("http://127.0.0.1:9515"), capabilities);
+			driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
 		}
 		jsExecutor = (JavascriptExecutor) driver;
 	}
