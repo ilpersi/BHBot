@@ -76,17 +76,12 @@ public class BHBot {
 
 		processCommand("start");
 		
-//	    Console console = System.console();
-//	    Scanner scanner = new Scanner(System.in);
-		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		while (!finished) {
 	        String s;
 			try {
 				//System.out.print("> ");
 				s = br.readLine();
-				//s = console.readLine();
-				//s = scanner.nextLine();
 			} catch (IOException e) {
 				e.printStackTrace();
 				return;
@@ -120,16 +115,10 @@ public class BHBot {
 		log(PROGRAM_NAME + " has finished.");
 	}
 	
-/*	public static final DecimalFormat num4Digits = new DecimalFormat("#.####", new DecimalFormatSymbols(Locale.US));
-	public static final DecimalFormat num3Digits = new DecimalFormat("#.###", new DecimalFormatSymbols(Locale.US));
-	public static final DecimalFormat num2Digits = new DecimalFormat("#.##", new DecimalFormatSymbols(Locale.US));
-	public static final DecimalFormat num1Digit = new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.US));*/
-	
 	public static void log(String s) {//prints with date and time in format
 		System.out.println(new SimpleDateFormat("<yyyy/MM/dd HH:mm:ss>").format(new Date()) + " " + s);
 	}
-//	public static void logint(int s) {//int logger
-//	}
+
 	private static void processCommand(String c) {
 		String[] params = c.split(" ");
 		switch (params[0]) {
@@ -146,16 +135,6 @@ public class BHBot {
 				break;
 			case "restart":
 				main.restart(false);
-				break;
-			case "session":
-			/*
-			SessionStorage ss = main.driver.getSessionStorage();
-			printSet(ss.keySet());
-			LocalStorage ls = main.driver.getLocalStorage();
-			printSet(ls.keySet());
-			SessionId si = main.driver.getSessionId();
-			log("Session id: " + si.toString());
-			*/
 				break;
 			case "save":
 				MainThread.saveCookies();
@@ -320,24 +299,34 @@ public class BHBot {
 				}
 				break;
 			}
-			case "shrinetest":
-				main.checkShrineSettings("disable");
-				break;
-			case "rtest":
-				main.raidReadTest();
-				break;
-			case "etest":
-				main.expeditionReadTest();
-				break;
-			case "wbtest":
-				main.wbTest();
-				break;
-			case "dtest":
-				main.updateActivityCounter("World Boss");
-				break;
-			case "adtest":
-				main.trySkippingAd();
-				break;
+            case "test":
+                switch (params[1]) {
+                    case "s":
+                    case "shrine":
+                        main.checkShrineSettings("disable");
+                        break;
+                    case "r":
+                    case "raidread":
+                        main.raidReadTest();
+                        break;
+                    case "e":
+                    case "expeditionread":
+                        main.expeditionReadTest();
+                        break;
+                    case "wb":
+                    case "worldboss":
+                        main.wbTest();
+                        break;
+                    case "d":
+                        main.updateActivityCounter("World Boss");
+                        break;
+                    case "ad":
+                        main.trySkippingAd();
+                        break;
+                    default:
+                        break;
+                }
+                break;
 		}
 	}
 
