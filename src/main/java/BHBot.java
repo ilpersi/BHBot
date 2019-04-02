@@ -1,5 +1,3 @@
-import java.awt.Color;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -10,11 +8,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-
 import net.pushover.client.*;
-import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebElement;
 
 
 public class BHBot {
@@ -215,78 +209,6 @@ public class BHBot {
 			case "reload":
 				settings.load();
 				log("Settings reloaded from disk.");
-				break;
-			case "test2":
-				log("Detecting CLAIM YOUR REWARD BUTTON...");
-				WebElement btnClose = null;
-				boolean done;
-				long timer = Misc.getTime();
-				do {
-					if (Misc.getTime() - timer > 60 * MainThread.SECOND) break;
-					main.sleep(500);
-					try {
-						done = MainThread.driver.findElement(By.id("ssaInterstitialNotification")).getAttribute("style").contains("opacity: 1");
-						if (done) {
-							log("AD CAN NOW BE CLOSED! CLOSING...");
-
-							// click the close button:
-							try {
-								btnClose = MainThread.driver.findElement(By.id("ssaInterstitialClose"));
-							} catch (NoSuchElementException e) {
-								BHBot.log("Error: Cannot find close button on finished ad window! HUH :(");
-								break;
-							}
-							btnClose.click();
-
-							break;
-						}
-					} catch (Exception e) {
-						btnClose = null;
-					}
-				} while (btnClose == null);
-
-				if (btnClose == null) {
-					BHBot.log("Could not find CLAIM YOUR REWARD button!");
-				} else {
-					BHBot.log("Found CLAIM YOUR REWARD button!");
-				}
-				break;
-			case "test3":
-				log("Detecting character dialog cues...");
-
-				final Color cuec1 = new Color(238, 241, 249); // white
-
-				final Color cuec2 = new Color(82, 90, 98); // gray
-
-//			Color col;
-
-				BufferedImage img = MainThread.loadImage("C:/Tomaz/Bit Heroes/yeti dialog 2.png");
-				MarvinSegment right = MainThread.findSubimage(img, MainThread.cues.get("DialogRight"));
-				MarvinSegment left = MainThread.findSubimage(img, MainThread.cues.get("DialogLeft"));
-
-				log("Image test right: " + right);
-				log("Image test left: " + left);
-
-				// double check right-side dialog cue:
-				if (right != null) {
-					if (
-							!(new Color(img.getRGB(right.x2 + 1, right.y1 + 24))).equals(cuec1) ||
-									!(new Color(img.getRGB(right.x2 + 4, right.y1 + 24))).equals(cuec2)
-					)
-						right = null;
-				}
-
-				// double check left-side dialog cue:
-				if (left != null) {
-					if (
-							!(new Color(img.getRGB(left.x1 - 1, left.y1 + 24))).equals(cuec1) ||
-									!(new Color(img.getRGB(left.x1 - 4, left.y1 + 24))).equals(cuec2)
-					)
-						left = null;
-				}
-
-				log("Image test right: " + right);
-				log("Image test left: " + left);
 				break;
 			case "loadsettings":
 				String file = Settings.DEFAULT_SETTINGS_FILE;
