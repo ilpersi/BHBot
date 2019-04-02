@@ -401,11 +401,5 @@ public class BHBot {
 
 		return true;
 	}
-	
-	/*public static void printSet(Set<String> set) {
-		for (String s : set) {
-			log("Set key: " + s);
-		}
-	}*/
 
 }

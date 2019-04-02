@@ -296,7 +296,7 @@ public class MainThread implements Runnable {
 	private static final int MAX_LAST_AD_OFFER_TIME = 17*MINUTE; // after this time, restart() will get called since ads are not coming through anymore
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
-	static Map<String, Cue> cues = new HashMap<String, Cue>();
+	private static Map<String, Cue> cues = new HashMap<>();
 
 	boolean finished = false;
 	private int numFailedRestarts = 0; // in a row
@@ -339,21 +339,11 @@ public class MainThread implements Runnable {
 	/** Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through! */
 	long timeLastAdOffer;
 
-	/*
-	public ChromeDriver createNewServer() {
-		return new ChromeDriver();
-	}
-	*/
-
-	public RemoteWebDriver getRemoteWebDriver() {
-		return (RemoteWebDriver)driver;
-	}
-
 	private JavascriptExecutor getJS() {
 		return (JavascriptExecutor)driver;
 	}
 
-	static BufferedImage loadImage(String f) {
+	private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
 //		ClassLoader classLoader = MainThread.class.getClassLoader();
 //		InputStream resourceURL = classLoader.getResourceAsStream(f);
@@ -1529,7 +1519,7 @@ public class MainThread implements Runnable {
 							BHBot.log("Attempting " + expedName + " Portal at difficulty " + BHBot.settings.expeditionDifficulty);
 
 							readScreen();
-							int currentExpedition = 0;
+							int currentExpedition;
 							if (detectCue(cues.get("Expedition1")) != null) {
 								currentExpedition = 1;
 							}
@@ -3726,8 +3716,8 @@ public class MainThread implements Runnable {
 
 		List<String> wrongNames = new ArrayList<>();
 		BribeDetails result = new BribeDetails();
-		String familiarName = "";
-		int toBribeCnt = 0;
+		String familiarName;
+		int toBribeCnt;
 
 		MarvinSegment seg;
         boolean viewIsOpened = false;
