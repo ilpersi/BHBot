@@ -60,9 +60,11 @@ public class BHBot {
 					i++;
 					break;
 				case "chromium":
+				case "chromiumpath":
 					chromiumExePath = args[i + 1];
 					BHBot.log("Changed Chromium path to: " + args[i + 1]);
 					break;
+				case "chromedriver":
 				case "chromedriverpath":
 					chromeDriverExePath = args[i + 1];
 					BHBot.log("Changed chromedriver path to: " + args[i + 1]);
