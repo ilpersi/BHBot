@@ -1167,6 +1167,8 @@ public class MainThread implements Runnable {
 				// (note that several, 2 or even 3 such popups may open one after another)
 				seg = detectCue(cues.get("WeeklyRewards"));
 				if (seg != null) {
+					BufferedImage weeklyImg = img;
+
 					// hopefully we won't close some other important window that has the same fingerprint! (stuff that you find in dungeons has same fingerprint, but perhaps some other dialogs too...)
 					seg = detectCue(cues.get("X"), 5*SECOND);
 					if (seg != null)
@@ -1179,9 +1181,9 @@ public class MainThread implements Runnable {
 
 					if (state == State.Loading || state == State.Main) { // inform about weekly reward only if we're not in a dungeon (in a dungeon it will close the normal reward popup)
 						BHBot.log("Weekly reward claimed successfully.");
-						saveGameScreen("weekly_reward");
+						saveGameScreen("weekly_reward", weeklyImg);
 					}
-					sleep(2*SECOND);
+					readScreen(2*SECOND);
 
 					continue;
 				}
