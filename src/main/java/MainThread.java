@@ -1429,179 +1429,6 @@ public class MainThread implements Runnable {
 						continue;
 					} // shards
 
-					// Expedition code
-					if (BHBot.scheduler.doExpeditionImmediately || (BHBot.settings.doExpedition && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL)) {
-						timeLastBadgesCheck = Misc.getTime();
-						seg = detectCue(cues.get("ExpeditionButton"));
-						if (seg == null) {
-							BHBot.log("Expedition button not found");
-							BHBot.scheduler.restoreIdleTime();
-							continue;
-						}
-						clickOnSeg(seg);
-
-						//clear dialogue if found
-						readScreen();
-						detectCharacterDialogAndHandleIt();
-
-						//check badge count
-						readScreen();
-						int expeditionBadges = getBadges();
-						globalBadges = expeditionBadges;
-						BHBot.log("Badges: " + expeditionBadges + ", required: >" + BHBot.settings.minBadges);
-
-						if (expeditionBadges == -1) { // error
-							BHBot.scheduler.restoreIdleTime();
-							continue;
-						}
-
-						if ((!BHBot.scheduler.doExpeditionImmediately && (expeditionBadges <= BHBot.settings.minBadges))
-								|| (expeditionBadges < BHBot.settings.costExpedition)) {
-							readScreen();
-							seg = detectCue(cues.get("X"),SECOND);
-							clickOnSeg(seg);
-							sleep(SECOND);
-							continue;
-						} else {
-							if (BHBot.scheduler.doExpeditionImmediately)
-								BHBot.scheduler.doExpeditionImmediately = false; //reset if we did a debug expedition
-							
-							// select cost if needed:
-							readScreen(2*SECOND); // wait for the popup to stabilize a bit
-							int cost = detectCost();
-							if (cost == 0) { // error!
-								BHBot.log("Due to an error in cost detection, Expedition will be skipped.");
-								seg = detectCue(cues.get("X"));
-								clickOnSeg(seg);
-								sleep(2*SECOND);
-								continue;
-							}
-
-							if (cost > expeditionBadges) {
-								BHBot.log("Current cost " + cost + " is bigger that available badges " + expeditionBadges + ". Expedition will be skipped.");
-								seg = detectCue(cues.get("X"));
-								clickOnSeg(seg);
-								sleep(2*SECOND);
-								continue;
-							}
-
-							if (cost != BHBot.settings.costExpedition) {
-								BHBot.log("Current Expedition cost is " + cost + ", goal cost is " + BHBot.settings.costExpedition + ". Changing it...");
-								boolean result = selectCost(cost, BHBot.settings.costExpedition);
-								if (!result) { // error!
-									// see if drop down menu is still open and close it:
-									readScreen(SECOND);
-									tryClosingWindow(cues.get("CostDropDown"));
-									readScreen(5*SECOND);
-									seg = detectCue(cues.get("X"));
-									clickOnSeg(seg);
-									sleep(2*SECOND);
-									BHBot.log("Due to an error in cost selection, Expedition will be skipped.");
-									continue;
-								}
-							}
-							
-							seg = detectCue(cues.get("Play"), 2*SECOND);
-							clickOnSeg(seg);
-							sleep(2*SECOND);
-
-							//Select Expedition and write portal to a variable
-							String expedition = decideExpeditionRandomly();
-							if (expedition == null) {
-								BHBot.settings.doExpedition = false;
-								BHBot.log("It was impossible to randomly choose an expedtion. Expedtions are disabled.");
-								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-									sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedtion. Expedtions are disabled.", "siren");
-								continue;
-							}
-
-							expedition = expedition.split(" ")[0];
-							String expedName = getExpeditionName(expedition);
-//							BHBot.log("Expedition chosen: " + expedition);
-							BHBot.log("Attempting " + expedName + " Portal at difficulty " + BHBot.settings.expeditionDifficulty);
-
-							readScreen();
-							int currentExpedition;
-							if (detectCue(cues.get("Expedition1")) != null) {
-								currentExpedition = 1;
-							}
-							else if (detectCue(cues.get("Expedition2")) != null) {
-								currentExpedition = 2;
-							} else {
-								BHBot.settings.doExpedition = false;
-								BHBot.log("It was impossible to get the current expedition type!");
-								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-									sendPushOverMessage("Expedition error", "It was impossible to get the current expedition type. Expedtions are now disabled!", "siren");
-								continue;
-							}
-
-							// click on the chosen portal:
-							Point p = getExpeditionIconPos(expedition, currentExpedition);
-							if (p == null) {
-								BHBot.settings.doExpedition = false;
-								BHBot.log("It was impossible to get portal position for " + expedition + ". Expedtions are now disabled!");
-								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-									sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + expedition + ". Expedtions are now disabled!", "siren");
-								continue;
-							}
-
-							clickInGame(p.x, p.y);
-							
-							// select difficulty if needed:
-							int difficulty = detectDifficultyExpedition();
-							if (difficulty == 0) { // error!
-								BHBot.log("Due to an error in difficulty detection, Expedition will be skipped.");
-								seg = detectCue(cues.get("X"));
-								while (seg != null) {
-									clickOnSeg(seg);
-									readScreen(2*SECOND);
-									seg = detectCue(cues.get("X"));
-								}
-								continue;
-							}
-							if (difficulty != BHBot.settings.expeditionDifficulty) {
-								BHBot.log("Current Expedition difficulty level is " + difficulty + ", goal level is " + BHBot.settings.expeditionDifficulty + ". Changing it...");
-								boolean result = selectDifficultyExpedition(difficulty, BHBot.settings.expeditionDifficulty);
-								if (!result) { // error!
-									// see if drop down menu is still open and close it:
-									readScreen();
-									seg = detectCue(cues.get("X"));
-									while (seg != null) {
-										clickOnSeg(seg);
-										readScreen(2*SECOND);
-										seg = detectCue(cues.get("X"));
-									}
-									BHBot.log("Due to an error in difficulty selection, Expedition will be skipped.");
-									continue;
-								}
-							}
-							
-							//click enter
-							seg = detectCue(cues.get("Enter"), 2*SECOND);
-							clickOnSeg(seg);
-
-							//click enter
-							seg = detectCue(cues.get("Accept"), 2*SECOND);
-							clickOnSeg(seg);
-							
-							handleTeamMalformedWarning();
-							if (handleTeamMalformedWarning()) {
-								BHBot.log("Team incomplete, doing emergency restart..");
-								restart();
-								continue;
-							} else {
-								state = State.Expedition;
-								BHBot.log(expedName + " portal initiated!");
-							}
-
-							if (handleGuildLeaveConfirm()) {
-								restart();
-								continue;
-							}
-						}
-						continue;
-					}
-
 					// check for tokens (trials and gauntlet):
 					if (BHBot.scheduler.doTrialsOrGauntletImmediately || ((BHBot.settings.doTrials || BHBot.settings.doGauntlet) && Misc.getTime() - timeLastTokensCheck > TOKENS_CHECK_INTERVAL)) {
 						timeLastTokensCheck = Misc.getTime();
@@ -1811,7 +1638,7 @@ public class MainThread implements Runnable {
 								}
 							}
 
-							sleep(2*SECOND);
+							readScreen(2*SECOND);
 
 							// click on the dungeon:
 							Point p = getDungeonIconPos(dungeon);
@@ -1973,7 +1800,8 @@ public class MainThread implements Runnable {
 					} // PvP
 
 					// check for badges (for GVG/Invasion):
-					if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || ((BHBot.settings.doGVG || BHBot.settings.doInvasion) && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL)) {
+					if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || BHBot.scheduler.doExpeditionImmediately
+							|| ((BHBot.settings.doGVG || BHBot.settings.doInvasion || BHBot.settings.doExpedition) && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL)) {
 						timeLastBadgesCheck = Misc.getTime();
 
 						BadgeEvent badgeEvent = BadgeEvent.None;
@@ -1993,7 +1821,7 @@ public class MainThread implements Runnable {
 							}
 						}
 
-						if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion event?)
+						if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion/Expedition event?)
 							BHBot.scheduler.restoreIdleTime();
 							BHBot.log("No badge event found, skipping");
 							continue;
@@ -2015,7 +1843,7 @@ public class MainThread implements Runnable {
 						}
 
 						// check GVG:
-						if (badgeEvent == BadgeEvent.GVG) {
+						if (badgeEvent == BadgeEvent.GVG && BHBot.settings.doGVG) {
 							if ((!BHBot.scheduler.doGVGImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costGVG)) {
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
@@ -2100,9 +1928,8 @@ public class MainThread implements Runnable {
 							}
 							continue;
 						} // GvG
-						
 						// check invasion:
-						else if (badgeEvent == BadgeEvent.Invasion) {
+						else if (badgeEvent == BadgeEvent.Invasion && BHBot.settings.doInvasion) {
 							if ((!BHBot.scheduler.doInvasionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costInvasion)) {
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
@@ -2162,6 +1989,156 @@ public class MainThread implements Runnable {
 							}
 							continue;
 						} // invasion
+						// check expedition
+						else if (badgeEvent == BadgeEvent.Expedition && BHBot.settings.doExpedition) {
+
+							if ((!BHBot.scheduler.doExpeditionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costExpedition)) {
+								seg = detectCue(cues.get("X"));
+								clickOnSeg(seg);
+								sleep(2 * SECOND);
+
+								continue;
+							} else {
+								// do the expedition!
+
+								if (BHBot.scheduler.doExpeditionImmediately)
+									BHBot.scheduler.doExpeditionImmediately = false; // reset it
+
+								BHBot.log("Attempting expedition...");
+
+								readScreen(SECOND * 2);
+								int cost = detectCost();
+								if (cost == 0) { // error!
+									BHBot.log("Due to an error#1 in cost detection, Expedition cost will be skipped.");
+									closePopupSecurely(cues.get("ExpeditionWindow"), cues.get("X"));
+									continue;
+								}
+
+								if (cost > badges) {
+									BHBot.log("Current cost " + cost + " is bigger that available badges " + badges + ". Expedition will be skipped.");
+									seg = detectCue(cues.get("X"));
+									clickOnSeg(seg);
+									sleep(2*SECOND);
+									continue;
+								}
+
+								if (cost != BHBot.settings.costExpedition) {
+									BHBot.log("Current Expedition cost is " + cost + ", goal cost is " + BHBot.settings.costExpedition + ". Changing it...");
+									boolean result = selectCost(cost, BHBot.settings.costExpedition);
+									if (!result) { // error!
+										// see if drop down menu is still open and close it:
+										readScreen(SECOND);
+										tryClosingWindow(cues.get("CostDropDown"));
+										readScreen(5*SECOND);
+										seg = detectCue(cues.get("X"));
+										clickOnSeg(seg);
+										sleep(2*SECOND);
+										BHBot.log("Due to an error in cost selection, Expedition will be skipped.");
+										continue;
+									}
+								}
+
+								seg = detectCue(cues.get("Play"), 2*SECOND);
+								clickOnSeg(seg);
+								sleep(2*SECOND);
+
+								//Select Expedition and write portal to a variable
+								String expedition = decideExpeditionRandomly();
+								if (expedition == null) {
+									BHBot.settings.doExpedition = false;
+									BHBot.log("It was impossible to randomly choose an expedtion. Expedtions are disabled.");
+									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+										sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedtion. Expedtions are disabled.", "siren");
+									continue;
+								}
+
+								expedition = expedition.split(" ")[0];
+								String expedName = getExpeditionName(expedition);
+//							BHBot.log("Expedition chosen: " + expedition);
+								BHBot.log("Attempting " + expedName + " Portal at difficulty " + BHBot.settings.expeditionDifficulty);
+
+								readScreen();
+								int currentExpedition;
+								if (detectCue(cues.get("Expedition1")) != null) {
+									currentExpedition = 1;
+								}
+								else if (detectCue(cues.get("Expedition2")) != null) {
+									currentExpedition = 2;
+								} else {
+									BHBot.settings.doExpedition = false;
+									BHBot.log("It was impossible to get the current expedition type!");
+									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+										sendPushOverMessage("Expedition error", "It was impossible to get the current expedition type. Expedtions are now disabled!", "siren");
+									continue;
+								}
+
+								// click on the chosen portal:
+								Point p = getExpeditionIconPos(expedition, currentExpedition);
+								if (p == null) {
+									BHBot.settings.doExpedition = false;
+									BHBot.log("It was impossible to get portal position for " + expedition + ". Expedtions are now disabled!");
+									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+										sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + expedition + ". Expedtions are now disabled!", "siren");
+									continue;
+								}
+
+								clickInGame(p.x, p.y);
+
+								// select difficulty if needed:
+								int difficulty = detectDifficultyExpedition();
+								if (difficulty == 0) { // error!
+									BHBot.log("Due to an error in difficulty detection, Expedition will be skipped.");
+									seg = detectCue(cues.get("X"));
+									while (seg != null) {
+										clickOnSeg(seg);
+										readScreen(2*SECOND);
+										seg = detectCue(cues.get("X"));
+									}
+									continue;
+								}
+
+								if (difficulty != BHBot.settings.expeditionDifficulty) {
+									BHBot.log("Current Expedition difficulty level is " + difficulty + ", goal level is " + BHBot.settings.expeditionDifficulty + ". Changing it...");
+									boolean result = selectDifficultyExpedition(difficulty, BHBot.settings.expeditionDifficulty);
+									if (!result) { // error!
+										// see if drop down menu is still open and close it:
+										readScreen();
+										seg = detectCue(cues.get("X"));
+										while (seg != null) {
+											clickOnSeg(seg);
+											readScreen(2*SECOND);
+											seg = detectCue(cues.get("X"));
+										}
+										BHBot.log("Due to an error in difficulty selection, Expedition will be skipped.");
+										continue;
+									}
+								}
+
+								//click enter
+								seg = detectCue(cues.get("Enter"), 2*SECOND);
+								clickOnSeg(seg);
+
+								//click enter
+								seg = detectCue(cues.get("Accept"), 2*SECOND);
+								clickOnSeg(seg);
+
+								handleTeamMalformedWarning();
+								if (handleTeamMalformedWarning()) {
+									BHBot.log("Team incomplete, doing emergency restart..");
+									restart();
+									continue;
+								} else {
+									state = State.Expedition;
+									BHBot.log(expedName + " portal initiated!");
+								}
+
+								if (handleGuildLeaveConfirm()) {
+									restart();
+									continue;
+								}
+							}
+							continue;
+						}
 						else {
 							// do neither gvg nor invasion
 							seg = detectCue(cues.get("X"));
