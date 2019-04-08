@@ -1667,15 +1667,13 @@ public class MainThread implements Runnable {
 							int soloThreshold = Character.getNumericValue(dungeon.charAt(1)); //convert the zone char to int so we can compare
 							if (soloThreshold <= BHBot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
 								BHBot.log("Zone less than dungeon solo threshold, attempting solo");
-								sleep(SECOND);
-								readScreen();
-								seg = detectCue(cues.get("Clear"), SECOND);
+								readScreen(SECOND);
+								seg = detectCue(cues.get("Clear"), SECOND * 2);
 								clickOnSeg(seg);
 								readScreen();
-								seg = detectCue(cues.get("Accept"), SECOND);
+								seg = detectCue(cues.get("Accept"), SECOND * 2);
 								clickOnSeg(seg);
-								readScreen();
-								sleep(2*SECOND); //wait for dropdown animation to finish
+								readScreen(2*SECOND); //wait for dropdown animation to finish
 								seg = detectCue(cues.get("YesGreen"), 2*SECOND);
 								if (seg == null) {
 									sleep(500);
@@ -1691,16 +1689,15 @@ public class MainThread implements Runnable {
 								
 							} else { // d1-d3
 								readScreen(SECOND);
-								seg = detectCue(cues.get("D4Accept")); //D4's accept button is a few pixels different for reasons
+								seg = detectCue(cues.get("D4Accept"), SECOND); //D4's accept button is a few pixels different for reasons
 								if (seg == null) {
-									seg = detectCue(cues.get("Accept")); //standard accept button
+									seg = detectCue(cues.get("Accept"), SECOND); //standard accept button
 									clickOnSeg(seg);
 								} else {
 								clickOnSeg(seg);
 								}
 							}
 
-							handleTeamMalformedWarning();
 							if (handleTeamMalformedWarning()) {
 								BHBot.log("Team malformed");
 								restart();
@@ -5013,7 +5010,7 @@ public class MainThread implements Runnable {
 	 */
 	private boolean handleTeamMalformedWarning() {
 		readScreen(SECOND * 3); // in case popup is still sliding downward
-		if (detectCue(cues.get("TeamNotFull")) != null || detectCue(cues.get("TeamNotOrdered")) != null) {
+		if (detectCue(cues.get("TeamNotFull"), SECOND) != null || detectCue(cues.get("TeamNotOrdered"), SECOND) != null) {
 			readScreen(SECOND);
 			MarvinSegment seg = detectCue(cues.get("No"), 5 * SECOND);
 			if (seg == null) {
@@ -5021,7 +5018,7 @@ public class MainThread implements Runnable {
 				return true;
 			}
 			clickOnSeg(seg);
-			sleep(2 * SECOND);
+			readScreen(2 * SECOND);
 
 			seg = detectCue(cues.get("AutoTeam"), 10 * SECOND);
 			if (seg == null) {
@@ -5030,8 +5027,8 @@ public class MainThread implements Runnable {
 			}
 			clickOnSeg(seg);
 
-			readScreen(10 * SECOND);
-			seg = detectCue(cues.get("Accept"));
+			readScreen(2 * SECOND);
+			seg = detectCue(cues.get("Accept"), 10 * SECOND);
 			if (seg == null) {
 				BHBot.log("Error: 'Team not full/ordered' window detected, but no 'Accept' button found. Restarting...");
 				return true;
