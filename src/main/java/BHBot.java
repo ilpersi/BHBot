@@ -338,6 +338,9 @@ public class BHBot {
                         break;
                 }
                 break;
+            default:
+            	BHBot.log("Unknown command: '" + c + "'");
+            	break;
 		}
 	}
 
