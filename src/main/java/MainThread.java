@@ -284,6 +284,7 @@ public class MainThread implements Runnable {
 	
 	private boolean startTimeCheck = false;
 	private boolean shrinesChecked = false;
+	private boolean oneTimeshrineCheck = false;
 	private boolean autoShrined = false;
 	private long activityStartTime;
 	private long activityDuration;
@@ -1300,17 +1301,19 @@ public class MainThread implements Runnable {
 						handleFishingBaits();
 					}
 
+                    // One time check for Autoshrine
+                    if (!oneTimeshrineCheck) {
+
+                    	BHBot.log("Startup check to make sure authoshrines is initially disabled");
+                    	checkShrineSettings("disable");
+                        oneTimeshrineCheck = true;
+                        shrinesChecked = false;
+                    }
+
 
 					// check for shards:
 					if (BHBot.scheduler.doRaidImmediately || (BHBot.settings.doRaids && Misc.getTime() - timeLastShardsCheck > SHARDS_CHECK_INTERVAL)) {
 						timeLastShardsCheck = Misc.getTime();
-						
-						/*if ((BHBot.settings.autoShrine) && (!shrinesChecked)) {
-							checkShrineSettings("enable");
-						} else if ((!BHBot.settings.autoShrine) && (!shrinesChecked)) {
-							BHBot.log("One time check to make sure that ignore shrines/boss is disabled");
-							checkShrineSettings("disable");
-						}*/
 						
 						readScreen();
 						MarvinSegment raidBTNSeg = detectCue(cues.get("RaidButton"));
@@ -1358,7 +1361,7 @@ public class MainThread implements Runnable {
 								BHBot.scheduler.doRaidImmediately = false; // reset it
 
 							// One time check for Autoshrine
-							if (!shrinesChecked) {
+							if (!shrinesChecked && BHBot.settings.autoShrine) {
 
 								// we need to close the raid window to check the autoshrine
 								readScreen();
@@ -1366,12 +1369,7 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 								readScreen(SECOND);
 
-								if (BHBot.settings.autoShrine) {
-									checkShrineSettings("enable");
-								} else {
-									BHBot.log("One time check to make sure that ignore shrines/boss is disabled");
-									checkShrineSettings("disable");
-								}
+								checkShrineSettings("enable");
 
 								readScreen(SECOND);
 								clickOnSeg(raidBTNSeg);
@@ -1508,18 +1506,13 @@ public class MainThread implements Runnable {
 								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // reset it
 
 							// One time check for Autoshrine
-							if (!shrinesChecked) {
+							if (!shrinesChecked && BHBot.settings.autoShrine) {
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
 								readScreen(SECOND);
 
-								if (BHBot.settings.autoShrine) {
-									checkShrineSettings("enable");
-								} else {
-									BHBot.log("One time check to make sure that ignore shrines/boss is disabled");
-									checkShrineSettings("disable");
-								}
+								checkShrineSettings("enable");
 
 								readScreen(SECOND);
 								clickOnSeg(trialBTNSeg);
@@ -2045,17 +2038,12 @@ public class MainThread implements Runnable {
 									BHBot.scheduler.doExpeditionImmediately = false; // reset it
 
 								// One time check for Autoshrine
-								if (!shrinesChecked) {
+								if (!shrinesChecked && BHBot.settings.autoShrine) {
 									seg = detectCue(cues.get("X"));
 									clickOnSeg(seg);
 									readScreen(2 * SECOND);
 
-									if (BHBot.settings.autoShrine) {
-										checkShrineSettings("enable");
-									} else {
-										BHBot.log("One time check to make sure that ignore shrines/boss is disabled");
-										checkShrineSettings("disable");
-									}
+									checkShrineSettings("enable");
 
 									readScreen(SECOND);
 									clickOnSeg(expedtionBTNSeg);
