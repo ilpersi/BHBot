@@ -163,9 +163,9 @@ public class MainThread implements Runnable {
 			return 4 + ordinal();
 		}
 
-		public int maxPos() {
-			return Math.min(6 + ordinal(), 10);
-		}
+//		public int maxPos() {
+////			return Math.min(6 + ordinal(), 10);
+////		}
 
 		public int getButtonPos() {
 			return 8 + ordinal();
@@ -305,7 +305,7 @@ public class MainThread implements Runnable {
 	private boolean noGemsToBribe = false;
 	private final int MAX_NUM_FAILED_RESTARTS = 5;
 	private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
-	static WebDriver driver;
+	private static WebDriver driver;
 	private static JavascriptExecutor jsExecutor;
 	private static WebElement game;
 	private State state; // at which stage of the game/menu are we currently?
@@ -798,7 +798,7 @@ public class MainThread implements Runnable {
 					{
 						new Date(Long.parseLong(val));
 					}
-					Boolean isSecure = Boolean.valueOf(token.nextToken());
+					boolean isSecure = Boolean.parseBoolean(token.nextToken());
 					Cookie ck = new Cookie(name,value,domain,path,expiry,isSecure);
 					try {
 						driver.manage().addCookie(ck); // This will add the stored cookie to your current session
@@ -2817,7 +2817,7 @@ public class MainThread implements Runnable {
 	}
 
 	// https://stackoverflow.com/questions/297762/find-known-sub-image-in-larger-image
-	static MarvinSegment findSubimage(BufferedImage src, Cue cue) {
+	private static MarvinSegment findSubimage(BufferedImage src, Cue cue) {
 		long timer = Misc.getTime();
 
 		MarvinSegment seg;
@@ -2920,7 +2920,7 @@ public class MainThread implements Runnable {
 		act.perform();
 	}
 
-	void sleep(int milliseconds) {
+	private void sleep(int milliseconds) {
 		try {
 			Thread.sleep(milliseconds);
 		} catch (InterruptedException e) {
@@ -3709,7 +3709,7 @@ public class MainThread implements Runnable {
 					restart();
 				}
 			} else {
-				updateFamiliarCounter(bribeInfo.familiarName.toUpperCase(), bribeInfo.toBribeCnt-1);
+				updateFamiliarCounter(bribeInfo.familiarName.toUpperCase());
 			}
 		} else if (persuasion == PersuationType.PERSUADE) {
 			if (persuadeFamiliar()) {
@@ -3767,7 +3767,6 @@ public class MainThread implements Runnable {
 		String familiarName;
 		int toBribeCnt;
 
-		MarvinSegment seg;
         boolean viewIsOpened = false;
 
         readScreen(SECOND);
@@ -4272,13 +4271,13 @@ public class MainThread implements Runnable {
 		return catchCount;
 		}*/
 
-	private void updateFamiliarCounter(String fam, int currentCounter) {
+	private void updateFamiliarCounter(String fam) {
         String familiarToUpdate = "";
         String updatedFamiliar = "";
 
 		for (String fa : BHBot.settings.familiars) { //cycle through array
 			String fString = fa.toUpperCase().split(" ")[0]; //case sensitive for a match so convert to upper case
-			currentCounter = Integer.parseInt(fa.split(" ")[1]); //set the bribe counter to an int
+			int currentCounter = Integer.parseInt(fa.split(" ")[1]); //set the bribe counter to an int
 			if (fam.equals(fString)) { //when match is found from the function
 				familiarToUpdate = fa; //write current status to String
 				currentCounter--; // decrease the counter
@@ -5251,9 +5250,8 @@ public class MainThread implements Runnable {
 		makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
 
 		BufferedImage imb = im.getBufferedImage();
-		int d = readNumFromImg(imb);
 
-		return d;
+		return readNumFromImg(imb);
 	}
 	
 	/* World boss reading and changing section */
@@ -5398,9 +5396,8 @@ public class MainThread implements Runnable {
 		makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
 
 		BufferedImage imb = im.getBufferedImage();
-		int d = readNumFromImg(imb);
 
-		return d;
+		return readNumFromImg(imb);
 	}
 
 	/**
