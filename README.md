@@ -55,18 +55,19 @@ See [the wiki](https://github.com/Betalord/BHBot/wiki) for the first time setup 
 Here is a list of most common commands used with the bot (must be typed in the console window, or, if you use web interface, in the
 command input box):
 
-- `stop`: stops the bot execution (may take a few seconds. Once it is stopped, the console will close automatically).
-- `pause [mins]`: pauses bot's execution. Useful when you want to play the game yourself (either from the same Chromium window, or by starting another Chromium window). The bots is paused untill are resue command is issued or, if specified, for a number of minutes equal to _mins_
-- `resume`: resumes bot's execution.
-- `reload`: will reload the 'settings.ini' file from disk and apply any changes on-the-fly.
-- `shot [prefix]`: takes a screenshot of the game and saves it to 'shot.png'. If a _prefix_ is specified it will be used instead of the default _shot_ one.
-- `restart`: restarts the chromedriver (closes Chromium and opens a fresh Chromium window). Use only when something goes wrong (should restart automatically after some time in that case though).
+- `do dungeon|expedition|gauntlet|gvg|pvp|raid|trials`: force the bot to perform a dungeon . Example: "do raid". Used for debugging purposes more or less (bot will automatically attempt dungeons).
 - `hide`: hides Chromium window.
-- `show`: shows Chromium window again after it has been hidden.
-- `do`: force a dungeon/raid/pvp/gvg/gauntlet/trials. Example: "do raid". Used for debugging purposes more or less (bot will automatically attempt dungeons).
-- `set`: sets a setting line, just like from a 'settings.ini' file. Example: "set raids 1 3 100", or "set difficulty 70". Note that this overwritten setting is NOT saved to the 'settings.ini' file! Once you issue <reload> command, it will get discharged.
-- `readouts`: will reset readout timers (and hence immediately commence reading out resources).
+- `pause [mins]`: pauses bot's execution. Useful when you want to play the game yourself (either from the same Chromium window, or by starting another Chromium window). The bots is paused untill are resue command is issued or, if specified, for a number of minutes equal to _mins_
 - `pomessage [message]`: use this command to verify that the Pushover integration is correctly configured. Message parameter is optional and if not specified, a standard messabe will be sent.
+- `print familiars`: output the full list of supported familiars in the encounter management system
+- `readouts`: will reset readout timers (and hence immediately commence reading out resources).
+- `reload`: will reload the 'settings.ini' file from disk and apply any changes on-the-fly.
+- `restart`: restarts the chromedriver (closes Chromium and opens a fresh Chromium window). Use only when something goes wrong (should restart automatically after some time in that case though).
+- `resume`: resumes bot's execution.
+- `set`: sets a setting line, just like from a 'settings.ini' file. Example: "set raids 1 3 100", or "set difficulty 70". Note that this overwritten setting is NOT saved to the 'settings.ini' file! Once you issue <reload> command, it will get discharged.
+- `shot [prefix]`: takes a screenshot of the game and saves it to 'shot.png'. If a _prefix_ is specified it will be used instead of the default _shot_ one.
+- `show`: shows Chromium window again after it has been hidden.
+- `stop`: stops the bot execution (may take a few seconds. Once it is stopped, the console will close automatically).
 
 ## Finally
 
