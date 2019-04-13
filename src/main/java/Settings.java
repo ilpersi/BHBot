@@ -605,7 +605,7 @@ public class Settings {
 
 	private void checkDeprecatedSettings(Map<String, String> map) {
 		if (map.getOrDefault("autoBribe", null) != null) {
-			BHBot.log("Deprecated setting detected: autoBribe. Ignoring it.");
+			BHBot.log("Deprecated setting detected: autoBribe. Ignoring it, use a combination of bribeLevel and familiars instead.");
 		}
 
 		if (map.getOrDefault("pauseOnDisconnect", null) != null) {
