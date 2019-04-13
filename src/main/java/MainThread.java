@@ -1478,7 +1478,8 @@ public class MainThread implements Runnable {
 						readScreen();
 						int tokens = getTokens();
 						globalTokens = tokens;
-						BHBot.log("Tokens: " + tokens + ", required: >" + BHBot.settings.minTokens);
+						BHBot.log("Tokens: " + tokens + ", required: >" + BHBot.settings.minTokens + ", " +
+								(trials ? "Trials" : "Gauntlet") + " cost: " + (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet));
 
 						if (tokens == -1) { // error
 							BHBot.scheduler.restoreIdleTime();
@@ -1745,7 +1746,7 @@ public class MainThread implements Runnable {
 						timeLastTicketsCheck = Misc.getTime();
 						int tickets = getTickets();
 						globalTickets = tickets;
-						BHBot.log("Tickets: " + tickets  + ", required: >" + BHBot.settings.minTickets);
+						BHBot.log("Tickets: " + tickets  + ", required: >" + BHBot.settings.minTickets + ", cost: " + BHBot.settings.costPVP);
 
 						if (tickets == -1) { // error
 							BHBot.scheduler.restoreIdleTime();
@@ -1864,7 +1865,8 @@ public class MainThread implements Runnable {
 						readScreen();
 						int badges = getBadges();
 						globalBadges = badges;
-						BHBot.log("Badges: " + badges + ", required: >" + BHBot.settings.minBadges);
+						BHBot.log("Badges: " + badges + ", required: >" + BHBot.settings.minBadges + ", " + badgeEvent.toString() +  " cost: " +
+								(badgeEvent == BadgeEvent.GVG ? BHBot.settings.costGVG : badgeEvent == BadgeEvent.Invasion ? BHBot.settings.costInvasion : BHBot.settings.costExpedition));
 
 						if (badges == -1) { // error
 							BHBot.scheduler.restoreIdleTime();
