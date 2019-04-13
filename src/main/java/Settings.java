@@ -18,6 +18,7 @@ public class Settings {
 	boolean restartAfterAdOfferTimeout = true; // if true, then bot will automatically restart itself if it hasn't claimed any ad offer in a time longer than defined. This is needed because ads don't appear anymore if Chrome doesn't get restarted.
 	boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
 	boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
+	boolean experimentalAutoRevive = false; // if true, game window will be hidden upon driver (re)start
 	private boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
 	int reconnectTimer = 60;
 
@@ -503,6 +504,7 @@ public class Settings {
 		restartAfterAdOfferTimeout = map.getOrDefault("restartAfterAdOfferTimeout", restartAfterAdOfferTimeout ? "1" : "0").equals("1");
 		debugDetectionTimes = map.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("1");
 		hideWindowOnRestart = map.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("1");
+		experimentalAutoRevive = map.getOrDefault("experimentalAutoRevive", experimentalAutoRevive ? "1" : "0").equals("1");
 		resetTimersOnBattleEnd = map.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("1");
 		autoStartChromeDriver = map.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
 		reconnectTimer = Integer.parseInt(map.getOrDefault("reconnectTimer", ""+reconnectTimer));

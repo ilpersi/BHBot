@@ -281,6 +281,7 @@ public class MainThread implements Runnable {
 	private boolean threeRevived = false;
 	private boolean fourRevived = false;
 	private boolean fiveRevived = false;
+	private boolean[] revived = {false, false, false, false, false};
 	
 	private boolean startTimeCheck = false;
 	private boolean shrinesChecked = false;
@@ -624,6 +625,16 @@ public class MainThread implements Runnable {
 		addCue("RareFamiliar", loadImage("cues/familiars/type/cue02RareFamiliar.png"), new Bounds(525, 240, 674, 365)); // Rare Bribe cue
 		addCue("EpicFamiliar", loadImage("cues/familiars/type/cue03EpicFamiliar.png"), new Bounds(525, 240, 674, 365)); // Epic Bribe cue
 		addCue("LegendaryFamiliar", loadImage("cues/familiars/type/cue04LegendaryFamiliar.png"), new Bounds(525, 240, 674, 365)); // Epic Bribe cue
+
+		//AutoRevive cues
+		addCue("Potions", loadImage("cues/autorevive/cuePotions.png"), new Bounds(0, 370, 90, 460)); //Potions button
+		addCue("NoPotions", loadImage("cues/autorevive/cueNoPotions.png"), new Bounds(210, 190, 590, 350)); // The team does not need revive
+		addCue("Restores", loadImage("cues/autorevive/cueRestores.png"), new Bounds(145, 320, 655, 395)); // To identify revive and healing potions
+		addCue("Revives", loadImage("cues/autorevive/cueRevives.png"), new Bounds(145, 320, 655, 395)); // To identify revive potions
+		addCue("MinorAvailable", loadImage("cues/autorevive/cueMinorAvailable.png"), new Bounds(170, 205, 270, 300));
+		addCue("AverageAvailable", loadImage("cues/autorevive/cueAverageAvailable.png"), new Bounds(350, 205, 450, 300));
+		addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable.png"), new Bounds(535, 205, 635, 300));
+		addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
 
 		int oldFamCnt = loadCueFolder("cues/familiars/old_format", "OLD", true, null);
 		int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
@@ -3300,7 +3311,11 @@ public class MainThread implements Runnable {
 		//trials/raid revive code + auto-off check
 		seg = detectCue(cues.get("AutoOff"));
 		if (seg != null) {
-			handleAutoRevive();
+			if (BHBot.settings.experimentalAutoRevive) {
+				handleAutoReviveEx();
+			} else {
+				handleAutoRevive();
+			}
 		}
 
 		/*
@@ -3898,6 +3913,188 @@ public class MainThread implements Runnable {
 		}
 
 		return false;
+	}
+
+	private void handleAutoReviveEx() {
+		MarvinSegment seg;
+
+		// Auto Revive is disabled, we re-enable it
+		if (BHBot.settings.autoRevive == 0) {
+			BHBot.log("AutoRevive disabled, reenabling auto..");
+			seg = detectCue(cues.get("AutoOff"));
+			clickOnSeg(seg);
+			return;
+		}
+
+		seg = detectCue(cues.get("Potions"), SECOND * 2);
+		if (seg != null) {
+			clickOnSeg(seg);
+			readScreen(SECOND);
+
+			// if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
+			seg = detectCue(cues.get("Defeat"), SECOND);
+			if (seg != null) {
+				BHBot.log("Defeat screen, skipping revive check");
+				seg = detectCue(cues.get("AutoOff"), SECOND);
+				clickOnSeg(seg);
+				return;
+			}
+
+			// If no potions are needed, we re-enable the Auto function
+			seg = detectCue(cues.get("NoPotions"), SECOND); // Everyone is Full HP
+			if (seg != null) {
+				seg = detectCue(cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400));
+				if (seg != null) {
+					BHBot.log("Autorevive is enabled, but no revire is needed, restarting the bot...");
+					clickOnSeg(seg);
+					seg = detectCue(cues.get("AutoOff"), SECOND);
+					clickOnSeg(seg);
+				} else {
+					BHBot.log("No potions cue detected, without close button, restarting!");
+					saveGameScreen("autorevive-no-potions-no-close", img);
+					restart();
+				}
+				return;
+			}
+
+			// Based on the state we get the team size
+			HashMap<Integer, Point> revivePositions = new HashMap<>();
+			switch (state) {
+				case Trials:
+				case Gauntlet:
+					revivePositions.put(1, new Point(290,315));
+					revivePositions.put(2, new Point(200,340));
+					revivePositions.put(3, new Point(115,285));
+					break;
+				case Raid:
+					revivePositions.put(1, new Point(305,320));
+					revivePositions.put(2, new Point(250,345));
+					revivePositions.put(3, new Point(200,267));
+					revivePositions.put(4, new Point(150,325));
+					revivePositions.put(5, new Point(90,295));
+					break;
+				default:
+					break;
+			}
+
+			if ( ((state == State.Trials || state == State.Gauntlet) && (BHBot.settings.autoRevive == 1 || BHBot.settings.autoRevive == 3)) ||
+					((state == State.Raid) && (BHBot.settings.autoRevive == 2 || BHBot.settings.autoRevive == 3))) {
+
+				char[] potionOder = BHBot.settings.potionOrder.toCharArray();
+
+				for (Map.Entry<Integer, Point> item : revivePositions.entrySet()) {
+					Integer slotNum = item.getKey();
+					Point slotPos = item.getValue();
+
+					if (revived[slotNum-1]) continue;
+
+					// If we revive a team member we need to reopen the potion menu again
+					seg = detectCue(cues.get("UnitSelect"), SECOND);
+					if (seg == null) {
+						seg = detectCue(cues.get("Potions"), SECOND * 2);
+						if (seg != null) {
+							clickOnSeg(seg);
+							readScreen(SECOND);
+
+							// If no potions are needed, we re-enable the Auto function
+							seg = detectCue(cues.get("NoPotions"), SECOND); // Everyone is Full HP
+							if (seg != null) {
+								seg = detectCue(cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400));
+								if (seg != null) {
+									BHBot.log("Autorevive is enabled, but no revire is needed, restarting the bot...");
+									clickOnSeg(seg);
+									seg = detectCue(cues.get("AutoOff"), SECOND);
+									clickOnSeg(seg);
+								} else {
+									BHBot.log("Error while reopening the potions menu: no close button found!");
+									saveGameScreen("autorevive-no-potions-for-error", img);
+									restart();
+								}
+								return;
+							}
+						}
+					}
+
+					readScreen(SECOND);
+					clickInGame(slotPos.x, slotPos.y);
+					readScreen(SECOND);
+
+					MarvinSegment reviveSeg = detectCue(cues.get("Revives"), SECOND);
+					MarvinSegment restoreSeg = detectCue(cues.get("Restores"));
+
+					if (restoreSeg!=null) { // we can use one potion, we don't know which one: revive or healing
+						if (reviveSeg == null) { // we can use a revive potion
+							BHBot.log("Slot " + slotNum + " is up for healing potions, so it does not need revive");
+							seg = detectCue(cues.get("X"));
+							clickOnSeg(seg);
+							readScreen(SECOND);
+							continue;
+						}
+					} else {
+						continue;
+					}
+
+					// We check what potions are available, and we save the seg for future reuse
+					HashMap<Character, MarvinSegment> availablePotions = new HashMap<>();
+					availablePotions.put('1', detectCue(cues.get("MinorAvailable")));
+					availablePotions.put('2', detectCue(cues.get("AverageAvailable")));
+					availablePotions.put('3', detectCue(cues.get("MajorAvailable")));
+
+					// No more potions are available
+					if (availablePotions.get('1')== null && availablePotions.get('2')== null && availablePotions.get('3')== null) {
+						BHBot.log("No potions are avilable, autoRevive well be temporary disabled!");
+						BHBot.settings.autoRevive = 0;
+						return;
+					}
+
+					// We manage tank priority using the best potion we have
+					if (slotNum == 1 && BHBot.settings.tankPriority && !revived[0]) {
+						for (char potion: "321".toCharArray()) {
+							seg = availablePotions.get(potion);
+							if (seg != null) {
+								clickOnSeg(seg);
+								readScreen(SECOND);
+								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
+								clickOnSeg(seg);
+								revived[0] = true;
+								readScreen(SECOND);
+								break;
+							}
+						}
+					}
+
+					for (char potion: potionOder) {
+						seg = availablePotions.get(potion);
+						if (seg != null) {
+							clickOnSeg(seg);
+							readScreen(SECOND);
+							seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
+							clickOnSeg(seg);
+							revived[slotNum-1] = true;
+							readScreen(SECOND);
+							break;
+						}
+					}
+				}
+
+			}
+
+		} else { // Impossible to find the potions button
+			BHBot.log("Impossible to find the potions button!");
+		}
+
+		// If the unit selection screen is still open, we need to close it
+		seg = detectCue(cues.get("UnitSelect"), SECOND);
+		if (seg != null) {
+			seg = detectCue(cues.get("X"), SECOND);
+			if (seg != null) {
+				clickOnSeg(seg);
+				readScreen(SECOND);
+			}
+		}
+
+		seg = detectCue(cues.get("AutoOff"), SECOND);
+		clickOnSeg(seg);
 	}
 	
 	private void handleAutoRevive() {
@@ -6310,6 +6507,12 @@ public class MainThread implements Runnable {
 		threeRevived = false;
 		fourRevived = false;
 		fiveRevived = false;
+
+		revived[0] = false;
+		revived[1] = false;
+		revived[2] = false;
+		revived[3] = false;
+		revived[4] = false;
 	}
 
 	void sendPushOverMessage(String title, String msg, MessagePriority priority, File attachment) {
