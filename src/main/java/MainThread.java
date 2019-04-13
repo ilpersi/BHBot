@@ -1746,7 +1746,7 @@ public class MainThread implements Runnable {
 						timeLastTicketsCheck = Misc.getTime();
 						int tickets = getTickets();
 						globalTickets = tickets;
-						BHBot.log("Tickets: " + tickets  + ", required: >" + BHBot.settings.minTickets + ", cost: " + BHBot.settings.costPVP);
+						BHBot.log("Tickets: " + tickets  + ", required: >" + BHBot.settings.minTickets + ", PVP cost: " + BHBot.settings.costPVP);
 
 						if (tickets == -1) { // error
 							BHBot.scheduler.restoreIdleTime();
