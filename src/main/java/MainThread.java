@@ -4932,11 +4932,11 @@ public class MainThread implements Runnable {
 		Date date = new Date();
 		String name = prefix + "_" + dateFormat.format(date) + ".png";
 		int num = 0;
-		File f = new File(name);
+		File f = new File(BHBot.screenshotPath + name);
 		while (f.exists()) {
 			num++;
 			name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
-			f = new File(name);
+			f = new File(BHBot.screenshotPath + name);
 		}
 
 		// save screen shot:
