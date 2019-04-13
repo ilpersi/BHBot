@@ -4061,6 +4061,7 @@ public class MainThread implements Runnable {
 								break;
 							}
 						}
+						continue;
 					}
 
 					for (char potion: potionOder) {
