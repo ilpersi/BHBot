@@ -5,3 +5,12 @@
 web/\.DS_Store
 
 \.DS_Store
+/target/
+
+BHBot\.jar
+
+\.project
+
+\.classpath
+
+\.settings/org\.eclipse\.m2e\.core\.prefs

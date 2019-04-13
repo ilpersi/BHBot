@@ -470,6 +470,7 @@ public class MainThread implements Runnable {
 
 		addCue("UhOh", loadImage("cues/cueUhoh.png"), new Bounds(319, 122, 526, 184));
 		addCue("ReviveAverage", loadImage("cues/cueReviveAverage.png"), null);
+		addCue("Purchase", loadImage("cues/cuePurchase.png"), new Bounds(240, 240, 390, 280));		
 
 		addCue("GuildButton", loadImage("cues/cueGuildButton.png"), new Bounds(500, 420, 590, 520));
 		addCue("IgnoreShrines", loadImage("cues/cueIgnoreShrines.png"), new Bounds(120, 250, 675, 475));
@@ -4144,8 +4145,8 @@ public class MainThread implements Runnable {
 		
 		boolean revived = false;
 		
-		//TODO No potions failsafe
-		seg = detectCue(cues.get("Play")); //placeholder, should be no potion popup
+		//No potions failsafe
+		seg = detectCue(cues.get("Purchase")); //placeholder, should be no potion popup
 		
 		//this is bad practise but was a lazy way of importing the settings string
 		int firstPotion = Character.getNumericValue((BHBot.settings.potionOrder.charAt(0)));
@@ -4158,7 +4159,8 @@ public class MainThread implements Runnable {
 			clickInGame(580,260); //major revive
 			sleep(1000);
 			if (seg != null) {
-				BHBot.log(noReviveStr);
+				BHBot.log("No Major Revives available.");
+				clickInGame(475,360); //'no' button
 			} else {
 				clickInGame(320,360); //confirm button
 				revived = true;
@@ -4173,6 +4175,7 @@ public class MainThread implements Runnable {
 				sleep(1000);
 				if (seg != null) {
 					BHBot.log(noReviveStr);
+					clickInGame(475,360); //'no' button
 				} else {
 					clickInGame(320, 360); //confirm button
 					revived = true;
@@ -4187,7 +4190,8 @@ public class MainThread implements Runnable {
 				clickInGame(potion.x, potion.y);
 				sleep(1000);
 				if (seg != null) {
-					BHBot.log("No " + (secondPotion == 1 ? "Minor" : secondPotion == 2 ? "Average" : "Major")  + " Revives available.");
+					BHBot.log(noReviveStr);
+					clickInGame(475,360); //'no' button
 				} else {
 					clickInGame(320,360); //confirm button
 					revived = true;
@@ -4202,7 +4206,8 @@ public class MainThread implements Runnable {
 				clickInGame(potion.x, potion.y);
 				sleep(1000);
 				if (seg != null) {
-					BHBot.log("No " + (thirdPotion == 1 ? "Minor" : thirdPotion == 2 ? "Average" : "Major")  + " Revives available.");
+					BHBot.log(noReviveStr);
+					clickInGame(475,360); //'no' button
 				} else {
 					clickInGame(320,360); //confirm button
 					revived = true;
@@ -4212,7 +4217,7 @@ public class MainThread implements Runnable {
 			if (!revived) { //no potions found
 				BHBot.log("No Potions available, skipping");
 			}
-			}
+		}
 	}
 	
 	private Point potionDecider(int potion) {
@@ -4472,11 +4477,11 @@ public class MainThread implements Runnable {
 		case 7: // zone 7
 			switch (d) {
 			case 1:
-				return new Point(200, 200);
+				return new Point(215, 315);
 			case 2:
-				return new Point(650, 400);
+				return new Point(70, 175);
 			case 3:
-				return new Point(400, 430);
+				return new Point(400, 290);
 			case 4:
 				BHBot.log("Zone 7 only has 3 dungeons, falling back to z7d2");
 				return new Point(650, 400);
@@ -4487,9 +4492,9 @@ public class MainThread implements Runnable {
 		 	case 1:
 		 		return new Point(570, 170);
 		 	case 2:
-		 		return new Point(570, 340);
+		 		return new Point(650, 390);
 		 	case 3:
-		 		return new Point(250, 390);
+		 		return new Point(250, 370);
 			case 4:
 				BHBot.log("Zone 8 only has 3 dungeons, falling back to z8d2");
 				return new Point(570, 340);
