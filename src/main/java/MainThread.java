@@ -1090,8 +1090,8 @@ public class MainThread implements Runnable {
 					} else {
 						BHBot.scheduler.isUserInteracting = true;
 						// probably user has logged in, that's why we got disconnected. Lets leave him alone for some time and then resume!
-						BHBot.log("Disconnect has been detected. Probably due to user interaction. Sleeping for " + Misc.millisToHumanForm(BHBot.settings.pauseOnDisconnect) + "...");
-						BHBot.scheduler.pause(BHBot.settings.pauseOnDisconnect * MINUTE);
+						BHBot.log("Disconnect has been detected. Probably due to user interaction. Sleeping for " + Misc.millisToHumanForm(BHBot.settings.reconnectTimer * MINUTE) + "...");
+						BHBot.scheduler.pause(BHBot.settings.reconnectTimer * MINUTE);
 						state = State.Loading;
 						continue;
 					}

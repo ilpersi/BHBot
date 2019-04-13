@@ -19,7 +19,7 @@ public class Settings {
 	boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
 	boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
 	private boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
-	private int reconnectTimer = 60;
+	int reconnectTimer = 60;
 
 	// chromedriver autostart
 	boolean autoStartChromeDriver = true; // if true, BHBot will automatically run chromedriver at startup
@@ -154,9 +154,6 @@ public class Settings {
 	String dungeonsRun = "dungeonsrun 0";
 	String worldBossRun = "worldbossrun 0";
 
-	/** This tells us how much time will we sleep when disconnect has been detected (which happens when a user logs in). This interval should be an hour or so, so that user can play the game in peace without being disconnected due to us reconnecting to the game. */
-    int pauseOnDisconnect = reconnectTimer*MainThread.MINUTE;
-	
 	public Settings() {
 		dungeons = new ArrayList<>();
 		setDungeons("z1d4 3 100"); // some default value
@@ -580,7 +577,7 @@ public class Settings {
 		collectFishingBaits = map.getOrDefault("collectFishingBaits", collectFishingBaits ? "1" : "0").equals("1");
 
 		openSkeleton = Integer.parseInt(map.getOrDefault("openSkeletonChest", ""+openSkeleton));	
-		pauseOnDisconnect = Integer.parseInt(map.getOrDefault("pauseOnDisconnect", ""+pauseOnDisconnect));
+
 		dungeonsRun = "dungeonsrun " + map.getOrDefault("dungeonsrun", dungeonsRun);
 		worldBossRun = "worldbossrun " + map.getOrDefault("worldbossrun", worldBossRun);
 		
@@ -609,6 +606,10 @@ public class Settings {
 	private void checkDeprecatedSettings(Map<String, String> map) {
 		if (map.getOrDefault("autoBribe", null) != null) {
 			BHBot.log("Deprecated setting detected: autoBribe. Ignoring it.");
+		}
+
+		if (map.getOrDefault("pauseOnDisconnect", null) != null) {
+			BHBot.log("Deprecated setting detected: pauseOnDisconnect. Ignoring it, use reconnectTimer instead.");
 		}
 	}
 }
