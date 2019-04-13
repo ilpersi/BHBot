@@ -122,106 +122,34 @@ public class BHBot {
 	private static void processCommand(String c) {
 		String[] params = c.split(" ");
 		switch (params[0]) {
-			case "exit":
-			case "quit":
-			case "stop":
-				main.finished = true;
-				finished = true;
-				break;
-			case "start":
-				main = new MainThread();
-				mainThread = new Thread(main, "MainThread");
-				mainThread.start();
-				break;
-			case "restart":
-				main.restart(false);
-				break;
-			case "save":
-				MainThread.saveCookies();
-				break;
-			case "load":
-				MainThread.loadCookies();
-				break;
-			case "pomessage":
-				String message = "Test message from BHbot!";
+			case "c": { // detect cost from screen
+				main.readScreen();
+				int current = main.detectCost();
+				log("Detected cost: " + current);
 
-				// We split on spaces so we re-build the original message
-				if (params.length > 1)
-					message = String.join(" ", Arrays.copyOfRange(params, 1, params.length));
-
-				if (BHBot.settings.enablePushover) {
-					String poLogMessage = "Sending Pushover test message.";
-					poLogMessage += "\n\n poUserToken is: " + BHBot.settings.poUserToken;
-					poLogMessage += "\n poAppToken is: " + BHBot.settings.poAppToken;
-					BHBot.log(poLogMessage);
-
-					String poScreenName = main.saveGameScreen("pomessage");
-					File poScreenFile = new File(poScreenName);
-
-					main.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
-					if (!poScreenFile.delete()) BHBot.log("Impossible to delete tmp img for pomessage command.");
-
-				} else {
-					BHBot.log("Pushover integration is disabled in the settings!");
-				}
-				break;	
-			case "shot":
-				String fileName = "shot";
-				if (params.length > 1)
-					fileName = params[1];
-
-				main.saveGameScreen(fileName);
-
-				log("Screenshot '" + fileName + "' saved.");
-				break;
-			case "pause":
 				if (params.length > 1) {
-					int pauseDuration = Integer.parseInt(params[1]) * MainThread.MINUTE;
-					scheduler.pause(pauseDuration);
-				} else {
-					scheduler.pause();
+					int goal = Integer.parseInt(params[1]);
+					log("Goal cost: " + goal);
+					boolean result = main.selectCost(current, goal);
+					log("Cost change result: " + result);
 				}
 				break;
-			case "resume":
-				scheduler.resume();
-				break;
-			case "reload":
-				settings.load();
-				log("Settings reloaded from disk.");
-				break;
-			case "loadsettings":
-				String file = Settings.DEFAULT_SETTINGS_FILE;
-				if (params.length > 1)
-					file = params[1];
-				settings.load(file);
-				log("Settings loaded from file");
-				log("Character: " + BHBot.settings.username);
-				break;
-			case "readouts":
-			case "resettimers":
-				main.resetTimers();
-				log("Readout timers reset.");
-				break;
+			}
 			case "crash": {
 				int i = 3 / 0;
 				break;
 			}
-			case "hide":
-				main.hideBrowser();
-				settings.hideWindowOnRestart = true;
-				break;
-			case "show":
-				main.showBrowser();
-				settings.hideWindowOnRestart = false;
-				break;
-			case "set": {
-				List<String> list = new ArrayList<>();
-				int i = c.indexOf(" ");
-				if (i == -1)
-					return;
-				list.add(c.substring(i + 1));
-				settings.load(list);
-				log("Settings updated manually: <" + list.get(0) + ">");
+			case "d": { // detect difficulty from screen
+				main.readScreen();
+				int current = main.detectDifficulty();
+				log("Detected difficulty: " + current);
+
+				if (params.length > 1) {
+					int goal = Integer.parseInt(params[1]);
+					log("Goal difficulty: " + goal);
+					boolean result = main.selectDifficulty(current, goal);
+					log("Difficulty change result: " + result);
+				}
 				break;
 			}
 			case "do":
@@ -267,49 +195,124 @@ public class BHBot {
 						log("Forcing World Boss...");
 						scheduler.doWorldBossImmediately = true;
 						break;
+					default:
+						BHBot.log("Unknown dungeon : '" + params[1] + "'");
+						break;
+				}
+				break;
+			case "exit":
+			case "quit":
+			case "stop":
+				main.finished = true;
+				finished = true;
+				break;
+			case "hide":
+				main.hideBrowser();
+				settings.hideWindowOnRestart = true;
+				break;
+			case "load":
+				MainThread.loadCookies();
+				break;
+			case "loadsettings":
+				String file = Settings.DEFAULT_SETTINGS_FILE;
+				if (params.length > 1)
+					file = params[1];
+				settings.load(file);
+				log("Settings loaded from file");
+				log("Character: " + BHBot.settings.username);
+				break;
+			case "pause":
+				if (params.length > 1) {
+					int pauseDuration = Integer.parseInt(params[1]) * MainThread.MINUTE;
+					scheduler.pause(pauseDuration);
+				} else {
+					scheduler.pause();
 				}
 				break;
 			case "plan":
 				settings.load("plans/" + params[1] + ".ini");
 				log("Plan loaded from " + "<plans/" + params[1] + ".ini>.");
 				break;
-			case "d": { // detect difficulty from screen
-				main.readScreen();
-				int current = main.detectDifficulty();
-				log("Detected difficulty: " + current);
+			case "pomessage":
+				String message = "Test message from BHbot!";
 
-				if (params.length > 1) {
-					int goal = Integer.parseInt(params[1]);
-					log("Goal difficulty: " + goal);
-					boolean result = main.selectDifficulty(current, goal);
-					log("Difficulty change result: " + result);
+				// We split on spaces so we re-build the original message
+				if (params.length > 1)
+					message = String.join(" ", Arrays.copyOfRange(params, 1, params.length));
+
+				if (BHBot.settings.enablePushover) {
+					String poLogMessage = "Sending Pushover test message.";
+					poLogMessage += "\n\n poUserToken is: " + BHBot.settings.poUserToken;
+					poLogMessage += "\n poAppToken is: " + BHBot.settings.poAppToken;
+					BHBot.log(poLogMessage);
+
+					String poScreenName = main.saveGameScreen("pomessage");
+					File poScreenFile = new File(poScreenName);
+
+					main.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
+					if (!poScreenFile.delete()) BHBot.log("Impossible to delete tmp img for pomessage command.");
+
+				} else {
+					BHBot.log("Pushover integration is disabled in the settings!");
 				}
 				break;
-			}
-			case "c": { // detect cost from screen
-				main.readScreen();
-				int current = main.detectCost();
-				log("Detected cost: " + current);
-
-				if (params.length > 1) {
-					int goal = Integer.parseInt(params[1]);
-					log("Goal cost: " + goal);
-					boolean result = main.selectCost(current, goal);
-					log("Cost change result: " + result);
+			case "print":
+				switch (params[1]) {
+					case "familiars":
+					case "familiar":
+					case "fam":
+						MainThread.printFamiliars();
+						break;
+					default:
+						break;
 				}
 				break;
+			case "restart":
+				main.restart(false);
+				break;
+			case "save":
+				MainThread.saveCookies();
+				break;
+			case "shot":
+				String fileName = "shot";
+				if (params.length > 1)
+					fileName = params[1];
+
+				main.saveGameScreen(fileName);
+
+				log("Screenshot '" + fileName + "' saved.");
+				break;
+			case "start":
+				main = new MainThread();
+				mainThread = new Thread(main, "MainThread");
+				mainThread.start();
+				break;
+			case "readouts":
+			case "resettimers":
+				main.resetTimers();
+				log("Readout timers reset.");
+				break;
+			case "reload":
+				settings.load();
+				log("Settings reloaded from disk.");
+				break;
+			case "resume":
+				scheduler.resume();
+				break;
+			case "set": {
+				List<String> list = new ArrayList<>();
+				int i = c.indexOf(" ");
+				if (i == -1)
+					return;
+				list.add(c.substring(i + 1));
+				settings.load(list);
+				log("Settings updated manually: <" + list.get(0) + ">");
+				break;
 			}
-            case "print":
-                switch (params[1]) {
-                    case "familiars":
-                    case "familiar":
-                    case "fam":
-                        MainThread.printFamiliars();
-                        break;
-                    default:
-                        break;
-                }
-                break;
+			case "show":
+				main.showBrowser();
+				settings.hideWindowOnRestart = false;
+				break;
             case "test":
                 switch (params[1]) {
                     case "s":
