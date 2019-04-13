@@ -1369,6 +1369,7 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 								readScreen(SECOND);
 
+								BHBot.log("Enabling Auto Shrine for Raid");
 								checkShrineSettings("enable");
 
 								readScreen(SECOND);
@@ -1466,12 +1467,6 @@ public class MainThread implements Runnable {
 							BHBot.scheduler.restoreIdleTime();
 							continue;
 						}
-						
-						/*if ((BHBot.settings.autoShrine) && (!shrinesChecked) && (trials)) {
-							checkShrineSettings("enable");
-						} else if ((!BHBot.settings.autoShrine) && (!shrinesChecked)) {
-							checkShrineSettings("disable");
-						}*/
 
 						clickOnSeg(seg);
 						MarvinSegment trialBTNSeg = seg;
@@ -1506,12 +1501,13 @@ public class MainThread implements Runnable {
 								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // reset it
 
 							// One time check for Autoshrine
-							if (!shrinesChecked && BHBot.settings.autoShrine) {
+							if (trials && (!shrinesChecked && BHBot.settings.autoShrine)) {
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
 								readScreen(SECOND);
 
+								BHBot.log("Enabling Auto Shrine for Trial");
 								checkShrineSettings("enable");
 
 								readScreen(SECOND);
@@ -2018,6 +2014,7 @@ public class MainThread implements Runnable {
 								} else {
 									state = State.Invasion;
 									BHBot.log("Invasion initiated!");
+									autoShrined = false;
 								}
 							}
 							continue;
@@ -2043,6 +2040,7 @@ public class MainThread implements Runnable {
 									clickOnSeg(seg);
 									readScreen(2 * SECOND);
 
+									BHBot.log("Enabling Auto Shrine for Expedition");
 									checkShrineSettings("enable");
 
 									readScreen(SECOND);
