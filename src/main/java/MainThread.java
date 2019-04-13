@@ -1320,6 +1320,7 @@ public class MainThread implements Runnable {
                     	checkShrineSettings("disable");
                         oneTimeshrineCheck = true;
                         shrinesChecked = false;
+                        sleep(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
                     }
 
 
