@@ -79,12 +79,14 @@ public class Settings {
 	
 	/** The trials/gauntlet difficulty */
     int difficulty = 60;
-	
-	/** The Expedition difficulty */
-    int expeditionDifficulty = 50;
-	
-	/** list of expedtion portals and chance to run, similar formatting to dungeons */
-    List<String> expeditions;
+
+	/**
+	 * List of expeditions we want to do (there are 4 portals: p1, p2, p3 and p4) with a difficulty level and percentage.
+	 * The portals are numbered clockwise starting from the top lef and the one in the middle is p4
+	 * Examples:
+	 * 'p1 250 70;p2 250 30' ==> in 70% of cases it will do p1 at lvl 250, in 30% of cases it will do p2 at lvl 250
+	 */
+	RandomCollection<String> expeditions;
 	
 	/**
 	 * List of dungeons with percentages that we will attempt to do. Dungeon name must be in standard format, i.e. 'd2z4',
@@ -165,8 +167,8 @@ public class Settings {
 		thursdayRaids = new ArrayList<>();
 		thursdayDungeons = new ArrayList<>();
 		setThursdayRaids(""); // default is empty, else if people delete the line it will load this value 
-		expeditions = new ArrayList<>();
-		setExpeditions("h1 100"); // some default value
+		expeditions = new RandomCollection<>();
+		setExpeditions("p1 100 100"); // some default value
 		pvpstrip = new ArrayList<>();
 		gvgstrip = new ArrayList<>();
 		consumables = new ArrayList<>();
@@ -185,7 +187,6 @@ public class Settings {
 		doAds = true;
 		
 		difficulty = 60;
-		expeditionDifficulty = 100;
 		setDungeons("z2d1 3 50", "z2d2 3 50");
 		setRaids("1 3 100");
 		
@@ -237,14 +238,21 @@ public class Settings {
 			this.thursdayDungeons.add(add);
 		}
 	}
-	
+
 	private void setExpeditions(String... expeditions) {
 		this.expeditions.clear();
-		for (String e : expeditions) {
-			String add = e.trim();
-			if (add.equals(""))
+		double weight;
+		String name;
+		String[] config;
+
+		for (String d : expeditions) {
+			String add = d.trim();
+			if ("".equals(add))
 				continue;
-			this.expeditions.add(add);
+			config = add.split(" ");
+			weight = Double.parseDouble(config[2]);
+			name = config[0] + " " + config[1];
+			this.expeditions.add(weight, name);
 		}
 	}
 	
@@ -327,14 +335,9 @@ public class Settings {
 			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
 		return result.toString();
 	}
-	
+
 	private String getExpeditionsAsString() {
-		StringBuilder result = new StringBuilder();
-		for (String e : expeditions)
-			result.append(e).append(";");
-		if (result.length() > 0)
-			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
-		return result.toString();
+		return expeditions.toString();
 	}
 
 	private String getRaidsAsString() {
@@ -412,15 +415,9 @@ public class Settings {
 				thursdayDungeons.remove(i);
 		}
 	}
-	
+
 	private void setExpeditionsFromString(String s) {
 		setExpeditions(s.split(";"));
-		// clean up (trailing spaces and remove if empty):
-		for (int i = expeditions.size()-1; i >= 0; i--) {
-			expeditions.set(i, expeditions.get(i).trim());
-			if (expeditions.get(i).equals(""))
-				expeditions.remove(i);
-		}
 	}
 	
 	private void setRaidsFromString(String s) {
@@ -495,6 +492,7 @@ public class Settings {
 		}
 
 		checkDeprecatedSettings(map);
+		sanitizeSetting(map);
 		
 		username = map.getOrDefault("username", username);
 		password = map.getOrDefault("password", password);
@@ -557,7 +555,6 @@ public class Settings {
 		potionOrder  = map.getOrDefault("potionOrder", potionOrder);
 		
 		difficulty = Integer.parseInt(map.getOrDefault("difficulty", ""+difficulty));
-		expeditionDifficulty = Integer.parseInt(map.getOrDefault("expeditionDifficulty", ""+expeditionDifficulty));
 		minSolo  = Integer.parseInt(map.getOrDefault("minSolo", ""+minSolo));
 		
 		setDungeonsFromString(map.getOrDefault("dungeons", getDungeonsAsString()));
@@ -613,5 +610,20 @@ public class Settings {
 		if (map.getOrDefault("pauseOnDisconnect", null) != null) {
 			BHBot.log("Deprecated setting detected: pauseOnDisconnect. Ignoring it, use reconnectTimer instead.");
 		}
+
+		if (map.getOrDefault("expeditionDifficulty", null) != null) {
+			BHBot.log("Deprecated setting detected: expeditionDifficulty. Use the new expedition format instead.");
+		}
+	}
+
+	private void sanitizeSetting(Map<String, String> map) {
+		// we check and sanitize expeditions values
+		String expeditions = map.get("expeditions");
+		if (expeditions.contains("h") || expeditions.contains("i")) {
+			BHBot.log("WARNING: invalid format detected for expeditions settings '" + expeditions + "': " +
+					"a standard setting of p1 100 100 will be used" );
+			map.put("expeditions", "p1 100 100");
+		}
+
 	}
 }

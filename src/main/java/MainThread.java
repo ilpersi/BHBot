@@ -1840,7 +1840,7 @@ public class MainThread implements Runnable {
 						continue;
 					} // PvP
 
-					// check for badges (for GVG/Invasion):
+					// check for badges (for GVG/Invasion/Expedtion):
 					if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || BHBot.scheduler.doExpeditionImmediately
 							|| ((BHBot.settings.doGVG || BHBot.settings.doInvasion || BHBot.settings.doExpedition) && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL)) {
 						timeLastBadgesCheck = Misc.getTime();
@@ -2034,7 +2034,8 @@ public class MainThread implements Runnable {
 							}
 							continue;
 						} // invasion
-						// check expedition
+
+						// check Expedition
 						else if (badgeEvent == BadgeEvent.Expedition && BHBot.settings.doExpedition) {
 
 							if ((!BHBot.scheduler.doExpeditionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costExpedition)) {
@@ -2102,8 +2103,8 @@ public class MainThread implements Runnable {
 								sleep(2*SECOND);
 
 								//Select Expedition and write portal to a variable
-								String expedition = decideExpeditionRandomly();
-								if (expedition == null) {
+								String randomExpedition = BHBot.settings.expeditions.next();
+								if (randomExpedition == null) {
 									BHBot.settings.doExpedition = false;
 									BHBot.log("It was impossible to randomly choose an expedtion. Expedtions are disabled.");
 									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
@@ -2111,10 +2112,9 @@ public class MainThread implements Runnable {
 									continue;
 								}
 
-								expedition = expedition.split(" ")[0];
-								String expedName = getExpeditionName(expedition);
-//							BHBot.log("Expedition chosen: " + expedition);
-								BHBot.log("Attempting " + expedName + " Portal at difficulty " + BHBot.settings.expeditionDifficulty);
+								String[] expedition = randomExpedition.split(" ");
+								String targetPortal = expedition[0];
+								int targetDifficulty = Integer.parseInt(expedition[1]);
 
 								readScreen();
 								int currentExpedition;
@@ -2131,13 +2131,16 @@ public class MainThread implements Runnable {
 									continue;
 								}
 
+								String expedName = getExpeditionName(currentExpedition, targetPortal);
+								BHBot.log("Attempting " + expedName + " Portal at difficulty " + targetDifficulty);
+
 								// click on the chosen portal:
-								Point p = getExpeditionIconPos(expedition, currentExpedition);
+								Point p = getExpeditionIconPos(currentExpedition, targetPortal);
 								if (p == null) {
 									BHBot.settings.doExpedition = false;
-									BHBot.log("It was impossible to get portal position for " + expedition + ". Expedtions are now disabled!");
+									BHBot.log("It was impossible to get portal position for " + expedName + ". Expedtions are now disabled!");
 									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-										sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + expedition + ". Expedtions are now disabled!", "siren");
+										sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + expedName + ". Expedtions are now disabled!", "siren");
 									continue;
 								}
 
@@ -2156,9 +2159,9 @@ public class MainThread implements Runnable {
 									continue;
 								}
 
-								if (difficulty != BHBot.settings.expeditionDifficulty) {
-									BHBot.log("Current Expedition difficulty level is " + difficulty + ", goal level is " + BHBot.settings.expeditionDifficulty + ". Changing it...");
-									boolean result = selectDifficultyExpedition(difficulty, BHBot.settings.expeditionDifficulty);
+								if (difficulty != targetDifficulty) {
+									BHBot.log("Current Expedition difficulty level is " + difficulty + ", goal level is " + targetDifficulty + ". Changing it...");
+									boolean result = selectDifficultyExpedition(difficulty, targetDifficulty);
 									if (!result) { // error!
 										// see if drop down menu is still open and close it:
 										readScreen();
@@ -4722,54 +4725,48 @@ public class MainThread implements Runnable {
 	/**
 	 * Function to return the name of the portal for console output
 	 */
-	private String getExpeditionName(String expedition) {
-		if (expedition.length() != 2) {
+	private String getExpeditionName(int currentExpedition, String targetPortal) {
+		if (currentExpedition > 2) {
+			BHBot.log("Unexpected expedition int in getExpeditionName: " + currentExpedition);
 			return null;
 		}
-		if ((expedition.charAt(0) != 'h') && (expedition.charAt(0) != 'i')) {
-			BHBot.log("Unknown Expedition prefix in settings");
+
+		if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
+				&& !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
+			BHBot.log("Unexpected target portal in getExpeditionName: " + targetPortal);
 			return null;
 		}
-		/* I can't get the switch to work with a string so this if statement makes a new int with 1 for Hallowed and 2 for Inferno, forgive me for my sins */
-		int e;
-		char ex = expedition.charAt(0);
-			if (ex == 'h') {
-				e = 1; // Hallowed
-			}  else {
-				e = 2; // Inferno
-			}
-			
-		int n = Integer.parseInt(""+expedition.charAt(1));
-		
-		if (n < 1 || n > 4) return null;
-		
-		switch (e) {
-		case 1: // Hallowed Dimension
-			switch (n) {
-			case 1:
-				return "Googarum's";
-			case 2:
-				return "Svord's";
-			case 3:
-				return "Twimbos";
-			case 4:
-				return "X5-T34M's";
-			}
-			break;
-		case 2: // Inferno dimension
-			switch (n) {
-			case 1:
-				return "Raleib's";
-			case 2:
-				return "Blemo's";
-			case 3:
-				return "Gummy's";
-			case 4:
-				return "Zarlocks";
-			}
-			break;
+
+		switch (currentExpedition) {
+			case 1: // Hallowed Dimension
+				switch (targetPortal) {
+					case "p1":
+						return "Googarum's";
+					case "p2":
+						return "Svord's";
+					case "p3":
+						return "Twimbos";
+					case "p4":
+						return "X5-T34M's";
+					default:
+						return null;
+				}
+			case 2: // Inferno dimension
+				switch (targetPortal) {
+					case "p1":
+						return "Raleib's";
+					case "p2":
+						return "Blemo's";
+					case "p3":
+						return "Gummy's";
+					case "p4":
+						return "Zarlocks";
+					default:
+						return null;
+				}
+			default:
+				return null;
 		}
-		return null;
 	}
 	
 	/**
@@ -4777,35 +4774,47 @@ public class MainThread implements Runnable {
 	 * @param targetPortal in standard format, e.g. "h4/i4".
 	 * @return null in case dungeon parameter is malformed (can even throw an exception)
 	 */
-	private Point getExpeditionIconPos(String targetPortal, int currentExpedition) {
+	private Point getExpeditionIconPos(int currentExpedition, String targetPortal) {
 		if (targetPortal.length() != 2) {
-			BHBot.log("Length Mismatch");
-			return null;
-		}
-		if ((targetPortal.charAt(0) != 'h') && (targetPortal.charAt(0) != 'i')) {
-			BHBot.log("Unknown Expedition prefix in settings");
+			BHBot.log("targetPortal length Mismatch in getExpeditionIconPos");
 			return null;
 		}
 
-		int e;
 		String portalName;
-		char ex = targetPortal.charAt(0);
-		if (ex == 'h') {
-			e = 1; // Hallowed
+		if (currentExpedition == 1) {
 			portalName = "Hallowed";
-		}  else {
-			e = 2; // Inferno
+		}  else if (currentExpedition == 2) {
 			portalName = "Inferno";
+		} else {
+			BHBot.log("Unknown expedtion in getExpeditionIconPos " + currentExpedition);
+			saveGameScreen("unknown-expedition");
+			return null;
 		}
 
-		if (e!= currentExpedition) {
-			BHBot.log("Wrong expedition in settings: " + portalName + " , automatically setting it to " + (currentExpedition == 1 ? "Hallowed" : "Inferno"));
-			e = currentExpedition;
+		if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
+				&& !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
+			BHBot.log("Unexpected target portal in getExpeditionIconPos: " + targetPortal);
+			return null;
 		}
-			
-		int portalInt = Integer.parseInt(""+targetPortal.charAt(1));
-		
-		if (portalInt < 1 || portalInt > 4) return null;
+
+		int portalInt;
+		switch (targetPortal) {
+			case "p1":
+				portalInt = 1;
+				break;
+			case "p2":
+				portalInt = 2;
+				break;
+			case "p3":
+				portalInt = 3;
+				break;
+			case "p4":
+				portalInt = 4;
+				break;
+			default:
+				portalInt = 0;
+				break;
+		}
 
 		// we check for white border to understand if the portal is enabled
 		final Color enabledPortal = Color.WHITE;
@@ -4813,7 +4822,7 @@ public class MainThread implements Runnable {
 		Point[] portalPosition = new Point[4];
 		boolean[] portalEnabled = new boolean[4];
 
-		if (e == 1) { // Hallowed
+		if (currentExpedition == 1) { // Hallowed
 
 			portalCheck[0] = new Point(190, 146); //Googarum
 			portalCheck[1] = new Point(484, 205); //Svord
@@ -4825,7 +4834,7 @@ public class MainThread implements Runnable {
 			portalPosition[2] = new Point(360, 360); //Twimbo
 			portalPosition[3] = new Point(650, 380); //X5-T34M
 		}
-		else if (e == 2) { // Inferno
+		else  { // Inferno
 			portalCheck[0] = new Point(185, 206); // Raleib
 			portalCheck[1] = new Point(570, 209); // Blemo
 			portalCheck[2] = new Point(383, 395); // Gummy
@@ -4835,10 +4844,6 @@ public class MainThread implements Runnable {
 			portalPosition[1] = new Point(600, 195); // Blemo
 			portalPosition[2] = new Point(420, 405); // Gummy
 			portalPosition[3] = new Point(420, 270); // Zarlock
-		} else {
-			BHBot.log("Unknown Expedtion found: " + e);
-			saveGameScreen("unknown-expedition");
-			return null;
 		}
 
 		// We check which of the portals are enabled
@@ -4925,30 +4930,6 @@ public class MainThread implements Runnable {
 		return null; // should not come to this
 	}
 	
-	/** Returns random expedition from settings file */
-	private String decideExpeditionRandomly() {
-		if (BHBot.settings.expeditions.size() == 0)
-			return null;
-
-		int total = 0;
-		for (String e : BHBot.settings.expeditions)
-			total += Integer.parseInt(e.split(" ")[1]);
-//			BHBot.log(Integer.toString(total));
-
-		int rand = (int)Math.round(Math.random() * total);
-//			BHBot.log(Integer.toString(rand));			
-
-		int value = 0;
-		for (String e : BHBot.settings.expeditions) {
-			value += Integer.parseInt(e.split(" ")[1]);
-//			BHBot.log(Integer.toString(value));
-			if (value >= rand)
-				return e.split(" ")[0] + " " + e.split(" ")[1];
-		}
-
-		return null; // should not come to this
-	}
-
 	/** Returns raid type (1, 2 or 3) and difficulty level (1, 2 or 3, which correspond to normal, hard and heroic), e.g. '1 3'. */
 	private String decideRaidRandomly() {
 
@@ -5014,7 +4995,7 @@ public class MainThread implements Runnable {
 	}
 	
 	void expeditionReadTest() {
-		String expedition = decideExpeditionRandomly();
+		String expedition = BHBot.settings.expeditions.next();
 		if (expedition != null) {
 			expedition = expedition.split(" ")[0];
 			BHBot.log("Expedition chosen: " + expedition);
