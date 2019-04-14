@@ -4056,6 +4056,7 @@ public class MainThread implements Runnable {
 						for (char potion: "321".toCharArray()) {
 							seg = availablePotions.get(potion);
 							if (seg != null) {
+							    BHBot.log("Handling tank priority with " + (potion == 3 ? "major" : potion == 2 ? "average" : "minor") + " revive.");
 								clickOnSeg(seg);
 								readScreen(SECOND);
 								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
@@ -4071,6 +4072,7 @@ public class MainThread implements Runnable {
 						for (char potion: potionOder) {
 							seg = availablePotions.get(potion);
 							if (seg != null) {
+                                BHBot.log("Using " + (potion == 3 ? "major" : potion == 2 ? "average" : "minor") + " revive on slot " + slotNum + ".");
 								clickOnSeg(seg);
 								readScreen(SECOND);
 								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
