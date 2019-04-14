@@ -4913,34 +4913,12 @@ public class MainThread implements Runnable {
 	
 	/** Returns raid type (1, 2 or 3) and difficulty level (1, 2 or 3, which correspond to normal, hard and heroic), e.g. '1 3'. */
 	private String decideRaidRandomly() {
-
-		List<String> raid;
-
 		if ("4".equals(new SimpleDateFormat("u").format(new Date())) &&
 				BHBot.settings.thursdayRaids.size() > 0) { // if its thursday and thursdayRaids is not empty
-			raid = BHBot.settings.thursdayRaids;
+			return BHBot.settings.thursdayRaids.next();
 		} else {
-			raid = BHBot.settings.raids;
+			return BHBot.settings.raids.next();
 		}
-
-		if (raid.size() == 0)
-			return null;
-
-		int total = 0;
-		for (String r : raid)
-			total += Integer.parseInt(r.split(" ")[2]);
-
-		int rand = (int)Math.round(Math.random() * total);
-
-		int value = 0;
-		for (String r : raid) {
-			value += Integer.parseInt(r.split(" ")[2]);
-			if (value >= rand)
-				return r.split(" ")[0] + " " + r.split(" ")[1];
-		}
-
-		return null; // should not come to this
-
 	}
 
 	/**

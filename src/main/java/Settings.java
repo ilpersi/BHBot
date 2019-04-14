@@ -103,8 +103,8 @@ public class Settings {
 	 * '1 3 70;2 1 30' ==> in 70% of cases it will do R1 on heroic, in 30% of cases it will do R2 normal
 	 * '1 3 100' ==> in 100% of cases it will do R1 on heroic
 	 */
-    List<String> raids;
-	List<String> thursdayRaids;
+	RandomCollection<String> raids;
+	RandomCollection<String> thursdayRaids;
 	
 	/** World Boss Settings **/
     String worldBossType = "";
@@ -162,9 +162,9 @@ public class Settings {
 		setDungeons("z1d4 3 100"); // some default value
 		thursdayDungeons = new RandomCollection<>();
 		setThursdayDungeons(""); // default is empty, else if people delete the line it will load this value 
-		raids = new ArrayList<>();
+		raids = new RandomCollection<>();
 		setRaids("1 3 100"); // some default value
-		thursdayRaids = new ArrayList<>();
+		thursdayRaids = new RandomCollection<>();
 		setThursdayRaids(""); // default is empty, else if people delete the line it will load this value 
 		expeditions = new RandomCollection<>();
 		setExpeditions("p1 100 100"); // some default value
@@ -268,24 +268,38 @@ public class Settings {
 			this.expeditions.add(weight, name);
 		}
 	}
-	
+
 	private void setRaids(String... raids) {
 		this.raids.clear();
-		for (String r : raids) {
-			String add = r.trim();
-			if (add.equals(""))
+		double weight;
+		String name;
+		String[] config;
+
+		for (String d : raids) {
+			String add = d.trim();
+			if ("".equals(add))
 				continue;
-			this.raids.add(add);
+			config = add.split(" ");
+			weight = Double.parseDouble(config[2]);
+			name = config[0] + " " + config[1];
+			this.raids.add(weight, name);
 		}
 	}
 	
 	private void setThursdayRaids(String... thursdayRaids) {
 		this.thursdayRaids.clear();
-		for (String tr : thursdayRaids) {
-			String add = tr.trim();
-			if (add.equals(""))
+		double weight;
+		String name;
+		String[] config;
+
+		for (String d : thursdayRaids) {
+			String add = d.trim();
+			if ("".equals(add))
 				continue;
-			this.thursdayRaids.add(add);
+			config = add.split(" ");
+			weight = Double.parseDouble(config[2]);
+			name = config[0] + " " + config[1];
+			this.thursdayRaids.add(weight, name);
 		}
 	}
 	
@@ -344,22 +358,10 @@ public class Settings {
 	}
 
 	private String getRaidsAsString() {
-		StringBuilder result = new StringBuilder();
-		for (String r : raids)
-			result.append(r).append(";");
-		if (result.length() > 0)
-			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
-		return result.toString();
+		return raids.toString();
 	}
 	
-	private String getThursdayRaidsAsString() {
-		StringBuilder result = new StringBuilder();
-		for (String tr : thursdayRaids)
-			result.append(tr).append(";");
-		if (result.length() > 0)
-			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
-		return result.toString();
-	}
+	private String getThursdayRaidsAsString() { return thursdayRaids.toString(); }
 
 	private String getStripsAsString() {
 		StringBuilder result = new StringBuilder();
@@ -410,25 +412,13 @@ public class Settings {
 	private void setExpeditionsFromString(String s) {
 		setExpeditions(s.split(";"));
 	}
-	
+
 	private void setRaidsFromString(String s) {
 		setRaids(s.split(";"));
-		// clean up (trailing spaces and remove if empty):
-		for (int i = raids.size()-1; i >= 0; i--) {
-			raids.set(i, raids.get(i).trim());
-			if (raids.get(i).equals(""))
-				raids.remove(i);
-		}
 	}
 	
 	private void setThursdayRaidsFromString(String s) {
 		setThursdayRaids(s.split(";"));
-		// clean up (trailing spaces and remove if empty):
-		for (int i = thursdayRaids.size()-1; i >= 0; i--) {
-			thursdayRaids.set(i, thursdayRaids.get(i).trim());
-			if (thursdayRaids.get(i).equals(""))
-				thursdayRaids.remove(i);
-		}
 	}
 
 	private void setStripsFromString(String s) {
