@@ -602,7 +602,7 @@ public class Settings {
 		String expeditions = map.get("expeditions");
 		if (expeditions.contains("h") || expeditions.contains("i")) {
 			BHBot.log("WARNING: invalid format detected for expeditions settings '" + expeditions + "': " +
-					"a standard setting of p1 100 100 will be used" );
+					"a standard value of 'p1 100 100' will be used" );
 			map.put("expeditions", "p1 100 100");
 		}
 
