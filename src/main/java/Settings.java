@@ -94,8 +94,8 @@ public class Settings {
 	 * and followed by a space character and percentage, e.g. '50'.
 	 * Example of full string: 'z2d4 3 50'.
 	 */
-    List<String> dungeons;
-	List<String> thursdayDungeons;
+	RandomCollection<String> dungeons;
+	RandomCollection<String> thursdayDungeons;
 	
 	/**
 	 * List of raids we want to do (there are 3 raids: 1, 2 and 3) with a difficulty level and percentage.
@@ -158,14 +158,13 @@ public class Settings {
 	String worldBossRun = "worldbossrun 0";
 
 	public Settings() {
-		dungeons = new ArrayList<>();
+		dungeons = new RandomCollection<>();
 		setDungeons("z1d4 3 100"); // some default value
-		thursdayDungeons = new ArrayList<>();
+		thursdayDungeons = new RandomCollection<>();
 		setThursdayDungeons(""); // default is empty, else if people delete the line it will load this value 
 		raids = new ArrayList<>();
 		setRaids("1 3 100"); // some default value
 		thursdayRaids = new ArrayList<>();
-		thursdayDungeons = new ArrayList<>();
 		setThursdayRaids(""); // default is empty, else if people delete the line it will load this value 
 		expeditions = new RandomCollection<>();
 		setExpeditions("p1 100 100"); // some default value
@@ -218,24 +217,38 @@ public class Settings {
 	}
 	
 	/* Cleans the data from the input and saves it at a string */
-	
+
 	private void setDungeons(String... dungeons) {
 		this.dungeons.clear();
+		double weight;
+		String name;
+		String[] config;
+
 		for (String d : dungeons) {
 			String add = d.trim();
-			if (add.equals(""))
+			if ("".equals(add))
 				continue;
-			this.dungeons.add(add);
+			config = add.split(" ");
+			weight = Double.parseDouble(config[2]);
+			name = config[0] + " " + config[1];
+			this.dungeons.add(weight, name);
 		}
 	}
 	
 	private void setThursdayDungeons(String... thursdayDungeons) {
 		this.thursdayDungeons.clear();
-		for (String td : thursdayDungeons) {
-			String add = td.trim();
-			if (add.equals(""))
+		double weight;
+		String name;
+		String[] config;
+
+		for (String d : thursdayDungeons) {
+			String add = d.trim();
+			if ("".equals(add))
 				continue;
-			this.thursdayDungeons.add(add);
+			config = add.split(" ");
+			weight = Double.parseDouble(config[2]);
+			name = config[0] + " " + config[1];
+			this.thursdayDungeons.add(weight, name);
 		}
 	}
 
@@ -317,23 +330,13 @@ public class Settings {
 	}
 	
 	/* Gets the string from the previous method and creates a list if there are multiple items */
-	
+
 	private String getDungeonsAsString() {
-		StringBuilder result = new StringBuilder();
-		for (String d : dungeons)
-			result.append(d).append(";");
-		if (result.length() > 0)
-			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
-		return result.toString();
+		return dungeons.toString();
 	}
 	
 	private String getThursdayDungeonsAsString() {
-		StringBuilder result = new StringBuilder();
-		for (String td : thursdayDungeons)
-			result.append(td).append(";");
-		if (result.length() > 0)
-			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
-		return result.toString();
+		return thursdayDungeons.toString();
 	}
 
 	private String getExpeditionsAsString() {
@@ -395,25 +398,13 @@ public class Settings {
 	}
 	
 	/* Cleans up the data in the list again */
-	
+
 	private void setDungeonsFromString(String s) {
 		setDungeons(s.split(";"));
-		// clean up (trailing spaces and remove if empty):
-		for (int i = dungeons.size()-1; i >= 0; i--) {
-			dungeons.set(i, dungeons.get(i).trim());
-			if (dungeons.get(i).equals(""))
-				dungeons.remove(i);
-		}
 	}
 	
 	private void setThursdayDungeonsFromString(String s) {
 		setThursdayDungeons(s.split(";"));
-		// clean up (trailing spaces and remove if empty):
-		for (int i = thursdayDungeons.size()-1; i >= 0; i--) {
-			thursdayDungeons.set(i, thursdayDungeons.get(i).trim());
-			if (thursdayDungeons.get(i).equals(""))
-				thursdayDungeons.remove(i);
-		}
 	}
 
 	private void setExpeditionsFromString(String s) {

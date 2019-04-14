@@ -4903,31 +4903,12 @@ public class MainThread implements Runnable {
 	/** Returns dungeon and difficulty level, e.g. 'z2d4 2'. */
 	private String decideDungeonRandomly() {
 
-		List<String> dungeons;
 		if ("4".equals(new SimpleDateFormat("u").format(new Date())) &&
 				BHBot.settings.thursdayDungeons.size() > 0) { // if its thursday and thursdayRaids is not empty
-			dungeons = BHBot.settings.thursdayDungeons;
+			return BHBot.settings.thursdayDungeons.next();
 		} else {
-			dungeons = BHBot.settings.dungeons;
+			return BHBot.settings.dungeons.next();
 		}
-			
-		if (dungeons.size() == 0)
-			return null;
-
-		int total = 0;
-		for (String d : dungeons)
-			total += Integer.parseInt(d.split(" ")[2]);
-
-		int rand = (int)Math.round(Math.random() * total);
-
-		int value = 0;
-		for (String d : dungeons) {
-			value += Integer.parseInt(d.split(" ")[2]);
-			if (value >= rand)
-				return d.split(" ")[0] + " " + d.split(" ")[1];
-			}
-
-		return null; // should not come to this
 	}
 	
 	/** Returns raid type (1, 2 or 3) and difficulty level (1, 2 or 3, which correspond to normal, hard and heroic), e.g. '1 3'. */
