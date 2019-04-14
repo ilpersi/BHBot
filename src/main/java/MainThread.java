@@ -4062,19 +4062,20 @@ public class MainThread implements Runnable {
 								break;
 							}
 						}
-						continue;
 					}
 
-					for (char potion: potionOder) {
-						seg = availablePotions.get(potion);
-						if (seg != null) {
-							clickOnSeg(seg);
-							readScreen(SECOND);
-							seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
-							clickOnSeg(seg);
-							revived[slotNum-1] = true;
-							readScreen(SECOND);
-							break;
+					if (!revived[slotNum-1]){
+						for (char potion: potionOder) {
+							seg = availablePotions.get(potion);
+							if (seg != null) {
+								clickOnSeg(seg);
+								readScreen(SECOND);
+								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
+								clickOnSeg(seg);
+								revived[slotNum-1] = true;
+								readScreen(SECOND);
+								break;
+							}
 						}
 					}
 				}
