@@ -3949,7 +3949,7 @@ public class MainThread implements Runnable {
 			if (seg != null) {
 				seg = detectCue(cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400));
 				if (seg != null) {
-					BHBot.log("Autorevive is enabled, but no revire is needed, restarting the bot...");
+					BHBot.log("None of the team members need a consumable, exiting from autoRevive");
 					clickOnSeg(seg);
 					seg = detectCue(cues.get("AutoOff"), SECOND);
 					clickOnSeg(seg);
@@ -4005,7 +4005,7 @@ public class MainThread implements Runnable {
 							if (seg != null) {
 								seg = detectCue(cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400));
 								if (seg != null) {
-									BHBot.log("Autorevive is enabled, but no revire is needed, restarting the bot...");
+									BHBot.log("None of the team members need a consumable, exiting from autoRevive");
 									clickOnSeg(seg);
 									seg = detectCue(cues.get("AutoOff"), SECOND);
 									clickOnSeg(seg);
