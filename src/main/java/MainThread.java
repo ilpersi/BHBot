@@ -2128,6 +2128,11 @@ public class MainThread implements Runnable {
 									BHBot.log("It was impossible to get the current expedition type!");
 									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 										sendPushOverMessage("Expedition error", "It was impossible to get the current expedition type. Expedtions are now disabled!", "siren");
+
+									readScreen();
+									seg = detectCue(cues.get("X"), SECOND);
+									if (seg != null) clickOnSeg(seg);
+									readScreen(2*SECOND);
 									continue;
 								}
 
@@ -2141,6 +2146,11 @@ public class MainThread implements Runnable {
 									BHBot.log("It was impossible to get portal position for " + expedName + ". Expedtions are now disabled!");
 									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 										sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + expedName + ". Expedtions are now disabled!", "siren");
+
+									readScreen();
+									seg = detectCue(cues.get("X"), SECOND);
+									if (seg != null) clickOnSeg(seg);
+									readScreen(2*SECOND);
 									continue;
 								}
 
