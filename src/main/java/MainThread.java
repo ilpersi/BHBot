@@ -1056,6 +1056,15 @@ public class MainThread implements Runnable {
 
 				if (Misc.getTime() - BHBot.scheduler.getIdleTime() > MAX_IDLE_TIME) {
 					BHBot.log("Idle time exceeded... perhaps caught in a loop? Restarting... (state=" + state + ")");
+
+					// Safety measure to avoid being stuck forever in dungeons
+					if (state != State.Main && BHBot.settings.autoShrine) {
+						BHBot.log("Ensuring that autoShrine is disabled");
+						checkShrineSettings("disable");
+						autoShrined = false;
+						shrinesChecked = false;
+					}
+
 					restart();
 					continue;
 				}
