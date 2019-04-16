@@ -4054,6 +4054,12 @@ public class MainThread implements Runnable {
 					availablePotions.put('2', detectCue(cues.get("AverageAvailable")));
 					availablePotions.put('3', detectCue(cues.get("MajorAvailable")));
 
+					/*String availablePotionsStr =
+							"Minor: "   + (availablePotions.get('1') != null ? "Y" : "N") + " " +
+							"Average: " + (availablePotions.get('2') != null ? "Y" : "N") + " " +
+							"Major: "   + (availablePotions.get('3') != null ? "Y" : "N");
+					BHBot.log(availablePotionsStr);*/
+
 					// No more potions are available
 					if (availablePotions.get('1')== null && availablePotions.get('2')== null && availablePotions.get('3')== null) {
 						BHBot.log("No potions are avilable, autoRevive well be temporary disabled!");
@@ -4066,7 +4072,7 @@ public class MainThread implements Runnable {
 						for (char potion: "321".toCharArray()) {
 							seg = availablePotions.get(potion);
 							if (seg != null) {
-							    BHBot.log("Handling tank priority with " + (potion == 3 ? "major" : potion == 2 ? "average" : "minor") + " revive.");
+							    BHBot.log("Handling tank priority with " + (potion == '3' ? "major" : potion == '2' ? "average" : "minor") + " revive.");
 								clickOnSeg(seg);
 								readScreen(SECOND);
 								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
@@ -4080,9 +4086,10 @@ public class MainThread implements Runnable {
 
 					if (!revived[slotNum-1]){
 						for (char potion: potionOder) {
+							// BHBot.log("Checking potion " + potion);
 							seg = availablePotions.get(potion);
 							if (seg != null) {
-                                BHBot.log("Using " + (potion == 3 ? "major" : potion == 2 ? "average" : "minor") + " revive on slot " + slotNum + ".");
+                                BHBot.log("Using " + (potion == '3' ? "major" : potion == '2' ? "average" : "minor") + " revive on slot " + slotNum + ".");
 								clickOnSeg(seg);
 								readScreen(SECOND);
 								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
