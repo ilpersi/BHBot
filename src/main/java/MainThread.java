@@ -3956,12 +3956,12 @@ public class MainThread implements Runnable {
 	private void handleAutoReviveEx() {
 
 		// We only use auto-revive for Trials, Gauntlet and Raids
-		if (state != State.Trials && state != State.Gauntlet && state != State.Raid) return;
 
 		MarvinSegment seg;
 
 		// Auto Revive is disabled, we re-enable it
-		if (BHBot.settings.autoRevive == 0) {
+		if ( (BHBot.settings.autoRevive == 0) ||
+				(state != State.Trials && state != State.Gauntlet && state != State.Raid) ){
 			BHBot.log("AutoRevive disabled, reenabling auto..");
 			seg = detectCue(cues.get("AutoOff"));
 			clickOnSeg(seg);
@@ -4133,6 +4133,7 @@ public class MainThread implements Runnable {
 			}
 
 		} else { // Impossible to find the potions button
+			saveGameScreen("auto-revive-no-potions");
 			BHBot.log("Impossible to find the potions button!");
 		}
 
