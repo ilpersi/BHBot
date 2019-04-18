@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -170,6 +172,30 @@ public class Misc {
 				pixels[i][j] = image.getRGB( i, j );
 
 		return pixels;
+	}
+
+	static long classBuildTimeMillis() throws URISyntaxException, IllegalStateException, IllegalArgumentException {
+		URL resource = MainThread.class.getResource(MainThread.class.getSimpleName() + ".class");
+		if (resource == null) {
+			throw new IllegalStateException("Failed to find class file for class: " +
+					MainThread.class.getName());
+		}
+
+		if (resource.getProtocol().equals("file")) {
+
+			return new File(resource.toURI()).lastModified();
+
+		} else if (resource.getProtocol().equals("jar")) {
+
+			String path = resource.getPath();
+			return new File(path.substring(5, path.indexOf("!"))).lastModified();
+
+		} else {
+
+			throw new IllegalArgumentException("Unhandled url protocol: " +
+					resource.getProtocol() + " for class: " +
+					MainThread.class.getName() + " resource: " + resource.toString());
+		}
 	}
 	
 }

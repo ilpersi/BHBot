@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,8 +35,12 @@ public class BHBot {
 	static String screenshotPath = "./screenshots/";
 
 	public static void main(String[] args) {
-		log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started.");
-		
+		try {
+			log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
+		} catch (URISyntaxException e) {
+			log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started. Unknown build date.");
+		}
+
 		MainThread.loadCues();
 		
 		// process launch arguments
