@@ -12,10 +12,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * 
@@ -196,6 +193,16 @@ public class Misc {
 					resource.getProtocol() + " for class: " +
 					MainThread.class.getName() + " resource: " + resource.toString());
 		}
+	}
+
+	static Properties getGITInfo() {
+		Properties properties = new Properties();
+		try {
+			properties.load(Misc.class.getClassLoader().getResourceAsStream("git.properties"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return properties;
 	}
 	
 }

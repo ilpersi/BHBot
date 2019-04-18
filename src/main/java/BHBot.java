@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import net.pushover.client.*;
 
@@ -40,6 +37,10 @@ public class BHBot {
 		} catch (URISyntaxException e) {
 			log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started. Unknown build date.");
 		}
+
+		Properties gitPropertis = Misc.getGITInfo();
+
+		log("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time")) ;
 
 		MainThread.loadCues();
 		

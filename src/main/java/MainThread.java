@@ -3964,7 +3964,7 @@ public class MainThread implements Runnable {
 				(state != State.Trials && state != State.Gauntlet && state != State.Raid) ){
 			BHBot.log("AutoRevive disabled, reenabling auto..");
 			seg = detectCue(cues.get("AutoOff"));
-			clickOnSeg(seg);
+			if (seg != null) clickOnSeg(seg);
 			return;
 		}
 
