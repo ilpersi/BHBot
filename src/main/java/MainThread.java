@@ -3477,8 +3477,23 @@ public class MainThread implements Runnable {
 			}
 			resetAppropriateTimers();
 			resetRevives();
-			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
-			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
+
+			// We make sure to dress up
+			if (state == State.PVP && BHBot.settings.pvpstrip.size() > 0) {
+				dressUp(BHBot.settings.pvpstrip);
+				readScreen(SECOND*2);
+			}
+			if (state == State.GVG && BHBot.settings.gvgstrip.size() > 0) {
+				dressUp(BHBot.settings.gvgstrip);
+				readScreen(SECOND*2);
+			}
+
+			// We make sure to disable autoshrine when defeated
+			if (state == State.Trials || state == State.Raid || state == State.Expedition) {
+				checkShrineSettings("disable");
+				readScreen(SECOND *2);
+			}
+
 			state = State.Main; // reset state
 			return;
 		}
@@ -3939,6 +3954,10 @@ public class MainThread implements Runnable {
 	}
 
 	private void handleAutoReviveEx() {
+
+		// We only use auto-revive for Trials, Gauntlet and Raids
+		if (state != State.Trials && state != State.Gauntlet && state != State.Raid) return;
+
 		MarvinSegment seg;
 
 		// Auto Revive is disabled, we re-enable it
