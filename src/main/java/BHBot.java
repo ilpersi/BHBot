@@ -269,7 +269,18 @@ public class BHBot {
 					case "fam":
 						MainThread.printFamiliars();
 						break;
+					case "version":
+						try {
+							log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
+						} catch (URISyntaxException e) {
+							log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started. Unknown build date.");
+						}
+
+						Properties gitPropertis = Misc.getGITInfo();
+						log("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time")) ;
+						break;
 					default:
+						log("Impossible to print : '" + params[1] +"'");
 						break;
 				}
 				break;
