@@ -3970,19 +3970,19 @@ public class MainThread implements Runnable {
 			return;
 		}
 
+		// if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
+		seg = detectCue(cues.get("Defeat"), SECOND);
+		if (seg != null) {
+			BHBot.log("Defeat screen, skipping revive check");
+			/*seg = detectCue(cues.get("AutoOff"), SECOND);
+			if (seg != null) clickOnSeg(seg);*/
+			return;
+		}
+
 		seg = detectCue(cues.get("Potions"), SECOND * 2);
 		if (seg != null) {
 			clickOnSeg(seg);
 			readScreen(SECOND);
-
-			// if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
-			seg = detectCue(cues.get("Defeat"), SECOND);
-			if (seg != null) {
-				BHBot.log("Defeat screen, skipping revive check");
-				seg = detectCue(cues.get("AutoOff"), SECOND);
-				clickOnSeg(seg);
-				return;
-			}
 
 			// If no potions are needed, we re-enable the Auto function
 			seg = detectCue(cues.get("NoPotions"), SECOND); // Everyone is Full HP
@@ -4023,8 +4023,6 @@ public class MainThread implements Runnable {
 
 			if ( ((state == State.Trials || state == State.Gauntlet) && (BHBot.settings.autoRevive == 1 || BHBot.settings.autoRevive == 3)) ||
 					((state == State.Raid) && (BHBot.settings.autoRevive == 2 || BHBot.settings.autoRevive == 3))) {
-
-				char[] potionOrder = BHBot.settings.potionOrder.toCharArray();
 
 				for (Map.Entry<Integer, Point> item : revivePositions.entrySet()) {
 					Integer slotNum = item.getKey();
@@ -4084,11 +4082,11 @@ public class MainThread implements Runnable {
 					availablePotions.put('2', detectCue(cues.get("AverageAvailable")));
 					availablePotions.put('3', detectCue(cues.get("MajorAvailable")));
 
-					/*String availablePotionsStr =
-							"Minor: "   + (availablePotions.get('1') != null ? "Y" : "N") + " " +
-							"Average: " + (availablePotions.get('2') != null ? "Y" : "N") + " " +
-							"Major: "   + (availablePotions.get('3') != null ? "Y" : "N");
-					BHBot.log(availablePotionsStr);*/
+					// from char to potion name
+					HashMap<Character, String> potionTranslage = new HashMap<>();
+					potionTranslage.put('1', "Minor");
+					potionTranslage.put('2', "Average");
+					potionTranslage.put('3', "Major");
 
 					// No more potions are available
 					if (availablePotions.get('1')== null && availablePotions.get('2')== null && availablePotions.get('3')== null) {
@@ -4102,7 +4100,7 @@ public class MainThread implements Runnable {
 						for (char potion: "321".toCharArray()) {
 							seg = availablePotions.get(potion);
 							if (seg != null) {
-							    BHBot.log("Handling tank priority with " + (potion == '3' ? "Major" : potion == '2' ? "Average" : "Minor") + " revive.");
+							    BHBot.log("Handling tank priority with " + potionTranslage.get(potion) + " revive.");
 								clickOnSeg(seg);
 								readScreen(SECOND);
 								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
@@ -4115,11 +4113,11 @@ public class MainThread implements Runnable {
 					}
 
 					if (!revived[slotNum-1]){
-						for (char potion: potionOrder) {
+						for (char potion: BHBot.settings.potionOrder.toCharArray()) {
 							// BHBot.log("Checking potion " + potion);
 							seg = availablePotions.get(potion);
 							if (seg != null) {
-                                BHBot.log("Using " + (potion == '3' ? "Major" : potion == '2' ? "Average" : "Minor") + " revive on slot " + slotNum + ".");
+                                BHBot.log("Using " + potionTranslage.get(potion) + " revive on slot " + slotNum + ".");
 								clickOnSeg(seg);
 								readScreen(SECOND);
 								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
