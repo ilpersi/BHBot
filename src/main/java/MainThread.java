@@ -292,6 +292,8 @@ public class MainThread implements Runnable {
 	private long outOfEncounterTimestamp = 0;
 	private long inEncounterTimestamp = 0;
 	
+	private boolean specialDungeon; //d4 check for closing properly when no energy
+	
 	private int dungeonCounter = 0;
 	private int raidCounter = 0;
 	
@@ -1706,6 +1708,7 @@ public class MainThread implements Runnable {
 							readScreen(3*SECOND);
 							// select difficulty (If D4 just hit enter):
 							if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') || (dungeon.charAt(1) == '8' && dungeon.charAt(3) == '3' )) { // D4, or Z7D3/Z8D3
+								boolean specialDungeon = true;
 								seg = detectCue(cues.get("Enter"), 5*SECOND);
 								clickOnSeg(seg);
 							} else  { //else select appropriate difficulty
@@ -3311,7 +3314,7 @@ public class MainThread implements Runnable {
 		activityDuration = ((System.currentTimeMillis() / 1000L) - activityStartTime);
 		
 		// handle "Not enough energy" popup:
-		if (activityDuration < 10) {
+		if (activityDuration < 30) {
 			boolean insufficientEnergy = handleNotEnoughEnergyPopup();
 			if (insufficientEnergy) {
 				state = State.Main; // reset state
@@ -3960,8 +3963,7 @@ public class MainThread implements Runnable {
 		MarvinSegment seg;
 
 		// Auto Revive is disabled, we re-enable it
-		if ( (BHBot.settings.autoRevive == 0) ||
-				(state != State.Trials && state != State.Gauntlet && state != State.Raid) ){
+		if ( (BHBot.settings.autoRevive == 0) || (state != State.Trials && state != State.Gauntlet && state != State.Raid) ){
 			BHBot.log("AutoRevive disabled, reenabling auto..");
 			seg = detectCue(cues.get("AutoOff"));
 			if (seg != null) clickOnSeg(seg);
@@ -4022,7 +4024,7 @@ public class MainThread implements Runnable {
 			if ( ((state == State.Trials || state == State.Gauntlet) && (BHBot.settings.autoRevive == 1 || BHBot.settings.autoRevive == 3)) ||
 					((state == State.Raid) && (BHBot.settings.autoRevive == 2 || BHBot.settings.autoRevive == 3))) {
 
-				char[] potionOder = BHBot.settings.potionOrder.toCharArray();
+				char[] potionOrder = BHBot.settings.potionOrder.toCharArray();
 
 				for (Map.Entry<Integer, Point> item : revivePositions.entrySet()) {
 					Integer slotNum = item.getKey();
@@ -4100,7 +4102,7 @@ public class MainThread implements Runnable {
 						for (char potion: "321".toCharArray()) {
 							seg = availablePotions.get(potion);
 							if (seg != null) {
-							    BHBot.log("Handling tank priority with " + (potion == '3' ? "major" : potion == '2' ? "average" : "minor") + " revive.");
+							    BHBot.log("Handling tank priority with " + (potion == '3' ? "Major" : potion == '2' ? "Average" : "Minor") + " revive.");
 								clickOnSeg(seg);
 								readScreen(SECOND);
 								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
@@ -4113,11 +4115,11 @@ public class MainThread implements Runnable {
 					}
 
 					if (!revived[slotNum-1]){
-						for (char potion: potionOder) {
+						for (char potion: potionOrder) {
 							// BHBot.log("Checking potion " + potion);
 							seg = availablePotions.get(potion);
 							if (seg != null) {
-                                BHBot.log("Using " + (potion == '3' ? "major" : potion == '2' ? "average" : "minor") + " revive on slot " + slotNum + ".");
+                                BHBot.log("Using " + (potion == '3' ? "Major" : potion == '2' ? "Average" : "Minor") + " revive on slot " + slotNum + ".");
 								clickOnSeg(seg);
 								readScreen(SECOND);
 								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
@@ -5346,8 +5348,14 @@ public class MainThread implements Runnable {
 			// we don't have enough energy!
 			BHBot.log("Problem detected: insufficient energy to attempt dungeon. Cancelling...");
 			closePopupSecurely(cues.get("NotEnoughEnergy"), cues.get("No"));
-			// close team window:
-			closePopupSecurely(cues.get("AutoTeam"), cues.get("X"));
+			// if D4 close the dungeon info window, else close the char selection screen
+			if (specialDungeon) {
+				seg = detectCue(cues.get("X"));
+				if (seg != null)
+				clickOnSeg(seg);
+			} else {
+				closePopupSecurely(cues.get("AutoTeam"), cues.get("X"));
+			}
 			// close difficulty selection screen:
 			closePopupSecurely(cues.get("Normal"), cues.get("X"));
 			// close zone view window:
@@ -6472,6 +6480,7 @@ public class MainThread implements Runnable {
 	/* It's also useful for other related settings to be reset on activity finish */
 	private void resetAppropriateTimers() {
 		startTimeCheck = false;
+		specialDungeon = false;
 		
 		if (BHBot.settings.autoShrine) shrinesChecked = false; //re-check ignore shrine/boss for next activity if it's enabled
 		
