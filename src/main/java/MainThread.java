@@ -4024,6 +4024,12 @@ public class MainThread implements Runnable {
 			if ( ((state == State.Trials || state == State.Gauntlet) && (BHBot.settings.autoRevive == 1 || BHBot.settings.autoRevive == 3)) ||
 					((state == State.Raid) && (BHBot.settings.autoRevive == 2 || BHBot.settings.autoRevive == 3))) {
 
+				// from char to potion name
+				HashMap<Character, String> potionTranslage = new HashMap<>();
+				potionTranslage.put('1', "Minor");
+				potionTranslage.put('2', "Average");
+				potionTranslage.put('3', "Major");
+
 				for (Map.Entry<Integer, Point> item : revivePositions.entrySet()) {
 					Integer slotNum = item.getKey();
 					Point slotPos = item.getValue();
@@ -4081,12 +4087,6 @@ public class MainThread implements Runnable {
 					availablePotions.put('1', detectCue(cues.get("MinorAvailable")));
 					availablePotions.put('2', detectCue(cues.get("AverageAvailable")));
 					availablePotions.put('3', detectCue(cues.get("MajorAvailable")));
-
-					// from char to potion name
-					HashMap<Character, String> potionTranslage = new HashMap<>();
-					potionTranslage.put('1', "Minor");
-					potionTranslage.put('2', "Average");
-					potionTranslage.put('3', "Major");
 
 					// No more potions are available
 					if (availablePotions.get('1')== null && availablePotions.get('2')== null && availablePotions.get('3')== null) {
