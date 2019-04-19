@@ -59,7 +59,9 @@ command input box):
 - `hide`: hides Chromium window.
 - `pause [mins]`: pauses bot's execution. Useful when you want to play the game yourself (either from the same Chromium window, or by starting another Chromium window). The bots is paused untill are resue command is issued or, if specified, for a number of minutes equal to _mins_
 - `pomessage [message]`: use this command to verify that the Pushover integration is correctly configured. Message parameter is optional and if not specified, a standard messabe will be sent.
-- `print familiars`: output the full list of supported familiars in the encounter management system
+- `print`: Using this command, you can print different informations regarding the bot
+  - `familiars`: output the full list of supported familiars in the encounter management system
+  - `version`: output the version of BHBot. This is is useful when reporting a bug
 - `readouts`: will reset readout timers (and hence immediately commence reading out resources).
 - `reload`: will reload the 'settings.ini' file from disk and apply any changes on-the-fly.
 - `restart`: restarts the chromedriver (closes Chromium and opens a fresh Chromium window). Use only when something goes wrong (should restart automatically after some time in that case though).
