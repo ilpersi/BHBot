@@ -4397,7 +4397,7 @@ public class MainThread implements Runnable {
 		boolean revived = false;
 		
 		//No potions failsafe
-		seg = detectCue(cues.get("Purchase")); //placeholder, should be no potion popup
+		seg = detectCue(cues.get("Purchase"));
 		
 		//this is bad practise but was a lazy way of importing the settings string
 		int firstPotion = Character.getNumericValue((BHBot.settings.potionOrder.charAt(0)));
