@@ -5348,16 +5348,17 @@ public class MainThread implements Runnable {
 			// we don't have enough energy!
 			BHBot.log("Problem detected: insufficient energy to attempt dungeon. Cancelling...");
 			closePopupSecurely(cues.get("NotEnoughEnergy"), cues.get("No"));
+
+			closePopupSecurely(cues.get("AutoTeam"), cues.get("X"));
 			// if D4 close the dungeon info window, else close the char selection screen
 			if (specialDungeon) {
-				seg = detectCue(cues.get("X"));
+				seg = detectCue(cues.get("X"), 5*SECOND);
 				if (seg != null)
 				clickOnSeg(seg);
 			} else {
-				closePopupSecurely(cues.get("AutoTeam"), cues.get("X"));
-			}
 			// close difficulty selection screen:
-			closePopupSecurely(cues.get("Normal"), cues.get("X"));
+				closePopupSecurely(cues.get("Normal"), cues.get("X"));
+			}
 			// close zone view window:
 			closePopupSecurely(cues.get("ZonesButton"), cues.get("X"));
 
