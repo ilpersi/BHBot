@@ -12,7 +12,7 @@ import net.pushover.client.*;
 public class BHBot {
 
 	private static final String PROGRAM_NAME = "BHBot";
-	private static final String PROGRAM_VERSION = "37";
+	private static final String PROGRAM_VERSION = "37.1";
 
 	private static Thread mainThread;
 	static MainThread main;
