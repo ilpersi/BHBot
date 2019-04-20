@@ -3509,6 +3509,8 @@ public class MainThread implements Runnable {
 			// We make sure to disable autoshrine when defeated
 			if (state == State.Trials || state == State.Raid || state == State.Expedition) {
 				checkShrineSettings("disable");
+				autoShrined = false;
+				shrinesChecked = false;
 				readScreen(SECOND *2);
 			}
 
