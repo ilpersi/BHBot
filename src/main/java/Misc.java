@@ -2,12 +2,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -198,7 +193,8 @@ public class Misc {
 	static Properties getGITInfo() {
 		Properties properties = new Properties();
 		try {
-			properties.load(Misc.class.getClassLoader().getResourceAsStream("git.properties"));
+			InputStream gitResource = Misc.class.getClassLoader().getResourceAsStream("git.properties");
+			properties.load(gitResource);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

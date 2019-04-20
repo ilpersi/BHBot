@@ -63,11 +63,20 @@
 
                 <executions>
                     <execution>
-                        <phase>package</phase>
                         <id>get-the-git-infos</id>
                         <goals>
                             <goal>revision</goal>
                         </goals>
+                        <!-- *NOTE*: The default phase of revision is initialize, but in case you want to change it, you can do so by adding the phase here -->
+                        <phase>initialize</phase>
+                    </execution>
+                    <execution>
+                        <id>validate-the-git-infos</id>
+                        <goals>
+                            <goal>validateRevision</goal>
+                        </goals>
+                        <!-- *NOTE*: The default phase of validateRevision is verify, but in case you want to change it, you can do so by adding the phase here -->
+                        <phase>package</phase>
                     </execution>
                 </executions>
 
