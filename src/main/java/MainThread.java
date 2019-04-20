@@ -1869,28 +1869,21 @@ public class MainThread implements Runnable {
 						readScreen();
 
 						BadgeEvent badgeEvent = BadgeEvent.None;
-						MarvinSegment expeditionButtonSeg = null;
-						MarvinSegment badgeEventSegment = null;
+						MarvinSegment badgeBtn = null;
 
-						seg = detectCue(cues.get("ExpeditionButton"), 1*SECOND);
-						if (seg != null) {
-							badgeEvent = BadgeEvent.Expedition;
-							expeditionButtonSeg = seg;
-							badgeEventSegment = seg;
+						HashMap<Cue, BadgeEvent> badgeEvents = new HashMap<>();
+						badgeEvents.put(cues.get("ExpeditionButton"), BadgeEvent.Expedition);
+						badgeEvents.put(cues.get("GVG"), BadgeEvent.GVG);
+						badgeEvents.put(cues.get("Invasion"), BadgeEvent.Invasion);
+
+						for (Map.Entry<Cue, BadgeEvent> event : badgeEvents.entrySet()) {
+							badgeBtn = detectCue(event.getKey());
+							if (badgeBtn != null) {
+								badgeEvent = event.getValue();
+								seg = badgeBtn;
+								break;
+							}
 						}
-						
-						seg = detectCue(cues.get("GVG"));
-						if (seg != null) {
-							badgeEvent = BadgeEvent.GVG;
-							badgeEventSegment = seg;
-						}
-						
-						seg = detectCue(cues.get("Invasion"));
-						if (seg != null) {
-							badgeEvent = BadgeEvent.Invasion;
-							badgeEventSegment = seg;
-						}
-						
 
 						if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion/Expedition event?)
 							BHBot.scheduler.restoreIdleTime();
@@ -1898,7 +1891,7 @@ public class MainThread implements Runnable {
 							continue;
 						}
 
-						clickOnSeg(badgeEventSegment);
+						clickOnSeg(seg);
 						sleep(2*SECOND);
 
 						detectCharacterDialogAndHandleIt(); // needed for invasion
@@ -2088,7 +2081,7 @@ public class MainThread implements Runnable {
 									checkShrineSettings("enable");
 
 									readScreen(SECOND);
-									clickOnSeg(expeditionButtonSeg);
+									clickOnSeg(badgeBtn);
 									readScreen(SECOND * 2);
 								}
 
