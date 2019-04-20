@@ -590,7 +590,8 @@ public class MainThread implements Runnable {
 		addCue("ExpeditionButton", loadImage("cues/cueExpeditionButton.png"),  null);
 		addCue("Expedition1", loadImage("cues/expedition/cueExpedition1Hallowed.png"), new Bounds(168, 34, 628, 108)); // Hallowed Expedtion Title
 		addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"),  new Bounds(200, 40, 600, 100)); //Inferno Expedition
-
+		addCue("Expedition3", loadImage("cues/expedition/cueExpedition3Jammie.png"),  new Bounds(202, 54, 593, 100)); // Jammie Expedition
+		
 		//WorldBoss Related
 		addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"),  null);
 		addCue("WorldBossSelector", loadImage("cues/cueWorldBossSelector.png"),  null);
@@ -1858,23 +1859,24 @@ public class MainThread implements Runnable {
 						timeLastBadgesCheck = Misc.getTime();
 
 						BadgeEvent badgeEvent = BadgeEvent.None;
-
-						seg = detectCue(cues.get("GVG"));
 						MarvinSegment expedtionBTNSeg = null;
+
+						seg = detectCue(cues.get("ExpeditionButton"));
+						if (seg != null) {
+							badgeEvent = BadgeEvent.Expedition;
+							expedtionBTNSeg = seg;
+						}
+						
+						seg = detectCue(cues.get("GVG"));
 						if (seg != null) {
 							badgeEvent = BadgeEvent.GVG;
-						} else {
-							seg = detectCue(cues.get("Invasion"));
-							if (seg != null) {
-								badgeEvent = BadgeEvent.Invasion;
-							} else {
-								seg = detectCue(cues.get("ExpeditionButton"));
-								if (seg != null) {
-									badgeEvent = BadgeEvent.Expedition;
-									expedtionBTNSeg = seg;
-								}
-							}
 						}
+						
+						seg = detectCue(cues.get("Invasion"));
+						if (seg != null) {
+							badgeEvent = BadgeEvent.Invasion;
+						}
+						
 
 						if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion/Expedition event?)
 							BHBot.scheduler.restoreIdleTime();
@@ -2135,6 +2137,9 @@ public class MainThread implements Runnable {
 								}
 								else if (detectCue(cues.get("Expedition2")) != null) {
 									currentExpedition = 2;
+								}
+								else if (detectCue(cues.get("Expedition3")) != null) {
+									currentExpedition = 3;
 								} else {
 									BHBot.settings.doExpedition = false;
 									BHBot.log("It was impossible to get the current expedition type!");
@@ -4774,7 +4779,7 @@ public class MainThread implements Runnable {
 	 * Function to return the name of the portal for console output
 	 */
 	private String getExpeditionName(int currentExpedition, String targetPortal) {
-		if (currentExpedition > 2) {
+		if (currentExpedition > 3) {
 			BHBot.log("Unexpected expedition int in getExpeditionName: " + currentExpedition);
 			return null;
 		}
@@ -4812,6 +4817,19 @@ public class MainThread implements Runnable {
 					default:
 						return null;
 				}
+			case 3: // Jammie dimension
+				switch (targetPortal) {
+					case "p1":
+						return "Zorgo Crossing";
+					case "p2":
+						return "Yackerz Tundra";
+					case "p3":
+						return "Vionot Sewer";
+					case "p4":
+						return "Portal 4";
+					default:
+						return null;
+				}
 			default:
 				return null;
 		}
@@ -4833,8 +4851,10 @@ public class MainThread implements Runnable {
 			portalName = "Hallowed";
 		}  else if (currentExpedition == 2) {
 			portalName = "Inferno";
+		}  else if (currentExpedition == 3) {
+			portalName = "Jammie";
 		} else {
-			BHBot.log("Unknown expedtion in getExpeditionIconPos " + currentExpedition);
+			BHBot.log("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
 			saveGameScreen("unknown-expedition");
 			return null;
 		}
@@ -4882,7 +4902,7 @@ public class MainThread implements Runnable {
 			portalPosition[2] = new Point(360, 360); //Twimbo
 			portalPosition[3] = new Point(650, 380); //X5-T34M
 		}
-		else  { // Inferno
+		else if (currentExpedition == 2) { // Inferno
 			portalCheck[0] = new Point(185, 206); // Raleib
 			portalCheck[1] = new Point(570, 209); // Blemo
 			portalCheck[2] = new Point(383, 395); // Gummy
@@ -4892,6 +4912,16 @@ public class MainThread implements Runnable {
 			portalPosition[1] = new Point(600, 195); // Blemo
 			portalPosition[2] = new Point(420, 405); // Gummy
 			portalPosition[3] = new Point(420, 270); // Zarlock
+		} else if (currentExpedition == 3) {
+			portalCheck[0] = new Point(145, 185); // Zorgo
+			portalCheck[1] = new Point(299, 289); // Yackerz
+			portalCheck[2] = new Point(476, 328); // Vionot
+			portalCheck[3] = new Point(605, 377); // Portal 4
+
+			portalPosition[0] = new Point(170, 188); // Zorgo
+			portalPosition[1] = new Point(315, 270); // Yackerz
+			portalPosition[2] = new Point(480, 350); // Vionot
+			portalPosition[3] = new Point(635, 390); // Portal 4
 		}
 
 		// We check which of the portals are enabled
