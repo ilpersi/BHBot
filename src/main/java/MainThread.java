@@ -587,10 +587,10 @@ public class MainThread implements Runnable {
 		addCue("InvasionWindow", loadImage("cues/cueInvasionWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
 
 		// Expedition related:
-		addCue("ExpeditionButton", loadImage("cues/cueExpeditionButton.png"),  null);
+		addCue("ExpeditionButton", loadImage("cues/cueExpeditionButton.png"), null);
 		addCue("Expedition1", loadImage("cues/expedition/cueExpedition1Hallowed.png"), new Bounds(168, 34, 628, 108)); // Hallowed Expedtion Title
-		addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"),  new Bounds(200, 40, 600, 100)); //Inferno Expedition
-		addCue("Expedition3", loadImage("cues/expedition/cueExpedition3Jammie.png"),  new Bounds(230, 40, 565, 100)); //Jammie Dimension
+		addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"), new Bounds(200, 40, 600, 100)); //Inferno Expedition
+		addCue("Expedition3", loadImage("cues/expedition/cueExpedition3Jammie.png"), new Bounds(230, 40, 565, 100)); //Jammie Dimension
 
 		//WorldBoss Related
 		addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"),  null);
@@ -1714,7 +1714,7 @@ public class MainThread implements Runnable {
 							readScreen(3*SECOND);
 							// select difficulty (If D4 just hit enter):
 							if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') || (dungeon.charAt(1) == '8' && dungeon.charAt(3) == '3' )) { // D4, or Z7D3/Z8D3
-								boolean specialDungeon = true;
+								specialDungeon = true;
 								seg = detectCue(cues.get("Enter"), 5*SECOND);
 								clickOnSeg(seg);
 							} else  { //else select appropriate difficulty
@@ -1869,22 +1869,26 @@ public class MainThread implements Runnable {
 						readScreen();
 
 						BadgeEvent badgeEvent = BadgeEvent.None;
-						MarvinSegment expedtionBTNSeg = null;
+						MarvinSegment expeditionButtonSeg = null;
+						MarvinSegment badgeEventSegment = null;
 
-						seg = detectCue(cues.get("ExpeditionButton"));
+						seg = detectCue(cues.get("ExpeditionButton"), 1*SECOND);
 						if (seg != null) {
 							badgeEvent = BadgeEvent.Expedition;
-							expedtionBTNSeg = seg;
+							expeditionButtonSeg = seg;
+							badgeEventSegment = seg;
 						}
 						
 						seg = detectCue(cues.get("GVG"));
 						if (seg != null) {
 							badgeEvent = BadgeEvent.GVG;
+							badgeEventSegment = seg;
 						}
 						
 						seg = detectCue(cues.get("Invasion"));
 						if (seg != null) {
 							badgeEvent = BadgeEvent.Invasion;
+							badgeEventSegment = seg;
 						}
 						
 
@@ -1894,7 +1898,7 @@ public class MainThread implements Runnable {
 							continue;
 						}
 
-						clickOnSeg(seg);
+						clickOnSeg(badgeEventSegment);
 						sleep(2*SECOND);
 
 						detectCharacterDialogAndHandleIt(); // needed for invasion
@@ -2084,7 +2088,7 @@ public class MainThread implements Runnable {
 									checkShrineSettings("enable");
 
 									readScreen(SECOND);
-									clickOnSeg(expedtionBTNSeg);
+									clickOnSeg(expeditionButtonSeg);
 									readScreen(SECOND * 2);
 								}
 
