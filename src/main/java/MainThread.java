@@ -590,6 +590,7 @@ public class MainThread implements Runnable {
 		addCue("ExpeditionButton", loadImage("cues/cueExpeditionButton.png"),  null);
 		addCue("Expedition1", loadImage("cues/expedition/cueExpedition1Hallowed.png"), new Bounds(168, 34, 628, 108)); // Hallowed Expedtion Title
 		addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"),  new Bounds(200, 40, 600, 100)); //Inferno Expedition
+		addCue("Expedition3", loadImage("cues/expedition/cueExpedition3Jammie.png"),  new Bounds(230, 40, 565, 100)); //Jammie Dimension
 
 		//WorldBoss Related
 		addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"),  null);
@@ -1331,7 +1332,7 @@ public class MainThread implements Runnable {
                     	checkShrineSettings("disable");
                         oneTimeshrineCheck = true;
                         shrinesChecked = false;
-                        sleep(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
+                        readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
                     }
 
 
@@ -1478,6 +1479,9 @@ public class MainThread implements Runnable {
 					// check for tokens (trials and gauntlet):
 					if (BHBot.scheduler.doTrialsOrGauntletImmediately || ((BHBot.settings.doTrials || BHBot.settings.doGauntlet) && Misc.getTime() - timeLastTokensCheck > TOKENS_CHECK_INTERVAL)) {
 						timeLastTokensCheck = Misc.getTime();
+
+						readScreen();
+
 						seg = detectCue(cues.get("Trials"));
 						if (seg==null) seg = detectCue(cues.get("Trials2"));
 						boolean trials = seg != null; // if false, then we will do gauntlet instead of trials
@@ -1616,6 +1620,8 @@ public class MainThread implements Runnable {
 					// check for energy:
 					if (BHBot.scheduler.doDungeonImmediately || (BHBot.settings.doDungeons && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
 						timeLastEnergyCheck = Misc.getTime();
+
+						readScreen();
 						
 						int energy = getEnergy();
 						globalEnergy = energy;
@@ -1769,6 +1775,9 @@ public class MainThread implements Runnable {
 					// check for Tickets (PvP):
 					if (BHBot.scheduler.doPVPImmediately || (BHBot.settings.doPVP && Misc.getTime() - timeLastTicketsCheck > TICKETS_CHECK_INTERVAL)) {
 						timeLastTicketsCheck = Misc.getTime();
+
+						readScreen();
+
 						int tickets = getTickets();
 						globalTickets = tickets;
 						BHBot.log("Tickets: " + tickets  + ", required: >" + BHBot.settings.minTickets + ", PVP cost: " + BHBot.settings.costPVP);
@@ -1856,6 +1865,8 @@ public class MainThread implements Runnable {
 					if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || BHBot.scheduler.doExpeditionImmediately
 							|| ((BHBot.settings.doGVG || BHBot.settings.doInvasion || BHBot.settings.doExpedition) && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL)) {
 						timeLastBadgesCheck = Misc.getTime();
+
+						readScreen();
 
 						BadgeEvent badgeEvent = BadgeEvent.None;
 
@@ -2108,6 +2119,7 @@ public class MainThread implements Runnable {
 										BHBot.log("Due to an error in cost selection, Expedition will be skipped.");
 										continue;
 									}
+									readScreen(SECOND * 2);
 								}
 
 								seg = detectCue(cues.get("Play"), 2*SECOND);
@@ -2135,6 +2147,8 @@ public class MainThread implements Runnable {
 								}
 								else if (detectCue(cues.get("Expedition2")) != null) {
 									currentExpedition = 2;
+								} else if (detectCue(cues.get("Expedition3")) != null) {
+									currentExpedition = 3;
 								} else {
 									BHBot.settings.doExpedition = false;
 									BHBot.log("It was impossible to get the current expedition type!");
@@ -4774,7 +4788,7 @@ public class MainThread implements Runnable {
 	 * Function to return the name of the portal for console output
 	 */
 	private String getExpeditionName(int currentExpedition, String targetPortal) {
-		if (currentExpedition > 2) {
+		if (currentExpedition > 3) {
 			BHBot.log("Unexpected expedition int in getExpeditionName: " + currentExpedition);
 			return null;
 		}
@@ -4812,6 +4826,19 @@ public class MainThread implements Runnable {
 					default:
 						return null;
 				}
+			case 3:
+				switch (targetPortal) {
+					case "p1":
+						return "Zorgo Crossing";
+					case "p2":
+						return "Yackerz Tundra";
+					case "p3":
+						return "Vionot Sewer";
+					case "p4":
+						return "Grampa Hef's Heart";
+					default:
+						return null;
+				}
 			default:
 				return null;
 		}
@@ -4833,7 +4860,9 @@ public class MainThread implements Runnable {
 			portalName = "Hallowed";
 		}  else if (currentExpedition == 2) {
 			portalName = "Inferno";
-		} else {
+		} else if (currentExpedition == 3) {
+			portalName = "Jammie";
+		}else {
 			BHBot.log("Unknown expedtion in getExpeditionIconPos " + currentExpedition);
 			saveGameScreen("unknown-expedition");
 			return null;
@@ -4882,7 +4911,7 @@ public class MainThread implements Runnable {
 			portalPosition[2] = new Point(360, 360); //Twimbo
 			portalPosition[3] = new Point(650, 380); //X5-T34M
 		}
-		else  { // Inferno
+		else if (currentExpedition == 2) { // Inferno
 			portalCheck[0] = new Point(185, 206); // Raleib
 			portalCheck[1] = new Point(570, 209); // Blemo
 			portalCheck[2] = new Point(383, 395); // Gummy
@@ -4892,6 +4921,16 @@ public class MainThread implements Runnable {
 			portalPosition[1] = new Point(600, 195); // Blemo
 			portalPosition[2] = new Point(420, 405); // Gummy
 			portalPosition[3] = new Point(420, 270); // Zarlock
+		} else { // Jammie
+			portalCheck[0] = new Point(145, 187); // Zorgo
+			portalCheck[1] = new Point(309, 289); // Yackerz
+			portalCheck[2] = new Point(474, 343); // Vionot
+			portalCheck[3] = new Point(621, 370); // Grampa
+
+			portalPosition[0] = new Point(170, 200); // Zorgo
+			portalPosition[1] = new Point(315, 260); // Yackerz
+			portalPosition[2] = new Point(480, 360); // Vinot
+			portalPosition[3] = new Point(635, 385); // Grampa
 		}
 
 		// We check which of the portals are enabled

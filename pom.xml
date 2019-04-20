@@ -63,6 +63,7 @@
 
                 <executions>
                     <execution>
+                        <phase>package</phase>
                         <id>get-the-git-infos</id>
                         <goals>
                             <goal>revision</goal>
