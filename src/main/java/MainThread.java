@@ -3973,8 +3973,9 @@ public class MainThread implements Runnable {
 		MarvinSegment seg;
 
 		// Auto Revive is disabled, we re-enable it
-		if ( (BHBot.settings.autoRevive == 0) || (state != State.Trials && state != State.Gauntlet && state != State.Raid) ){
-			BHBot.log("AutoRevive disabled, reenabling auto..");
+		if ( (BHBot.settings.autoRevive.size() == 0) || (state != State.Trials && state != State.Gauntlet
+				&& state != State.Raid && state != State.Expedition) ){
+			BHBot.log("AutoRevive disabled, reenabling auto.. State = '" + state + "'");
 			seg = detectCue(cues.get("AutoOff"));
 			if (seg != null) clickOnSeg(seg);
 			return;
@@ -4031,8 +4032,10 @@ public class MainThread implements Runnable {
 					break;
 			}
 
-			if ( ((state == State.Trials || state == State.Gauntlet) && (BHBot.settings.autoRevive == 1 || BHBot.settings.autoRevive == 3)) ||
-					((state == State.Raid) && (BHBot.settings.autoRevive == 2 || BHBot.settings.autoRevive == 3))) {
+			if ( (state==State.Trials && BHBot.settings.autoRevive.contains("t") ) ||
+					(state==State.Gauntlet && BHBot.settings.autoRevive.contains("g")) ||
+					(state==State.Raid && BHBot.settings.autoRevive.contains("r")) ||
+					(state==State.Expedition && BHBot.settings.autoRevive.contains("e")) ) {
 
 				// from char to potion name
 				HashMap<Character, String> potionTranslage = new HashMap<>();
@@ -4101,7 +4104,7 @@ public class MainThread implements Runnable {
 					// No more potions are available
 					if (availablePotions.get('1')== null && availablePotions.get('2')== null && availablePotions.get('3')== null) {
 						BHBot.log("No potions are avilable, autoRevive well be temporary disabled!");
-						BHBot.settings.autoRevive = 0;
+						BHBot.settings.autoRevive = new ArrayList<>();
 						return;
 					}
 

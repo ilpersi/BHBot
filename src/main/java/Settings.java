@@ -113,7 +113,7 @@ public class Settings {
 	boolean worldBossSolo = false;
 	
 	/** Autorevive Settings **/
-    int autoRevive = 0;
+	List<String> autoRevive;
 	String potionOrder = "123";
 	boolean tankPriority = false;
 	
@@ -171,6 +171,7 @@ public class Settings {
 		gvgstrip = new ArrayList<>();
 		consumables = new ArrayList<>();
 		familiars = new ArrayList<>();
+		autoRevive = new ArrayList<>();
 	}
 	
 	// a handy shortcut for some debug settings:
@@ -312,6 +313,16 @@ public class Settings {
 		}
 	}
 
+	private void setAutoRevive(String... types) {
+		this.autoRevive.clear();
+		for (String t : types) {
+			String add = t.trim();
+			if (add.equals(""))
+				continue;
+			this.autoRevive.add(add);
+		}
+	}
+
 	private void setGVGStrips(String... types) {
 		this.gvgstrip.clear();
 		for (String t : types) {
@@ -365,6 +376,15 @@ public class Settings {
 	private String getStripsAsString() {
 		StringBuilder result = new StringBuilder();
 		for (String s : pvpstrip)
+			result.append(s).append(" ");
+		if (result.length() > 0)
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+		return result.toString();
+	}
+
+	private String getAutoReviveAsString() {
+		StringBuilder result = new StringBuilder();
+		for (String s : autoRevive)
 			result.append(s).append(" ");
 		if (result.length() > 0)
 			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
@@ -427,6 +447,16 @@ public class Settings {
 			pvpstrip.set(i, pvpstrip.get(i).trim());
 			if (pvpstrip.get(i).equals(""))
 				pvpstrip.remove(i);
+		}
+	}
+
+	private void setAutoReviveFromString(String s) {
+		setAutoRevive(s.split(" "));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = autoRevive.size()-1; i >= 0; i--) {
+			autoRevive.set(i, autoRevive.get(i).trim());
+			if (autoRevive.get(i).equals(""))
+				autoRevive.remove(i);
 		}
 	}
 
@@ -528,8 +558,8 @@ public class Settings {
 		worldBossTimer = Integer.parseInt(map.getOrDefault("worldBossTimer", ""+worldBossTimer));
 		dungeonOnTimeout = map.getOrDefault("dungeonOnTimeout", dungeonOnTimeout ? "1" : "0").equals("1");
 		worldBossSolo = map.getOrDefault("worldBossSolo", worldBossSolo ? "1" : "0").equals("1");
-		
-		autoRevive = Integer.parseInt(map.getOrDefault("autoRevive", ""+autoRevive));
+
+		setAutoReviveFromString(map.getOrDefault("autoRevive", getAutoReviveAsString()));
 		tankPriority = map.getOrDefault("tankPriority", tankPriority ? "1" : "0").equals("1");
 		potionOrder  = map.getOrDefault("potionOrder", potionOrder);
 		
@@ -605,6 +635,14 @@ public class Settings {
 			BHBot.log("WARNING: invalid format detected for expeditions settings '" + expeditions + "': " +
 					"a standard value of 'p1 100 100' will be used" );
 			map.put("expeditions", "p1 100 100");
+		}
+
+		// sanitize autorevive settings
+		String autoRevive = map.getOrDefault("autoRevive", "");
+		if (autoRevive.contains("1") || autoRevive.contains("2") || autoRevive.contains("3")) {
+			BHBot.log("WARNING: invalid format detected for autoRevive setting '" + autoRevive + "': " +
+					"this feature will be disabled" );
+			map.put("expeditions", "");
 		}
 
 	}
