@@ -4017,6 +4017,7 @@ public class MainThread implements Runnable {
 			switch (state) {
 				case Trials:
 				case Gauntlet:
+				case Expedition:
 					revivePositions.put(1, new Point(290,315));
 					revivePositions.put(2, new Point(200,340));
 					revivePositions.put(3, new Point(115,285));
