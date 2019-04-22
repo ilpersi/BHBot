@@ -54,12 +54,10 @@ public class BHBot {
 				case "chromium":
 				case "chromiumpath":
 					chromiumExePath = args[i + 1];
-//					BHBot.log("Changed Chromium path to: " + args[i + 1]);
 					break;
 				case "chromedriver":
 				case "chromedriverpath":
 					chromeDriverExePath = args[i + 1];
-//					BHBot.log("Changed chromedriver path to: " + args[i + 1]);
 					break;
 				case "chromedriveraddress":  //change chrome driver port
 					chromeDriverAddress = args[i + 1];
@@ -77,21 +75,21 @@ public class BHBot {
 		logger = LogManager.getRootLogger();
 
 		try {
-			log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
+			logger.info(PROGRAM_NAME + " v" + PROGRAM_VERSION + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
 		} catch (URISyntaxException e) {
-			log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started. Unknown build date.");
+            logger.info(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started. Unknown build date.");
 		}
 
-		log("Settings loaded from file");
+        logger.info("Settings loaded from file");
 
 		settings.checkDeprecatedSettings();
 		settings.sanitizeSetting();
 
-		log("Character: " + BHBot.settings.username);
+        logger.info("Character: " + BHBot.settings.username);
 
 		Properties gitPropertis = Misc.getGITInfo();
 
-		log("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time")) ;
+        logger.info("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time")) ;
 
 		MainThread.loadCues();
 
@@ -110,7 +108,7 @@ public class BHBot {
 				return;
 			}
 			try {
-				log("User command: <" + s + ">");
+				logger.info("User command: <" + s + ">");
 				processCommand(s);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -120,13 +118,13 @@ public class BHBot {
 		if (mainThread.isAlive()) {
 			try {
 				// wait for 10 seconds for the main thread to terminate
-				log("Waiting for main thread to finish... (timeout=10s)");
+				logger.info("Waiting for main thread to finish... (timeout=10s)");
 				mainThread.join(10*MainThread.SECOND);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			if (mainThread.isAlive()) {
-				log("Main thread is still alive. Force stopping it now...");
+				logger.warn("Main thread is still alive. Force stopping it now...");
 				mainThread.interrupt();
 				try {
 					mainThread.join(); // until thread stops
@@ -135,7 +133,7 @@ public class BHBot {
 				}
 			}
 		}
-		log(PROGRAM_NAME + " has finished.");
+		logger.info(PROGRAM_NAME + " has finished.");
 	}
 	
 	public static void log(String s) {//prints with date and time in format
@@ -149,13 +147,13 @@ public class BHBot {
 			case "c": { // detect cost from screen
 				main.readScreen();
 				int current = main.detectCost();
-				log("Detected cost: " + current);
+				logger.info("Detected cost: " + current);
 
 				if (params.length > 1) {
 					int goal = Integer.parseInt(params[1]);
-					log("Goal cost: " + goal);
+					logger.info("Goal cost: " + goal);
 					boolean result = main.selectCost(current, goal);
-					log("Cost change result: " + result);
+					logger.info("Cost change result: " + result);
 				}
 				break;
 			}
@@ -166,13 +164,13 @@ public class BHBot {
 			case "d": { // detect difficulty from screen
 				main.readScreen();
 				int current = main.detectDifficulty();
-				log("Detected difficulty: " + current);
+				logger.info("Detected difficulty: " + current);
 
 				if (params.length > 1) {
 					int goal = Integer.parseInt(params[1]);
-					log("Goal difficulty: " + goal);
+					logger.info("Goal difficulty: " + goal);
 					boolean result = main.selectDifficulty(current, goal);
-					log("Difficulty change result: " + result);
+					logger.info("Difficulty change result: " + result);
 				}
 				break;
 			}
@@ -180,47 +178,47 @@ public class BHBot {
 				switch (params[1]) {
 					case "raid":
 						// force raid (if we have at least 1 shard though)
-						log("Forcing raid...");
+						logger.info("Forcing raid...");
 						scheduler.doRaidImmediately = true;
 						break;
 					case "expedition":
 						// force dungeon (regardless of energy)
-						log("Forcing expedition...");
+						logger.info("Forcing expedition...");
 						scheduler.doExpeditionImmediately = true;
 						break;
 					case "dungeon":
 						// force dungeon (regardless of energy)
-						log("Forcing dungeon...");
+						logger.info("Forcing dungeon...");
 						scheduler.doDungeonImmediately = true;
 						break;
 					case "gauntlet":
 					case "trials":
 						// force 1 run of gauntlet/trials (regardless of tokens)
-						log("Forcing gauntlet/trials...");
+						logger.info("Forcing gauntlet/trials...");
 						scheduler.doTrialsOrGauntletImmediately = true;
 						break;
 					case "pvp":
 						// force pvp
-						log("Forcing PVP...");
+						logger.info("Forcing PVP...");
 						scheduler.doPVPImmediately = true;
 						break;
 					case "gvg":
 						// force gvg
-						log("Forcing GVG...");
+						logger.info("Forcing GVG...");
 						scheduler.doGVGImmediately = true;
 						break;
 					case "invasion":
 						// force invasion
-						log("Forcing invasion...");
+						logger.info("Forcing invasion...");
 						scheduler.doInvasionImmediately = true;
 						break;
 					case "worldboss":
 						// force invasion
-						log("Forcing World Boss...");
+						logger.info("Forcing World Boss...");
 						scheduler.doWorldBossImmediately = true;
 						break;
 					default:
-						BHBot.log("Unknown dungeon : '" + params[1] + "'");
+						logger.warn("Unknown dungeon : '" + params[1] + "'");
 						break;
 				}
 				break;
@@ -257,7 +255,7 @@ public class BHBot {
 				settings.load("plans/" + params[1] + ".ini");
 				settings.checkDeprecatedSettings();
 				settings.sanitizeSetting();
-				log("Plan loaded from " + "<plans/" + params[1] + ".ini>.");
+				logger.info("Plan loaded from " + "<plans/" + params[1] + ".ini>.");
 				break;
 			case "pomessage":
 				String message = "Test message from BHbot!";
@@ -270,16 +268,16 @@ public class BHBot {
 					String poLogMessage = "Sending Pushover test message.";
 					poLogMessage += "\n\n poUserToken is: " + BHBot.settings.poUserToken;
 					poLogMessage += "\n poAppToken is: " + BHBot.settings.poAppToken;
-					BHBot.log(poLogMessage);
+					logger.info(poLogMessage);
 
 					String poScreenName = main.saveGameScreen("pomessage");
 					File poScreenFile = new File(poScreenName);
 
 					main.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
-					if (!poScreenFile.delete()) BHBot.log("Impossible to delete tmp img for pomessage command.");
+					if (!poScreenFile.delete()) logger.warn("Impossible to delete tmp img for pomessage command.");
 
 				} else {
-					BHBot.log("Pushover integration is disabled in the settings!");
+					logger.warn("Pushover integration is disabled in the settings!");
 				}
 				break;
 			case "print":
@@ -291,16 +289,16 @@ public class BHBot {
 						break;
 					case "version":
 						try {
-							log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
+							logger.info(PROGRAM_NAME + " v" + PROGRAM_VERSION + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
 						} catch (URISyntaxException e) {
-							log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started. Unknown build date.");
+							logger.info(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started. Unknown build date.");
 						}
 
 						Properties gitPropertis = Misc.getGITInfo();
-						log("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time")) ;
+						logger.info("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time")) ;
 						break;
 					default:
-						log("Impossible to print : '" + params[1] +"'");
+						logger.warn("Impossible to print : '" + params[1] +"'");
 						break;
 				}
 				break;
@@ -317,7 +315,7 @@ public class BHBot {
 
 				main.saveGameScreen(fileName);
 
-				log("Screenshot '" + fileName + "' saved.");
+				logger.info("Screenshot '" + fileName + "' saved.");
 				break;
 			case "start":
 				main = new MainThread();
@@ -327,11 +325,11 @@ public class BHBot {
 			case "readouts":
 			case "resettimers":
 				main.resetTimers();
-				log("Readout timers reset.");
+				logger.info("Readout timers reset.");
 				break;
 			case "reload":
 				settings.load();
-				log("Settings reloaded from disk.");
+				logger.info("Settings reloaded from disk.");
 				break;
 			case "resume":
 				scheduler.resume();
@@ -343,7 +341,7 @@ public class BHBot {
 					return;
 				list.add(c.substring(i + 1));
 				settings.load(list);
-				log("Settings updated manually: <" + list.get(0) + ">");
+				logger.info("Settings updated manually: <" + list.get(0) + ">");
 				break;
 			}
 			case "show":
@@ -379,7 +377,7 @@ public class BHBot {
                 }
                 break;
             default:
-            	BHBot.log("Unknown command: '" + c + "'");
+            	logger.warn("Unknown command: '" + c + "'");
             	break;
 		}
 	}
@@ -391,33 +389,33 @@ public class BHBot {
 		File screenPath = new File(BHBot.screenshotPath);
 
 		if (!chromiumExe.exists()) {
-			log("Impossible to find Chromium executable in path " + BHBot.chromiumExePath + ". Bot will be stopped!");
+			logger.fatal("Impossible to find Chromium executable in path " + BHBot.chromiumExePath + ". Bot will be stopped!");
 			return false;
 		} else {
 			try {
-				BHBot.log("Found Chromium in " + chromiumExe.getCanonicalPath());
+				logger.info("Found Chromium in " + chromiumExe.getCanonicalPath());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
 		if (!chromeDriverExe.exists()) {
-			log("Impossible to find chromedriver executable in path " + BHBot.chromeDriverExePath + ". Bot will be stopped!");
+			logger.fatal("Impossible to find chromedriver executable in path " + BHBot.chromeDriverExePath + ". Bot will be stopped!");
 			return false;
 		} else {
 			try {
-				BHBot.log("Found chromedriver in " + chromeDriverExe.getCanonicalPath());
+				logger.info("Found chromedriver in " + chromeDriverExe.getCanonicalPath());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
 		if (!cuePath.exists() || cuePath.isFile()) {
-		    BHBot.log("Impossible to find cues path in " + BHBot.cuesPath + ". Bot will be stopped!");
+		    logger.fatal("Impossible to find cues path in " + BHBot.cuesPath + ". Bot will be stopped!");
 		    return false;
         } else {
             try {
-                BHBot.log("Found cues in " + cuePath.getCanonicalPath());
+                logger.info("Found cues in " + cuePath.getCanonicalPath());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -425,18 +423,18 @@ public class BHBot {
 
 		if (!screenPath.exists()) {
 			if (!screenPath.mkdir()) {
-				BHBot.log("Impossible to create screenshot folder in " + BHBot.screenshotPath);
+				logger.fatal("Impossible to create screenshot folder in " + BHBot.screenshotPath);
 				return false;
 			} else {
 				try {
-					BHBot.log("Created screenshot folder in " + screenPath.getCanonicalPath());
+					logger.info("Created screenshot folder in " + screenPath.getCanonicalPath());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
 		} else {
 			try {
-				BHBot.log("Found screenshots in " + screenPath.getCanonicalPath());
+				logger.info("Found screenshots in " + screenPath.getCanonicalPath());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
