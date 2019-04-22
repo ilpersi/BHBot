@@ -156,6 +156,8 @@ public class Settings {
 	String dungeonsRun = "dungeonsrun 0";
 	String worldBossRun = "worldbossrun 0";
 
+	private Map<String, String> lastUsedMap = new HashMap<>();
+
 	public Settings() {
 		dungeons = new RandomCollection<>();
 		setDungeons("z1d4 3 100"); // some default value
@@ -494,112 +496,110 @@ public class Settings {
 	 * Loads settings from list of string arguments (which are lines of the settings.ini file, for example)
 	 */
 	public void load(List<String> lines) {
-		Map<String, String> map = new HashMap<>();
 		for (String line : lines) {
 			if (line.trim().equals("")) continue;
 			if (line.startsWith("#")) continue; // a comment
-			map.put(line.substring(0, line.indexOf(" ")), line.substring(line.indexOf(" ")+1));
+			lastUsedMap.put(line.substring(0, line.indexOf(" ")), line.substring(line.indexOf(" ")+1));
 		}
+		
+		username = lastUsedMap.getOrDefault("username", username);
+		password = lastUsedMap.getOrDefault("password", password);
+		poAppToken = lastUsedMap.getOrDefault("poAppToken", poAppToken);
+		poUserToken = lastUsedMap.getOrDefault("poUserToken", poUserToken);
+		useHeadlessMode = lastUsedMap.getOrDefault("headlessmode", useHeadlessMode ? "1" : "0").equals("1");
+		restartAfterAdOfferTimeout = lastUsedMap.getOrDefault("restartAfterAdOfferTimeout", restartAfterAdOfferTimeout ? "1" : "0").equals("1");
+		debugDetectionTimes = lastUsedMap.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("1");
+		hideWindowOnRestart = lastUsedMap.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("1");
+		resetTimersOnBattleEnd = lastUsedMap.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("1");
+		autoStartChromeDriver = lastUsedMap.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
+		reconnectTimer = Integer.parseInt(lastUsedMap.getOrDefault("reconnectTimer", ""+reconnectTimer));
+		
+		doRaids = lastUsedMap.getOrDefault("doRaids", doRaids ? "1" : "0").equals("1");
+		doDungeons = lastUsedMap.getOrDefault("doDungeons", doDungeons ? "1" : "0").equals("1");
+		doTrials = lastUsedMap.getOrDefault("doTrials", doTrials ? "1" : "0").equals("1");
+		doGauntlet = lastUsedMap.getOrDefault("doGauntlet", doGauntlet ? "1" : "0").equals("1");
+		doPVP = lastUsedMap.getOrDefault("doPVP", doPVP ? "1" : "0").equals("1");
+		doGVG = lastUsedMap.getOrDefault("doGVG", doGVG ? "1" : "0").equals("1");
+		doInvasion = lastUsedMap.getOrDefault("doInvasion", doInvasion ? "1" : "0").equals("1");
+		doExpedition = lastUsedMap.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("1");
+		doWorldBoss = lastUsedMap.getOrDefault("doWorldBoss", doWorldBoss ? "1" : "0").equals("1");
+		enablePushover = lastUsedMap.getOrDefault("enablePushover", enablePushover ? "1" : "0").equals("1");
+		poNotifyPM = lastUsedMap.getOrDefault("poNotifyPM", poNotifyPM ? "1" : "0").equals("1");
+		poNotifyCrash = lastUsedMap.getOrDefault("poNotifyCrash", poNotifyCrash ? "1" : "0").equals("1");
+		poNotifyErrors = lastUsedMap.getOrDefault("poNotifyErrors", poNotifyErrors ? "1" : "0").equals("1");
+		poNotifyBribe = lastUsedMap.getOrDefault("poNotifyBribe", poNotifyBribe ? "1" : "0").equals("1");
+		doAds = lastUsedMap.getOrDefault("doAds", doAds ? "1" : "0").equals("1");
+		
+		maxShards = Integer.parseInt(lastUsedMap.getOrDefault("maxShards", ""+maxShards));
+		maxTokens = Integer.parseInt(lastUsedMap.getOrDefault("maxTokens", ""+maxTokens));
+		maxTickets = Integer.parseInt(lastUsedMap.getOrDefault("maxTickets", ""+maxTickets));
+		maxBadges = Integer.parseInt(lastUsedMap.getOrDefault("maxBadges", ""+maxBadges));
+		
+		minShards = Integer.parseInt(lastUsedMap.getOrDefault("minShards", ""+minShards));
+		minTokens = Integer.parseInt(lastUsedMap.getOrDefault("minTokens", ""+minTokens));
+		minEnergyPercentage = Integer.parseInt(lastUsedMap.getOrDefault("minEnergyPercentage", ""+minEnergyPercentage));
+		minTickets = Integer.parseInt(lastUsedMap.getOrDefault("minTickets", ""+minTickets));
+		minBadges = Integer.parseInt(lastUsedMap.getOrDefault("minBadges", ""+minBadges));
 
-		checkDeprecatedSettings(map);
-		sanitizeSetting(map);
-		
-		username = map.getOrDefault("username", username);
-		password = map.getOrDefault("password", password);
-		poAppToken = map.getOrDefault("poAppToken", poAppToken);
-		poUserToken = map.getOrDefault("poUserToken", poUserToken);
-		useHeadlessMode = map.getOrDefault("headlessmode", useHeadlessMode ? "1" : "0").equals("1");
-		restartAfterAdOfferTimeout = map.getOrDefault("restartAfterAdOfferTimeout", restartAfterAdOfferTimeout ? "1" : "0").equals("1");
-		debugDetectionTimes = map.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("1");
-		hideWindowOnRestart = map.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("1");
-		resetTimersOnBattleEnd = map.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("1");
-		autoStartChromeDriver = map.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
-		reconnectTimer = Integer.parseInt(map.getOrDefault("reconnectTimer", ""+reconnectTimer));
-		
-		doRaids = map.getOrDefault("doRaids", doRaids ? "1" : "0").equals("1");
-		doDungeons = map.getOrDefault("doDungeons", doDungeons ? "1" : "0").equals("1");
-		doTrials = map.getOrDefault("doTrials", doTrials ? "1" : "0").equals("1");
-		doGauntlet = map.getOrDefault("doGauntlet", doGauntlet ? "1" : "0").equals("1");
-		doPVP = map.getOrDefault("doPVP", doPVP ? "1" : "0").equals("1");
-		doGVG = map.getOrDefault("doGVG", doGVG ? "1" : "0").equals("1");
-		doInvasion = map.getOrDefault("doInvasion", doInvasion ? "1" : "0").equals("1");
-		doExpedition = map.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("1");
-		doWorldBoss = map.getOrDefault("doWorldBoss", doWorldBoss ? "1" : "0").equals("1");
-		enablePushover = map.getOrDefault("enablePushover", enablePushover ? "1" : "0").equals("1");
-		poNotifyPM = map.getOrDefault("poNotifyPM", poNotifyPM ? "1" : "0").equals("1");
-		poNotifyCrash = map.getOrDefault("poNotifyCrash", poNotifyCrash ? "1" : "0").equals("1");
-		poNotifyErrors = map.getOrDefault("poNotifyErrors", poNotifyErrors ? "1" : "0").equals("1");
-		poNotifyBribe = map.getOrDefault("poNotifyBribe", poNotifyBribe ? "1" : "0").equals("1");
-		doAds = map.getOrDefault("doAds", doAds ? "1" : "0").equals("1");
-		
-		maxShards = Integer.parseInt(map.getOrDefault("maxShards", ""+maxShards));
-		maxTokens = Integer.parseInt(map.getOrDefault("maxTokens", ""+maxTokens));
-		maxTickets = Integer.parseInt(map.getOrDefault("maxTickets", ""+maxTickets));
-		maxBadges = Integer.parseInt(map.getOrDefault("maxBadges", ""+maxBadges));
-		
-		minShards = Integer.parseInt(map.getOrDefault("minShards", ""+minShards));
-		minTokens = Integer.parseInt(map.getOrDefault("minTokens", ""+minTokens));
-		minEnergyPercentage = Integer.parseInt(map.getOrDefault("minEnergyPercentage", ""+minEnergyPercentage));
-		minTickets = Integer.parseInt(map.getOrDefault("minTickets", ""+minTickets));
-		minBadges = Integer.parseInt(map.getOrDefault("minBadges", ""+minBadges));
+		poNotifyAlive = Integer.parseInt(lastUsedMap.getOrDefault("poNotifyAlive", ""+poNotifyAlive));
 
-		poNotifyAlive = Integer.parseInt(map.getOrDefault("poNotifyAlive", ""+poNotifyAlive));
-
-		costPVP = Integer.parseInt(map.getOrDefault("costPVP", ""+costPVP));
-		costGVG = Integer.parseInt(map.getOrDefault("costGVG", ""+costGVG));
-		costTrials = Integer.parseInt(map.getOrDefault("costTrials", ""+costTrials));
-		costGauntlet = Integer.parseInt(map.getOrDefault("costGauntlet", ""+costGauntlet));
-		costInvasion = Integer.parseInt(map.getOrDefault("costInvasion", ""+costInvasion));
-		costExpedition = Integer.parseInt(map.getOrDefault("costExpedition", ""+costExpedition));
+		costPVP = Integer.parseInt(lastUsedMap.getOrDefault("costPVP", ""+costPVP));
+		costGVG = Integer.parseInt(lastUsedMap.getOrDefault("costGVG", ""+costGVG));
+		costTrials = Integer.parseInt(lastUsedMap.getOrDefault("costTrials", ""+costTrials));
+		costGauntlet = Integer.parseInt(lastUsedMap.getOrDefault("costGauntlet", ""+costGauntlet));
+		costInvasion = Integer.parseInt(lastUsedMap.getOrDefault("costInvasion", ""+costInvasion));
+		costExpedition = Integer.parseInt(lastUsedMap.getOrDefault("costExpedition", ""+costExpedition));
 		
-		worldBossType = map.getOrDefault("worldBossType", worldBossType);
-		worldBossDifficulty = Integer.parseInt(map.getOrDefault("worldBossDifficulty", ""+worldBossDifficulty));
-		worldBossTier = Integer.parseInt(map.getOrDefault("worldBossTier", ""+worldBossTier));
-		worldBossTimer = Integer.parseInt(map.getOrDefault("worldBossTimer", ""+worldBossTimer));
-		dungeonOnTimeout = map.getOrDefault("dungeonOnTimeout", dungeonOnTimeout ? "1" : "0").equals("1");
-		worldBossSolo = map.getOrDefault("worldBossSolo", worldBossSolo ? "1" : "0").equals("1");
+		worldBossType = lastUsedMap.getOrDefault("worldBossType", worldBossType);
+		worldBossDifficulty = Integer.parseInt(lastUsedMap.getOrDefault("worldBossDifficulty", ""+worldBossDifficulty));
+		worldBossTier = Integer.parseInt(lastUsedMap.getOrDefault("worldBossTier", ""+worldBossTier));
+		worldBossTimer = Integer.parseInt(lastUsedMap.getOrDefault("worldBossTimer", ""+worldBossTimer));
+		dungeonOnTimeout = lastUsedMap.getOrDefault("dungeonOnTimeout", dungeonOnTimeout ? "1" : "0").equals("1");
+		worldBossSolo = lastUsedMap.getOrDefault("worldBossSolo", worldBossSolo ? "1" : "0").equals("1");
 
-		setAutoReviveFromString(map.getOrDefault("autoRevive", getAutoReviveAsString()));
-		tankPriority = map.getOrDefault("tankPriority", tankPriority ? "1" : "0").equals("1");
-		potionOrder  = map.getOrDefault("potionOrder", potionOrder);
+		setAutoReviveFromString(lastUsedMap.getOrDefault("autoRevive", getAutoReviveAsString()));
+		tankPriority = lastUsedMap.getOrDefault("tankPriority", tankPriority ? "1" : "0").equals("1");
+		potionOrder  = lastUsedMap.getOrDefault("potionOrder", potionOrder);
 		
-		difficulty = Integer.parseInt(map.getOrDefault("difficulty", ""+difficulty));
-		minSolo  = Integer.parseInt(map.getOrDefault("minSolo", ""+minSolo));
+		difficulty = Integer.parseInt(lastUsedMap.getOrDefault("difficulty", ""+difficulty));
+		minSolo  = Integer.parseInt(lastUsedMap.getOrDefault("minSolo", ""+minSolo));
 		
-		setDungeonsFromString(map.getOrDefault("dungeons", getDungeonsAsString()));
-		setThursdayDungeonsFromString(map.getOrDefault("thursdayDungeons", getThursdayDungeonsAsString()));
-		setRaidsFromString(map.getOrDefault("raids", getRaidsAsString()));
-		setThursdayRaidsFromString(map.getOrDefault("thursdayRaids", getThursdayRaidsAsString()));
-		setExpeditionsFromString(map.getOrDefault("expeditions", getExpeditionsAsString()));
-		setStripsFromString(map.getOrDefault("pvpstrip", getStripsAsString()));
-		setGVGStripsFromString(map.getOrDefault("gvgstrip", getGVGStripsAsString()));
+		setDungeonsFromString(lastUsedMap.getOrDefault("dungeons", getDungeonsAsString()));
+		setThursdayDungeonsFromString(lastUsedMap.getOrDefault("thursdayDungeons", getThursdayDungeonsAsString()));
+		setRaidsFromString(lastUsedMap.getOrDefault("raids", getRaidsAsString()));
+		setThursdayRaidsFromString(lastUsedMap.getOrDefault("thursdayRaids", getThursdayRaidsAsString()));
+		setExpeditionsFromString(lastUsedMap.getOrDefault("expeditions", getExpeditionsAsString()));
+		setStripsFromString(lastUsedMap.getOrDefault("pvpstrip", getStripsAsString()));
+		setGVGStripsFromString(lastUsedMap.getOrDefault("gvgstrip", getGVGStripsAsString()));
 		
-		autoConsume = map.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("1");
-		setConsumablesFromString(map.getOrDefault("consumables", getConsumablesAsString()));
+		autoConsume = lastUsedMap.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("1");
+		setConsumablesFromString(lastUsedMap.getOrDefault("consumables", getConsumablesAsString()));
 
-		contributeFamiliars = map.getOrDefault("contributeFamiliars", contributeFamiliars ? "1" : "0").equals("1");
-		setFamiliarsFromString(map.getOrDefault("familiars", getFamiliarsAsString()));
-		familiarScreenshot  = Integer.parseInt(map.getOrDefault("familiarScreenshot", ""+familiarScreenshot));
+		contributeFamiliars = lastUsedMap.getOrDefault("contributeFamiliars", contributeFamiliars ? "1" : "0").equals("1");
+		setFamiliarsFromString(lastUsedMap.getOrDefault("familiars", getFamiliarsAsString()));
+		familiarScreenshot  = Integer.parseInt(lastUsedMap.getOrDefault("familiarScreenshot", ""+familiarScreenshot));
 		
-		collectBounties = map.getOrDefault("collectBounties", collectBounties ? "1" : "0").equals("1");
-		collectFishingBaits = map.getOrDefault("collectFishingBaits", collectFishingBaits ? "1" : "0").equals("1");
+		collectBounties = lastUsedMap.getOrDefault("collectBounties", collectBounties ? "1" : "0").equals("1");
+		collectFishingBaits = lastUsedMap.getOrDefault("collectFishingBaits", collectFishingBaits ? "1" : "0").equals("1");
 
-		openSkeleton = Integer.parseInt(map.getOrDefault("openSkeletonChest", ""+openSkeleton));	
+		openSkeleton = Integer.parseInt(lastUsedMap.getOrDefault("openSkeletonChest", ""+openSkeleton));
 
-		dungeonsRun = "dungeonsrun " + map.getOrDefault("dungeonsrun", dungeonsRun);
-		worldBossRun = "worldbossrun " + map.getOrDefault("worldbossrun", worldBossRun);
+		dungeonsRun = "dungeonsrun " + lastUsedMap.getOrDefault("dungeonsrun", dungeonsRun);
+		worldBossRun = "worldbossrun " + lastUsedMap.getOrDefault("worldbossrun", worldBossRun);
 		
-		autoShrine = map.getOrDefault("autoShrine", autoShrine ? "1" : "0").equals("1");
-		battleDelay = Integer.parseInt(map.getOrDefault("battleDelay", ""+battleDelay));
-		shrineDelay = Integer.parseInt(map.getOrDefault("shrineDelay", ""+shrineDelay));
+		autoShrine = lastUsedMap.getOrDefault("autoShrine", autoShrine ? "1" : "0").equals("1");
+		battleDelay = Integer.parseInt(lastUsedMap.getOrDefault("battleDelay", ""+battleDelay));
+		shrineDelay = Integer.parseInt(lastUsedMap.getOrDefault("shrineDelay", ""+shrineDelay));
 
-		persuasionLevel = Integer.parseInt(map.getOrDefault("persuasionLevel", ""+persuasionLevel));
-		bribeLevel = Integer.parseInt(map.getOrDefault("bribeLevel", ""+bribeLevel));
+		persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", ""+persuasionLevel));
+		bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", ""+bribeLevel));
 	}
 	
 	/** Loads settings from disk. */
 	public void load() {
 		load(DEFAULT_SETTINGS_FILE);
+		checkDeprecatedSettings();
+		sanitizeSetting();
 	}
 	
 	/** Loads settings from disk. */
@@ -611,38 +611,40 @@ public class Settings {
 		load(lines);
 	}
 
-	private void checkDeprecatedSettings(Map<String, String> map) {
-		if (map.getOrDefault("autoBribe", null) != null) {
-			BHBot.log("Deprecated setting detected: autoBribe. Ignoring it, use a combination of bribeLevel and familiars instead.");
+	void checkDeprecatedSettings() {
+		if (lastUsedMap.getOrDefault("autoBribe", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: autoBribe. Ignoring it, use a combination of bribeLevel and familiars instead.");
 		}
 
-		if (map.getOrDefault("pauseOnDisconnect", null) != null) {
-			BHBot.log("Deprecated setting detected: pauseOnDisconnect. Ignoring it, use reconnectTimer instead.");
+		if (lastUsedMap.getOrDefault("pauseOnDisconnect", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: pauseOnDisconnect. Ignoring it, use reconnectTimer instead.");
 		}
 
-		if (map.getOrDefault("expeditionDifficulty", null) != null) {
-			BHBot.log("Deprecated setting detected: expeditionDifficulty. Use the new expedition format instead.");
+		if (lastUsedMap.getOrDefault("expeditionDifficulty", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: expeditionDifficulty. Use the new expedition format instead.");
 		}
-		if (map.getOrDefault("experimentalAutoRevive", null) != null) {
-			BHBot.log("Deprecated setting detected: experimentalAutoRevive. Old revive system is no longer available.");
+		if (lastUsedMap.getOrDefault("experimentalAutoRevive", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: experimentalAutoRevive. Old revive system is no longer available.");
 		}
 	}
 
-	private void sanitizeSetting(Map<String, String> map) {
+	void sanitizeSetting() {
 		// we check and sanitize expeditions values
-		String expeditions = map.getOrDefault("expeditions", "");
+		String expeditions = lastUsedMap.getOrDefault("expeditions", "");
 		if (expeditions.contains("h") || expeditions.contains("i")) {
 			BHBot.log("WARNING: invalid format detected for expeditions settings '" + expeditions + "': " +
 					"a standard value of 'p1 100 100' will be used" );
-			map.put("expeditions", "p1 100 100");
+			lastUsedMap.put("expeditions", "p1 100 25;p2 100 25;p3 100 25;p4 100 25");
+			setExpeditionsFromString("p1 100 25;p2 100 25;p3 100 25;p4 100 25");
 		}
 
 		// sanitize autorevive settings
-		String autoRevive = map.getOrDefault("autoRevive", "");
+		String autoRevive = lastUsedMap.getOrDefault("autoRevive", "");
 		if (autoRevive.contains("1") || autoRevive.contains("2") || autoRevive.contains("3")) {
 			BHBot.log("WARNING: invalid format detected for autoRevive setting '" + autoRevive + "': " +
 					"this feature will be disabled" );
-			map.put("expeditions", "");
+			lastUsedMap.put("autoRevive", "");
+			setAutoReviveFromString("");
 		}
 
 	}

@@ -3,10 +3,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import net.pushover.client.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class BHBot {
@@ -31,43 +32,34 @@ public class BHBot {
 	private static String cuesPath = "./cues/";
 	static String screenshotPath = "./screenshots/";
 
+	/** log4j logger */
+	static Logger logger;
+
 	public static void main(String[] args) {
-		try {
-			log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
-		} catch (URISyntaxException e) {
-			log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started. Unknown build date.");
-		}
-
-		Properties gitPropertis = Misc.getGITInfo();
-
-		log("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time")) ;
-
-		MainThread.loadCues();
 		
 		// process launch arguments
-		boolean settingsProcessed = false;
+		String file = Settings.DEFAULT_SETTINGS_FILE;
+
 		for (int i = 0; i < args.length; i++) { //select settings file to load
 			switch (args[i]) {
 				case "settings":
-					processCommand("loadsettings " + args[i + 1]);
-					settingsProcessed = true;
+					file = args[i + 1];
 					i++;
 					break;
 				case "init":  //start bot in idle mode
 				case "idle":  //start bot in idle mode
-					BHBot.settings.setIdle();
-					settingsProcessed = true;
+					file = "LOAD_IDLE_SETTINGS";
 					i++;
 					break;
 				case "chromium":
 				case "chromiumpath":
 					chromiumExePath = args[i + 1];
-					BHBot.log("Changed Chromium path to: " + args[i + 1]);
+//					BHBot.log("Changed Chromium path to: " + args[i + 1]);
 					break;
 				case "chromedriver":
 				case "chromedriverpath":
 					chromeDriverExePath = args[i + 1];
-					BHBot.log("Changed chromedriver path to: " + args[i + 1]);
+//					BHBot.log("Changed chromedriver path to: " + args[i + 1]);
 					break;
 				case "chromedriveraddress":  //change chrome driver port
 					chromeDriverAddress = args[i + 1];
@@ -75,9 +67,34 @@ public class BHBot {
 					break;
 			}
 		}
-		if (!settingsProcessed)
-			processCommand("loadsettings");
-		
+
+		if ("LOAD_IDLE_SETTINGS".equals(file)){
+			BHBot.settings.setIdle();
+		} else {
+			settings.load(file);
+		}
+
+		logger = LogManager.getRootLogger();
+
+		try {
+			log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
+		} catch (URISyntaxException e) {
+			log(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started. Unknown build date.");
+		}
+
+		log("Settings loaded from file");
+
+		settings.checkDeprecatedSettings();
+		settings.sanitizeSetting();
+
+		log("Character: " + BHBot.settings.username);
+
+		Properties gitPropertis = Misc.getGITInfo();
+
+		log("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time")) ;
+
+		MainThread.loadCues();
+
 		if (!checkPaths()) return;
 
 		processCommand("start");
@@ -122,7 +139,8 @@ public class BHBot {
 	}
 	
 	public static void log(String s) {//prints with date and time in format
-		System.out.println(new SimpleDateFormat("<yyyy/MM/dd HH:mm:ss>").format(new Date()) + " " + s);
+		// System.out.println(new SimpleDateFormat("<yyyy/MM/dd HH:mm:ss>").format(new Date()) + " " + s);
+		logger.info(s);
 	}
 
 	private static void processCommand(String c) {
@@ -224,8 +242,8 @@ public class BHBot {
 				if (params.length > 1)
 					file = params[1];
 				settings.load(file);
-				log("Settings loaded from file");
-				log("Character: " + BHBot.settings.username);
+				settings.checkDeprecatedSettings();
+				settings.sanitizeSetting();
 				break;
 			case "pause":
 				if (params.length > 1) {
@@ -237,6 +255,8 @@ public class BHBot {
 				break;
 			case "plan":
 				settings.load("plans/" + params[1] + ".ini");
+				settings.checkDeprecatedSettings();
+				settings.sanitizeSetting();
 				log("Plan loaded from " + "<plans/" + params[1] + ".ini>.");
 				break;
 			case "pomessage":
