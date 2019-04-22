@@ -324,6 +324,7 @@ public class BHBot {
 				break;
 			case "reload":
 				settings.load();
+				logger = LogManager.getRootLogger();
 				logger.info("Settings reloaded from disk.");
 				break;
 			case "resume":
