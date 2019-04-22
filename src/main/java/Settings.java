@@ -1,3 +1,5 @@
+import org.apache.logging.log4j.Level;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -155,6 +157,14 @@ public class Settings {
 	int minSolo = 2;
 	String dungeonsRun = "dungeonsrun 0";
 	String worldBossRun = "worldbossrun 0";
+
+	/** log4j settings */
+	// Where do we save the logs?
+	String logBaseDir = "logs";
+	// What is the default level of the logs
+	Level logLevel = Level.INFO;
+	// How many days of logs do we store?
+	int logMaxDays = 30;
 
 	private Map<String, String> lastUsedMap = new HashMap<>();
 
@@ -419,6 +429,10 @@ public class Settings {
 			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
 		return result.toString();
 	}
+
+    private String  getLogLevelAsString() {
+        return logLevel.toString();
+    }
 	
 	/* Cleans up the data in the list again */
 
@@ -491,6 +505,23 @@ public class Settings {
 				familiars.remove(i);
 		}
 	}
+
+	private void setLogLevelFromString(String level) {
+	    switch (level.toUpperCase()) {
+            case "TRACE":
+            case "DEBUG":
+            case "INFO":
+            case "WARN":
+            case "ERROR":
+            case "FATAL":
+            case "OFF":
+            case "ALL":
+                logLevel = Level.toLevel(level);
+                break;
+            default:
+                logLevel = Level.toLevel("INFO");
+        }
+    }
 	
 	/**
 	 * Loads settings from list of string arguments (which are lines of the settings.ini file, for example)
@@ -563,37 +594,41 @@ public class Settings {
 		
 		difficulty = Integer.parseInt(lastUsedMap.getOrDefault("difficulty", ""+difficulty));
 		minSolo  = Integer.parseInt(lastUsedMap.getOrDefault("minSolo", ""+minSolo));
-		
-		setDungeonsFromString(lastUsedMap.getOrDefault("dungeons", getDungeonsAsString()));
-		setThursdayDungeonsFromString(lastUsedMap.getOrDefault("thursdayDungeons", getThursdayDungeonsAsString()));
-		setRaidsFromString(lastUsedMap.getOrDefault("raids", getRaidsAsString()));
-		setThursdayRaidsFromString(lastUsedMap.getOrDefault("thursdayRaids", getThursdayRaidsAsString()));
-		setExpeditionsFromString(lastUsedMap.getOrDefault("expeditions", getExpeditionsAsString()));
-		setStripsFromString(lastUsedMap.getOrDefault("pvpstrip", getStripsAsString()));
-		setGVGStripsFromString(lastUsedMap.getOrDefault("gvgstrip", getGVGStripsAsString()));
-		
-		autoConsume = lastUsedMap.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("1");
-		setConsumablesFromString(lastUsedMap.getOrDefault("consumables", getConsumablesAsString()));
 
-		contributeFamiliars = lastUsedMap.getOrDefault("contributeFamiliars", contributeFamiliars ? "1" : "0").equals("1");
-		setFamiliarsFromString(lastUsedMap.getOrDefault("familiars", getFamiliarsAsString()));
-		familiarScreenshot  = Integer.parseInt(lastUsedMap.getOrDefault("familiarScreenshot", ""+familiarScreenshot));
-		
-		collectBounties = lastUsedMap.getOrDefault("collectBounties", collectBounties ? "1" : "0").equals("1");
-		collectFishingBaits = lastUsedMap.getOrDefault("collectFishingBaits", collectFishingBaits ? "1" : "0").equals("1");
+        setDungeonsFromString(lastUsedMap.getOrDefault("dungeons", getDungeonsAsString()));
+        setThursdayDungeonsFromString(lastUsedMap.getOrDefault("thursdayDungeons", getThursdayDungeonsAsString()));
+        setRaidsFromString(lastUsedMap.getOrDefault("raids", getRaidsAsString()));
+        setThursdayRaidsFromString(lastUsedMap.getOrDefault("thursdayRaids", getThursdayRaidsAsString()));
+        setExpeditionsFromString(lastUsedMap.getOrDefault("expeditions", getExpeditionsAsString()));
+        setStripsFromString(lastUsedMap.getOrDefault("pvpstrip", getStripsAsString()));
+        setGVGStripsFromString(lastUsedMap.getOrDefault("gvgstrip", getGVGStripsAsString()));
 
-		openSkeleton = Integer.parseInt(lastUsedMap.getOrDefault("openSkeletonChest", ""+openSkeleton));
+        autoConsume = lastUsedMap.getOrDefault("autoconsume", autoConsume ? "1" : "0").equals("1");
+        setConsumablesFromString(lastUsedMap.getOrDefault("consumables", getConsumablesAsString()));
 
-		dungeonsRun = "dungeonsrun " + lastUsedMap.getOrDefault("dungeonsrun", dungeonsRun);
-		worldBossRun = "worldbossrun " + lastUsedMap.getOrDefault("worldbossrun", worldBossRun);
-		
-		autoShrine = lastUsedMap.getOrDefault("autoShrine", autoShrine ? "1" : "0").equals("1");
-		battleDelay = Integer.parseInt(lastUsedMap.getOrDefault("battleDelay", ""+battleDelay));
-		shrineDelay = Integer.parseInt(lastUsedMap.getOrDefault("shrineDelay", ""+shrineDelay));
+        contributeFamiliars = lastUsedMap.getOrDefault("contributeFamiliars", contributeFamiliars ? "1" : "0").equals("1");
+        setFamiliarsFromString(lastUsedMap.getOrDefault("familiars", getFamiliarsAsString()));
+        familiarScreenshot  = Integer.parseInt(lastUsedMap.getOrDefault("familiarScreenshot", ""+familiarScreenshot));
 
-		persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", ""+persuasionLevel));
-		bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", ""+bribeLevel));
-	}
+        collectBounties = lastUsedMap.getOrDefault("collectBounties", collectBounties ? "1" : "0").equals("1");
+        collectFishingBaits = lastUsedMap.getOrDefault("collectFishingBaits", collectFishingBaits ? "1" : "0").equals("1");
+
+        openSkeleton = Integer.parseInt(lastUsedMap.getOrDefault("openSkeletonChest", ""+openSkeleton));
+
+        dungeonsRun = "dungeonsrun " + lastUsedMap.getOrDefault("dungeonsrun", dungeonsRun);
+        worldBossRun = "worldbossrun " + lastUsedMap.getOrDefault("worldbossrun", worldBossRun);
+
+        autoShrine = lastUsedMap.getOrDefault("autoShrine", autoShrine ? "1" : "0").equals("1");
+        battleDelay = Integer.parseInt(lastUsedMap.getOrDefault("battleDelay", ""+battleDelay));
+        shrineDelay = Integer.parseInt(lastUsedMap.getOrDefault("shrineDelay", ""+shrineDelay));
+
+        persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", ""+persuasionLevel));
+        bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", ""+bribeLevel));
+
+        logMaxDays  = Integer.parseInt(lastUsedMap.getOrDefault("logMaxDays", ""+ logMaxDays));
+        logBaseDir = lastUsedMap.getOrDefault("logBaseDir", logBaseDir);
+        setLogLevelFromString(lastUsedMap.getOrDefault("logLevel", getLogLevelAsString()));
+    }
 	
 	/** Loads settings from disk. */
 	public void load() {

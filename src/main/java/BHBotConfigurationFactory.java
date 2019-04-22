@@ -48,11 +48,11 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
 
         // DefaultRolloverStrategy Component
         ComponentBuilder defaulRolloverStrategy = builder.newComponent("DefaultRolloverStrategy")
-                .addAttribute("max", 30)
+                .addAttribute("max", BHBot.settings.logMaxDays)
                 .addAttribute("compressionLevel", 9);
 
         // baseDir for logs
-        builder.addProperty("baseDir", "logs");
+        builder.addProperty("baseDir", BHBot.settings.logBaseDir);
 
         AppenderComponentBuilder rollingBuilder = builder.newAppender("Rolling", "RollingFile")
                 .addAttribute("filePattern", "${baseDir}/$${date:yyyy-MM}/BHBot-%d{yyyy-MM-dd}-%i.zip   ")
@@ -66,7 +66,7 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
 
 
         builder.add(
-                builder.newRootLogger(Level.DEBUG)
+                builder.newRootLogger(BHBot.settings.logLevel)
                         .add(builder.newAppenderRef("StdOut"))
                         .add(builder.newAppenderRef("StdErr"))
                         .add(builder.newAppenderRef("Rolling"))
