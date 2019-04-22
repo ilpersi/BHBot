@@ -359,7 +359,7 @@ public class MainThread implements Runnable {
 //				e.printStackTrace();
 //			}
 //		} else {
-//			BHBot.log("Error with resource: " + f);
+//			BHBot.logger.error("Error with resource: " + f);
 		try {
 			img = ImageIO.read(new File(f));
 		} catch (IOException e) {
@@ -642,8 +642,8 @@ public class MainThread implements Runnable {
 		int oldFamCnt = loadCueFolder("cues/familiars/old_format", "OLD", true, null);
 		int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
 
-		if (oldFamCnt > 0) BHBot.log("Found " + oldFamCnt + " familiar cue(s) with old format.");
-		if (newFamCnt > 0) BHBot.log("Found " + newFamCnt + " familiar cue(s) with new format.");
+		if (oldFamCnt > 0) BHBot.logger.info("Found " + oldFamCnt + " familiar cue(s) with old format.");
+		if (newFamCnt > 0) BHBot.logger.info("Found " + newFamCnt + " familiar cue(s) with new format.");
 
 	}
 
@@ -683,7 +683,7 @@ public class MainThread implements Runnable {
         if (BHBot.settings.autoStartChromeDriver) {
             System.setProperty("webdriver.chrome.driver", BHBot.chromeDriverExePath);
         } else {
-            BHBot.log("chromedriver auto start is off, make sure it is started before running BHBot");
+            BHBot.logger.info("chromedriver auto start is off, make sure it is started before running BHBot");
             if (System.getProperty("webdriver.chrome.driver", null) != null) {
                 System.clearProperty("webdriver.chrome.driver");
             }
@@ -790,7 +790,7 @@ public class MainThread implements Runnable {
 			ex.printStackTrace();
 		}
 
-		BHBot.log("Cookies saved to disk.");
+		BHBot.logger.info("Cookies saved to disk.");
 	}
 
 	static void loadCookies() {
@@ -828,24 +828,24 @@ public class MainThread implements Runnable {
 			ex.printStackTrace();
 		}
 
-		BHBot.log("Cookies loaded.");
+		BHBot.logger.info("Cookies loaded.");
 	}
 
 	void hideBrowser() {
 		driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
-		BHBot.log("Chrome window has been hidden.");
+		BHBot.logger.info("Chrome window has been hidden.");
 	}
 	
 	/*public void hideBrowserStartup() {
 		sleep(10000);
 		driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
-		BHBot.log("Chrome window has been hidden.");
+		BHBot.logger.info("Chrome window has been hidden.");
 	}*/
 	
 
 	void showBrowser() {
 		driver.manage().window().setPosition(new Point(0, 0));
-		BHBot.log("Chrome window has been restored.");
+		BHBot.logger.info("Chrome window has been restored.");
 	}
 
 	private void dumpCrashLog() {
@@ -855,7 +855,7 @@ public class MainThread implements Runnable {
 		// save stack trace:
 		boolean savedST = Misc.saveTextFile(file.substring(0, file.length() - 4) + ".txt", Misc.getStackTrace());
 		if (!savedST) {
-			BHBot.log("Impossible to save the stack trace in dumpCrashLog!");
+			BHBot.logger.info("Impossible to save the stack trace in dumpCrashLog!");
 		}
 
 		if (BHBot.settings.enablePushover && BHBot.settings.poNotifyCrash) {
@@ -876,7 +876,7 @@ public class MainThread implements Runnable {
 	void restart(boolean emergency) {
 		// take emergency screenshot (which will have the developer to debug the problem):
 		if (emergency) {
-			BHBot.log("Doing driver emergency restart...");
+			BHBot.logger.warn("Doing driver emergency restart...");
 			dumpCrashLog();
 		}
 
@@ -902,11 +902,11 @@ public class MainThread implements Runnable {
 		} catch (Exception e) {
 
 			if (e instanceof org.openqa.selenium.NoSuchElementException)
-				BHBot.log("Problem: web element with id 'game' not found!");
+				BHBot.logger.warn("Problem: web element with id 'game' not found!");
 			if (e instanceof MalformedURLException)
-				BHBot.log("Problem: malformed url detected!");
+				BHBot.logger.warn("Problem: malformed url detected!");
 			if (e instanceof org.openqa.selenium.remote.UnreachableBrowserException) {
-				BHBot.log("Impossible to connect to the browser. Make sure chromedirver is started. Will retry in a few minutes... (sleeping)");
+				BHBot.logger.error("Impossible to connect to the browser. Make sure chromedirver is started. Will retry in a few minutes... (sleeping)");
 				sleep(5*MINUTE);
 				restart();
 				return;
@@ -914,11 +914,11 @@ public class MainThread implements Runnable {
 
 			numFailedRestarts++;
 			if (QUIT_AFTER_MAX_FAILED_RESTARTS && numFailedRestarts > MAX_NUM_FAILED_RESTARTS) {
-				BHBot.log("Something went wrong with driver restart. Number of restarts exceeded " + MAX_NUM_FAILED_RESTARTS + ", this is why I'm aborting...");
+				BHBot.logger.fatal("Something went wrong with driver restart. Number of restarts exceeded " + MAX_NUM_FAILED_RESTARTS + ", this is why I'm aborting...");
 				finished = true;
 				return;
 			} else {
-				BHBot.log("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)");
+				BHBot.logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)");
 				e.printStackTrace();
 				sleep(5*MINUTE);
 				restart();
@@ -944,7 +944,7 @@ public class MainThread implements Runnable {
 				counter++;
 				if (counter > 20) {
 					e.printStackTrace();
-					BHBot.log("Error: <" + e.getMessage() + "> while trying to detect and handle login form. Restarting...");
+					BHBot.logger.error("Error: <" + e.getMessage() + "> while trying to detect and handle login form. Restarting...");
 					restart = true;
 					break;
 				}
@@ -959,27 +959,27 @@ public class MainThread implements Runnable {
 			return;
 		}
 
-//		BHBot.log("Window handle is: " + driver.getWindowHandle());
-		BHBot.log("Game element found. Starting to run bot..");
+//		BHBot.logger.info("Window handle is: " + driver.getWindowHandle());
+		BHBot.logger.info("Game element found. Starting to run bot..");
 
 		//Code under is all debugging
 
-//		BHBot.log("Current Raid tier unlocked set to R" + BHBot.settings.currentRaidTier + " in settings. Make sure this is correct!");
+//		BHBot.logger.info("Current Raid tier unlocked set to R" + BHBot.settings.currentRaidTier + " in settings. Make sure this is correct!");
 //		String invasionSetting = Boolean.toString(collectedFishingRewards);
-//		BHBot.log("doInvasions set to " + invasionSetting);
-//		BHBot.log("Session id is: " + driver.getSessionId());
+//		BHBot.logger.info("doInvasions set to " + invasionSetting);
+//		BHBot.logger.info("Session id is: " + driver.getSessionId());
 
 //		for (String e : BHBot.settings.expeditions) { //cycle through array
-//			BHBot.log(e);
+//			BHBot.logger.info(e);
 //		}
-//			BHBot.log(Integer.toString(checkFamiliarCounter(fUpper)));
+//			BHBot.logger.info(Integer.toString(checkFamiliarCounter(fUpper)));
 //			int testCount = checkFamiliarCounter(f);
 //			String fam = f.toUpperCase().split(" ")[0];
-//			BHBot.log(Integer.toString(checkFamiliarCounter(fam)));
-//			BHBot.log(f);
-//			BHBot.log(f.toUpperCase().split(" ")[0]);
+//			BHBot.logger.info(Integer.toString(checkFamiliarCounter(fam)));
+//			BHBot.logger.info(f);
+//			BHBot.logger.info(f.toUpperCase().split(" ")[0]);
 //			int catchCount = Integer.parseInt(f.split(" ")[1]);
-//			BHBot.log(Integer.toString(catchCount));
+//			BHBot.logger.info(Integer.toString(catchCount));
 //		}
 
 //		for (String f : BHBot.settings.familiars) { //cycle through array
@@ -988,30 +988,30 @@ public class MainThread implements Runnable {
 //			updateFamiliarCounter(fUpper, catchCount);
 //		}
 		
-//		BHBot.log(Integer.toString(BHBot.settings.minSolo));
+//		BHBot.logger.info(Integer.toString(BHBot.settings.minSolo));
 		
-//		BHBot.log("collectBounties = " + Boolean.toString(BHBot.settings.collectBounties));
+//		BHBot.logger.info("collectBounties = " + Boolean.toString(BHBot.settings.collectBounties));
 		
-//		BHBot.log("Dungeons run:");
-//		BHBot.log(BHBot.settings.dungeonsRun);
+//		BHBot.logger.info("Dungeons run:");
+//		BHBot.logger.info(BHBot.settings.dungeonsRun);
 		
 //		if (new SimpleDateFormat("EEE").format(new Date()).equals("Tue")) {
-//			BHBot.log("Tuesday");
-//		} else BHBot.log("Not Tuesday");
+//			BHBot.logger.info("Tuesday");
+//		} else BHBot.logger.info("Not Tuesday");
 		
-//		BHBot.log(Integer.toString(BHBot.settings.openSkeleton));
+//		BHBot.logger.info(Integer.toString(BHBot.settings.openSkeleton));
 		
-//		BHBot.log(Boolean.toString(BHBot.settings.worldBossSolo));
-//		BHBot.log(Integer.toString(BHBot.settings.battleDelay));
-//		BHBot.log(Integer.toString(BHBot.settings.shrineDelay));
+//		BHBot.logger.info(Boolean.toString(BHBot.settings.worldBossSolo));
+//		BHBot.logger.info(Integer.toString(BHBot.settings.battleDelay));
+//		BHBot.logger.info(Integer.toString(BHBot.settings.shrineDelay));
 		
 
 		
 		//End debugging section
 		
 		if ((BHBot.settings.doDungeons) && (BHBot.settings.doWorldBoss)) {
-			BHBot.log("Both Dungeons and World Boss selected, disabling World Boss.");
-			BHBot.log("To run a mixture of both use a low lobby timer and enable dungeonOnTimeout");
+			BHBot.logger.info("Both Dungeons and World Boss selected, disabling World Boss.");
+			BHBot.logger.info("To run a mixture of both use a low lobby timer and enable dungeonOnTimeout");
 			BHBot.settings.doWorldBoss = false;
 		}
 		state = State.Loading;
@@ -1045,7 +1045,7 @@ public class MainThread implements Runnable {
 
 	public void run() {
 
-		BHBot.log("Driver started succesfully");
+		BHBot.logger.info("Driver started succesfully");
 
 		restart(false);
 
@@ -1058,11 +1058,11 @@ public class MainThread implements Runnable {
 				if (BHBot.scheduler.isPaused()) continue;
 
 				if (Misc.getTime() - BHBot.scheduler.getIdleTime() > MAX_IDLE_TIME) {
-					BHBot.log("Idle time exceeded... perhaps caught in a loop? Restarting... (state=" + state + ")");
+					BHBot.logger.warn("Idle time exceeded... perhaps caught in a loop? Restarting... (state=" + state + ")");
 
 					// Safety measure to avoid being stuck forever in dungeons
 					if (state != State.Main && BHBot.settings.autoShrine) {
-						BHBot.log("Ensuring that autoShrine is disabled");
+						BHBot.logger.info("Ensuring that autoShrine is disabled");
 						checkShrineSettings("disable");
 						autoShrined = false;
 						shrinesChecked = false;
@@ -1079,7 +1079,7 @@ public class MainThread implements Runnable {
 
 				seg = detectCue(cues.get("UnableToConnect"));
 				if (seg != null) {
-					BHBot.log("'Unable to connect' dialog detected. Reconnecting...");
+					BHBot.logger.info("'Unable to connect' dialog detected. Reconnecting...");
 					seg = detectCue(cues.get("Reconnect"), 5*SECOND);
 					clickOnSeg(seg);
 					sleep(5*SECOND);
@@ -1093,7 +1093,7 @@ public class MainThread implements Runnable {
 				if (seg != null) {
 					seg = detectCue(cues.get("Reconnect"), 5*SECOND);
 					clickOnSeg(seg);
-					BHBot.log("Maintenance dialog dismissed.");
+					BHBot.logger.info("Maintenance dialog dismissed.");
 					sleep(5*SECOND);
 					state = State.Loading;
 					continue;
@@ -1107,14 +1107,14 @@ public class MainThread implements Runnable {
 						BHBot.scheduler.dismissReconnectOnNextIteration = false;
 						seg = detectCue(cues.get("Reconnect"), 5*SECOND);
 						clickOnSeg(seg);
-						BHBot.log("Disconnected dialog dismissed (reconnecting).");
+						BHBot.logger.info("Disconnected dialog dismissed (reconnecting).");
 						sleep(5*SECOND);
 						state = State.Loading;
 						continue;
 					} else {
 						BHBot.scheduler.isUserInteracting = true;
 						// probably user has logged in, that's why we got disconnected. Lets leave him alone for some time and then resume!
-						BHBot.log("Disconnect has been detected. Probably due to user interaction. Sleeping for " + Misc.millisToHumanForm(BHBot.settings.reconnectTimer * MINUTE) + "...");
+						BHBot.logger.info("Disconnect has been detected. Probably due to user interaction. Sleeping for " + Misc.millisToHumanForm(BHBot.settings.reconnectTimer * MINUTE) + "...");
 						BHBot.scheduler.pause(BHBot.settings.reconnectTimer * MINUTE);
 						state = State.Loading;
 						continue;
@@ -1127,7 +1127,7 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("Reload"));
 				if (seg != null) {
 					clickOnSeg(seg);
-					BHBot.log("Update dialog dismissed.");
+					BHBot.logger.info("Update dialog dismissed.");
 					sleep(5*SECOND);
 					state = State.Loading;
 					continue;
@@ -1144,7 +1144,7 @@ public class MainThread implements Runnable {
 					if (seg != null)
 						clickOnSeg(seg);
 					else {
-						BHBot.log("Problem: 'Are you still there?' popup detected, but 'Yes' button not detected. Ignoring...");
+						BHBot.logger.info("Problem: 'Are you still there?' popup detected, but 'Yes' button not detected. Ignoring...");
 						continue;
 					}
 					sleep(2*SECOND);
@@ -1156,7 +1156,7 @@ public class MainThread implements Runnable {
 				if (seg != null) {
 					seg = detectCue(cues.get("Close"), 2*SECOND);
 					clickOnSeg(seg);
-					BHBot.log("News popup dismissed.");
+					BHBot.logger.info("News popup dismissed.");
 					sleep(2*SECOND);
 
 					continue;
@@ -1169,7 +1169,7 @@ public class MainThread implements Runnable {
 					if (seg != null)
 						clickOnSeg(seg);
 					else {
-						BHBot.log("Problem: 'Daily reward' popup detected, however could not detect the 'claim' button. Restarting...");
+						BHBot.logger.error("Problem: 'Daily reward' popup detected, however could not detect the 'claim' button. Restarting...");
 						restart();
 						continue; // may happen every while, rarely though
 					}
@@ -1178,13 +1178,13 @@ public class MainThread implements Runnable {
 					seg = detectCue(cues.get("Items"), SECOND);
 					if (seg == null) {
 						// we must terminate this thread... something happened that should not (unexpected). We must restart the thread!
-						BHBot.log("Error: there is no 'Items' dialog open upon clicking on the 'Claim' button. Restarting...");
+						BHBot.logger.error("Error: there is no 'Items' dialog open upon clicking on the 'Claim' button. Restarting...");
 						restart();
 						continue;
 					}
 					seg = detectCue(cues.get("X"));
 					clickOnSeg(seg);
-					BHBot.log("Daily reward claimed successfully.");
+					BHBot.logger.info("Daily reward claimed successfully.");
 					sleep(2*SECOND);
 
 					continue;
@@ -1201,13 +1201,13 @@ public class MainThread implements Runnable {
 					if (seg != null)
 						clickOnSeg(seg);
 					else if (state == State.Loading || state == State.Main) {
-						BHBot.log("Problem: 'Weekly reward' popup detected, however could not detect the close ('X') button. Restarting...");
+						BHBot.logger.error("Problem: 'Weekly reward' popup detected, however could not detect the close ('X') button. Restarting...");
 						restart();
 						continue;
 					}
 
 					if (state == State.Loading || state == State.Main) { // inform about weekly reward only if we're not in a dungeon (in a dungeon it will close the normal reward popup)
-						BHBot.log("Weekly reward claimed successfully.");
+						BHBot.logger.info("Weekly reward claimed successfully.");
 						saveGameScreen("weekly_reward", weeklyImg);
 					}
 					readScreen(2*SECOND);
@@ -1220,14 +1220,14 @@ public class MainThread implements Runnable {
 				if (seg != null) {
 					seg = detectCue(cues.get("YesGreen"), 2*SECOND);
 					if (seg == null) {
-						BHBot.log("Error: detected 'recently disconnected' popup but could not find 'Yes' button. Restarting...");
+						BHBot.logger.error("Error: detected 'recently disconnected' popup but could not find 'Yes' button. Restarting...");
 						restart();
 						continue;
 					}
 
 					clickOnSeg(seg);
 					state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
-					BHBot.log("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
+					BHBot.logger.info("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
 					sleep(10*SECOND);
 					continue;
 				}
@@ -1256,7 +1256,7 @@ public class MainThread implements Runnable {
 							seg = detectCue(cues.get("AdPopup"), 5*SECOND);
 							if (seg == null) {
 								// we must terminate this thread... something happened that should not (unexpected). We must restart the thread!
-								BHBot.log("Error: there is no 'Ad popup' dialog open upon clicking on the 'Ad' button. Restarting...");
+								BHBot.logger.error("Error: there is no 'Ad popup' dialog open upon clicking on the 'Ad' button. Restarting...");
 								restart();
 								continue;
 							}
@@ -1264,7 +1264,7 @@ public class MainThread implements Runnable {
 							seg = detectCue(cues.get("Watch"), 2*SECOND);
 							if (seg == null) {
 								// we must terminate this thread... something happened that should not (unexpected). We must restart the thread!
-								BHBot.log("Error: there is no 'Watch' button in the watch ad dialog. Restarting...");
+								BHBot.logger.error("Error: there is no 'Watch' button in the watch ad dialog. Restarting...");
 								restart();
 								continue;
 							}
@@ -1285,7 +1285,7 @@ public class MainThread implements Runnable {
 							continue;
 						} else { // no ad offer detected
 							if (BHBot.settings.restartAfterAdOfferTimeout && Misc.getTime() - timeLastAdOffer > MAX_LAST_AD_OFFER_TIME) {
-								BHBot.log("Problem detected: Last ad has been offered longer ago than expected. Restarting...");
+								BHBot.logger.error("Problem detected: Last ad has been offered longer ago than expected. Restarting...");
 								timeLastAdOffer = Misc.getTime(); // reset it
 								restart(false);
 								continue;
@@ -1298,7 +1298,7 @@ public class MainThread implements Runnable {
 						seg = detectCue(cues.get("AutoOn")); //if we're in Main state, with auto button visible, then we need to change state
 							if (seg != null) {
 							state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
-						    BHBot.log("Possible dungeon crash, activating failsafe");
+						    BHBot.logger.warn("Possible dungeon crash, activating failsafe");
 						    continue;
 							}
 					}
@@ -1310,7 +1310,7 @@ public class MainThread implements Runnable {
 						String aliveScreenName = saveGameScreen("alive-screen");
 						File aliveScreenFile = new File(aliveScreenName);
 						sendPushOverMessage("Alive notification", "I am alive and doing fine!", MessagePriority.QUIET, aliveScreenFile);
-						if (!aliveScreenFile.delete()) BHBot.log("Impossible to delete tmp img for alive notification.");
+						if (!aliveScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
 					}
 
 					// check for bonuses:
@@ -1328,7 +1328,7 @@ public class MainThread implements Runnable {
                     // One time check for Autoshrine
                     if (!oneTimeshrineCheck) {
 
-                    	BHBot.log("Startup check to make sure authoshrines is initially disabled");
+                    	BHBot.logger.info("Startup check to make sure authoshrines is initially disabled");
                     	checkShrineSettings("disable");
                         oneTimeshrineCheck = true;
                         shrinesChecked = false;
@@ -1351,14 +1351,14 @@ public class MainThread implements Runnable {
 
 						seg = detectCue(cues.get("RaidPopup"), 10*SECOND); // wait until the raid window opens
 						if (seg == null) {
-							BHBot.log("Error: attempt at opening raid window failed. No window cue detected. Ignoring...");
+							BHBot.logger.warn("Error: attempt at opening raid window failed. No window cue detected. Ignoring...");
 							BHBot.scheduler.restoreIdleTime();
 							continue;
 						}
 
 						int shards = getShards();
 						globalShards = shards;
-						BHBot.log("Shards: " + shards + ", required: >" + BHBot.settings.minShards);
+						BHBot.logger.info("Shards: " + shards + ", required: >" + BHBot.settings.minShards);
 
 						if (shards == -1) { // error
 							BHBot.scheduler.restoreIdleTime();
@@ -1394,7 +1394,7 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 								readScreen(SECOND);
 
-								BHBot.log("Enabling Auto Shrine for Raid");
+								BHBot.logger.info("Enabling Auto Shrine for Raid");
 								checkShrineSettings("enable");
 
 								readScreen(SECOND);
@@ -1404,7 +1404,7 @@ public class MainThread implements Runnable {
 							String raid = decideRaidRandomly();
 							if (raid == null) {
 								BHBot.settings.doRaids = false;
-								BHBot.log("It was impossible to choose a raid randomly, raids are disabled!");
+								BHBot.logger.error("It was impossible to choose a raid randomly, raids are disabled!");
 								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 									sendPushOverMessage("Raid Error", "It was impossible to choose a raid randomly, raids are disabled!", "siren");
 								continue;
@@ -1413,34 +1413,34 @@ public class MainThread implements Runnable {
 							int difficulty = Integer.parseInt(raid.split(" ")[1]);
 							int raidType = Integer.parseInt(raid.split(" ")[0]);
 							int raidUnlocked = readUnlockedRaidTier();
-//							BHBot.log("Detected: R" + Integer.toString(raidUnlocked) + " unlocked");
+//							BHBot.logger.info("Detected: R" + Integer.toString(raidUnlocked) + " unlocked");
 //							int raidUnlocked = BHBot.settings.currentRaidTier;
-							BHBot.log("Attempting R" + raidType + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
+							BHBot.logger.info("Attempting R" + raidType + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
 							
 							readScreen(SECOND);
 
 							int currentType = readSelectedRaidTier();
 							String currentRaid = Integer.toString(currentType);
-//							BHBot.log("Raid selected is R" + currentRaid);
+//							BHBot.logger.info("Raid selected is R" + currentRaid);
 
 							if (currentType == 0) { // an error!
-								BHBot.log("Error: detected selected raid is 0, which is an error. Restarting...");
+								BHBot.logger.error("Error: detected selected raid is 0, which is an error. Restarting...");
 //								restart();
 								continue;
 							}
 
 							if (currentType != raidType) {
 								if 	(raidUnlocked < raidType) {
-									BHBot.log("Raid selected in settings (R" + raidType + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
-									BHBot.log("If this is incorrect update your current unlocked tier in settings!");
+									BHBot.logger.warn("Raid selected in settings (R" + raidType + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
+									BHBot.logger.info("If this is incorrect update your current unlocked tier in settings!");
 									if (!setRaidType(raidType, raidUnlocked)){
-										BHBot.log("Impossible to set the raid type!");
+										BHBot.logger.error("Impossible to set the raid type!");
 										continue;
 									}
 									readScreen(2*SECOND);
 								} else {
 								// we need to change the raid type!
-								BHBot.log("Changing from R" + currentRaid + " to R" + raidType);
+								BHBot.logger.info("Changing from R" + currentRaid + " to R" + raidType);
 								setRaidType(raidType, currentType);
 								readScreen(2*SECOND);
 								}
@@ -1464,12 +1464,12 @@ public class MainThread implements Runnable {
 
 							handleTeamMalformedWarning();
 							if (handleTeamMalformedWarning()) {
-								BHBot.log("Team incomplete, doing emergency restart..");
+								BHBot.logger.error("Team incomplete, doing emergency restart..");
 								restart();
 								continue;
 							} else {
 								state = State.Raid;
-								BHBot.log("Raid initiated!");
+								BHBot.logger.info("Raid initiated!");
 								autoShrined = false;
 							}
 						}
@@ -1491,7 +1491,7 @@ public class MainThread implements Runnable {
 							seg = detectCue(cues.get("Gauntlet2"));
 						}
 						if (seg == null) {// trials/gauntlet button not visible (perhaps it is disabled?)
-							BHBot.log("Gauntlet/Trials button not found");
+							BHBot.logger.warn("Gauntlet/Trials button not found");
 							BHBot.scheduler.restoreIdleTime();
 							continue;
 						}
@@ -1506,7 +1506,7 @@ public class MainThread implements Runnable {
 						readScreen();
 						int tokens = getTokens();
 						globalTokens = tokens;
-						BHBot.log("Tokens: " + tokens + ", required: >" + BHBot.settings.minTokens + ", " +
+						BHBot.logger.info("Tokens: " + tokens + ", required: >" + BHBot.settings.minTokens + ", " +
 								(trials ? "Trials" : "Gauntlet") + " cost: " + (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet));
 
 						if (tokens == -1) { // error
@@ -1536,24 +1536,24 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 								readScreen(SECOND);
 
-								BHBot.log("Enabling Auto Shrine for Trial");
+								BHBot.logger.info("Enabling Auto Shrine for Trial");
 								checkShrineSettings("enable");
 
 								readScreen(SECOND);
 								clickOnSeg(trialBTNSeg);
 							}
 
-							BHBot.log("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + BHBot.settings.difficulty + "...");
+							BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + BHBot.settings.difficulty + "...");
 
 							// select difficulty if needed:
 							int difficulty = detectDifficulty();
 							if (difficulty == 0) { // error!
-								BHBot.log("Due to an error#1 in difficulty detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
+								BHBot.logger.error("Due to an error#1 in difficulty detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
 								closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"));
 								continue;
 							}
 							if (difficulty != BHBot.settings.difficulty) {
-								BHBot.log("Current " + (trials ? "trials" : "gauntlet") + " difficulty level is " + difficulty + ", goal level is " + BHBot.settings.difficulty + ". Changing it...");
+								BHBot.logger.info("Current " + (trials ? "trials" : "gauntlet") + " difficulty level is " + difficulty + ", goal level is " + BHBot.settings.difficulty + ". Changing it...");
 								boolean result = selectDifficulty(difficulty, BHBot.settings.difficulty);
 								if (!result) { // error!
 									// see if drop down menu is still open and close it:
@@ -1561,7 +1561,7 @@ public class MainThread implements Runnable {
 									tryClosingWindow(cues.get("DifficultyDropDown"));
 									readScreen(5*SECOND);
 									tryClosingWindow(cues.get("TrialsOrGauntletWindow"));
-									BHBot.log("Due to an error#2 in difficulty selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
+									BHBot.logger.error("Due to an error#2 in difficulty selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
 									continue;
 								}
 							}
@@ -1570,12 +1570,12 @@ public class MainThread implements Runnable {
 							readScreen(2*SECOND); // wait for the popup to stabilize a bit
 							int cost = detectCost();
 							if (cost == 0) { // error!
-								BHBot.log("Due to an error#1 in cost detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
+								BHBot.logger.error("Due to an error#1 in cost detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
 								closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"));
 								continue;
 							}
 							if (cost != (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet)) {
-								BHBot.log("Current " + (trials ? "trials" : "gauntlet") + " cost is " + cost + ", goal cost is " + (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet) + ". Changing it...");
+								BHBot.logger.info("Current " + (trials ? "trials" : "gauntlet") + " cost is " + cost + ", goal cost is " + (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet) + ". Changing it...");
 								boolean result = selectCost(cost, (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet));
 								if (!result) { // error!
 									// see if drop down menu is still open and close it:
@@ -1583,14 +1583,14 @@ public class MainThread implements Runnable {
 									tryClosingWindow(cues.get("CostDropDown"));
 									readScreen(5*SECOND);
 									tryClosingWindow(cues.get("TrialsOrGauntletWindow"));
-									BHBot.log("Due to an error#2 in cost selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
+									BHBot.logger.error("Due to an error#2 in cost selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
 									continue;
 								}
 							}
 
 							seg = detectCue(cues.get("Play"), 2*SECOND);
 							if (seg == null) {
-								BHBot.log("Error: Play button not found while trying to do " + (trials ? "trials" : "gauntlet") + ". Ignoring...");
+								BHBot.logger.error("Error: Play button not found while trying to do " + (trials ? "trials" : "gauntlet") + ". Ignoring...");
 								continue;
 							}
 							clickOnSeg(seg);
@@ -1605,12 +1605,12 @@ public class MainThread implements Runnable {
 							
 							handleTeamMalformedWarning();
 							if (handleTeamMalformedWarning()) {
-								BHBot.log("Team incomplete, doing emergency restart..");
+								BHBot.logger.error("Team incomplete, doing emergency restart..");
 								restart();
 								continue;
 							} else {
 								state = trials ? State.Trials : State.Gauntlet;
-								BHBot.log((trials ? "Trials" : "Gauntlet") + " initiated!");
+								BHBot.logger.info((trials ? "Trials" : "Gauntlet") + " initiated!");
 								autoShrined = false;
 							}
 						}
@@ -1625,7 +1625,7 @@ public class MainThread implements Runnable {
 						
 						int energy = getEnergy();
 						globalEnergy = energy;
-						BHBot.log("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
+						BHBot.logger.info("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
 
 						if (energy == -1) { // error
 							BHBot.scheduler.restoreIdleTime();
@@ -1660,7 +1660,7 @@ public class MainThread implements Runnable {
 							String dungeon = decideDungeonRandomly();
 							if (dungeon == null) {
 								BHBot.settings.doDungeons = false;
-								BHBot.log("It was impossible to choose a dungeon randomly, dungeons are disabled!");
+								BHBot.logger.error("It was impossible to choose a dungeon randomly, dungeons are disabled!");
 								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 									sendPushOverMessage("Dungeon error", "It was impossible to choose a dungeon randomly, dungeons are disabled!", "siren");
 								continue;
@@ -1672,18 +1672,18 @@ public class MainThread implements Runnable {
 							dungeon = dungeon.split(" ")[0].toLowerCase(); //in case the settings file is input in upper case
 							int goalZone = Integer.parseInt(""+dungeon.charAt(1));
 
-							BHBot.log("Attempting " + difficultyName + " " + dungeon);
+							BHBot.logger.info("Attempting " + difficultyName + " " + dungeon);
 
 							int currentZone = readCurrentZone();
 							int vec = goalZone - currentZone; // movement vector
-//							BHBot.log("Current zone: " + Integer.toString(currentZone) + " Target Zone: " + Integer.toString(goalZone));
+//							BHBot.logger.info("Current zone: " + Integer.toString(currentZone) + " Target Zone: " + Integer.toString(goalZone));
 							while (vec != 0) { // move to the correct zone
 								if (vec > 0) {
 									// note that moving to the right will fail in case player has not unlocked the zone yet!
 									readScreen(SECOND); // wait for screen to stabilise
 									seg = detectCue(cues.get("RightArrow"));
 									if (seg == null) {
-										BHBot.log("Right button not found, zone unlocked?");
+										BHBot.logger.error("Right button not found, zone unlocked?");
 										break; // happens for example when player hasn't unlock the zone yet
 									}
 									//coords are used as moving multiple screens would crash the bot when using the arrow cues
@@ -1703,7 +1703,7 @@ public class MainThread implements Runnable {
 							Point p = getDungeonIconPos(dungeon);
 							if (p == null) {
 								BHBot.settings.doDungeons = false;
-								BHBot.log("It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!");
+								BHBot.logger.error("It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!");
 								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 									sendPushOverMessage("Dungeon error", "It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!", "siren");
 								continue;
@@ -1726,7 +1726,7 @@ public class MainThread implements Runnable {
 							/* Solo-for-bounty code */
 							int soloThreshold = Character.getNumericValue(dungeon.charAt(1)); //convert the zone char to int so we can compare
 							if (soloThreshold <= BHBot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
-								BHBot.log("Zone less than dungeon solo threshold, attempting solo");
+								BHBot.logger.info("Zone less than dungeon solo threshold, attempting solo");
 								readScreen(SECOND);
 								seg = detectCue(cues.get("Clear"), SECOND * 2);
 								clickOnSeg(seg);
@@ -1744,7 +1744,7 @@ public class MainThread implements Runnable {
 								}
 
 								state = State.Dungeon;
-								BHBot.log("Dungeon <" + dungeon + "> initiated solo!");
+								BHBot.logger.info("Dungeon <" + dungeon + "> initiated solo!");
 								autoShrined = false;
 								continue;
 								
@@ -1760,12 +1760,12 @@ public class MainThread implements Runnable {
 							}
 
 							if (handleTeamMalformedWarning()) {
-								BHBot.log("Team malformed");
+								BHBot.logger.error("Team malformed");
 								restart();
 								continue;
 							} else {
 								state = State.Dungeon;
-								BHBot.log("Dungeon <" + dungeon + "> initiated!");
+								BHBot.logger.info("Dungeon <" + dungeon + "> initiated!");
 								autoShrined = false;
 							}
 						}
@@ -1780,7 +1780,7 @@ public class MainThread implements Runnable {
 
 						int tickets = getTickets();
 						globalTickets = tickets;
-						BHBot.log("Tickets: " + tickets  + ", required: >" + BHBot.settings.minTickets + ", PVP cost: " + BHBot.settings.costPVP);
+						BHBot.logger.info("Tickets: " + tickets  + ", required: >" + BHBot.settings.minTickets + ", PVP cost: " + BHBot.settings.costPVP);
 
 						if (tickets == -1) { // error
 							BHBot.scheduler.restoreIdleTime();
@@ -1796,12 +1796,12 @@ public class MainThread implements Runnable {
 							if (BHBot.scheduler.doPVPImmediately)
 								BHBot.scheduler.doPVPImmediately = false; // reset it
 
-							BHBot.log("Attempting PVP...");
+							BHBot.logger.info("Attempting PVP...");
 							stripDown(BHBot.settings.pvpstrip);
 
 							seg = detectCue(cues.get("PVP"));
 							if (seg == null) {
-								BHBot.log("PVP button not found. Skipping PVP...");
+								BHBot.logger.warn("PVP button not found. Skipping PVP...");
 								dressUp(BHBot.settings.pvpstrip);
 								continue; // should not happen though
 							}
@@ -1811,13 +1811,13 @@ public class MainThread implements Runnable {
 							readScreen(2*SECOND); // wait for the popup to stabilize a bit
 							int cost = detectCost();
 							if (cost == 0) { // error!
-								BHBot.log("Due to an error#1 in cost detection, PVP will be skipped.");
+								BHBot.logger.error("Due to an error#1 in cost detection, PVP will be skipped.");
 								closePopupSecurely(cues.get("PVPWindow"), cues.get("X"));
 								dressUp(BHBot.settings.pvpstrip);
 								continue;
 							}
 							if (cost != BHBot.settings.costPVP) {
-								BHBot.log("Current PVP cost is " + cost + ", goal cost is " + BHBot.settings.costPVP + ". Changing it...");
+								BHBot.logger.info("Current PVP cost is " + cost + ", goal cost is " + BHBot.settings.costPVP + ". Changing it...");
 								boolean result = selectCost(cost, BHBot.settings.costPVP);
 								if (!result) { // error!
 									// see if drop down menu is still open and close it:
@@ -1827,7 +1827,7 @@ public class MainThread implements Runnable {
 									seg = detectCue(cues.get("PVPWindow"), 15*SECOND);
 									if (seg != null)
 										closePopupSecurely(cues.get("PVPWindow"), cues.get("X"));
-									BHBot.log("Due to an error#2 in cost selection, PVP will be skipped.");
+									BHBot.logger.error("Due to an error#2 in cost selection, PVP will be skipped.");
 									dressUp(BHBot.settings.pvpstrip);
 									continue;
 								}
@@ -1850,12 +1850,12 @@ public class MainThread implements Runnable {
 							
 							handleTeamMalformedWarning();
 							if (handleTeamMalformedWarning()) {
-								BHBot.log("Team malformed");
+								BHBot.logger.error("Team malformed");
 								restart();
 								continue;
 							} else {
 								state = State.PVP;
-								BHBot.log("PVP initiated!");
+								BHBot.logger.info("PVP initiated!");
 							}
 						}
 						continue;
@@ -1887,7 +1887,7 @@ public class MainThread implements Runnable {
 
 						if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion/Expedition event?)
 							BHBot.scheduler.restoreIdleTime();
-							BHBot.log("No badge event found, skipping");
+							BHBot.logger.warn("No badge event found, skipping");
 							continue;
 						}
 
@@ -1899,7 +1899,7 @@ public class MainThread implements Runnable {
 						readScreen();
 						int badges = getBadges();
 						globalBadges = badges;
-						BHBot.log("Badges: " + badges + ", required: >" + BHBot.settings.minBadges + ", " + badgeEvent.toString() +  " cost: " +
+						BHBot.logger.info("Badges: " + badges + ", required: >" + BHBot.settings.minBadges + ", " + badgeEvent.toString() +  " cost: " +
 								(badgeEvent == BadgeEvent.GVG ? BHBot.settings.costGVG : badgeEvent == BadgeEvent.Invasion ? BHBot.settings.costInvasion : BHBot.settings.costExpedition));
 
 						if (badges == -1) { // error
@@ -1921,7 +1921,7 @@ public class MainThread implements Runnable {
 								if (BHBot.scheduler.doGVGImmediately)
 									BHBot.scheduler.doGVGImmediately = false; // reset it
 
-								BHBot.log("Attempting GVG...");
+								BHBot.logger.info("Attempting GVG...");
 
 								if (BHBot.settings.gvgstrip.size() > 0){
 									// If we need to strip down for GVG, we need to close the GVG gump and open it again
@@ -1937,12 +1937,12 @@ public class MainThread implements Runnable {
 								readScreen(2*SECOND); // wait for the popup to stabilize a bit
 								int cost = detectCost();
 								if (cost == 0) { // error!
-									BHBot.log("Due to an error#1 in cost detection, GVG will be skipped.");
+									BHBot.logger.error("Due to an error#1 in cost detection, GVG will be skipped.");
 									closePopupSecurely(cues.get("GVGWindow"), cues.get("X"));
 									continue;
 								}
 								if (cost != BHBot.settings.costGVG) {
-									BHBot.log("Current GVG cost is " + cost + ", goal cost is " + BHBot.settings.costGVG + ". Changing it...");
+									BHBot.logger.info("Current GVG cost is " + cost + ", goal cost is " + BHBot.settings.costGVG + ". Changing it...");
 									boolean result = selectCost(cost, BHBot.settings.costGVG);
 									if (!result) { // error!
 										// see if drop down menu is still open and close it:
@@ -1952,7 +1952,7 @@ public class MainThread implements Runnable {
 										seg = detectCue(cues.get("GVGWindow"), 15*SECOND);
 										if (seg != null)
 											closePopupSecurely(cues.get("GVGWindow"), cues.get("X"));
-										BHBot.log("Due to an error#2 in cost selection, GVG will be skipped.");
+										BHBot.logger.error("Due to an error#2 in cost selection, GVG will be skipped.");
 										dressUp(BHBot.settings.gvgstrip);
 										continue;
 									}
@@ -1967,7 +1967,7 @@ public class MainThread implements Runnable {
 								readScreen(2*SECOND);
 								seg = detectCue(cues.get("GVGWarning"), 3*SECOND);
 								if (seg != null) {
-									BHBot.log("Initial GvG run warning found, closing");
+									BHBot.logger.info("Initial GvG run warning found, closing");
 									sleep(SECOND); //wait to stabilise just in case
 									seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 									clickOnSeg(seg);
@@ -1983,12 +1983,12 @@ public class MainThread implements Runnable {
 
 								handleTeamMalformedWarning();
 								if (handleTeamMalformedWarning()) {
-									BHBot.log("Team malformed");
+									BHBot.logger.error("Team malformed");
 									restart();
 									continue;
 								} else {
 									state = State.GVG;
-									BHBot.log("GVG initiated!");
+									BHBot.logger.info("GVG initiated!");
 								}
 							}
 							continue;
@@ -2008,18 +2008,18 @@ public class MainThread implements Runnable {
 								if (BHBot.scheduler.doInvasionImmediately)
 									BHBot.scheduler.doInvasionImmediately = false; // reset it
 
-								BHBot.log("Attempting invasion...");
+								BHBot.logger.info("Attempting invasion...");
 
 								// select cost if needed:
 								readScreen(2*SECOND); // wait for the popup to stabilize a bit
 								int cost = detectCost();
 								if (cost == 0) { // error!
-									BHBot.log("Due to an error#1 in cost detection, invasion will be skipped.");
+									BHBot.logger.error("Due to an error#1 in cost detection, invasion will be skipped.");
 									closePopupSecurely(cues.get("InvasionWindow"), cues.get("X"));
 									continue;
 								}
 								if (cost != BHBot.settings.costInvasion) {
-									BHBot.log("Current invasion cost is " + cost + ", goal cost is " + BHBot.settings.costInvasion + ". Changing it...");
+									BHBot.logger.info("Current invasion cost is " + cost + ", goal cost is " + BHBot.settings.costInvasion + ". Changing it...");
 									boolean result = selectCost(cost, BHBot.settings.costInvasion);
 									if (!result) { // error!
 										// see if drop down menu is still open and close it:
@@ -2029,7 +2029,7 @@ public class MainThread implements Runnable {
 										seg = detectCue(cues.get("InvasionWindow"), 15*SECOND);
 										if (seg != null)
 											closePopupSecurely(cues.get("InvasionWindow"), cues.get("X"));
-										BHBot.log("Due to an error#2 in cost selection, invasion will be skipped.");
+										BHBot.logger.error("Due to an error#2 in cost selection, invasion will be skipped.");
 										continue;
 									}
 								}
@@ -2044,12 +2044,12 @@ public class MainThread implements Runnable {
 
 								handleTeamMalformedWarning();
 								if (handleTeamMalformedWarning()) {
-									BHBot.log("Team malformed");
+									BHBot.logger.error("Team malformed");
 									restart();
 									continue;
 								} else {
 									state = State.Invasion;
-									BHBot.log("Invasion initiated!");
+									BHBot.logger.info("Invasion initiated!");
 									autoShrined = false;
 								}
 							}
@@ -2077,7 +2077,7 @@ public class MainThread implements Runnable {
 									clickOnSeg(seg);
 									readScreen(2 * SECOND);
 
-									BHBot.log("Enabling Auto Shrine for Expedition");
+									BHBot.logger.info("Enabling Auto Shrine for Expedition");
 									checkShrineSettings("enable");
 
 									readScreen(SECOND);
@@ -2085,18 +2085,18 @@ public class MainThread implements Runnable {
 									readScreen(SECOND * 2);
 								}
 
-								BHBot.log("Attempting expedition...");
+								BHBot.logger.info("Attempting expedition...");
 
 								readScreen(SECOND * 2);
 								int cost = detectCost();
 								if (cost == 0) { // error!
-									BHBot.log("Due to an error#1 in cost detection, Expedition cost will be skipped.");
+									BHBot.logger.error("Due to an error#1 in cost detection, Expedition cost will be skipped.");
 									closePopupSecurely(cues.get("ExpeditionWindow"), cues.get("X"));
 									continue;
 								}
 
 								if (cost > badges) {
-									BHBot.log("Current cost " + cost + " is bigger that available badges " + badges + ". Expedition will be skipped.");
+									BHBot.logger.info("Current cost " + cost + " is bigger that available badges " + badges + ". Expedition will be skipped.");
 									seg = detectCue(cues.get("X"));
 									clickOnSeg(seg);
 									sleep(2*SECOND);
@@ -2104,7 +2104,7 @@ public class MainThread implements Runnable {
 								}
 
 								if (cost != BHBot.settings.costExpedition) {
-									BHBot.log("Current Expedition cost is " + cost + ", goal cost is " + BHBot.settings.costExpedition + ". Changing it...");
+									BHBot.logger.info("Current Expedition cost is " + cost + ", goal cost is " + BHBot.settings.costExpedition + ". Changing it...");
 									boolean result = selectCost(cost, BHBot.settings.costExpedition);
 									if (!result) { // error!
 										// see if drop down menu is still open and close it:
@@ -2114,7 +2114,7 @@ public class MainThread implements Runnable {
 										seg = detectCue(cues.get("X"));
 										clickOnSeg(seg);
 										sleep(2*SECOND);
-										BHBot.log("Due to an error in cost selection, Expedition will be skipped.");
+										BHBot.logger.error("Due to an error in cost selection, Expedition will be skipped.");
 										continue;
 									}
 									readScreen(SECOND * 2);
@@ -2128,7 +2128,7 @@ public class MainThread implements Runnable {
 								String randomExpedition = BHBot.settings.expeditions.next();
 								if (randomExpedition == null) {
 									BHBot.settings.doExpedition = false;
-									BHBot.log("It was impossible to randomly choose an expedtion. Expedtions are disabled.");
+									BHBot.logger.error("It was impossible to randomly choose an expedtion. Expedtions are disabled.");
 									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 										sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedtion. Expedtions are disabled.", "siren");
 									continue;
@@ -2149,7 +2149,7 @@ public class MainThread implements Runnable {
 									currentExpedition = 3;
 								} else {
 									BHBot.settings.doExpedition = false;
-									BHBot.log("It was impossible to get the current expedition type!");
+									BHBot.logger.error("It was impossible to get the current expedition type!");
 									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 										sendPushOverMessage("Expedition error", "It was impossible to get the current expedition type. Expedtions are now disabled!", "siren");
 
@@ -2161,13 +2161,13 @@ public class MainThread implements Runnable {
 								}
 
 								String expedName = getExpeditionName(currentExpedition, targetPortal);
-								BHBot.log("Attempting " + expedName + " Portal at difficulty " + targetDifficulty);
+								BHBot.logger.info("Attempting " + expedName + " Portal at difficulty " + targetDifficulty);
 
 								// click on the chosen portal:
 								Point p = getExpeditionIconPos(currentExpedition, targetPortal);
 								if (p == null) {
 									BHBot.settings.doExpedition = false;
-									BHBot.log("It was impossible to get portal position for " + expedName + ". Expedtions are now disabled!");
+									BHBot.logger.error("It was impossible to get portal position for " + expedName + ". Expedtions are now disabled!");
 									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 										sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + expedName + ". Expedtions are now disabled!", "siren");
 
@@ -2183,7 +2183,7 @@ public class MainThread implements Runnable {
 								// select difficulty if needed:
 								int difficulty = detectDifficultyExpedition();
 								if (difficulty == 0) { // error!
-									BHBot.log("Due to an error in difficulty detection, Expedition will be skipped.");
+									BHBot.logger.warn("Due to an error in difficulty detection, Expedition will be skipped.");
 									seg = detectCue(cues.get("X"));
 									while (seg != null) {
 										clickOnSeg(seg);
@@ -2194,7 +2194,7 @@ public class MainThread implements Runnable {
 								}
 
 								if (difficulty != targetDifficulty) {
-									BHBot.log("Current Expedition difficulty level is " + difficulty + ", goal level is " + targetDifficulty + ". Changing it...");
+									BHBot.logger.info("Current Expedition difficulty level is " + difficulty + ", goal level is " + targetDifficulty + ". Changing it...");
 									boolean result = selectDifficultyExpedition(difficulty, targetDifficulty);
 									if (!result) { // error!
 										// see if drop down menu is still open and close it:
@@ -2205,7 +2205,7 @@ public class MainThread implements Runnable {
 											readScreen(2*SECOND);
 											seg = detectCue(cues.get("X"));
 										}
-										BHBot.log("Due to an error in difficulty selection, Expedition will be skipped.");
+										BHBot.logger.error("Due to an error in difficulty selection, Expedition will be skipped.");
 										continue;
 									}
 								}
@@ -2220,12 +2220,12 @@ public class MainThread implements Runnable {
 
 								handleTeamMalformedWarning();
 								if (handleTeamMalformedWarning()) {
-									BHBot.log("Team incomplete, doing emergency restart..");
+									BHBot.logger.error("Team incomplete, doing emergency restart..");
 									restart();
 									continue;
 								} else {
 									state = State.Expedition;
-									BHBot.log(expedName + " portal initiated!");
+									BHBot.logger.info(expedName + " portal initiated!");
 									autoShrined = false;
 								}
 
@@ -2250,7 +2250,7 @@ public class MainThread implements Runnable {
 						timeLastEnergyCheck = Misc.getTime();
 						int energy = getEnergy();
 						globalEnergy = energy;
-						BHBot.log("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
+						BHBot.logger.info("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
 
 						if (energy == -1) { // error
 							if (BHBot.scheduler.doWorldBossImmediately)
@@ -2262,7 +2262,7 @@ public class MainThread implements Runnable {
 						if (BHBot.settings.countActivities) {
 							int worldBossCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]);
 								if (worldBossCounter >= 10) {
-								BHBot.log("World Boss limit met (" + worldBossCounter + "), skipping.");
+								BHBot.logger.warn("World Boss limit met (" + worldBossCounter + "), skipping.");
 								if (BHBot.scheduler.doDungeonImmediately)
 									BHBot.scheduler.doDungeonImmediately = false; // reset it
 								BHBot.scheduler.restoreIdleTime();
@@ -2279,7 +2279,7 @@ public class MainThread implements Runnable {
 								BHBot.scheduler.doWorldBossImmediately = false; // reset it
 							
 							if (!checkWorldBossInput()) {
-								BHBot.log("Invalid world boss settings detected, World Boss will be skipped");
+								BHBot.logger.warn("Invalid world boss settings detected, World Boss will be skipped");
 								continue;
 							}
 
@@ -2287,7 +2287,7 @@ public class MainThread implements Runnable {
 							if (seg != null) {
 								clickOnSeg(seg);
 							} else {
-								BHBot.log("World Boss button not found");
+								BHBot.logger.error("World Boss button not found");
 								continue;
 							}
 							
@@ -2302,9 +2302,9 @@ public class MainThread implements Runnable {
 							
 							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
 							if (!BHBot.settings.worldBossSolo) {
-								BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s.");
+								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s.");
 							} else {
-								BHBot.log("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " Solo");
+								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " Solo");
 							}
 							
 							seg = detectCue(cues.get("BlueSummon"),SECOND);
@@ -2315,7 +2315,7 @@ public class MainThread implements Runnable {
 							readScreen();
 							String selectedWB = readSelectedWorldBoss();
 							if (!worldBossType.equals(selectedWB)) {
-								BHBot.log(selectedWB + " selected, changing..");
+								BHBot.logger.info(selectedWB + " selected, changing..");
 								changeSelectedWorldBoss(worldBossType);
 							}
 							
@@ -2328,7 +2328,7 @@ public class MainThread implements Runnable {
 							if (!BHBot.settings.worldBossSolo) {
 								seg = detectCue(cues.get("Private"),SECOND);
 								if (seg != null) {
-									BHBot.log("Unchecking private lobby");
+									BHBot.logger.info("Unchecking private lobby");
 									clickOnSeg(seg);
 								}
 							} 
@@ -2336,7 +2336,7 @@ public class MainThread implements Runnable {
 							if (BHBot.settings.worldBossSolo) {
 								seg = detectCue(cues.get("Private"),SECOND);
 								if (seg == null) {
-									BHBot.log("Enabling private lobby for solo World Boss");
+									BHBot.logger.info("Enabling private lobby for solo World Boss");
 									sleep(500);
 									clickInGame(340,350);
 									sleep(500);
@@ -2347,7 +2347,7 @@ public class MainThread implements Runnable {
 							
 							int currentTier = detectWorldBossTier();
 							if (currentTier != BHBot.settings.worldBossTier) {
-								BHBot.log("T" + currentTier + " detected, changing to T" + BHBot.settings.worldBossTier);
+								BHBot.logger.info("T" + currentTier + " detected, changing to T" + BHBot.settings.worldBossTier);
 								changeWorldBossTier(BHBot.settings.worldBossTier);
 							}
 							
@@ -2357,14 +2357,14 @@ public class MainThread implements Runnable {
 							String currentDifficultyName = (currentDifficulty == 1 ? "Normal" : currentDifficulty == 2 ? "Hard" : "Heroic");
 							String settingsDifficultyName = (BHBot.settings.worldBossDifficulty == 1 ? "Normal" : BHBot.settings.worldBossDifficulty == 2 ? "Hard" : "Heroic");
 							if (currentDifficulty != BHBot.settings.worldBossDifficulty) {
-								BHBot.log(currentDifficultyName + " detected, changing to " + settingsDifficultyName);
+								BHBot.logger.info(currentDifficultyName + " detected, changing to " + settingsDifficultyName);
 								changeWorldBossDifficulty(BHBot.settings.worldBossDifficulty);
 							}
 						
 							sleep(SECOND); //wait for screen to stablise
 							seg = detectCue(cues.get("SmallGreenSummon"),SECOND);
 							clickOnSeg(seg); //accept current settings
-							BHBot.log("Starting lobby");							
+							BHBot.logger.info("Starting lobby");
 							
 							/*
 							 * 
@@ -2397,25 +2397,25 @@ public class MainThread implements Runnable {
 									if (seg != null) { //while the relevant invite button exists
 										if (i != 0 && (i % 15) == 0) { //every 15 seconds
 												int timeLeft = worldBossTimer - i;
-												BHBot.log("Waiting for full team. Time out in " + timeLeft + " seconds.");
+												BHBot.logger.info("Waiting for full team. Time out in " + timeLeft + " seconds.");
 											}
 										if (i == (worldBossTimer - 1)) { //out of time
 											if (BHBot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
-												BHBot.log("Lobby timed out, running dungeon instead");
+												BHBot.logger.info("Lobby timed out, running dungeon instead");
 												closeWorldBoss();
 												sleep(4*SECOND); //make sure we're stable on the main screen
 												BHBot.scheduler.doDungeonImmediately = true;
 											} else {
-											BHBot.log("Lobby timed out, returning to main screen.");
+											BHBot.logger.info("Lobby timed out, returning to main screen.");
 											closeWorldBoss();
 											}
 										}
 									} else {
-										BHBot.log("Lobby filled in " + i + " seconds!");
+										BHBot.logger.info("Lobby filled in " + i + " seconds!");
 										i = worldBossTimer; // end the for loop
 										
 										//check that all players are ready
-										BHBot.log("Making sure everyones ready..");
+										BHBot.logger.info("Making sure everyones ready..");
 										int j = 1;
 										while (j != 20) { //ready check for 10 seconds
 											seg = detectCue(cues.get("Unready"), 2*SECOND); //this checks all 4 ready statuses
@@ -2423,14 +2423,14 @@ public class MainThread implements Runnable {
 											if (seg == null) {// no red X's found
 												break;
 											} else { //red X's found
-												//BHBot.log(Integer.toString(j));
+												//BHBot.logger.info(Integer.toString(j));
 												j++;
 												sleep(500); //check every 500ms
 											}
 										}
 										
 										if (j >= 20) {
-											BHBot.log("Ready check not passed after 10 seconds, restarting");
+											BHBot.logger.error("Ready check not passed after 10 seconds, restarting");
 											restart();
 										}
 										
@@ -2444,24 +2444,24 @@ public class MainThread implements Runnable {
 													sleep(2*SECOND); //wait for animation to finish
 													clickInGame(330,360); //yesgreen cue has issues so we use XY to click on Yes
 												}
-											BHBot.log(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
+											BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
 											state = State.WorldBoss;
 											sleep(6*SECOND); //long wait to make sure we are in the world boss dungeon
 											readScreen();
 											seg = detectCue(cues.get("AutoOff")); // takes processDungeon too long so we do it manually
 											if (seg != null) {
 												clickOnSeg(seg);
-												BHBot.log("Auto-pilot is disabled. Enabling...");
+												BHBot.logger.info("Auto-pilot is disabled. Enabling...");
 											}
 											sleep(4*SECOND);
 											readScreen();
 											MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
 											if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
-												BHBot.log("World Boss started but no encounter detected, restarting");
+												BHBot.logger.info("World Boss started but no encounter detected, restarting");
 												restart();
 											}
 										} else { //generic error / unknown action restart
-											BHBot.log("Something went wrong while attempting to start the World Boss, restarting");
+											BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
 											restart();
 											timeLastEnergyCheck = MINUTE; // leave it a minute before trying again
 										}
@@ -2482,7 +2482,7 @@ public class MainThread implements Runnable {
 										clickOnSeg(seg);
 										clickInGame(330,360); //click anyway this cue has issues
 									}
-									BHBot.log(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " Solo started!");
+									BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " Solo started!");
 									state = State.WorldBoss;
 								continue;
 								}
@@ -2503,34 +2503,34 @@ public class MainThread implements Runnable {
 				if (e instanceof org.openqa.selenium.WebDriverException && e.getMessage().startsWith("chrome not reachable")) {
 					// this happens when user manually closes the Chrome window, for example
 					e.printStackTrace();
-					BHBot.log("Error: chrome is not reachable! Restarting...");
+					BHBot.logger.error("Error: chrome is not reachable! Restarting...");
 					restart();
 					continue;
 				} else if (e instanceof java.awt.image.RasterFormatException) {
 					// not sure in what cases this happen, but it happens
 					e.printStackTrace();
-					BHBot.log("Error: RasterFormatException. Attempting to re-align the window...");
+					BHBot.logger.error("Error: RasterFormatException. Attempting to re-align the window...");
 					sleep(500);
 					scrollGameIntoView();
 					sleep(500);
 					try {
 						readScreen();
 					} catch (Exception e2) {
-						BHBot.log("Error: re-alignment failed(" + e2.getMessage() + "). Restarting...");
+						BHBot.logger.error("Error: re-alignment failed(" + e2.getMessage() + "). Restarting...");
 						restart();
 						continue;
 					}
-					BHBot.log("Realignment seems to have worked.");
+					BHBot.logger.info("Realignment seems to have worked.");
 					continue;
 				} else if (e instanceof org.openqa.selenium.StaleElementReferenceException) {
 					// this is a rare error, however it happens. See this for more info:
 					// http://www.seleniumhq.org/exceptions/stale_element_reference.jsp
 					e.printStackTrace();
-					BHBot.log("Error: StaleElementReferenceException. Restarting...");
+					BHBot.logger.error("Error: StaleElementReferenceException. Restarting...");
 					restart();
 					continue;
 				} else if (e instanceof com.assertthat.selenium_shutterbug.utils.web.ElementOutsideViewportException) {
-					BHBot.log("Error: ElementOutsideViewportException. Ignoring...");
+					BHBot.logger.info("Error: ElementOutsideViewportException. Ignoring...");
 					//added this 1 second delay as attempting ads often triggers this
 					//will trigger the restart in the if statement below after 30 seconds
 					sleep(SECOND);
@@ -2543,7 +2543,7 @@ public class MainThread implements Runnable {
 				numConsecutiveException++;
 				if (numConsecutiveException > MAX_CONSECUTIVE_EXCEPTIONS) {
 					numConsecutiveException = 0; // reset it
-					BHBot.log("Problem detected: number of consecutive exceptions is higher than " + MAX_CONSECUTIVE_EXCEPTIONS + ". This probably means we're caught in a loop. Restarting...");
+					BHBot.logger.warn("Problem detected: number of consecutive exceptions is higher than " + MAX_CONSECUTIVE_EXCEPTIONS + ". This probably means we're caught in a loop. Restarting...");
 					restart();
 					continue;
 				}
@@ -2560,16 +2560,16 @@ public class MainThread implements Runnable {
 			sleep(3 * SECOND);
 		} // main while loop
 
-		BHBot.log("Stopping main thread...");
+		BHBot.logger.info("Stopping main thread...");
 		//driver.close();
 		driver.quit();
-		BHBot.log("Main thread stopped.");
+		BHBot.logger.info("Main thread stopped.");
 	}
 
 	// World boss invite button debugging
 	void wbTest() {
 		int t = detectWorldBossTier();
-		BHBot.log(Integer.toString(t));
+		BHBot.logger.info(Integer.toString(t));
 	}
 
 	private boolean openSettings(int delay) {
@@ -2614,43 +2614,43 @@ public class MainThread implements Runnable {
 				seg = detectCue(cues.get("IgnoreBoss"));
 				if (seg != null) {
 					clickInGame(194, 366);
-					BHBot.log("Enabling Ignore Boss");
+					BHBot.logger.info("Enabling Ignore Boss");
 				} else {
-					BHBot.log("Ignore Boss Enabled");
+					BHBot.logger.info("Ignore Boss Enabled");
 				}
 				readScreen(500);
 
 				seg = detectCue(cues.get("IgnoreShrines"));
 				if (seg != null) {
 					clickInGame(194, 402);
-					BHBot.log("Enabling Ignore Shrine");
+					BHBot.logger.info("Enabling Ignore Shrine");
 				} else {
-					BHBot.log("Ignore Shrine Enabled");
+					BHBot.logger.info("Ignore Shrine Enabled");
 				}
-				BHBot.log("autoShrine autoConfigured");
+				BHBot.logger.info("autoShrine autoConfigured");
 				readScreen(SECOND);
 			} else if ("disable".equals(set)) {
 
 				seg = detectCue(cues.get("IgnoreBoss"));
 				if (seg == null) {
 					clickInGame(194, 366);
-					BHBot.log("Disabling Ignore Boss");
+					BHBot.logger.info("Disabling Ignore Boss");
 				}
 				readScreen(500);
 
 				seg = detectCue(cues.get("IgnoreShrines"));
 				if (seg == null) {
 					clickInGame(194, 402);
-					BHBot.log("Disabling Ignore Shrine");
+					BHBot.logger.info("Disabling Ignore Shrine");
 				}
-				BHBot.log("autoShrine disabled");
+				BHBot.logger.info("autoShrine disabled");
 				readScreen(SECOND);
 			}
 
 			shrinesChecked = true;
 			closeSettings();
 		} else {
-			BHBot.log("Impossible to open settings menu");
+			BHBot.logger.warn("Impossible to open settings menu");
 		}
 	}
 	
@@ -2695,7 +2695,7 @@ public class MainThread implements Runnable {
 		}
 		btnSignIn.click();
 
-		BHBot.log("Signed-in manually (sign-in prompt was open).");
+		BHBot.logger.info("Signed-in manually (sign-in prompt was open).");
 	}
 
 	/** Handles login screen (it shows seldom though. Perhaps because some cookie expired or something... anyway, we must handle it or else bot can't play the game anymore). */
@@ -2717,23 +2717,23 @@ public class MainThread implements Runnable {
 		try {
 			weUsername = driver.findElement(By.cssSelector("body#play > div#lightbox > div#lbContent > div#kongregate_lightbox_wrapper > div#lightbox_form > div#lightboxlogin > div#new_session_shared_form > form > dl > dd > input#username"));
 		} catch (NoSuchElementException e) {
-			BHBot.log("Problem: username field not found in the login form (perhaps it was not loaded yet?)!");
+			BHBot.logger.warn("Problem: username field not found in the login form (perhaps it was not loaded yet?)!");
 			return;
 		}
 		weUsername.clear();
 		weUsername.sendKeys(BHBot.settings.username);
-		BHBot.log("Username entered into the login form.");
+		BHBot.logger.info("Username entered into the login form.");
 
 		WebElement wePassword;
 		try {
 			wePassword = driver.findElement(By.cssSelector("body#play > div#lightbox > div#lbContent > div#kongregate_lightbox_wrapper > div#lightbox_form > div#lightboxlogin > div#new_session_shared_form > form > dl > dd > input#password"));
 		} catch (NoSuchElementException e) {
-			BHBot.log("Problem: password field not found in the login form (perhaps it was not loaded yet?)!");
+			BHBot.logger.warn("Problem: password field not found in the login form (perhaps it was not loaded yet?)!");
 			return;
 		}
 		wePassword.clear();
 		wePassword.sendKeys(BHBot.settings.password);
-		BHBot.log("Password entered into the login form.");
+		BHBot.logger.info("Password entered into the login form.");
 
 		// press the "sign-in" button:
 		WebElement btnSignIn;
@@ -2744,7 +2744,7 @@ public class MainThread implements Runnable {
 		}
 		btnSignIn.click();
 
-		BHBot.log("Signed-in manually (we were signed-out).");
+		BHBot.logger.info("Signed-in manually (we were signed-out).");
 
 		scrollGameIntoView();
 	}
@@ -2798,7 +2798,7 @@ public class MainThread implements Runnable {
 		}
 
 		if (steps > 0)
-			BHBot.log("Character dialog dismissed.");
+			BHBot.logger.info("Character dialog dismissed.");
 	}
 
 	/*private BufferedImage takeScreenshot() {
@@ -2860,7 +2860,7 @@ public class MainThread implements Runnable {
 //			img = takeScreenshot(game);
 //			counter++;
 //			if (counter > 20) {
-//				BHBot.log("Problem detected: loading screen detected, however timeout reached while waiting for it to go away. Ignoring...");
+//				BHBot.logger.info("Problem detected: loading screen detected, however timeout reached while waiting for it to go away. Ignoring...");
 //				break; // taking too long... will probably not load at all. We must restart it (we won't restart it from here, but idle detection mechanism will)
 //			}
 //		}
@@ -2884,7 +2884,7 @@ public class MainThread implements Runnable {
         //source.drawRect(seg.x1, seg.y1, seg.x2-seg.x1, seg.y2-seg.y1, Color.blue);
         //MarvinImageIO.saveImage(source, "window_out.png");
         if (BHBot.settings.debugDetectionTimes)
-        	BHBot.log("cue detection time: " + (Misc.getTime() - timer) + "ms (" + cue.name + ") [" + (seg != null ? "true" : "false") + "]");
+        	BHBot.logger.info("cue detection time: " + (Misc.getTime() - timer) + "ms (" + cue.name + ") [" + (seg != null ? "true" : "false") + "]");
 //        if (seg == null) {
 //        	return -1;
 //        }
@@ -3035,7 +3035,7 @@ public class MainThread implements Runnable {
 		}
 
 		value = value + 2; //add the last 2 pixels to get an accurate count
-//		BHBot.log("Pre-rounded stat = " + Float.toString(value * (maxTickets / 77.0f)));
+//		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxTickets / 77.0f)));
 		return Math.round(value * (maxTickets / 77.0f)); // scale it to interval [0..10]
 	}
 
@@ -3065,7 +3065,7 @@ public class MainThread implements Runnable {
 		}
 		
 		value = value + 2; //add the last 2 pixels to get an accurate count
-//		BHBot.log("Pre-rounded stat = " + Float.toString(value * (maxShards / 77.0f)));
+//		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxShards / 77.0f)));
 		return Math.round(value * (maxShards / 75.0f)); // round to nearest whole number
 	}
 
@@ -3096,7 +3096,7 @@ public class MainThread implements Runnable {
 		}
 		
 		value = value + 2; //add the last 2 pixels to get an accurate count
-//		BHBot.log("Pre-rounded stat = " + Float.toString(value * (maxTokens / 77.0f)));
+//		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxTokens / 77.0f)));
 		return Math.round(value * (maxTokens / 75.0f)); // scale it to interval [0..10]
 	}
 
@@ -3127,7 +3127,7 @@ public class MainThread implements Runnable {
 		}
 
 		value = value + 2; //add the last 2 pixels to get an accurate count
-//		BHBot.log("Pre-rounded stat = " + Float.toString(value * (maxBadges / 77.0f)));
+//		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxBadges / 77.0f)));
 		return Math.round(value * (maxBadges / 75.0f)); // scale it to interval [0..10]
 	}
 
@@ -3150,7 +3150,7 @@ public class MainThread implements Runnable {
 			
 			//save current tab to variable
 //			String oldTab = driver.getWindowHandle();
-			BHBot.log(driver.getWindowHandle());
+			BHBot.logger.info(driver.getWindowHandle());
 			
 			//set Read Article xpath to variable and click using selenium
 			WebElement openWindow;
@@ -3160,7 +3160,7 @@ public class MainThread implements Runnable {
 				return ReturnResult.error("Cannot find the close button on 'out of offers' ad window!");
 			}
 			openWindow.click();
-			BHBot.log("Attempted to click button");
+			BHBot.logger.info("Attempted to click button");
 			
 			sleep(2000);
 			
@@ -3174,7 +3174,7 @@ public class MainThread implements Runnable {
 			//*[@id="play"]/div[20]/div[1]/div[3]
 			
 //			ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
-//			BHBot.log(tabs);
+//			BHBot.logger.info(tabs);
 //			
 //			sleep(1000);
 //			
@@ -3236,7 +3236,7 @@ public class MainThread implements Runnable {
 				try {
 					boolean outOfOffers = driver.findElement(By.cssSelector("#epom-tag-container-overlay > div > span")).getText().equalsIgnoreCase(":("); // "We're out of offers to show in your region" message
 					if (outOfOffers) {
-						BHBot.log("Seems there are no ad offers available anymore in our region. Skipping ad offer...");
+						BHBot.logger.info("Seems there are no ad offers available anymore in our region. Skipping ad offer...");
 
 						// click the close button:
 						WebElement btnClose;
@@ -3251,7 +3251,7 @@ public class MainThread implements Runnable {
 
 //						boolean skipped = trySkippingAd();
 
-//						BHBot.log("Ad " + (skipped ? "successfully" : "unsuccessfully") +  " skipped! (location: " + state.getName() + ")");
+//						BHBot.logger.info("Ad " + (skipped ? "successfully" : "unsuccessfully") +  " skipped! (location: " + state.getName() + ")");
 
 						return ReturnResult.ok();
 					}
@@ -3301,7 +3301,7 @@ public class MainThread implements Runnable {
 
 				sleep(2 * SECOND);
 			}
-			BHBot.log("Ad reward successfully claimed! (location: " + state.getName() + ")");
+			BHBot.logger.info("Ad reward successfully claimed! (location: " + state.getName() + ")");
 			return ReturnResult.ok();
 		}
 	}
@@ -3319,7 +3319,7 @@ public class MainThread implements Runnable {
 
 		if (!startTimeCheck) {
 			activityStartTime = (System.currentTimeMillis() / 1000L);
-//			BHBot.log("Start time: " + Long.toString(activityStartTime));
+//			BHBot.logger.info("Start time: " + Long.toString(activityStartTime));
 			startTimeCheck = true;
 		}
 		
@@ -3393,7 +3393,7 @@ public class MainThread implements Runnable {
 			if (seg != null)
 				clickOnSeg(seg);
 			else
-				BHBot.log("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
+				BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 
 			sleep(SECOND);
 			if (state == State.Expedition) {
@@ -3413,12 +3413,12 @@ public class MainThread implements Runnable {
 			}
 			if (state == State.Dungeon) {
 				dungeonCounter++;
-				BHBot.log("Dungeon #" + dungeonCounter + " completed successfully");
+				BHBot.logger.info("Dungeon #" + dungeonCounter + " completed successfully");
 			} else if (state == State.Raid) {
 				raidCounter++;
-				BHBot.log("Raid #" + raidCounter + " completed successfully");
+				BHBot.logger.info("Raid #" + raidCounter + " completed successfully");
 			} else {
-			BHBot.log(state.getName() + " completed successfully. Result: Victory");
+			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
 			}
 			if (state == State.Dungeon && (BHBot.settings.countActivities)) {
 				updateActivityCounter(state.getName());
@@ -3450,7 +3450,7 @@ public class MainThread implements Runnable {
 			}
 
 			if (!closed) {
-				BHBot.log("Problem: 'Defeat' popup detected but no 'Close' button detected. Ignoring...");
+				BHBot.logger.warn("Problem: 'Defeat' popup detected but no 'Close' button detected. Ignoring...");
 				if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
 				if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
 				return;
@@ -3464,7 +3464,7 @@ public class MainThread implements Runnable {
 			if (seg != null)
 				clickOnSeg(seg);
 			else
-				BHBot.log("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
+				BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 			sleep(SECOND);
 			if (state == State.Expedition) {
 				sleep(SECOND);
@@ -3482,9 +3482,9 @@ public class MainThread implements Runnable {
 				sleep(SECOND);
 			}
 			if (state == State.Invasion) {
-				BHBot.log("Invasion completed successfully");
+				BHBot.logger.info("Invasion completed successfully");
 			} else {
-				BHBot.log(state.getName() + " completed successfully. Result: Defeat");
+				BHBot.logger.info(state.getName() + " completed successfully. Result: Defeat");
 			}
 			resetAppropriateTimers();
 			resetRevives();
@@ -3520,7 +3520,7 @@ public class MainThread implements Runnable {
 			if (seg != null)
 				clickOnSeg(seg);
 			else {
-				BHBot.log("Problem: 'Victory' window (as found in e.g. gauntlets) has been detected, but no 'Close' button. Ignoring...");
+				BHBot.logger.warn("Problem: 'Victory' window (as found in e.g. gauntlets) has been detected, but no 'Close' button. Ignoring...");
 				return;
 			}
 
@@ -3532,10 +3532,10 @@ public class MainThread implements Runnable {
 			if (seg != null)
 				clickOnSeg(seg);
 			else
-				BHBot.log("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
+				BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 
 			sleep(SECOND);
-			BHBot.log(state.getName() + " completed successfully. Result: Victory");
+			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
 			if (state == State.WorldBoss && (BHBot.settings.countActivities)) {
 				updateActivityCounter(state.getName());
 			}
@@ -3563,7 +3563,7 @@ public class MainThread implements Runnable {
 			if (seg != null)
 				closePopupSecurely(cues.get("PVPWindow"), cues.get("X")); // ignore failure
 			sleep(SECOND);
-			BHBot.log(state.getName() + " completed successfully. Result: Victory");
+			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
 			resetAppropriateTimers();
 			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
 			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
@@ -3592,14 +3592,14 @@ public class MainThread implements Runnable {
 		if (state == State.Raid || state == State.Trials || state == State.Expedition) {
 			if (activityDuration > 30 && !autoShrined) { //if we're past 30 seconds into the activity
 				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) { //and it's been the battleDelay setting since last encounter
-					BHBot.log("No activity for " + BHBot.settings.battleDelay + "s, enabing shrines");
+					BHBot.logger.info("No activity for " + BHBot.settings.battleDelay + "s, enabing shrines");
 					//open settings
 					openSettings(SECOND);
 					
 					seg = detectCue(cues.get("IgnoreShrines"));
 					if (seg == null) {
 						clickInGame(194,402);
-						BHBot.log("Disabling Ignore Shrine");
+						BHBot.logger.info("Disabling Ignore Shrine");
 					}
 					sleep(500);
 					clickInGame(660,80); //close settings
@@ -3608,7 +3608,7 @@ public class MainThread implements Runnable {
 					sleep(500);
 					clickInGame(780,270); //auto on again
 					
-					BHBot.log("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
+					BHBot.logger.info("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
 					sleep(BHBot.settings.shrineDelay*SECOND); //long sleep while we activate shrines
 					
 					//open settings
@@ -3617,7 +3617,7 @@ public class MainThread implements Runnable {
 					seg = detectCue(cues.get("IgnoreBoss"));
 					if (seg == null) {
 						clickInGame(194,366);
-						BHBot.log("Disabling Ignore Boss");
+						BHBot.logger.info("Disabling Ignore Boss");
 					}
 					sleep(500);
 					clickInGame(660,80); //close settings
@@ -3635,7 +3635,7 @@ public class MainThread implements Runnable {
 		//TODO Add no key "Uh Oh" failsafe
 		MarvinSegment seg;
 		if (BHBot.settings.openSkeleton == 0) {
-			BHBot.log("Skeleton treasure found, declining.");
+			BHBot.logger.info("Skeleton treasure found, declining.");
 			seg = detectCue(cues.get("Decline"), 5*SECOND);
 			clickOnSeg(seg);
 			readScreen(SECOND);
@@ -3644,10 +3644,10 @@ public class MainThread implements Runnable {
 			return false;
 			
 		} else if (BHBot.settings.openSkeleton == 1) {
-			BHBot.log("Skeleton treasure found, attemping to use key");
+			BHBot.logger.info("Skeleton treasure found, attemping to use key");
 			seg = detectCue(cues.get("Open"), 5*SECOND);
 			if (seg == null) {
-				BHBot.log("Open button not found, restarting");
+				BHBot.logger.error("Open button not found, restarting");
 				String STScreen = saveGameScreen("skeleton-treasure-no-open");
 				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
 					sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
@@ -3658,7 +3658,7 @@ public class MainThread implements Runnable {
 			readScreen(SECOND);
 			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 			if (seg == null) {
-				BHBot.log("Yes button not found, restarting");
+				BHBot.logger.error("Yes button not found, restarting");
 				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
 					String STScreen = saveGameScreen("skeleton-treasure-no-yes");
 					sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
@@ -3669,10 +3669,10 @@ public class MainThread implements Runnable {
 			return false;
 			
 		} else if (BHBot.settings.openSkeleton == 2 && state == State.Raid) {
-			BHBot.log("Raid Skeleton treasure found, attemping to use key");
+			BHBot.logger.info("Raid Skeleton treasure found, attemping to use key");
 			seg = detectCue(cues.get("Open"), 5*SECOND);
 			if (seg == null) {
-				BHBot.log("Open button not found, restarting");
+				BHBot.logger.error("Open button not found, restarting");
 				String STScreen = saveGameScreen("skeleton-treasure-no-open");
 				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
 					sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
@@ -3683,7 +3683,7 @@ public class MainThread implements Runnable {
 			readScreen(SECOND);
 			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
 			if (seg == null) {
-				BHBot.log("Yes button not found, restarting");
+				BHBot.logger.error("Yes button not found, restarting");
 				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
 					String STScreen = saveGameScreen("skeleton-treasure-no-yes");
 					sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
@@ -3694,7 +3694,7 @@ public class MainThread implements Runnable {
 			return false;
 			
 		} else
-			BHBot.log("Skeleton treasure found, declining.");
+			BHBot.logger.info("Skeleton treasure found, declining.");
 			seg = detectCue(cues.get("Decline"), 5*SECOND);
 			clickOnSeg(seg);
 			readScreen(SECOND);
@@ -3706,7 +3706,7 @@ public class MainThread implements Runnable {
 	private void handleFamiliarEncounter() {
 		MarvinSegment seg;
 
-		BHBot.log("Familiar encountered");
+		BHBot.logger.info("Familiar encountered");
 		readScreen(2*SECOND);
 
 		FamiliarType familiarLevel;
@@ -3768,11 +3768,11 @@ public class MainThread implements Runnable {
 		// We attempt persuasion or bribe based on settings
 		if (persuasion == PersuationType.BRIBE) {
 			if (!bribeFamiliar()) {
-				BHBot.log("Bribe attempt failed! Trying with persuasion...");
+				BHBot.logger.info("Bribe attempt failed! Trying with persuasion...");
 				if (persuadeFamiliar()) {
-					BHBot.log(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
+					BHBot.logger.info(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
 				} else {
-					BHBot.log("Impossible to persuade familiar, restarting...");
+					BHBot.logger.error("Impossible to persuade familiar, restarting...");
 					restart();
 				}
 			} else {
@@ -3780,9 +3780,9 @@ public class MainThread implements Runnable {
 			}
 		} else if (persuasion == PersuationType.PERSUADE) {
 			if (persuadeFamiliar()) {
-				BHBot.log(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
+				BHBot.logger.info(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
 			} else {
-			    BHBot.log("Impossible to attempt persuasion, restarting.");
+			    BHBot.logger.error("Impossible to attempt persuasion, restarting.");
 				restart();
 			}
 		} else {
@@ -3792,9 +3792,9 @@ public class MainThread implements Runnable {
 				readScreen(SECOND * 2);
 				seg = detectCue(cues.get("YesGreen"), SECOND);
 				clickOnSeg(seg);
-				BHBot.log(familiarLevel.toString().toUpperCase() + " persuasion declined.");
+				BHBot.logger.info(familiarLevel.toString().toUpperCase() + " persuasion declined.");
 			} else {
-				BHBot.log("Impossible to find the decline button, restarting...");
+				BHBot.logger.error("Impossible to find the decline button, restarting...");
 				restart();
 			}
 		}
@@ -3861,7 +3861,7 @@ public class MainThread implements Runnable {
                                 readScreen(SECOND * 2);
                                 viewIsOpened = true;
                             } else {
-                                BHBot.log("Old format familiar with no view button");
+                                BHBot.logger.error("Old format familiar with no view button");
                                 restart();
                             }
                         }
@@ -3871,14 +3871,14 @@ public class MainThread implements Runnable {
                                 readScreen(SECOND);
                                 viewIsOpened = false;
                             } else {
-                                BHBot.log("Old style familiar detected with no X button to close the view menu.");
+                                BHBot.logger.error("Old style familiar detected with no X button to close the view menu.");
                                 restart();
                             }
                         }
                     }
 
 					if (detectCue(familiarCue, SECOND * 3) != null) {
-						BHBot.log("Detected familiar " + familiarDetails + " as valid in familiars");
+						BHBot.logger.info("Detected familiar " + familiarDetails + " as valid in familiars");
 						result.toBribeCnt = toBribeCnt;
 						result.familiarName = familiarName;
 						break;
@@ -3886,18 +3886,18 @@ public class MainThread implements Runnable {
 					}
 
 				} else {
-					BHBot.log("Count for familiar " + familiarName + " is 0! Temporary removing it form the settings...");
+					BHBot.logger.warn("Count for familiar " + familiarName + " is 0! Temporary removing it form the settings...");
 					wrongNames.add(familiarDetails);
 				}
 			} else {
-				BHBot.log("Impossible to find a cue for familiar " + familiarName + ", it will be temporary removed from settings.");
+				BHBot.logger.warn("Impossible to find a cue for familiar " + familiarName + ", it will be temporary removed from settings.");
 				wrongNames.add(familiarDetails);
 			}
 		}
 
 		if (viewIsOpened) {
 		    if (!closeView.getAsBoolean()) {
-		        BHBot.log("Impossible to close view menu at the end of familiar setting loop!");
+		        BHBot.logger.error("Impossible to close view menu at the end of familiar setting loop!");
 		        restart();
             }
         }
@@ -3926,10 +3926,10 @@ public class MainThread implements Runnable {
 			}
 
 			if (detectCue(cues.get("NotEnoughGems"), SECOND * 5) != null) {
-				BHBot.log("Not enough gems to attempt a bribe!");
+				BHBot.logger.warn("Not enough gems to attempt a bribe!");
 				noGemsToBribe = true;
 				if (!closePopupSecurely(cues.get("NotEnoughGems"), cues.get("No"))) {
-					BHBot.log("Impossible to close the Not Enough gems pop-up. Restarting...");
+					BHBot.logger.error("Impossible to close the Not Enough gems pop-up. Restarting...");
 					restart();
 				}
 				return false;
@@ -3938,7 +3938,7 @@ public class MainThread implements Runnable {
 				String bribeScreenName = saveGameScreen("bribe-screen", tmpScreen);
 				File bribeScreenFile = new File(bribeScreenName);
 				sendPushOverMessage("Creature Bribe", "A familiar has been bribed!", "bugle", MessagePriority.NORMAL, bribeScreenFile);
-				if(!bribeScreenFile.delete()) BHBot.log("Impossible to delete tmp img file for bribe.");
+				if(!bribeScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img file for bribe.");
 			}
 			return true;
 		}
@@ -3975,7 +3975,7 @@ public class MainThread implements Runnable {
 		// Auto Revive is disabled, we re-enable it
 		if ( (BHBot.settings.autoRevive.size() == 0) || (state != State.Trials && state != State.Gauntlet
 				&& state != State.Raid && state != State.Expedition) ){
-			BHBot.log("AutoRevive disabled, reenabling auto.. State = '" + state + "'");
+			BHBot.logger.info("AutoRevive disabled, reenabling auto.. State = '" + state + "'");
 			seg = detectCue(cues.get("AutoOff"));
 			if (seg != null) clickOnSeg(seg);
 			return;
@@ -3984,7 +3984,7 @@ public class MainThread implements Runnable {
 		// if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
 		seg = detectCue(cues.get("Defeat"), SECOND);
 		if (seg != null) {
-			BHBot.log("Defeat screen, skipping revive check");
+			BHBot.logger.info("Defeat screen, skipping revive check");
 			/*seg = detectCue(cues.get("AutoOff"), SECOND);
 			if (seg != null) clickOnSeg(seg);*/
 			return;
@@ -4000,12 +4000,12 @@ public class MainThread implements Runnable {
 			if (seg != null) {
 				seg = detectCue(cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400));
 				if (seg != null) {
-					BHBot.log("None of the team members need a consumable, exiting from autoRevive");
+					BHBot.logger.info("None of the team members need a consumable, exiting from autoRevive");
 					clickOnSeg(seg);
 					seg = detectCue(cues.get("AutoOff"), SECOND);
 					clickOnSeg(seg);
 				} else {
-					BHBot.log("No potions cue detected, without close button, restarting!");
+					BHBot.logger.error("No potions cue detected, without close button, restarting!");
 					saveGameScreen("autorevive-no-potions-no-close", img);
 					restart();
 				}
@@ -4034,7 +4034,7 @@ public class MainThread implements Runnable {
 			}
 
 			if ( (state==State.Trials && BHBot.settings.autoRevive.contains("t") ) ||
-					(state==State.Gauntlet && BHBot.settings.autoRevive.contains("g")) ||
+					(state==State.Gauntlet && BHBot.settings.autoRevive.contains("g") ) ||
 					(state==State.Raid && BHBot.settings.autoRevive.contains("r")) ||
 					(state==State.Expedition && BHBot.settings.autoRevive.contains("e")) ) {
 
@@ -4063,12 +4063,12 @@ public class MainThread implements Runnable {
 							if (seg != null) {
 								seg = detectCue(cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400));
 								if (seg != null) {
-									BHBot.log("None of the team members need a consumable, exiting from autoRevive");
+									BHBot.logger.info("None of the team members need a consumable, exiting from autoRevive");
 									clickOnSeg(seg);
 									seg = detectCue(cues.get("AutoOff"), SECOND);
 									clickOnSeg(seg);
 								} else {
-									BHBot.log("Error while reopening the potions menu: no close button found!");
+									BHBot.logger.error("Error while reopening the potions menu: no close button found!");
 									saveGameScreen("autorevive-no-potions-for-error", img);
 									restart();
 								}
@@ -4086,7 +4086,7 @@ public class MainThread implements Runnable {
 
 					if (restoreSeg!=null) { // we can use one potion, we don't know which one: revive or healing
 						if (reviveSeg == null) { // we can use a revive potion
-							BHBot.log("Slot " + slotNum + " is up for healing potions, so it does not need revive");
+							BHBot.logger.info("Slot " + slotNum + " is up for healing potions, so it does not need revive");
 							seg = detectCue(cues.get("X"));
 							clickOnSeg(seg);
 							readScreen(SECOND);
@@ -4104,7 +4104,7 @@ public class MainThread implements Runnable {
 
 					// No more potions are available
 					if (availablePotions.get('1')== null && availablePotions.get('2')== null && availablePotions.get('3')== null) {
-						BHBot.log("No potions are avilable, autoRevive well be temporary disabled!");
+						BHBot.logger.warn("No potions are avilable, autoRevive well be temporary disabled!");
 						BHBot.settings.autoRevive = new ArrayList<>();
 						return;
 					}
@@ -4114,7 +4114,7 @@ public class MainThread implements Runnable {
 						for (char potion: "321".toCharArray()) {
 							seg = availablePotions.get(potion);
 							if (seg != null) {
-							    BHBot.log("Handling tank priority with " + potionTranslage.get(potion) + " revive.");
+							    BHBot.logger.info("Handling tank priority with " + potionTranslage.get(potion) + " revive.");
 								clickOnSeg(seg);
 								readScreen(SECOND);
 								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
@@ -4128,10 +4128,10 @@ public class MainThread implements Runnable {
 
 					if (!revived[slotNum-1]){
 						for (char potion: BHBot.settings.potionOrder.toCharArray()) {
-							// BHBot.log("Checking potion " + potion);
+							// BHBot.logger.info("Checking potion " + potion);
 							seg = availablePotions.get(potion);
 							if (seg != null) {
-                                BHBot.log("Using " + potionTranslage.get(potion) + " revive on slot " + slotNum + ".");
+                                BHBot.logger.info("Using " + potionTranslage.get(potion) + " revive on slot " + slotNum + ".");
 								clickOnSeg(seg);
 								readScreen(SECOND);
 								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
@@ -4148,7 +4148,7 @@ public class MainThread implements Runnable {
 
 		} else { // Impossible to find the potions button
 			saveGameScreen("auto-revive-no-potions");
-			BHBot.log("Impossible to find the potions button!");
+			BHBot.logger.info("Impossible to find the potions button!");
 		}
 
 		// If the unit selection screen is still open, we need to close it
@@ -4173,7 +4173,7 @@ public class MainThread implements Runnable {
 		if (seg != null) {
 			clickOnSeg(seg);
 		} else {
-			BHBot.log("first x Error returning to main screen from World Boss, restarting");
+			BHBot.logger.error("first x Error returning to main screen from World Boss, restarting");
 //			return false;
 		}
 		
@@ -4182,7 +4182,7 @@ public class MainThread implements Runnable {
 		if (seg != null) {
 			clickOnSeg(seg);
 		} else { 
-			BHBot.log("yesgreen Error returning to main screen from World Boss, restarting");
+			BHBot.logger.error("yesgreen Error returning to main screen from World Boss, restarting");
 //			return false;
 		}
 		
@@ -4191,7 +4191,7 @@ public class MainThread implements Runnable {
 		if (seg != null) {
 			clickOnSeg(seg);
 		} else {
-			BHBot.log("second x Error returning to main screen from World Boss, restarting");
+			BHBot.logger.error("second x Error returning to main screen from World Boss, restarting");
 //			return false;
 		}
 		
@@ -4220,8 +4220,8 @@ public class MainThread implements Runnable {
 				familiarToUpdate = fa; //write current status to String
 				currentCounter--; // decrease the counter
 				updatedFamiliar = (fString.toLowerCase() + " " + currentCounter); //update new string with familiar name and decrease counter
-//				BHBot.log("Before: " + familiarToUpdate);
-//				BHBot.log("Updated: " + updatedFamiliar);
+//				BHBot.logger.info("Before: " + familiarToUpdate);
+//				BHBot.logger.info("Updated: " + updatedFamiliar);
 			}
 		}
 
@@ -4239,7 +4239,7 @@ public class MainThread implements Runnable {
 	        String inputStr = inputBuffer.toString(); //load lines to string
 	        file.close();
 
-//	        BHBot.log(inputStr); // check that it's inputted right
+//	        BHBot.logger.info(inputStr); // check that it's inputted right
 
 	        //find containing string and update with the output string from the function above
 	        if (inputStr.contains(familiarToUpdate)) {
@@ -4269,8 +4269,8 @@ public class MainThread implements Runnable {
 			typeToUpdate = numberRun + " " + currentCounter; //write current status to String
 			currentCounter++; // decrease the counter
 			updatedType = (numberRun + " " + currentCounter); //update new string with familiar name and decrease counter
-				BHBot.log("Before: " + typeToUpdate);
-				BHBot.log("Updated: " + updatedType);
+				BHBot.logger.info("Before: " + typeToUpdate);
+				BHBot.logger.info("Updated: " + updatedType);
 		}
 		
 		if ("World Boss".equals(activity)) {
@@ -4279,8 +4279,8 @@ public class MainThread implements Runnable {
 			typeToUpdate = numberRun + " " + currentCounter; //write current status to String
 			currentCounter++; // decrease the counter
 			updatedType = (numberRun + " " + currentCounter); //update new string with familiar name and decrease counter
-				BHBot.log("Before: " + typeToUpdate);
-				BHBot.log("Updated: " + updatedType);
+				BHBot.logger.info("Before: " + typeToUpdate);
+				BHBot.logger.info("Updated: " + updatedType);
 		}
 	
 
@@ -4300,7 +4300,7 @@ public class MainThread implements Runnable {
 	        String inputStr = inputBuffer.toString(); //load lines to string
 	        file.close();
 
-//	        BHBot.log(inputStr); // check that it's inputted right
+//	        BHBot.logger.info(inputStr); // check that it's inputted right
 
 	        //find containing string and update with the output from the function above
 	        if (inputStr.contains(typeToUpdate)) {
@@ -4416,7 +4416,7 @@ public class MainThread implements Runnable {
 			case 3:
 				return new Point(400, 290);
 			case 4:
-				BHBot.log("Zone 7 only has 3 dungeons, falling back to z7d2");
+				BHBot.logger.warn("Zone 7 only has 3 dungeons, falling back to z7d2");
 				return new Point(650, 400);
 			}
 			break;
@@ -4429,7 +4429,7 @@ public class MainThread implements Runnable {
 		 	case 3:
 		 		return new Point(250, 370);
 			case 4:
-				BHBot.log("Zone 8 only has 3 dungeons, falling back to z8d2");
+				BHBot.logger.warn("Zone 8 only has 3 dungeons, falling back to z8d2");
 				return new Point(570, 340);
 		 	}
 		 	break;
@@ -4442,7 +4442,7 @@ public class MainThread implements Runnable {
 			 case 3:
 				 return new Point(375, 415);
 			 case 4:
-			 	BHBot.log("Zone 9 only has 3 dungeons, falling back to z9d2");
+			 	BHBot.logger.warn("Zone 9 only has 3 dungeons, falling back to z9d2");
 				return new Point(610, 190);
 			 }
 		 	break;
@@ -4457,13 +4457,13 @@ public class MainThread implements Runnable {
 	 */
 	private String getExpeditionName(int currentExpedition, String targetPortal) {
 		if (currentExpedition > 3) {
-			BHBot.log("Unexpected expedition int in getExpeditionName: " + currentExpedition);
+			BHBot.logger.error("Unexpected expedition int in getExpeditionName: " + currentExpedition);
 			return null;
 		}
 
 		if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
 				&& !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
-			BHBot.log("Unexpected target portal in getExpeditionName: " + targetPortal);
+			BHBot.logger.error("Unexpected target portal in getExpeditionName: " + targetPortal);
 			return null;
 		}
 
@@ -4519,7 +4519,7 @@ public class MainThread implements Runnable {
 	 */
 	private Point getExpeditionIconPos(int currentExpedition, String targetPortal) {
 		if (targetPortal.length() != 2) {
-			BHBot.log("targetPortal length Mismatch in getExpeditionIconPos");
+			BHBot.logger.error("targetPortal length Mismatch in getExpeditionIconPos");
 			return null;
 		}
 
@@ -4531,14 +4531,14 @@ public class MainThread implements Runnable {
 		}  else if (currentExpedition == 3) {
 			portalName = "Jammie";
 		} else {
-			BHBot.log("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
+			BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
 			saveGameScreen("unknown-expedition");
 			return null;
 		}
 
 		if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
 				&& !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
-			BHBot.log("Unexpected target portal in getExpeditionIconPos: " + targetPortal);
+			BHBot.logger.error("Unexpected target portal in getExpeditionIconPos: " + targetPortal);
 			return null;
 		}
 
@@ -4613,7 +4613,7 @@ public class MainThread implements Runnable {
 		int i = 3;
 		while (i >= 0){
 			if (portalEnabled[i]) {
-				BHBot.log(portalName + " is not available! Falling back on p" + (i+1) + "...");
+				BHBot.logger.warn(portalName + " is not available! Falling back on p" + (i+1) + "...");
 				return portalPosition[i];
 			}
 			i--;
@@ -4631,7 +4631,7 @@ public class MainThread implements Runnable {
 		if (BHBot.settings.worldBossType.equals("Orlag") || BHBot.settings.worldBossType.equals("Nether") || BHBot.settings.worldBossType.equals("Melvin")) {
 			passed++;
 		} else {
-			BHBot.log("Invalid world boss name, check settings file");
+			BHBot.logger.error("Invalid world boss name, check settings file");
 			failed = true;
 		}
 		
@@ -4639,7 +4639,7 @@ public class MainThread implements Runnable {
 		if (BHBot.settings.worldBossTier <= 10 || BHBot.settings.worldBossTier >= 1) {
 			passed++;
 		} else {
-			BHBot.log("Invalid world boss tier, must between 1 and 10");
+			BHBot.logger.error("Invalid world boss tier, must between 1 and 10");
 			failed = true;
 		}
 
@@ -4647,7 +4647,7 @@ public class MainThread implements Runnable {
 		if (BHBot.settings.worldBossTimer <= 300) {
 			passed++;
 		} else {
-			BHBot.log("Warning: Timer longer than 5 minutes");
+			BHBot.logger.warn("Warning: Timer longer than 5 minutes");
 		}
 
 		return !failed && passed == 3;
@@ -4705,14 +4705,14 @@ public class MainThread implements Runnable {
 
 	void raidReadTest() {
 		int test = readUnlockedRaidTier();
-		BHBot.log(Integer.toString(test));
+		BHBot.logger.info(Integer.toString(test));
 	}
 	
 	void expeditionReadTest() {
 		String expedition = BHBot.settings.expeditions.next();
 		if (expedition != null) {
 			expedition = expedition.split(" ")[0];
-			BHBot.log("Expedition chosen: " + expedition);
+			BHBot.logger.info("Expedition chosen: " + expedition);
 		}
 	}
 	
@@ -4789,7 +4789,7 @@ public class MainThread implements Runnable {
 		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
 		if (seg == null) {
 			// error!
-//			BHBot.log("Error: Changing of raid type failed - raid selection button not detected.");
+//			BHBot.logger.info("Error: Changing of raid type failed - raid selection button not detected.");
 			return false;
 		}
 
@@ -4845,7 +4845,7 @@ public class MainThread implements Runnable {
 		try {
 			ImageIO.write(img, "png", f);
 		} catch (Exception e) {
-			BHBot.log("Impossible to take a screenshot!");
+			BHBot.logger.error("Impossible to take a screenshot!");
 		}
 
 		return name;
@@ -4941,7 +4941,7 @@ public class MainThread implements Runnable {
 		}
 
 		if (!nameImgFile.delete()) {
-			BHBot.log("Impossible to delete " + nameImgFile.getAbsolutePath());
+			BHBot.logger.warn("Impossible to delete " + nameImgFile.getAbsolutePath());
 		}
 
 	}
@@ -4951,7 +4951,7 @@ public class MainThread implements Runnable {
 		if (detectCue(cues.get("InGamePM")) != null) {
 			MarvinSegment seg = detectCue(cues.get("X"), 5 * SECOND);
 			if (seg == null) {
-				BHBot.log("Error: in-game PM window detected, but no close button found. Restarting...");
+				BHBot.logger.error("Error: in-game PM window detected, but no close button found. Restarting...");
 				restart(); //*** problem: after a call to this, it will return to the main loop. It should call "continue" inside the main loop or else there could be other exceptions!
 				return true;
 			}
@@ -4985,7 +4985,7 @@ public class MainThread implements Runnable {
 			readScreen(SECOND);
 			MarvinSegment seg = detectCue(cues.get("No"), 5 * SECOND);
 			if (seg == null) {
-				BHBot.log("Error: 'Team not full/ordered' window detected, but no 'No' button found. Restarting...");
+				BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'No' button found. Restarting...");
 				return true;
 			}
 			clickOnSeg(seg);
@@ -4993,7 +4993,7 @@ public class MainThread implements Runnable {
 
 			seg = detectCue(cues.get("AutoTeam"), 10 * SECOND);
 			if (seg == null) {
-				BHBot.log("Error: 'Team not full/ordered' window detected, but no 'Auto' button found. Restarting...");
+				BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'Auto' button found. Restarting...");
 				return true;
 			}
 			clickOnSeg(seg);
@@ -5001,7 +5001,7 @@ public class MainThread implements Runnable {
 			readScreen(2 * SECOND);
 			seg = detectCue(cues.get("Accept"), 10 * SECOND);
 			if (seg == null) {
-				BHBot.log("Error: 'Team not full/ordered' window detected, but no 'Accept' button found. Restarting...");
+				BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'Accept' button found. Restarting...");
 				return true;
 			}
 
@@ -5011,12 +5011,12 @@ public class MainThread implements Runnable {
 				String teamScreen = saveGameScreen("auto-team");
 				File teamFile = new File(teamScreen);
 				sendPushOverMessage("Team auto assigned", message, "siren", MessagePriority.NORMAL, teamFile);
-				if (!teamFile.delete()) BHBot.log("Impossible to delete tmp error img file for team auto assign");
+				if (!teamFile.delete()) BHBot.logger.warn("Impossible to delete tmp error img file for team auto assign");
 			}
 
 			clickOnSeg(seg);
 
-			BHBot.log(message);
+			BHBot.logger.info(message);
 		}
 
 		return false; // all OK
@@ -5029,13 +5029,13 @@ public class MainThread implements Runnable {
 			readScreen();
 			MarvinSegment seg = detectCue(cues.get("YesGreen"), 10 * SECOND);
 			if (seg == null) {
-				BHBot.log("Error: 'GVG Confirm' window detected, but no 'Yes' green button found. Restarting...");
+				BHBot.logger.error("Error: 'GVG Confirm' window detected, but no 'Yes' green button found. Restarting...");
 				return true;
 			}
 			clickOnSeg(seg);
 			sleep(2 * SECOND);
 
-			BHBot.log("'GVG' dialog detected and handled - GVG has been auto confirmed!");
+			BHBot.logger.info("'GVG' dialog detected and handled - GVG has been auto confirmed!");
 		}
 
 		return false; // all ok
@@ -5051,7 +5051,7 @@ public class MainThread implements Runnable {
 		MarvinSegment seg = detectCue(cues.get("NotEnoughEnergy"));
 		if (seg != null) {
 			// we don't have enough energy!
-			BHBot.log("Problem detected: insufficient energy to attempt dungeon. Cancelling...");
+			BHBot.logger.warn("Problem detected: insufficient energy to attempt dungeon. Cancelling...");
 			closePopupSecurely(cues.get("NotEnoughEnergy"), cues.get("No"));
 
 			closePopupSecurely(cues.get("AutoTeam"), cues.get("X"));
@@ -5084,7 +5084,7 @@ public class MainThread implements Runnable {
 		//Misc.saveImage(imb, "difficulty_test2.png");
 		for (int i = 0; i < 10; i++) {
 			List<MarvinSegment> list = FindSubimage.findSubimage(im, cues.get("" + i).im, 1.0, true, false, 0, 0, 0, 0);
-			//BHBot.log("DEBUG difficulty detection: " + i + " - " + list.size());
+			//BHBot.logger.info("DEBUG difficulty detection: " + i + " - " + list.size());
 			for (MarvinSegment s : list) {
 				nums.add(new ScreenNum(i, s.x1));
 			}
@@ -5146,7 +5146,7 @@ public class MainThread implements Runnable {
 			}
 		}
 		if (seg == null) {
-			BHBot.log("Error: unable to detect difficulty selection box!");
+			BHBot.logger.error("Error: unable to detect difficulty selection box!");
 			saveGameScreen("early_error");
 			return 0; // error
 		}
@@ -5170,7 +5170,7 @@ public class MainThread implements Runnable {
 		readScreen();
 		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),SECOND);
 		if (seg == null) {
-			BHBot.log("Error: unable to detect world boss difficulty selection box!");
+			BHBot.logger.error("Error: unable to detect world boss difficulty selection box!");
 			saveGameScreen("early_error");
 			return 0; // error
 		}
@@ -5194,7 +5194,7 @@ public class MainThread implements Runnable {
 	private void changeWorldBossTier(int target) {
 		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),SECOND);
 		if (seg == null) {
-			BHBot.log("Error: unable to detect world boss difficulty selection box!");
+			BHBot.logger.error("Error: unable to detect world boss difficulty selection box!");
 			saveGameScreen("early_error");
 			restart();
 		}
@@ -5292,7 +5292,7 @@ public class MainThread implements Runnable {
 			}
 		}
 		if (seg == null) {
-			BHBot.log("Error: unable to detect difficulty selection box!");
+			BHBot.logger.error("Error: unable to detect difficulty selection box!");
 			saveGameScreen("early_error");
 			return 0; // error
 		}
@@ -5319,7 +5319,7 @@ public class MainThread implements Runnable {
 
 		MarvinSegment seg = detectCue(cues.get("SelectDifficulty"), 2*SECOND);
 		if (seg == null) {
-			BHBot.log("Error: unable to detect 'select difficulty' button while trying to change difficulty level!");
+			BHBot.logger.error("Error: unable to detect 'select difficulty' button while trying to change difficulty level!");
 			return false; // error
 			}
 
@@ -5336,7 +5336,7 @@ public class MainThread implements Runnable {
 
 		MarvinSegment seg = detectCue(cues.get("SelectDifficultyExpedition"), 2*SECOND);
 		if (seg == null) {
-			BHBot.log("Error: unable to detect 'select difficulty' button while trying to change difficulty level!");
+			BHBot.logger.error("Error: unable to detect 'select difficulty' button while trying to change difficulty level!");
 			return false; // error
 		}
 
@@ -5368,7 +5368,7 @@ public class MainThread implements Runnable {
 		final int[] posy = new int[]{170, 230, 290, 350, 410};
 
 		if (recursionDepth > 5) {
-			BHBot.log("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
+			BHBot.logger.error("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
 			saveGameScreen("early_error");
 			tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
 			return false;
@@ -5380,16 +5380,16 @@ public class MainThread implements Runnable {
 		makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
 		BufferedImage sub = subm.getBufferedImage();
 		int num = readNumFromImg(sub);
-//		BHBot.log("num = " + Integer.toString(num));
+//		BHBot.logger.info("num = " + Integer.toString(num));
 		if (num == 0) {
-			BHBot.log("Error: unable to read difficulty level from a drop-down menu!");
+			BHBot.logger.error("Error: unable to read difficulty level from a drop-down menu!");
 			saveGameScreen("early_error");
 			tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
 			return false;
 		}
 
 		int move = newDifficulty - num; // if negative, we have to move down (in dropdown/numbers), or else up
-//		BHBot.log("move = " + Integer.toString(move));
+//		BHBot.logger.info("move = " + Integer.toString(move));
 
 		if (move >= -4 && move <= 0) {
 			// we have it on screen. Let's select it!
@@ -5402,7 +5402,7 @@ public class MainThread implements Runnable {
 			// move up
 			seg = detectCue(cues.get("DropDownUp"));
 			if (seg == null) {
-				BHBot.log("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
+				BHBot.logger.error("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
 				saveGameScreen("early_error");
 				clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
 				return false;
@@ -5417,13 +5417,13 @@ public class MainThread implements Runnable {
 			// move down
 			seg = detectCue(cues.get("DropDownDown"));
 			if (seg == null) {
-				BHBot.log("Error: unable to detect down arrow in trials/gauntlet difficulty drop-down menu!");
+				BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty drop-down menu!");
 				saveGameScreen("early_error");
 				clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
 				return false;
 			}
 			int moves = Math.abs(move)-4;
-//			BHBot.log("Scrolls to 60 = " + Integer.toString(moves));
+//			BHBot.logger.info("Scrolls to 60 = " + Integer.toString(moves));
 			for (int i = 0; i < moves; i++) {
 				clickOnSeg(seg);
 			}
@@ -5452,7 +5452,7 @@ public class MainThread implements Runnable {
 		final int[] posy = new int[]{170, 230, 290, 350, 410};
 
 		if (recursionDepth > 5) {
-			BHBot.log("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
+			BHBot.logger.error("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
 			saveGameScreen("early_error");
 			tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
 			return false;
@@ -5464,16 +5464,16 @@ public class MainThread implements Runnable {
 		makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
 		BufferedImage sub = subm.getBufferedImage();
 		int num = readNumFromImg(sub);
-//		BHBot.log("num = " + Integer.toString(num));
+//		BHBot.logger.info("num = " + Integer.toString(num));
 		if (num == 0) {
-			BHBot.log("Error: unable to read difficulty level from a drop-down menu!");
+			BHBot.logger.error("Error: unable to read difficulty level from a drop-down menu!");
 			saveGameScreen("early_error");
 			tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
 			return false;
 		}
 
 		int move = (newDifficulty - num)/5; // divided by 5 as each click moves the levels by 5 in Expeditions
-//		BHBot.log("move = " + Integer.toString(move));
+//		BHBot.logger.info("move = " + Integer.toString(move));
 
 		if (move >= -4 && move <= 0) {
 			// we have it on screen. Let's select it!
@@ -5486,12 +5486,12 @@ public class MainThread implements Runnable {
 			// move up
 			seg = detectCue(cues.get("DropDownUp"));
 			if (seg == null) {
-				BHBot.log("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
+				BHBot.logger.error("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
 				saveGameScreen("early_error");
 				clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
 				return false;
 			}
-//			BHBot.log("Scrolls up = " + Integer.toString(move));
+//			BHBot.logger.info("Scrolls up = " + Integer.toString(move));
 			for (int i = 0; i < move; i++) {
 				clickOnSeg(seg);
 			}
@@ -5502,13 +5502,13 @@ public class MainThread implements Runnable {
 			// move down
 			seg = detectCue(cues.get("DropDownDown"));
 			if (seg == null) {
-				BHBot.log("Error: unable to detect down arrow in trials/gauntlet difficulty drop-down menu!");
+				BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty drop-down menu!");
 				saveGameScreen("early_error");
 				clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
 				return false;
 			}
 			int moves = Math.abs(move);
-//			BHBot.log("Scrolls down = " + Integer.toString(moves));
+//			BHBot.logger.info("Scrolls down = " + Integer.toString(moves));
 			for (int i = 0; i < moves; i++) {
 				clickOnSeg(seg);
 			}
@@ -5530,15 +5530,15 @@ public class MainThread implements Runnable {
 			BufferedImage sub = subm.getBufferedImage();
 			int num = readNumFromImg(sub);
 			if (num == 0) {
-				BHBot.log("Error: unable to read difficulty level from a drop-down menu!");
+				BHBot.logger.info("Error: unable to read difficulty level from a drop-down menu!");
 				return;
 			}
-			BHBot.log("Difficulty: " + num);
+			BHBot.logger.info("Difficulty: " + num);
 
 			// move up
 			seg = detectCue(cues.get("DropDownUp"));
 			if (seg == null) {
-				BHBot.log("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
+				BHBot.logger.info("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
 				return;
 			}
 			clickOnSeg(seg);
@@ -5556,7 +5556,7 @@ public class MainThread implements Runnable {
 	int detectCost() {
 		MarvinSegment seg = detectCue(cues.get("Cost"), 15*SECOND);
 		if (seg == null) {
-			BHBot.log("Error: unable to detect cost selection box!");
+			BHBot.logger.error("Error: unable to detect cost selection box!");
 			saveGameScreen("early_error");
 			return 0; // error
 		}
@@ -5584,7 +5584,7 @@ public class MainThread implements Runnable {
 		}
 
 		if (!success) {
-			BHBot.log("Error: unable to detect cost selection box value!");
+			BHBot.logger.error("Error: unable to detect cost selection box value!");
 			saveGameScreen("early_error");
 			return 0;
 		}
@@ -5604,7 +5604,7 @@ public class MainThread implements Runnable {
 
 		MarvinSegment seg = detectCue(cues.get("SelectCost"), 5*SECOND);
 		if (seg == null) {
-			BHBot.log("Error: unable to detect 'select cost' button while trying to change cost!");
+			BHBot.logger.error("Error: unable to detect 'select cost' button while trying to change cost!");
 			return false; // error
 		}
 
@@ -5673,7 +5673,7 @@ public class MainThread implements Runnable {
 		while (seg2 == null) {
 			counter++;
 			if (counter > 10) {
-				BHBot.log("Error: unable to close popup <" + popup.name + "> securely: popup cue not detected!");
+				BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: popup cue not detected!");
 				return false;
 			}
 			readScreen(SECOND);
@@ -5688,7 +5688,7 @@ public class MainThread implements Runnable {
 
 			counter++;
 			if (counter > 10) {
-				BHBot.log("Error: unable to close popup <" + popup.name + "> securely: either close button has not been detected or popup would not close!");
+				BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: either close button has not been detected or popup would not close!");
 				return false;
 			}
 
@@ -5731,7 +5731,7 @@ public class MainThread implements Runnable {
 
 		seg = detectCue(cues.get("StripSelectorButton"), 10*SECOND);
 		if (seg == null) {
-			BHBot.log("Error: unable to detect equipment filter button! Skipping...");
+			BHBot.logger.error("Error: unable to detect equipment filter button! Skipping...");
 			return ;
 		}
 
@@ -5746,9 +5746,9 @@ public class MainThread implements Runnable {
 			readScreen(500); // to stabilize sliding popup a bit
 
 			int scrollerPos = detectEquipmentFilterScrollerPos();
-//			BHBot.log("Scroller Pos = " + Integer.toString(scrollerPos));
+//			BHBot.logger.info("Scroller Pos = " + Integer.toString(scrollerPos));
 			if (scrollerPos == -1) {
-				BHBot.log("Problem detected: unable to detect scroller position in the character window (location #1)! Skipping strip down/up...");
+				BHBot.logger.warn("Problem detected: unable to detect scroller position in the character window (location #1)! Skipping strip down/up...");
 				return ;
 			}
 
@@ -5779,7 +5779,7 @@ public class MainThread implements Runnable {
 			int counter = 0;
 			while (newScrollerPos != scrollerPos) {
 				if (counter > 3) {
-					BHBot.log("Problem detected: unable to adjust scroller position in the character window (scroller position: " + newScrollerPos + ", should be: " + scrollerPos + ")! Skipping strip down/up...");
+					BHBot.logger.warn("Problem detected: unable to adjust scroller position in the character window (scroller position: " + newScrollerPos + ", should be: " + scrollerPos + ")! Skipping strip down/up...");
 					return ;
 				}
 				readScreen(SECOND);
@@ -5821,7 +5821,7 @@ public class MainThread implements Runnable {
             list.append(EquipmentType.letterToName(type)).append(", ");
         }
         list = new StringBuilder(list.substring(0, list.length() - 2));
-        BHBot.log("Stripping down for PvP/GVG (" + list + ")...");
+        BHBot.logger.info("Stripping down for PvP/GVG (" + list + ")...");
 
         for (String type : striplist) {
             strip(EquipmentType.letterToType(type), StripDirection.StripDown);
@@ -5837,7 +5837,7 @@ public class MainThread implements Runnable {
             list.append(EquipmentType.letterToName(type)).append(", ");
         }
         list = new StringBuilder(list.substring(0, list.length() - 2));
-        BHBot.log("Dressing back up (" + list + ")...");
+        BHBot.logger.info("Dressing back up (" + list + ")...");
 
         // we reverse the order so that we have to make less clicks to dress up equipment
         Collections.reverse(striplist);
@@ -5866,11 +5866,11 @@ public class MainThread implements Runnable {
                 if (seg != null) {
                     saveGameScreen("fishing-baits");
                     clickOnSeg(seg);
-                    BHBot.log("Correctly collected fishing baits");
+                    BHBot.logger.info("Correctly collected fishing baits");
                     sleep(SECOND * 2);
                     readScreen();
                 } else {
-                    BHBot.log("Something weng wrong while collecting fishing baits, restarting...");
+                    BHBot.logger.error("Something weng wrong while collecting fishing baits, restarting...");
                     saveGameScreen("fishing-error-baits");
                     restart();
                 }
@@ -5882,13 +5882,13 @@ public class MainThread implements Runnable {
                 sleep(SECOND * 2);
                 readScreen();
             } else {
-                BHBot.log("Something went wrong while closing the fishing dialog, restarting...");
+                BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
                 saveGameScreen("fishing-error-closing");
                 restart();
             }
 
         } else {
-            BHBot.log("Impossible to find the fishing button");
+            BHBot.logger.warn("Impossible to find the fishing button");
         }
         readScreen(SECOND *2);
     }
@@ -5913,15 +5913,15 @@ public class MainThread implements Runnable {
 					if (seg != null) {
 						saveGameScreen("bounty-loot");
 						clickOnSeg(seg);
-						BHBot.log("Collected bounties");
+						BHBot.logger.info("Collected bounties");
 						sleep(SECOND * 2);
 					} else {
-						BHBot.log("Error when collecting bounty items, restarting...");
+						BHBot.logger.error("Error when collecting bounty items, restarting...");
 						saveGameScreen("bounties-error-collect");
 						restart();
 					}
 				} else {
-					BHBot.log("Error finding bounty item dialog, restarting...");
+					BHBot.logger.error("Error finding bounty item dialog, restarting...");
 					saveGameScreen("bounties-error-item");
 					restart();
 				}
@@ -5934,12 +5934,12 @@ public class MainThread implements Runnable {
 				clickOnSeg(seg);
 				readScreen();
 			} else {
-				BHBot.log("Impossible to close the bounties dialog, restarting...");
+				BHBot.logger.error("Impossible to close the bounties dialog, restarting...");
 				saveGameScreen("bounties-error-closing");
 				restart();
 			}
 		} else {
-			BHBot.log("Impossible to detect the Bounties dialog, restarting...");
+			BHBot.logger.error("Impossible to detect the Bounties dialog, restarting...");
 			saveGameScreen("bounties-error-dialog");
 			restart();
 		}
@@ -5966,14 +5966,14 @@ public class MainThread implements Runnable {
                 || detectCue(cues.get("ConsumableGreatFeast")) != null || detectCue(cues.get("ConsumableGingernaut")) != null
                 || detectCue(cues.get("ConsumableCoco")) != null) {
             exp = true; item = true; speed = true; gold = true;
-            // BHBot.log("Special consumable detected, skipping all the rest...");
+            // BHBot.logger.info("Special consumable detected, skipping all the rest...");
         }
 
 		EnumSet<ConsumableType> duplicateConsumables = EnumSet.noneOf(ConsumableType.class); // here we store consumables that we wanted to consume now but we have detected they are already active, so we skipped them (used for error reporting)
 		EnumSet<ConsumableType> consumables = EnumSet.noneOf(ConsumableType.class); // here we store consumables that we want to consume now
 		for (String s : BHBot.settings.consumables)
 			consumables.add(ConsumableType.getTypeFromName(s));
-		//BHBot.log("Testing for following consumables: " + Misc.listToString(consumables));
+		//BHBot.logger.info("Testing for following consumables: " + Misc.listToString(consumables));
 
 		if (exp) {
 			consumables.remove(ConsumableType.EXP_MINOR);
@@ -6005,14 +6005,14 @@ public class MainThread implements Runnable {
 			return ;
 
 		// OK, try to consume some consumables!
-		BHBot.log("Trying to consume some consumables (" + Misc.listToString(consumables) + ")...");
+		BHBot.logger.info("Trying to consume some consumables (" + Misc.listToString(consumables) + ")...");
 
 		// click on the character menu button (it's a bottom-left button with your character image on it):
 		clickInGame(55, 465);
 
 		seg = detectCue(cues.get("StripSelectorButton"), 15*SECOND);
 		if (seg == null) {
-			BHBot.log("Error: unable to detect equipment filter button! Skipping...");
+			BHBot.logger.warn("Error: unable to detect equipment filter button! Skipping...");
 			return ;
 		}
 
@@ -6028,7 +6028,7 @@ public class MainThread implements Runnable {
 
 			int scrollerPos = detectEquipmentFilterScrollerPos();
 			if (scrollerPos == -1) {
-				BHBot.log("Problem detected: unable to detect scroller position in the character window (location #1)! Skipping consumption of consumables...");
+				BHBot.logger.warn("Problem detected: unable to detect scroller position in the character window (location #1)! Skipping consumption of consumables...");
 				return ;
 			}
 
@@ -6051,7 +6051,7 @@ public class MainThread implements Runnable {
 			int counter = 0;
 			while (newScrollerPos != scrollerPos) {
 				if (counter > 3) {
-					BHBot.log("Problem detected: unable to adjust scroller position in the character window (scroller position: " + newScrollerPos + ", should be: " + scrollerPos + ")! Skipping consumption of consumables...");
+					BHBot.logger.warn("Problem detected: unable to adjust scroller position in the character window (scroller position: " + newScrollerPos + ", should be: " + scrollerPos + ")! Skipping consumption of consumables...");
 					return ;
 				}
 				readScreen(SECOND);
@@ -6095,7 +6095,7 @@ public class MainThread implements Runnable {
 
 					if (dist > 250) {
 						// don't consume the consumable... it's already in use!
-						BHBot.log("Error: \"Replace consumable\" dialog detected, meaning consumable is already in use (" + c.getName() + "). Skipping...");
+						BHBot.logger.warn("Error: \"Replace consumable\" dialog detected, meaning consumable is already in use (" + c.getName() + "). Skipping...");
 						duplicateConsumables.add(c);
 						closePopupSecurely(cues.get("ConsumableTitle"), cues.get("No"));
 					} else {
@@ -6123,23 +6123,23 @@ public class MainThread implements Runnable {
 		// OK, we're done, lets close the character menu window:
 		boolean result = closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
 		if (!result) {
-			BHBot.log("Done. Error detected while trying to close character window. Ignoring...");
+			BHBot.logger.warn("Done. Error detected while trying to close character window. Ignoring...");
 			return ;
 		}
 
 		if (!consumables.isEmpty()) {
-			BHBot.log("Some consumables were not found (out of stock?) so were not consumed. These are: " + Misc.listToString(consumables) + ".");
+			BHBot.logger.warn("Some consumables were not found (out of stock?) so were not consumed. These are: " + Misc.listToString(consumables) + ".");
 
 			for (ConsumableType c : consumables) {
 				BHBot.settings.consumables.remove(c.getName());
 			}
 
-			BHBot.log("The following consumables have been removed from auto-consume list: " + Misc.listToString(consumables) + ". In order to reactivate them, reload your settings.ini file using 'reload' command.");
+			BHBot.logger.warn("The following consumables have been removed from auto-consume list: " + Misc.listToString(consumables) + ". In order to reactivate them, reload your settings.ini file using 'reload' command.");
 		} else {
 			if (!duplicateConsumables.isEmpty())
-				BHBot.log("Done. Some of the consumables have been skipped since they are already in use: " + Misc.listToString(duplicateConsumables));
+				BHBot.logger.info("Done. Some of the consumables have been skipped since they are already in use: " + Misc.listToString(duplicateConsumables));
 			else
-				BHBot.log("Done. Desired consumables have been successfully consumed.");
+				BHBot.logger.info("Done. Desired consumables have been successfully consumed.");
 		}
 	}
 
@@ -6158,14 +6158,14 @@ public class MainThread implements Runnable {
 
 			seg = detectCue(cues.get("StripSelectorButton"));
 			if (seg == null) {
-				BHBot.log("Error: while detecting possible loading of inventory icons, inventory cue has not been detected! Ignoring...");
+				BHBot.logger.error("Error: while detecting possible loading of inventory icons, inventory cue has not been detected! Ignoring...");
 				return ;
 			}
 
 			seg = detectCue(cue);
 			counter++;
 			if (counter > 100) {
-				BHBot.log("Error: loading of icons has been detected in the inventory screen, but it didn't finish in time. Ignoring...");
+				BHBot.logger.error("Error: loading of icons has been detected in the inventory screen, but it didn't finish in time. Ignoring...");
 				return ;
 			}
 		}
@@ -6286,6 +6286,6 @@ public class MainThread implements Runnable {
 			currentFamiliar++;
 		}
 
-		BHBot.log(familiarString.toString());
+		BHBot.logger.info(familiarString.toString());
 	}
 }

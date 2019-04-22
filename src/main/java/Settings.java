@@ -224,8 +224,6 @@ public class Settings {
 		autoConsume = false;
 		collectBounties = false;
 		collectFishingBaits = false;
-//		BHBot.main.idleMode = true;
-		BHBot.log("Idle mode started, no actions will be taken");
 	}
 	
 	/* Cleans the data from the input and saves it at a string */
@@ -668,7 +666,7 @@ public class Settings {
 		// we check and sanitize expeditions values
 		String expeditions = lastUsedMap.getOrDefault("expeditions", "");
 		if (expeditions.contains("h") || expeditions.contains("i")) {
-			BHBot.log("WARNING: invalid format detected for expeditions settings '" + expeditions + "': " +
+			BHBot.logger.warn("WARNING: invalid format detected for expeditions settings '" + expeditions + "': " +
 					"a standard value of 'p1 100 100' will be used" );
 			lastUsedMap.put("expeditions", "p1 100 25;p2 100 25;p3 100 25;p4 100 25");
 			setExpeditionsFromString("p1 100 25;p2 100 25;p3 100 25;p4 100 25");
@@ -677,7 +675,7 @@ public class Settings {
 		// sanitize autorevive settings
 		String autoRevive = lastUsedMap.getOrDefault("autoRevive", "");
 		if (autoRevive.contains("1") || autoRevive.contains("2") || autoRevive.contains("3")) {
-			BHBot.log("WARNING: invalid format detected for autoRevive setting '" + autoRevive + "': " +
+            BHBot.logger.warn("WARNING: invalid format detected for autoRevive setting '" + autoRevive + "': " +
 					"this feature will be disabled" );
 			lastUsedMap.put("autoRevive", "");
 			setAutoReviveFromString("");

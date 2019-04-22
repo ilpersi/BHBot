@@ -136,11 +136,6 @@ public class BHBot {
 		logger.info(PROGRAM_NAME + " has finished.");
 	}
 	
-	public static void log(String s) {//prints with date and time in format
-		// System.out.println(new SimpleDateFormat("<yyyy/MM/dd HH:mm:ss>").format(new Date()) + " " + s);
-		logger.info(s);
-	}
-
 	private static void processCommand(String c) {
 		String[] params = c.split(" ");
 		switch (params[0]) {

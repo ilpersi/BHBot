@@ -60,14 +60,14 @@ class Scheduler {
 	void pause() {
 		paused = true;
 		pauseDuration = PAUSED_INDEFINITELY;
-		BHBot.log("Paused.");
+		BHBot.logger.info("Paused.");
 	}
 	
 	void pause(int duration) {
 		paused = true;
 		pauseDuration = duration;
 		pauseStart = Misc.getTime();
-		BHBot.log("Paused for " + Misc.millisToHumanForm(duration) + ".");
+		BHBot.logger.info("Paused for " + Misc.millisToHumanForm(duration) + ".");
 	}
 	
 	void resume() {
@@ -84,7 +84,7 @@ class Scheduler {
 		 * the "reconnect" dialog. With this flag, we make sure he does just that.
 		 */
 		dismissReconnectOnNextIteration = true; 
-		BHBot.log("Resumed.");
+		BHBot.logger.info("Resumed.");
 	}
 	
 	/** Returns time stamp (and not duration)! */
