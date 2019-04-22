@@ -520,6 +520,7 @@ public class Settings {
                 break;
             default:
                 logLevel = Level.toLevel("INFO");
+                break;
         }
     }
 	
