@@ -356,14 +356,14 @@ public class MainThread implements Runnable {
 //			try {
 //				img = ImageIO.read(resourceURL);
 //			} catch (IOException e) {
-//				e.printStackTrace();
+//				BHBot.logger.error(Misc.getStackTrace());
 //			}
 //		} else {
 //			BHBot.logger.error("Error with resource: " + f);
 		try {
 			img = ImageIO.read(new File(f));
 		} catch (IOException e) {
-			e.printStackTrace();
+			BHBot.logger.error(Misc.getStackTrace());
 		}
 
 		return img;
@@ -818,7 +818,7 @@ public class MainThread implements Runnable {
 					try {
 						driver.manage().addCookie(ck); // This will add the stored cookie to your current session
 					} catch (Exception e) {
-						e.printStackTrace();
+						BHBot.logger.error(Misc.getStackTrace());
 					}
 				}
 			}
@@ -883,7 +883,7 @@ public class MainThread implements Runnable {
 		try {
 			if (driver != null) driver.quit();
 		} catch (Exception e) {
-			e.printStackTrace();
+			BHBot.logger.error(Misc.getStackTrace());
 		}
 
 		// disable some annoying INFO messages:
@@ -919,7 +919,7 @@ public class MainThread implements Runnable {
 				return;
 			} else {
 				BHBot.logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)");
-				e.printStackTrace();
+				BHBot.logger.error(Misc.getStackTrace());
 				sleep(5*MINUTE);
 				restart();
 				return;
@@ -943,7 +943,7 @@ public class MainThread implements Runnable {
 			} catch (Exception e) {
 				counter++;
 				if (counter > 20) {
-					e.printStackTrace();
+					BHBot.logger.error(Misc.getStackTrace());
 					BHBot.logger.error("Error: <" + e.getMessage() + "> while trying to detect and handle login form. Restarting...");
 					restart = true;
 					break;
@@ -2502,13 +2502,13 @@ public class MainThread implements Runnable {
 			} catch (Exception e) {
 				if (e instanceof org.openqa.selenium.WebDriverException && e.getMessage().startsWith("chrome not reachable")) {
 					// this happens when user manually closes the Chrome window, for example
-					e.printStackTrace();
+					BHBot.logger.error(Misc.getStackTrace());
 					BHBot.logger.error("Error: chrome is not reachable! Restarting...");
 					restart();
 					continue;
 				} else if (e instanceof java.awt.image.RasterFormatException) {
 					// not sure in what cases this happen, but it happens
-					e.printStackTrace();
+					BHBot.logger.error(Misc.getStackTrace());
 					BHBot.logger.error("Error: RasterFormatException. Attempting to re-align the window...");
 					sleep(500);
 					scrollGameIntoView();
@@ -2525,7 +2525,7 @@ public class MainThread implements Runnable {
 				} else if (e instanceof org.openqa.selenium.StaleElementReferenceException) {
 					// this is a rare error, however it happens. See this for more info:
 					// http://www.seleniumhq.org/exceptions/stale_element_reference.jsp
-					e.printStackTrace();
+					BHBot.logger.error(Misc.getStackTrace());
 					BHBot.logger.error("Error: StaleElementReferenceException. Restarting...");
 					restart();
 					continue;
@@ -2537,7 +2537,7 @@ public class MainThread implements Runnable {
 					// we must not call 'continue' here, because this error could be a loop error, this is why we need to increase numConsecutiveException bellow in the code!
 				} else {
 					// unknown error!
-					e.printStackTrace();
+					BHBot.logger.error(Misc.getStackTrace());
 				}
 
 				numConsecutiveException++;
@@ -2974,7 +2974,7 @@ public class MainThread implements Runnable {
 		try {
 			Thread.sleep(milliseconds);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			BHBot.logger.error(Misc.getStackTrace());
 		}
 	}
 
@@ -3256,7 +3256,7 @@ public class MainThread implements Runnable {
 						return ReturnResult.ok();
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					BHBot.logger.error(Misc.getStackTrace());
 				}
 
 				done = driver.findElement(By.cssSelector("#play > div.ironrv-container.open > div.ironrv-container-header.complete > div.ironrv-title > span")).getText().equalsIgnoreCase("You can now claim your reward!");
@@ -3279,7 +3279,7 @@ public class MainThread implements Runnable {
 					break;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				BHBot.logger.error(Misc.getStackTrace());
 			}
 		} while (!done);
 
@@ -4824,7 +4824,7 @@ public class MainThread implements Runnable {
 		try {
 			Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length()-4)).save(BHBot.screenshotPath);
 		} catch (Exception e) {
-			e.printStackTrace();
+			BHBot.logger.error(Misc.getStackTrace());
 		}
 
 		return BHBot.screenshotPath + name;
@@ -4887,7 +4887,7 @@ public class MainThread implements Runnable {
 		try {
 			ImageIO.write(zoneImg, "png", zoneImgTmp);
 		} catch (IOException e) {
-			e.printStackTrace();
+			BHBot.logger.error(Misc.getStackTrace());
 		}*/
 
 		int minX = zoneImg.getWidth();
@@ -4917,7 +4917,7 @@ public class MainThread implements Runnable {
 		try {
 			ImageIO.write(nameImg, "png", nameImgFile);
 		} catch (IOException e) {
-			e.printStackTrace();
+			BHBot.logger.error(Misc.getStackTrace());
 		}
 
 		MimetypesFileTypeMap ftm = new MimetypesFileTypeMap();
@@ -4931,13 +4931,13 @@ public class MainThread implements Runnable {
 		try {
 			post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			BHBot.logger.error(Misc.getStackTrace());
 		}
 
 		try {
 			httpClient.execute(post);
 		} catch (IOException e) {
-			e.printStackTrace();
+			BHBot.logger.error(Misc.getStackTrace());
 		}
 
 		if (!nameImgFile.delete()) {
@@ -5647,7 +5647,7 @@ public class MainThread implements Runnable {
 			if (seg != null)
 				clickOnSeg(seg);
 		} catch (Exception e) {
-			e.printStackTrace();
+			BHBot.logger.error(Misc.getStackTrace());
 		}
 	}
 
@@ -6242,7 +6242,7 @@ public class MainThread implements Runnable {
 								.setAttachment(attachment)
 								.build());
 			} catch (PushoverException e) {
-				e.printStackTrace();
+				BHBot.logger.error(Misc.getStackTrace());
 			}
 		}
 	}

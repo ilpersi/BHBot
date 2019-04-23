@@ -110,14 +110,14 @@ public class BHBot {
 				//System.out.print("> ");
 				s = br.readLine();
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error(Misc.getStackTrace());
 				return;
 			}
 			try {
 				logger.info("User command: <" + s + ">");
 				processCommand(s);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error(Misc.getStackTrace());
 			}
 		}
 
@@ -127,7 +127,7 @@ public class BHBot {
 				logger.info("Waiting for main thread to finish... (timeout=10s)");
 				mainThread.join(10*MainThread.SECOND);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				logger.error(Misc.getStackTrace());
 			}
 			if (mainThread.isAlive()) {
 				logger.warn("Main thread is still alive. Force stopping it now...");
@@ -135,7 +135,7 @@ public class BHBot {
 				try {
 					mainThread.join(); // until thread stops
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					logger.error(Misc.getStackTrace());
 				}
 			}
 		}
@@ -402,7 +402,7 @@ public class BHBot {
 			try {
 				logger.info("Found Chromium in " + chromiumExe.getCanonicalPath());
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error(Misc.getStackTrace());
 			}
 		}
 
@@ -413,7 +413,7 @@ public class BHBot {
 			try {
 				logger.info("Found chromedriver in " + chromeDriverExe.getCanonicalPath());
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error(Misc.getStackTrace());
 			}
 		}
 
@@ -424,7 +424,7 @@ public class BHBot {
             try {
                 logger.info("Found cues in " + cuePath.getCanonicalPath());
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(Misc.getStackTrace());
             }
         }
 
@@ -436,14 +436,14 @@ public class BHBot {
 				try {
 					logger.info("Created screenshot folder in " + screenPath.getCanonicalPath());
 				} catch (IOException e) {
-					e.printStackTrace();
+					logger.error(Misc.getStackTrace());
 				}
 			}
 		} else {
 			try {
 				logger.info("Found screenshots in " + screenPath.getCanonicalPath());
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error(Misc.getStackTrace());
 			}
 		}
 

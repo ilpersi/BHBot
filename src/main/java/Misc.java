@@ -54,7 +54,7 @@ public class Misc {
 				br.close();
 			}			
 		} catch (IOException e) {
-			e.printStackTrace();
+			BHBot.logger.error(Misc.getStackTrace());
 			return null;
 		}
 	}
@@ -83,7 +83,7 @@ public class Misc {
 			}			
 		} catch (IOException e) {
 			if (!ignoreErrors)
-				e.printStackTrace();
+				BHBot.logger.error(Misc.getStackTrace());
 			return false;
 		}
 		return true;
@@ -147,7 +147,7 @@ public class Misc {
 		try {
 			encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(toEncode));
 		} catch (IOException e) {
-			e.printStackTrace();
+			BHBot.logger.error(Misc.getStackTrace());
 		}
 		return new String(encoded, StandardCharsets.US_ASCII);
 	}
@@ -196,7 +196,7 @@ public class Misc {
 			InputStream gitResource = Misc.class.getClassLoader().getResourceAsStream("git.properties");
 			properties.load(gitResource);
 		} catch (IOException e) {
-			e.printStackTrace();
+			BHBot.logger.error(Misc.getStackTrace());
 		}
 		return properties;
 	}
