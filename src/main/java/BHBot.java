@@ -40,6 +40,9 @@ public class BHBot {
 		// process launch arguments
 		String file = Settings.DEFAULT_SETTINGS_FILE;
 
+		// We make sure that our configurationFactory is added to the list of configuration factories.
+		System.setProperty("log4j.configurationFactory", "BHBotConfigurationFactory");
+
 		for (int i = 0; i < args.length; i++) { //select settings file to load
 			switch (args[i]) {
 				case "settings":
@@ -237,6 +240,7 @@ public class BHBot {
 				settings.load(file);
 				settings.checkDeprecatedSettings();
 				settings.sanitizeSetting();
+				logger = LogManager.getRootLogger();
 				break;
 			case "pause":
 				if (params.length > 1) {
@@ -250,6 +254,7 @@ public class BHBot {
 				settings.load("plans/" + params[1] + ".ini");
 				settings.checkDeprecatedSettings();
 				settings.sanitizeSetting();
+				logger = LogManager.getRootLogger();
 				logger.info("Plan loaded from " + "<plans/" + params[1] + ".ini>.");
 				break;
 			case "pomessage":
@@ -337,6 +342,9 @@ public class BHBot {
 					return;
 				list.add(c.substring(i + 1));
 				settings.load(list);
+				settings.checkDeprecatedSettings();
+				settings.sanitizeSetting();
+				logger = LogManager.getRootLogger();
 				logger.info("Settings updated manually: <" + list.get(0) + ">");
 				break;
 			}
