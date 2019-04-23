@@ -56,7 +56,7 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
 
         AppenderComponentBuilder rollingBuilder = builder.newAppender("Rolling", "RollingFile")
                 .addAttribute("filePattern", "${baseDir}/$${date:yyyy-MM}/BHBot-%d{yyyy-MM-dd}-%i.zip")
-                .addAttribute("fileName", "${baseDir}/app.log");
+                .addAttribute("fileName", "${baseDir}/bhbot.log");
         rollingBuilder.add(builder.newLayout("PatternLayout")
                 .addAttribute("pattern", "%d [%t] %p %c - %m%n"));
         rollingBuilder
