@@ -16,7 +16,7 @@ import org.apache.logging.log4j.core.config.ConfigurationSource;
 public class BHBot {
 
 	private static final String PROGRAM_NAME = "BHBot";
-	private static final String PROGRAM_VERSION = "37.1";
+	private static final String PROGRAM_VERSION = "38";
 
 	private static Thread mainThread;
 	static MainThread main;
