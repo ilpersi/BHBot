@@ -8,6 +8,9 @@ import java.util.*;
 import net.pushover.client.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.ConfigurationFactory;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
 
 
 public class BHBot {
@@ -240,7 +243,7 @@ public class BHBot {
 				settings.load(file);
 				settings.checkDeprecatedSettings();
 				settings.sanitizeSetting();
-				logger = LogManager.getRootLogger();
+				reloadLogger();
 				break;
 			case "pause":
 				if (params.length > 1) {
@@ -254,7 +257,7 @@ public class BHBot {
 				settings.load("plans/" + params[1] + ".ini");
 				settings.checkDeprecatedSettings();
 				settings.sanitizeSetting();
-				logger = LogManager.getRootLogger();
+				reloadLogger();
 				logger.info("Plan loaded from " + "<plans/" + params[1] + ".ini>.");
 				break;
 			case "pomessage":
@@ -329,7 +332,7 @@ public class BHBot {
 				break;
 			case "reload":
 				settings.load();
-				logger = LogManager.getRootLogger();
+				reloadLogger();
 				logger.info("Settings reloaded from disk.");
 				break;
 			case "resume":
@@ -344,7 +347,7 @@ public class BHBot {
 				settings.load(list);
 				settings.checkDeprecatedSettings();
 				settings.sanitizeSetting();
-				logger = LogManager.getRootLogger();
+				reloadLogger();
 				logger.info("Settings updated manually: <" + list.get(0) + ">");
 				break;
 			}
@@ -445,6 +448,13 @@ public class BHBot {
 		}
 
 		return true;
+	}
+
+	private static void reloadLogger( ) {
+		ConfigurationFactory configFactory = new BHBotConfigurationFactory();
+		ConfigurationFactory.setConfigurationFactory(configFactory);
+		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+		ctx.start(configFactory.getConfiguration(ctx, ConfigurationSource.NULL_SOURCE));
 	}
 
 }
