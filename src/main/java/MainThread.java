@@ -3372,7 +3372,18 @@ public class MainThread implements Runnable {
 				restart();
 			}
 		}
-		
+
+		// check for merchant's offer (and decline it):
+		seg = detectCue(cues.get("Merchant"));
+		if (seg != null) {
+			seg = detectCue(cues.get("Decline"), 5*SECOND);
+			clickOnSeg(seg);
+
+			readScreen(SECOND);
+			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
+			clickOnSeg(seg);
+			return;
+		}
 		
 		// check for any character dialog:
 		/* This is nearly half of the processing time of proccessDungeon(); so trying to minimize its usage */
