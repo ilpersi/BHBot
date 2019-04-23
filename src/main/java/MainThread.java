@@ -3589,7 +3589,7 @@ public class MainThread implements Runnable {
 			inEncounterTimestamp = Misc.getTime() / 1000;
 		}
 		
-		if (state == State.Raid || state == State.Trials || state == State.Expedition) {
+		if (state == State.Raid || state == State.Trials || state == State.Expedition || state == State.UnidentifiedDungeon) {
 			if (activityDuration > 30 && !autoShrined) { //if we're past 30 seconds into the activity
 				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) { //and it's been the battleDelay setting since last encounter
 					BHBot.logger.info("No activity for " + BHBot.settings.battleDelay + "s, enabing shrines");
