@@ -2579,28 +2579,11 @@ public class MainThread implements Runnable {
 		if (seg != null) {
 			clickOnSeg(seg);
 			readScreen(delay);
-			seg = detectCue(cues.get("Settings"), SECOND*2);
+			seg = detectCue(cues.get("Settings"), SECOND*3);
 			return seg != null;
 		} else {
 			return false;
 		}
-	}
-
-	private boolean closeSettings() {
-		readScreen();
-
-		MarvinSegment seg = detectCue(cues.get("Settings"), SECOND);
-		if (seg != null) {
-			seg = detectCue(cues.get("X"), SECOND*2, new Bounds(608, 39, 711, 131));
-			if (seg != null) {
-				clickOnSeg(seg);
-			} else {
-				return false;
-			}
-		} else {
-			return false;
-		}
-		return true;
 	}
 
 	void checkShrineSettings(String set) {
@@ -2610,45 +2593,39 @@ public class MainThread implements Runnable {
 		if (openSettings(SECOND)) {
 
 			if ("enable".equals(set)) {
-
-				seg = detectCue(cues.get("IgnoreBoss"));
-				if (seg != null) {
-					clickInGame(194, 366);
+				while ( detectCue(cues.get("IgnoreBoss"), SECOND) != null ) {
 					BHBot.logger.info("Enabling Ignore Boss");
-				} else {
-					BHBot.logger.info("Ignore Boss Enabled");
-				}
-				readScreen(500);
-
-				seg = detectCue(cues.get("IgnoreShrines"));
-				if (seg != null) {
-					clickInGame(194, 402);
-					BHBot.logger.info("Enabling Ignore Shrine");
-				} else {
-					BHBot.logger.info("Ignore Shrine Enabled");
-				}
-				BHBot.logger.info("autoShrine autoConfigured");
-				readScreen(SECOND);
-			} else if ("disable".equals(set)) {
-
-				seg = detectCue(cues.get("IgnoreBoss"));
-				if (seg == null) {
 					clickInGame(194, 366);
-					BHBot.logger.info("Disabling Ignore Boss");
+					readScreen(500);
 				}
-				readScreen(500);
+				BHBot.logger.info("Ignore Boss Enabled");
 
-				seg = detectCue(cues.get("IgnoreShrines"));
-				if (seg == null) {
+				while (detectCue(cues.get("IgnoreShrines"), SECOND) != null) {
+					BHBot.logger.info("Enabling Ignore Shrine");
 					clickInGame(194, 402);
-					BHBot.logger.info("Disabling Ignore Shrine");
+					readScreen(500);
 				}
-				BHBot.logger.info("autoShrine disabled");
-				readScreen(SECOND);
+				BHBot.logger.info("Ignore Shrine Enabled");
+			} else if ("disable".equals(set)) {
+				while ( detectCue(cues.get("IgnoreBoss"), SECOND) == null ) {
+					BHBot.logger.info("Disabling Ignore Boss");
+					clickInGame(194, 366);
+					readScreen(500);
+				}
+				BHBot.logger.info("Ignore Boss Disabled");
+
+				while (detectCue(cues.get("IgnoreShrines"), SECOND) == null) {
+					BHBot.logger.info("Disabling Ignore Shrine");
+					clickInGame(194, 402);
+					readScreen(500);
+				}
+				BHBot.logger.info("Ignore Shrine Disabled");
 			}
 
+			readScreen(SECOND);
+
 			shrinesChecked = true;
-			closeSettings();
+			closePopupSecurely(cues.get("Settings"), new Cue(cues.get("X"), new Bounds(608, 39, 711, 131)) );
 		} else {
 			BHBot.logger.warn("Impossible to open settings menu");
 		}
@@ -3604,38 +3581,58 @@ public class MainThread implements Runnable {
 			if (activityDuration > 30 && !autoShrined) { //if we're past 30 seconds into the activity
 				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) { //and it's been the battleDelay setting since last encounter
 					BHBot.logger.info("No activity for " + BHBot.settings.battleDelay + "s, enabing shrines");
+
 					//open settings
-					openSettings(SECOND);
-					
-					seg = detectCue(cues.get("IgnoreShrines"));
-					if (seg == null) {
-						clickInGame(194,402);
-						BHBot.logger.info("Disabling Ignore Shrine");
+					if (!openSettings(SECOND)) {
+						BHBot.logger.error("Autoshrine could not open the settings menu to disable the ignore shrines option");
 					}
-					sleep(500);
-					clickInGame(660,80); //close settings
-					sleep(500);
-					clickInGame(780,270); //auto off
-					sleep(500);
-					clickInGame(780,270); //auto on again
+
+					while (detectCue(cues.get("IgnoreShrines"), SECOND) == null) {
+						BHBot.logger.info("Disabling Ignore Shrine");
+						clickInGame(194,402);
+						readScreen(500);
+					}
+
+					closePopupSecurely(cues.get("Settings"), new Cue(cues.get("X"), new Bounds(608, 39, 711, 131)) );
+					readScreen(500);
+
+					// We disable and re-enable the auto feature
+					while (detectCue(cues.get("AutoOn"), 500) != null) {
+						clickInGame(780,270); //auto off
+						readScreen(500);
+					}
+					while (detectCue(cues.get("AutoOff"), 500) != null) {
+						clickInGame(780,270); //auto on again
+						readScreen(500);
+					}
 					
 					BHBot.logger.info("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
 					sleep(BHBot.settings.shrineDelay*SECOND); //long sleep while we activate shrines
 					
 					//open settings
-					openSettings(SECOND);
-
-					seg = detectCue(cues.get("IgnoreBoss"));
-					if (seg == null) {
-						clickInGame(194,366);
-						BHBot.logger.info("Disabling Ignore Boss");
+					if (!openSettings(SECOND)) {
+						BHBot.logger.error("Autoshrine could not open the settings menu to disable the ignore boss option");
 					}
-					sleep(500);
-					clickInGame(660,80); //close settings
-					sleep(500);
-					clickInGame(780,270); //auto off
-					sleep(500);
-					clickInGame(780,270); //auto on again
+
+					while (detectCue(cues.get("IgnoreBoss"), SECOND) == null) {
+						BHBot.logger.info("Disabling Ignore Boss");
+						clickInGame(194,366);
+						readScreen(500);
+					}
+
+					closePopupSecurely(cues.get("Settings"), new Cue(cues.get("X"), new Bounds(608, 39, 711, 131)) );
+					readScreen(500);
+
+					// We disable and re-enable the auto feature
+					while (detectCue(cues.get("AutoOn"), 500) != null) {
+						clickInGame(780,270); //auto off
+						readScreen(500);
+					}
+					while (detectCue(cues.get("AutoOff"), 500) != null) {
+						clickInGame(780,270); //auto on again
+						readScreen(500);
+					}
+
 					autoShrined = true;
 				}
 			}
