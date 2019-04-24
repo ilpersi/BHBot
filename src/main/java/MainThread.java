@@ -2319,10 +2319,9 @@ public class MainThread implements Runnable {
 							
 							seg = detectCue(cues.get("BlueSummon"),SECOND);
 							clickOnSeg(seg);
-							sleep(SECOND); //wait for screen to stablise
+							sleep(2*SECOND); //wait for screen to stablise
 							
 							//world boss type selection
-							readScreen();
 							String selectedWB = readSelectedWorldBoss();
 							if (!worldBossType.equals(selectedWB)) {
 								BHBot.logger.info(selectedWB + " selected, changing..");
@@ -4766,6 +4765,7 @@ public class MainThread implements Runnable {
 	/** Read Selected World Boss **/
 
 	private String readSelectedWorldBoss() {
+		readScreen(1*SECOND);
 		if (detectCue(cues.get("OrlagWB")) != null)
 			return "Orlag";
 		else if (detectCue(cues.get("NetherWB")) != null)
