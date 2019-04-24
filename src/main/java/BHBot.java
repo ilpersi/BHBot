@@ -86,16 +86,15 @@ public class BHBot {
             logger.info(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started. Unknown build date.");
 		}
 
-        logger.info("Settings loaded from file");
+		Properties gitPropertis = Misc.getGITInfo();
+		logger.info("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time")) ;
+
+		logger.info("Settings loaded from file");
 
 		settings.checkDeprecatedSettings();
 		settings.sanitizeSetting();
 
-        logger.info("Character: " + BHBot.settings.username);
-
-		Properties gitPropertis = Misc.getGITInfo();
-
-        logger.info("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time")) ;
+		logger.info("Character: " + BHBot.settings.username);
 
 		MainThread.loadCues();
 
@@ -357,9 +356,47 @@ public class BHBot {
 				break;
             case "test":
                 switch (params[1]) {
-                    case "s":
-                    case "shrine":
-                        main.checkShrineSettings("disable");
+                    case "ai":
+                    case "autoignore":
+                    	boolean ignoreBoss = false;
+                    	boolean ignoreShrines = false;
+
+                    	if (params.length > 2) {
+                    		switch (params[2].toLowerCase()) {
+								case "off":
+								case "0":
+								case "no":
+								case "do":
+									ignoreBoss = false;
+									break;
+								case "on":
+								case "1":
+								case "yes":
+								case "y":
+									ignoreBoss = true;
+									break;
+							}
+						}
+
+						if (params.length > 3) {
+							switch (params[3].toLowerCase()) {
+								case "off":
+								case "0":
+								case "no":
+								case "do":
+									ignoreShrines = false;
+									break;
+								case "on":
+								case "1":
+								case "yes":
+								case "y":
+									ignoreShrines = true;
+									break;
+							}
+						}
+                        if (!main.checkShrineSettings(ignoreBoss, ignoreShrines)) {
+                        	logger.error("Something went wrong when checking auto ignore settings!");
+						}
                         break;
                     case "r":
                     case "raidread":
