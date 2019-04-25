@@ -1,5 +1,7 @@
+import com.google.common.base.Throwables;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.util.ExceptionUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -54,7 +56,8 @@ public class Misc {
 				br.close();
 			}			
 		} catch (IOException e) {
-			BHBot.logger.error(Misc.getStackTrace());
+			BHBot.logger.error("Impossible to read file: " + file);
+			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 			return null;
 		}
 	}
@@ -82,8 +85,10 @@ public class Misc {
 				bw.close();
 			}			
 		} catch (IOException e) {
-			if (!ignoreErrors)
-				BHBot.logger.error(Misc.getStackTrace());
+			if (!ignoreErrors) {
+				BHBot.logger.error("saveTextFile could not save contents in file: " + file);
+				BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			}
 			return false;
 		}
 		return true;
@@ -147,7 +152,8 @@ public class Misc {
 		try {
 			encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(toEncode));
 		} catch (IOException e) {
-			BHBot.logger.error(Misc.getStackTrace());
+			BHBot.logger.error("Error in encodeFileToBase64Binary");
+			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}
 		return new String(encoded, StandardCharsets.US_ASCII);
 	}
@@ -196,9 +202,9 @@ public class Misc {
 			InputStream gitResource = Misc.class.getClassLoader().getResourceAsStream("git.properties");
 			properties.load(gitResource);
 		} catch (IOException e) {
-			BHBot.logger.error(Misc.getStackTrace());
+			BHBot.logger.error("Impossible to get GIT information");
+			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}
 		return properties;
 	}
-	
 }

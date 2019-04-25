@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.*;
 
+import com.google.common.base.Throwables;
 import net.pushover.client.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -73,7 +74,7 @@ public class BHBot {
 		}
 
 		if ("LOAD_IDLE_SETTINGS".equals(file)){
-			BHBot.settings.setIdle();
+			settings.setIdle();
 		} else {
 			settings.load(file);
 		}
@@ -94,7 +95,7 @@ public class BHBot {
 		settings.checkDeprecatedSettings();
 		settings.sanitizeSetting();
 
-		logger.info("Character: " + BHBot.settings.username);
+		logger.info("Character: " + settings.username);
 
 		MainThread.loadCues();
 
@@ -109,14 +110,16 @@ public class BHBot {
 				//System.out.print("> ");
 				s = br.readLine();
 			} catch (IOException e) {
-				logger.error(Misc.getStackTrace());
+				logger.error("Impossible to read user input");
+				logger.error(Throwables.getStackTraceAsString(e));
 				return;
 			}
 			try {
 				logger.info("User command: <" + s + ">");
 				processCommand(s);
 			} catch (Exception e) {
-				logger.error(Misc.getStackTrace());
+				logger.error("Impossile to process user command: " + s);
+				logger.error(Throwables.getStackTraceAsString(e));
 			}
 		}
 
@@ -126,7 +129,7 @@ public class BHBot {
 				logger.info("Waiting for main thread to finish... (timeout=10s)");
 				mainThread.join(10*MainThread.SECOND);
 			} catch (InterruptedException e) {
-				logger.error(Misc.getStackTrace());
+				logger.error(Throwables.getStackTraceAsString(e));
 			}
 			if (mainThread.isAlive()) {
 				logger.warn("Main thread is still alive. Force stopping it now...");
@@ -134,7 +137,7 @@ public class BHBot {
 				try {
 					mainThread.join(); // until thread stops
 				} catch (InterruptedException e) {
-					logger.error(Misc.getStackTrace());
+					logger.error(Throwables.getStackTraceAsString(e));
 				}
 			}
 		}
@@ -266,10 +269,10 @@ public class BHBot {
 				if (params.length > 1)
 					message = String.join(" ", Arrays.copyOfRange(params, 1, params.length));
 
-				if (BHBot.settings.enablePushover) {
+				if (settings.enablePushover) {
 					String poLogMessage = "Sending Pushover test message.";
-					poLogMessage += "\n\n poUserToken is: " + BHBot.settings.poUserToken;
-					poLogMessage += "\n poAppToken is: " + BHBot.settings.poAppToken;
+					poLogMessage += "\n\n poUserToken is: " + settings.poUserToken;
+					poLogMessage += "\n poAppToken is: " + settings.poAppToken;
 					logger.info(poLogMessage);
 
 					String poScreenName = main.saveGameScreen("pomessage");
@@ -427,60 +430,65 @@ public class BHBot {
 	}
 
 	private static boolean checkPaths() {
-		File chromiumExe = new File(BHBot.chromiumExePath);
-		File chromeDriverExe = new File(BHBot.chromeDriverExePath);
-		File cuePath = new File(BHBot.cuesPath);
-		File screenPath = new File(BHBot.screenshotPath);
+		File chromiumExe = new File(chromiumExePath);
+		File chromeDriverExe = new File(chromeDriverExePath);
+		File cuePath = new File(cuesPath);
+		File screenPath = new File(screenshotPath);
 
 		if (!chromiumExe.exists()) {
-			logger.fatal("Impossible to find Chromium executable in path " + BHBot.chromiumExePath + ". Bot will be stopped!");
+			logger.fatal("Impossible to find Chromium executable in path " + chromiumExePath + ". Bot will be stopped!");
 			return false;
 		} else {
 			try {
 				logger.info("Found Chromium in " + chromiumExe.getCanonicalPath());
 			} catch (IOException e) {
-				logger.error(Misc.getStackTrace());
+				logger.error("Error while getting Canonical Path for Chromium");
+				logger.error(Throwables.getStackTraceAsString(e));
 			}
 		}
 
 		if (!chromeDriverExe.exists()) {
-			logger.fatal("Impossible to find chromedriver executable in path " + BHBot.chromeDriverExePath + ". Bot will be stopped!");
+			logger.fatal("Impossible to find chromedriver executable in path " + chromeDriverExePath + ". Bot will be stopped!");
 			return false;
 		} else {
 			try {
 				logger.info("Found chromedriver in " + chromeDriverExe.getCanonicalPath());
 			} catch (IOException e) {
-				logger.error(Misc.getStackTrace());
+				logger.error("Error while getting Canonical Path for chromedriver");
+				logger.error(Throwables.getStackTraceAsString(e));
 			}
 		}
 
 		if (!cuePath.exists() || cuePath.isFile()) {
-		    logger.fatal("Impossible to find cues path in " + BHBot.cuesPath + ". Bot will be stopped!");
+		    logger.fatal("Impossible to find cues path in " + cuesPath + ". Bot will be stopped!");
 		    return false;
         } else {
             try {
                 logger.info("Found cues in " + cuePath.getCanonicalPath());
             } catch (IOException e) {
-                logger.error(Misc.getStackTrace());
+				logger.error("Error while getting Canonical Path for cues");
+            	logger.error(Throwables.getStackTraceAsString(e));
             }
         }
 
 		if (!screenPath.exists()) {
 			if (!screenPath.mkdir()) {
-				logger.fatal("Impossible to create screenshot folder in " + BHBot.screenshotPath);
+				logger.fatal("Impossible to create screenshot folder in " + screenshotPath);
 				return false;
 			} else {
 				try {
 					logger.info("Created screenshot folder in " + screenPath.getCanonicalPath());
 				} catch (IOException e) {
-					logger.error(Misc.getStackTrace());
+					logger.error("Error while getting Canonical Path for newly created screenshots");
+					logger.error(Throwables.getStackTraceAsString(e));
 				}
 			}
 		} else {
 			try {
 				logger.info("Found screenshots in " + screenPath.getCanonicalPath());
 			} catch (IOException e) {
-				logger.error(Misc.getStackTrace());
+				logger.error("Error while getting Canonical Path for screenshots");
+				logger.error(Throwables.getStackTraceAsString(e));
 			}
 		}
 

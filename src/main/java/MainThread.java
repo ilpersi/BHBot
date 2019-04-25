@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
 
+import com.google.common.base.Throwables;
 import net.pushover.client.MessagePriority;
 import net.pushover.client.PushoverException;
 import net.pushover.client.PushoverMessage;
@@ -356,14 +357,15 @@ public class MainThread implements Runnable {
 //			try {
 //				img = ImageIO.read(resourceURL);
 //			} catch (IOException e) {
-//				BHBot.logger.error(Misc.getStackTrace());
+//				BHBot.logger.error(Throwables.getStackTraceAsString(e));
 //			}
 //		} else {
 //			BHBot.logger.error("Error with resource: " + f);
 		try {
 			img = ImageIO.read(new File(f));
 		} catch (IOException e) {
-			BHBot.logger.error(Misc.getStackTrace());
+			BHBot.logger.error("Error while loading image");
+			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}
 
 		return img;
@@ -787,7 +789,8 @@ public class MainThread implements Runnable {
 			Bwrite.close();
 			fileWrite.close();
 		} catch(Exception ex) {
-			ex.printStackTrace();
+			BHBot.logger.error("Impossible to save cookies in saveCookies.");
+			BHBot.logger.error(Throwables.getStackTraceAsString(ex));
 		}
 
 		BHBot.logger.info("Cookies saved to disk.");
@@ -818,7 +821,8 @@ public class MainThread implements Runnable {
 					try {
 						driver.manage().addCookie(ck); // This will add the stored cookie to your current session
 					} catch (Exception e) {
-						BHBot.logger.error(Misc.getStackTrace());
+						BHBot.logger.error("Error while adding cookie");
+						BHBot.logger.error(Throwables.getStackTraceAsString(e));
 					}
 				}
 			}
@@ -883,7 +887,8 @@ public class MainThread implements Runnable {
 		try {
 			if (driver != null) driver.quit();
 		} catch (Exception e) {
-			BHBot.logger.error(Misc.getStackTrace());
+			BHBot.logger.error("Error while quitting from Chromium");
+			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}
 
 		// disable some annoying INFO messages:
@@ -919,7 +924,7 @@ public class MainThread implements Runnable {
 				return;
 			} else {
 				BHBot.logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)");
-				BHBot.logger.error(Misc.getStackTrace());
+				BHBot.logger.error(Throwables.getStackTraceAsString(e));
 				sleep(5*MINUTE);
 				restart();
 				return;
@@ -943,8 +948,8 @@ public class MainThread implements Runnable {
 			} catch (Exception e) {
 				counter++;
 				if (counter > 20) {
-					BHBot.logger.error(Misc.getStackTrace());
 					BHBot.logger.error("Error: <" + e.getMessage() + "> while trying to detect and handle login form. Restarting...");
+					BHBot.logger.error(Throwables.getStackTraceAsString(e));
 					restart = true;
 					break;
 				}
@@ -2511,14 +2516,14 @@ public class MainThread implements Runnable {
 			} catch (Exception e) {
 				if (e instanceof org.openqa.selenium.WebDriverException && e.getMessage().startsWith("chrome not reachable")) {
 					// this happens when user manually closes the Chrome window, for example
-					BHBot.logger.error(Misc.getStackTrace());
 					BHBot.logger.error("Error: chrome is not reachable! Restarting...");
+					BHBot.logger.error(Throwables.getStackTraceAsString(e));
 					restart();
 					continue;
 				} else if (e instanceof java.awt.image.RasterFormatException) {
 					// not sure in what cases this happen, but it happens
-					BHBot.logger.error(Misc.getStackTrace());
 					BHBot.logger.error("Error: RasterFormatException. Attempting to re-align the window...");
+					BHBot.logger.error(Throwables.getStackTraceAsString(e));
 					sleep(500);
 					scrollGameIntoView();
 					sleep(500);
@@ -2534,8 +2539,8 @@ public class MainThread implements Runnable {
 				} else if (e instanceof org.openqa.selenium.StaleElementReferenceException) {
 					// this is a rare error, however it happens. See this for more info:
 					// http://www.seleniumhq.org/exceptions/stale_element_reference.jsp
-					BHBot.logger.error(Misc.getStackTrace());
 					BHBot.logger.error("Error: StaleElementReferenceException. Restarting...");
+					BHBot.logger.error(Throwables.getStackTraceAsString(e));
 					restart();
 					continue;
 				} else if (e instanceof com.assertthat.selenium_shutterbug.utils.web.ElementOutsideViewportException) {
@@ -2546,7 +2551,8 @@ public class MainThread implements Runnable {
 					// we must not call 'continue' here, because this error could be a loop error, this is why we need to increase numConsecutiveException bellow in the code!
 				} else {
 					// unknown error!
-					BHBot.logger.error(Misc.getStackTrace());
+					BHBot.logger.error("Unmanaged exception in main run loop");
+					BHBot.logger.error(Throwables.getStackTraceAsString(e));
 				}
 
 				numConsecutiveException++;
@@ -2964,7 +2970,8 @@ public class MainThread implements Runnable {
 		try {
 			Thread.sleep(milliseconds);
 		} catch (InterruptedException e) {
-			BHBot.logger.error(Misc.getStackTrace());
+			BHBot.logger.error("Error while attempting to sleep");
+			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}
 	}
 
@@ -3246,7 +3253,8 @@ public class MainThread implements Runnable {
 						return ReturnResult.ok();
 					}
 				} catch (Exception e) {
-					BHBot.logger.error(Misc.getStackTrace());
+					BHBot.logger.error("Error #1 in Ad management");
+					BHBot.logger.error(Throwables.getStackTraceAsString(e));
 				}
 
 				done = driver.findElement(By.cssSelector("#play > div.ironrv-container.open > div.ironrv-container-header.complete > div.ironrv-title > span")).getText().equalsIgnoreCase("You can now claim your reward!");
@@ -3269,7 +3277,8 @@ public class MainThread implements Runnable {
 					break;
 				}
 			} catch (Exception e) {
-				BHBot.logger.error(Misc.getStackTrace());
+				BHBot.logger.error("Error #2 in Ad management");
+				BHBot.logger.error(Throwables.getStackTraceAsString(e));
 			}
 		} while (!done);
 
@@ -4830,7 +4839,8 @@ public class MainThread implements Runnable {
 		try {
 			Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length()-4)).save(BHBot.screenshotPath);
 		} catch (Exception e) {
-			BHBot.logger.error(Misc.getStackTrace());
+			BHBot.logger.error("Error while saving game screenshot");
+			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}
 
 		return BHBot.screenshotPath + name;
@@ -4893,7 +4903,7 @@ public class MainThread implements Runnable {
 		try {
 			ImageIO.write(zoneImg, "png", zoneImgTmp);
 		} catch (IOException e) {
-			BHBot.logger.error(Misc.getStackTrace());
+			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}*/
 
 		int minX = zoneImg.getWidth();
@@ -4923,7 +4933,8 @@ public class MainThread implements Runnable {
 		try {
 			ImageIO.write(nameImg, "png", nameImgFile);
 		} catch (IOException e) {
-			BHBot.logger.error(Misc.getStackTrace());
+			BHBot.logger.error("Error while creating contribution file");
+			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}
 
 		MimetypesFileTypeMap ftm = new MimetypesFileTypeMap();
@@ -4937,13 +4948,15 @@ public class MainThread implements Runnable {
 		try {
 			post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
-			BHBot.logger.error(Misc.getStackTrace());
+			BHBot.logger.error("Error while encoding POST request in contribution");
+			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}
 
 		try {
 			httpClient.execute(post);
 		} catch (IOException e) {
-			BHBot.logger.error(Misc.getStackTrace());
+			BHBot.logger.error("Error while executing HTTP request in contribution");
+			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}
 
 		if (!nameImgFile.delete()) {
@@ -5653,7 +5666,8 @@ public class MainThread implements Runnable {
 			if (seg != null)
 				clickOnSeg(seg);
 		} catch (Exception e) {
-			BHBot.logger.error(Misc.getStackTrace());
+			BHBot.logger.error("Error in tryClosingWindow");
+			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}
 	}
 
@@ -6248,7 +6262,8 @@ public class MainThread implements Runnable {
 								.setAttachment(attachment)
 								.build());
 			} catch (PushoverException e) {
-				BHBot.logger.error(Misc.getStackTrace());
+				BHBot.logger.error("Error while sending Pushover message");
+				BHBot.logger.error(Throwables.getStackTraceAsString(e));
 			}
 		}
 	}
