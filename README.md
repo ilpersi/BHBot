@@ -1,5 +1,10 @@
 # BHBot
 
+[![GitHub release](https://img.shields.io/github/release/Betalord/BHBot.svg?label=last%20release&style=popout)](https://github.com/Betalord/BHBot/releases)
+[![GitHub issues](https://img.shields.io/github/issues/Betalord/BHBot.svg)](https://github.com/Betalord/BHBot/issues)
+![GitHub All Releases](https://img.shields.io/github/downloads/Betalord/BHBot/total.svg?label=total%20downloads&style=popout)
+![GitHub top language](https://img.shields.io/github/languages/top/Betalord/BHBot.svg?style=popout)
+
 ## What is BHBot?
 BHBot is a program that automates different aspects of the [Bit Heroes](http://www.kongregate.com/games/juppiomenz/bit-heroes) game.
 It is a non intrusive program that works by opening up a Chromium window and controls it as a normal user would. It works by taking a screenshot every few seconds, detecting cues from the screenshot and
