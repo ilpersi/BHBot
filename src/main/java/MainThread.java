@@ -3999,8 +3999,8 @@ public class MainThread implements Runnable {
 		seg = detectCue(cues.get("Defeat"), SECOND);
 		if (seg != null) {
 			BHBot.logger.info("Defeat screen, skipping revive check");
-			/*seg = detectCue(cues.get("AutoOff"), SECOND);
-			if (seg != null) clickOnSeg(seg);*/
+			seg = detectCue(cues.get("AutoOff"), SECOND);
+			if (seg != null) clickOnSeg(seg);
 			return;
 		}
 
@@ -4100,7 +4100,7 @@ public class MainThread implements Runnable {
 
 					if (restoreSeg!=null) { // we can use one potion, we don't know which one: revive or healing
 						if (reviveSeg == null) { // we can use a revive potion
-							BHBot.logger.info("Slot " + slotNum + " is up for healing potions, so it does not need revive");
+							BHBot.logger.debug("Slot " + slotNum + " is up for healing potions, so it does not need revive");
 							seg = detectCue(cues.get("X"));
 							clickOnSeg(seg);
 							readScreen(SECOND);
@@ -4140,7 +4140,7 @@ public class MainThread implements Runnable {
 						}
 					}
 
-					if (!revived[slotNum-1]){
+					if (!revived[slotNum-1]){ // This is only false when tank priory kicks in
 						for (char potion: BHBot.settings.potionOrder.toCharArray()) {
 							// BHBot.logger.info("Checking potion " + potion);
 							seg = availablePotions.get(potion);
@@ -4157,7 +4157,6 @@ public class MainThread implements Runnable {
 						}
 					}
 				}
-
 			}
 
 		} else { // Impossible to find the potions button
@@ -4176,7 +4175,7 @@ public class MainThread implements Runnable {
 		}
 
 		seg = detectCue(cues.get("AutoOff"), SECOND);
-		clickOnSeg(seg);
+		if (seg != null) clickOnSeg(seg);
 	}
 
 	private void closeWorldBoss() {
@@ -4774,7 +4773,7 @@ public class MainThread implements Runnable {
 	/** Read Selected World Boss **/
 
 	private String readSelectedWorldBoss() {
-		readScreen(1*SECOND);
+		readScreen(SECOND);
 		if (detectCue(cues.get("OrlagWB")) != null)
 			return "Orlag";
 		else if (detectCue(cues.get("NetherWB")) != null)
