@@ -1,7 +1,8 @@
 # BHBot
 
-[![GitHub release](https://img.shields.io/github/release/Betalord/BHBot.svg?label=last%20release&style=popout)](https://github.com/Betalord/BHBot/releases)
-[![GitHub issues](https://img.shields.io/github/issues/Betalord/BHBot.svg)](https://github.com/Betalord/BHBot/issues)
+[![GitHub release](https://img.shields.io/github/release/Betalord/BHBot.svg?label=last%20release&style=popout) ![GitHub Release Date](https://img.shields.io/github/release-date/Betalord/BHBot.svg?label=released&style=popout)](https://github.com/Betalord/BHBot/releases)
+[![GitHub issues by-label](https://img.shields.io/github/issues/Betalord/BHBot/bug.svg?label=bug%28s%29&style=popout)](https://github.com/Betalord/BHBot/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/Betalord/BHBot.svg?style=popout)](https://github.com/Betalord/BHBot/commits)
 ![GitHub All Releases](https://img.shields.io/github/downloads/Betalord/BHBot/total.svg?label=total%20downloads&style=popout)
 ![GitHub top language](https://img.shields.io/github/languages/top/Betalord/BHBot.svg?style=popout)
 
