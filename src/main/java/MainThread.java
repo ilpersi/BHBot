@@ -3455,7 +3455,7 @@ public class MainThread implements Runnable {
 			} else if (state == State.Raid) {
 				raidVictoryCounter++;
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
-				BHBot.logger.info("Raid #" + (raidVictoryCounter + raidDefeatCounter) + " completed. Result: Victory");
+				BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
 				BHBot.logger.info("Raid success rate: " + ( (raidVictoryCounter / totalRaids) / 100 ) + "%");
 			} else {
 			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
@@ -4102,8 +4102,8 @@ public class MainThread implements Runnable {
 				potionTranslage.put('2', "Average");
 				potionTranslage.put('3', "Major");
 
-				readScreen();
-				seg = detectCue(cues.get("Gravestone"), 1*SECOND);
+				readScreen(1*SECOND);
+				seg = detectCue(cues.get("Gravestone"), 2*SECOND);
 				if (seg != null && potionsUsed < BHBot.settings.potionLimit) {		
 				for (Map.Entry<Integer, Point> item : revivePositions.entrySet()) {
 					Integer slotNum = item.getKey();
