@@ -123,7 +123,7 @@ public class Settings {
 	boolean tankPriority = false;
 	
 	/** Autoshrine settings **/
-    boolean autoShrine = false;
+    List<String> autoShrine;
 	int battleDelay = 60;
 	int shrineDelay = 20;
 	
@@ -335,6 +335,16 @@ public class Settings {
 			this.autoRevive.add(add);
 		}
 	}
+	
+	private void setAutoShrine(String... types) {
+		this.autoShrine.clear();
+		for (String t : types) {
+			String add = t.trim();
+			if (add.equals(""))
+				continue;
+			this.autoShrine.add(add);
+		}
+	}
 
 	private void setGVGStrips(String... types) {
 		this.gvgstrip.clear();
@@ -398,6 +408,15 @@ public class Settings {
 	private String getAutoReviveAsString() {
 		StringBuilder result = new StringBuilder();
 		for (String s : autoRevive)
+			result.append(s).append(" ");
+		if (result.length() > 0)
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+		return result.toString();
+	}
+	
+	private String getAutoShrineAsString() {
+		StringBuilder result = new StringBuilder();
+		for (String s : autoShrine)
 			result.append(s).append(" ");
 		if (result.length() > 0)
 			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
@@ -474,6 +493,16 @@ public class Settings {
 			autoRevive.set(i, autoRevive.get(i).trim());
 			if (autoRevive.get(i).equals(""))
 				autoRevive.remove(i);
+		}
+	}
+	
+	private void setAutoShrineFromString(String s) {
+		setAutoShrine(s.split(" "));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = autoShrine.size()-1; i >= 0; i--) {
+			autoShrine.set(i, autoShrine.get(i).trim());
+			if (autoShrine.get(i).equals(""))
+				autoShrine.remove(i);
 		}
 	}
 
@@ -621,7 +650,7 @@ public class Settings {
         dungeonsRun = "dungeonsrun " + lastUsedMap.getOrDefault("dungeonsrun", dungeonsRun);
         worldBossRun = "worldbossrun " + lastUsedMap.getOrDefault("worldbossrun", worldBossRun);
 
-        autoShrine = lastUsedMap.getOrDefault("autoShrine", autoShrine ? "1" : "0").equals("1");
+		setAutoShrineFromString(lastUsedMap.getOrDefault("autoShrine", getAutoShrineAsString()));
         battleDelay = Integer.parseInt(lastUsedMap.getOrDefault("battleDelay", ""+battleDelay));
         shrineDelay = Integer.parseInt(lastUsedMap.getOrDefault("shrineDelay", ""+shrineDelay));
 
@@ -683,6 +712,15 @@ public class Settings {
 					"this feature will be disabled" );
 			lastUsedMap.put("autoRevive", "");
 			setAutoReviveFromString("");
+		}
+		
+		// sanitize autoshrine settings
+		String autoShrine= lastUsedMap.getOrDefault("autoShrine", "");
+		if (autoShrine.contains("1") || autoShrine.contains("2") || autoShrine.contains("3")) {
+            BHBot.logger.warn("WARNING: invalid format detected for autoRevive setting '" + autoShrine + "': " +
+					"this feature will be disabled" );
+			lastUsedMap.put("autoShrine", "");
+			setAutoShrineFromString("");
 		}
 
 		// sanitize pvpOpponent setting

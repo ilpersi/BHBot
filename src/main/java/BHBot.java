@@ -95,7 +95,9 @@ public class BHBot {
 		settings.checkDeprecatedSettings();
 		settings.sanitizeSetting();
 
+		if (!settings.username.equals("") && !settings.username.equals("yourusername")) {
 		logger.info("Character: " + settings.username);
+		}
 
 		MainThread.loadCues();
 
@@ -440,7 +442,7 @@ public class BHBot {
 			return false;
 		} else {
 			try {
-				logger.info("Found Chromium in " + chromiumExe.getCanonicalPath());
+				logger.debug("Found Chromium in " + chromiumExe.getCanonicalPath());
 			} catch (IOException e) {
 				logger.error("Error while getting Canonical Path for Chromium");
 				logger.error(Throwables.getStackTraceAsString(e));
@@ -452,7 +454,7 @@ public class BHBot {
 			return false;
 		} else {
 			try {
-				logger.info("Found chromedriver in " + chromeDriverExe.getCanonicalPath());
+				logger.debug("Found chromedriver in " + chromeDriverExe.getCanonicalPath());
 			} catch (IOException e) {
 				logger.error("Error while getting Canonical Path for chromedriver");
 				logger.error(Throwables.getStackTraceAsString(e));
@@ -464,7 +466,7 @@ public class BHBot {
 		    return false;
         } else {
             try {
-                logger.info("Found cues in " + cuePath.getCanonicalPath());
+                logger.debug("Found cues in " + cuePath.getCanonicalPath());
             } catch (IOException e) {
 				logger.error("Error while getting Canonical Path for cues");
             	logger.error(Throwables.getStackTraceAsString(e));
@@ -485,7 +487,7 @@ public class BHBot {
 			}
 		} else {
 			try {
-				logger.info("Found screenshots in " + screenPath.getCanonicalPath());
+				logger.debug("Found screenshots in " + screenPath.getCanonicalPath());
 			} catch (IOException e) {
 				logger.error("Error while getting Canonical Path for screenshots");
 				logger.error(Throwables.getStackTraceAsString(e));

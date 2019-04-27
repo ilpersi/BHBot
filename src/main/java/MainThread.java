@@ -638,8 +638,8 @@ public class MainThread implements Runnable {
 		int oldFamCnt = loadCueFolder("cues/familiars/old_format", "OLD", true, null);
 		int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
 
-		if (oldFamCnt > 0) BHBot.logger.info("Found " + oldFamCnt + " familiar cue(s) with old format.");
-		if (newFamCnt > 0) BHBot.logger.info("Found " + newFamCnt + " familiar cue(s) with new format.");
+		if (oldFamCnt > 0) BHBot.logger.debug("Found " + oldFamCnt + " familiar cue(s) with old format.");
+		if (newFamCnt > 0) BHBot.logger.debug("Found " + newFamCnt + " familiar cue(s) with new format.");
 
 	}
 
@@ -687,7 +687,9 @@ public class MainThread implements Runnable {
 
 		// disable ephemeral flash permissions flag
 		options.addArguments("--disable-features=EnableEphemeralFlashPermission");
-		options.addArguments("disable-infobars"); 
+		options.addArguments("disable-infobars");
+//		options.addArguments("--log-level=OFF");
+//		options.addArguments("--silent");
 		Map<String, Object> prefs = new HashMap<>();
 		// Enable flash for all sites for Chrome 69
 		prefs.put("profile.content_settings.exceptions.plugins.*,*.setting", 1);
@@ -1061,7 +1063,9 @@ public class MainThread implements Runnable {
 					BHBot.logger.warn("Idle time exceeded... perhaps caught in a loop? Restarting... (state=" + state + ")");
 
 					// Safety measure to avoid being stuck forever in dungeons
-					if (state != State.Main && BHBot.settings.autoShrine) {
+					if (state != State.Main && (state==State.Trials && BHBot.settings.autoShrine.contains("t") ) ||
+							(state==State.Raid && BHBot.settings.autoShrine.contains("r")) ||
+							(state==State.Expedition && BHBot.settings.autoShrine.contains("e")) ) {
 						BHBot.logger.info("Ensuring that autoShrine settings are disabled");
 						if (!checkShrineSettings(false, false)) {
 							BHBot.logger.error("It was not possible to verify auto shrine settings");
@@ -1388,7 +1392,7 @@ public class MainThread implements Runnable {
 								BHBot.scheduler.doRaidImmediately = false; // reset it
 
 							// One time check for Autoshrine
-							if (BHBot.settings.autoShrine) {
+							if (BHBot.settings.autoShrine.contains("r")) {
 
 								// we need to close the raid window to check the autoshrine
 								readScreen();
@@ -1534,7 +1538,7 @@ public class MainThread implements Runnable {
 								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // reset it
 
 							// One time check for Autoshrine
-							if (trials && BHBot.settings.autoShrine) {
+							if (trials && BHBot.settings.autoShrine.contains("t")) {
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
@@ -1847,7 +1851,7 @@ public class MainThread implements Runnable {
 							detectCharacterDialogAndHandleIt();
 
 							Bounds pvpOpponentBounds = opponentSelector(BHBot.settings.pvpOpponent);
-							
+							BHBot.logger.info("Selecting opponent " + BHBot.settings.pvpOpponent);
 							seg = detectCue(cues.get("Fight"), 5*SECOND, pvpOpponentBounds);
 							clickOnSeg(seg);
 							readScreen(2*SECOND);
@@ -2080,7 +2084,7 @@ public class MainThread implements Runnable {
 									BHBot.scheduler.doExpeditionImmediately = false; // reset it
 
 								// One time check for Autoshrine
-								if (BHBot.settings.autoShrine) {
+								if (BHBot.settings.autoShrine.contains("e")) {
 									seg = detectCue(cues.get("X"));
 									clickOnSeg(seg);
 									readScreen(2 * SECOND);
@@ -5023,23 +5027,23 @@ public class MainThread implements Runnable {
 		readScreen(SECOND * 3); // in case popup is still sliding downward
 		if (detectCue(cues.get("TeamNotFull"), SECOND) != null || detectCue(cues.get("TeamNotOrdered"), SECOND) != null) {
 			readScreen(SECOND);
-			MarvinSegment seg = detectCue(cues.get("No"), 5 * SECOND);
+			MarvinSegment seg = detectCue(cues.get("No"), 2 * SECOND);
 			if (seg == null) {
 				BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'No' button found. Restarting...");
 				return true;
 			}
 			clickOnSeg(seg);
-			readScreen(2 * SECOND);
+			readScreen();
 
-			seg = detectCue(cues.get("AutoTeam"), 10 * SECOND);
+			seg = detectCue(cues.get("AutoTeam"), 2 * SECOND);
 			if (seg == null) {
 				BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'Auto' button found. Restarting...");
 				return true;
 			}
 			clickOnSeg(seg);
 
-			readScreen(2 * SECOND);
-			seg = detectCue(cues.get("Accept"), 10 * SECOND);
+			readScreen();
+			seg = detectCue(cues.get("Accept"), 2 * SECOND);
 			if (seg == null) {
 				BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'Accept' button found. Restarting...");
 				return true;
