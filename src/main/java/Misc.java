@@ -1,7 +1,6 @@
 import com.google.common.base.Throwables;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.util.ExceptionUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.*;

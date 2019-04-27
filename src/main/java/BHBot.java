@@ -17,7 +17,7 @@ import org.apache.logging.log4j.core.config.ConfigurationSource;
 public class BHBot {
 
 	private static final String PROGRAM_NAME = "BHBot";
-	private static final String PROGRAM_VERSION = "38.6";
+	private static String BHBotVersion;
 
 	private static Thread mainThread;
 	static MainThread main;
@@ -81,10 +81,20 @@ public class BHBot {
 
 		logger = LogManager.getRootLogger();
 
+		Properties properties = new Properties();
 		try {
-			logger.info(PROGRAM_NAME + " v" + PROGRAM_VERSION + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
+			properties.load(BHBot.class.getResourceAsStream("/pom.properties"));
+			BHBotVersion = properties.getProperty("version");
+		} catch (IOException e) {
+			logger.error("Impossible to get pom.properties from jar");
+			logger.error(Throwables.getStackTraceAsString(e));
+			BHBotVersion = "UNKNOWN";
+		}
+
+		try {
+			logger.info(PROGRAM_NAME + " v" + BHBotVersion + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
 		} catch (URISyntaxException e) {
-            logger.info(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started. Unknown build date.");
+            logger.info(PROGRAM_NAME + " v" + BHBotVersion + " started. Unknown build date.");
 		}
 
 		Properties gitPropertis = Misc.getGITInfo();
@@ -296,9 +306,9 @@ public class BHBot {
 						break;
 					case "version":
 						try {
-							logger.info(PROGRAM_NAME + " v" + PROGRAM_VERSION + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
+							logger.info(PROGRAM_NAME + " v" + BHBotVersion + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
 						} catch (URISyntaxException e) {
-							logger.info(PROGRAM_NAME + " v" + PROGRAM_VERSION + " started. Unknown build date.");
+							logger.info(PROGRAM_NAME + " v" + BHBotVersion + " started. Unknown build date.");
 						}
 
 						Properties gitPropertis = Misc.getGITInfo();
