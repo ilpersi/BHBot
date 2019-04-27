@@ -6326,10 +6326,11 @@ public class MainThread implements Runnable {
 	private Bounds opponentSelector(int pvpOpponent) {
 		if ( pvpOpponent < 1 || pvpOpponent > 4 ) {
 			//if setting outside 1-4th opponents we default to 1st
-			BHBot.logger.error("pvpOpponent must be between 1 and 4, defaulting to first opponent");
+			BHBot.logger.warn("pvpOpponent must be between 1 and 4, defaulting to first opponent");
+			BHBot.settings.pvpOpponent = 1;
 			return new Bounds(544, 188, 661, 225); //1st opponent
 		}
-		switch (pvpOpponent) {
+		switch (BHBot.settings.pvpOpponent) {
 		case 1:
 			return new Bounds(545, 188, 660, 225); //1st opponent
 		case 2:

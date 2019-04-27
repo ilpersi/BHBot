@@ -685,5 +685,14 @@ public class Settings {
 			setAutoReviveFromString("");
 		}
 
+		// sanitize pvpOpponent setting
+		int pvpOpponentTmp = Integer.parseInt(lastUsedMap.getOrDefault("pvpOpponent", ""+pvpOpponent));
+		if (pvpOpponentTmp <1 || pvpOpponent > 4) {
+			BHBot.logger.warn("WARNING: invalid value for pvpOpponent setting '" + pvpOpponentTmp + "': " +
+					"setting it to '1'" );
+			lastUsedMap.put("pvpOpponent", "1");
+			pvpOpponent = 1;
+		}
+
 	}
 }
