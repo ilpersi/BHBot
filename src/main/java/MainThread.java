@@ -752,6 +752,7 @@ public class MainThread implements Runnable {
 		//***chromeDriverService.CHROME_DRIVER_SILENT_OUTPUT_PROPERTY
 
 		DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+		capabilities.setCapability("chrome.verbose", false);
 		capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 //		driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
 		if (BHBot.settings.autoStartChromeDriver) {
