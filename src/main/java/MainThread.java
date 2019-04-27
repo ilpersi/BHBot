@@ -277,11 +277,6 @@ public class MainThread implements Runnable {
 	private static int globalTickets;
 	private static int globalTokens;
 	
-	private boolean oneRevived = false;
-	private boolean twoRevived = false;
-	private boolean threeRevived = false;
-	private boolean fourRevived = false;
-	private boolean fiveRevived = false;
 	private boolean[] revived = {false, false, false, false, false};
 	
 	private boolean startTimeCheck = false;
@@ -6227,12 +6222,6 @@ public class MainThread implements Runnable {
 	}
 	
 	private void resetRevives() {
-		oneRevived = false;
-		twoRevived = false;
-		threeRevived = false;
-		fourRevived = false;
-		fiveRevived = false;
-
 		revived[0] = false;
 		revived[1] = false;
 		revived[2] = false;
