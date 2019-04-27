@@ -290,7 +290,8 @@ public class MainThread implements Runnable {
 	private boolean specialDungeon; //d4 check for closing properly when no energy
 	
 	private int dungeonCounter = 0;
-	private int raidCounter = 0;
+	private int raidVictoryCounter = 0;
+	private int raidDefeatCounter = 0;
 	
 	private static final int MAX_LAST_AD_OFFER_TIME = 17*MINUTE; // after this time, restart() will get called since ads are not coming through anymore
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
@@ -3444,16 +3445,18 @@ public class MainThread implements Runnable {
 			}
 			if (state == State.Dungeon) {
 				dungeonCounter++;
-				BHBot.logger.info("Dungeon #" + dungeonCounter + " completed successfully");
+				BHBot.logger.info("Dungeon #" + dungeonCounter + " completed. Result: Victory");
 			} else if (state == State.Raid) {
-				raidCounter++;
-				BHBot.logger.info("Raid #" + raidCounter + " completed successfully");
+				raidVictoryCounter++;
+				int totalRaids = raidVictoryCounter + raidDefeatCounter;
+				BHBot.logger.info("Raid #" + (raidVictoryCounter + raidDefeatCounter) + " completed. Result: Victory");
+				BHBot.logger.info("Raid success rate: " + ( (raidVictoryCounter / totalRaids) / 100 ) + "%");
 			} else {
 			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
 			}
-			if (state == State.Dungeon && (BHBot.settings.countActivities)) {
-				updateActivityCounter(state.getName());
-			}
+//			if (state == State.Dungeon && (BHBot.settings.countActivities)) {
+//				updateActivityCounter(state.getName());
+//			}
 			resetAppropriateTimers();
 			resetRevives();
 			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
@@ -3514,8 +3517,17 @@ public class MainThread implements Runnable {
 			}
 			if (state == State.Invasion) {
 				BHBot.logger.info("Invasion completed successfully");
+			} else if (state == State.Dungeon) {
+				dungeonCounter++;
+				BHBot.logger.warn("Dungeon #" + dungeonCounter + " completed. Result: Defeat.");
+			} else if (state == State.Raid) {
+				raidDefeatCounter++;
+				int totalRaids = raidVictoryCounter + raidDefeatCounter;
+				BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
+				BHBot.logger.info("Raid success rate: " + ( (raidVictoryCounter / totalRaids) / 100 ));
+				
 			} else {
-				BHBot.logger.info(state.getName() + " completed successfully. Result: Defeat");
+			BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
 			}
 			resetAppropriateTimers();
 			resetRevives();
