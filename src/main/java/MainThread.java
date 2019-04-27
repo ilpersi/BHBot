@@ -1231,7 +1231,12 @@ public class MainThread implements Runnable {
 					}
 
 					clickOnSeg(seg);
-					state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
+					if (state == State.Main || state == State.Loading) {
+						// we set this when we are not sure of what type of dungeon we are doing
+						state = State.UnidentifiedDungeon;
+					} else {
+						BHBot.logger.debug("RecentlyDisconnected status is: " + state);
+					}
 					BHBot.logger.info("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
 					sleep(10*SECOND);
 					continue;
