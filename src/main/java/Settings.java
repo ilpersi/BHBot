@@ -187,6 +187,7 @@ public class Settings {
 		consumables = new ArrayList<>();
 		familiars = new ArrayList<>();
 		autoRevive = new ArrayList<>();
+		autoShrine = new ArrayList<>();
 	}
 	
 	// a handy shortcut for some debug settings:

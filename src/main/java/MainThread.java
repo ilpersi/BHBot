@@ -335,7 +335,7 @@ public class MainThread implements Runnable {
 	/** Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale. */
 	private int numConsecutiveException = 0;
 	/** Amount of ads that were offered in main screen since last restart. We need it in order to do restart() after 2 ads, since sometimes ads won't get offered anymore after two restarts. */
-	private int numAdOffers = 0;
+//	private int numAdOffers = 0;
 	/** Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through! */
 	long timeLastAdOffer;
 
@@ -635,6 +635,7 @@ public class MainThread implements Runnable {
 		addCue("AverageAvailable", loadImage("cues/autorevive/cueAverageAvailable.png"), new Bounds(350, 205, 450, 300));
 		addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable.png"), new Bounds(535, 205, 635, 300));
 		addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
+		addCue("Gravestone", loadImage("cues/autorevive/gravestone.png"), new Bounds(50, 240, 370, 410)); //Bounds for the are where gravestones will be
 
 		int oldFamCnt = loadCueFolder("cues/familiars/old_format", "OLD", true, null);
 		int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
@@ -1019,7 +1020,7 @@ public class MainThread implements Runnable {
 		}
 		state = State.Loading;
 		BHBot.scheduler.resetIdleTime();
-		numAdOffers = 0; // reset ad offers counter
+//		numAdOffers = 0; // reset ad offers counter
 		timeLastAdOffer = Misc.getTime();
 		BHBot.scheduler.resume(); // in case it was paused
 
@@ -1259,7 +1260,7 @@ public class MainThread implements Runnable {
 					if (BHBot.settings.doAds) {
 						seg = detectCue(cues.get("Ad"));
 						if (seg != null) {
-							numAdOffers++; // increased ads offered counter
+//							numAdOffers++; // increased ads offered counter
 							timeLastAdOffer = Misc.getTime();
 							clickOnSeg(seg);
 
@@ -4101,6 +4102,9 @@ public class MainThread implements Runnable {
 				potionTranslage.put('2', "Average");
 				potionTranslage.put('3', "Major");
 
+				readScreen();
+				seg = detectCue(cues.get("Gravestone"), 1*SECOND);
+				if (seg != null) {		
 				for (Map.Entry<Integer, Point> item : revivePositions.entrySet()) {
 					Integer slotNum = item.getKey();
 					Point slotPos = item.getValue();
@@ -4200,7 +4204,10 @@ public class MainThread implements Runnable {
 						}
 					}
 				}
-			}
+			} else {
+				BHBot.logger.info("No revives needed.");
+				}
+		}
 
 		} else { // Impossible to find the potions button
 			saveGameScreen("auto-revive-no-potions");
