@@ -3456,7 +3456,7 @@ public class MainThread implements Runnable {
 				raidVictoryCounter++;
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
-				BHBot.logger.info("Raid success rate: " + ( (raidVictoryCounter / totalRaids) / 100 ) + "%");
+				BHBot.logger.info("Raid success rate: " + ( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
 			} else {
 			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
 			}
@@ -3530,7 +3530,7 @@ public class MainThread implements Runnable {
 				raidDefeatCounter++;
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
-				BHBot.logger.info("Raid success rate: " + ( (raidVictoryCounter / totalRaids) / 100 + "%"));
+				BHBot.logger.info("Raid success rate: " + ( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
 				
 			} else {
 			BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
