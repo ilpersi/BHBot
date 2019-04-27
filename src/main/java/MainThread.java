@@ -276,11 +276,10 @@ public class MainThread implements Runnable {
 	private static int globalEnergy;
 	private static int globalTickets;
 	private static int globalTokens;
-	
+
 	private boolean[] revived = {false, false, false, false, false};
 	
 	private boolean startTimeCheck = false;
-	private boolean shrinesChecked = false;
 	private boolean oneTimeshrineCheck = false;
 	private boolean autoShrined = false;
 	private long activityStartTime;
@@ -1068,7 +1067,6 @@ public class MainThread implements Runnable {
 							BHBot.logger.error("It was not possible to verify auto shrine settings");
 						}
 						autoShrined = false;
-						shrinesChecked = false;
 					}
 
 					restart();
@@ -1336,7 +1334,6 @@ public class MainThread implements Runnable {
 							BHBot.logger.error("It was not possible to performe the auto shrines start-up check!");
 						}
                         oneTimeshrineCheck = true;
-                        shrinesChecked = false;
                         readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
                     }
 
@@ -1391,7 +1388,7 @@ public class MainThread implements Runnable {
 								BHBot.scheduler.doRaidImmediately = false; // reset it
 
 							// One time check for Autoshrine
-							if (!shrinesChecked && BHBot.settings.autoShrine) {
+							if (BHBot.settings.autoShrine) {
 
 								// we need to close the raid window to check the autoshrine
 								readScreen();
@@ -1537,7 +1534,7 @@ public class MainThread implements Runnable {
 								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // reset it
 
 							// One time check for Autoshrine
-							if (trials && (!shrinesChecked && BHBot.settings.autoShrine)) {
+							if (trials && BHBot.settings.autoShrine) {
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
@@ -2083,7 +2080,7 @@ public class MainThread implements Runnable {
 									BHBot.scheduler.doExpeditionImmediately = false; // reset it
 
 								// One time check for Autoshrine
-								if (!shrinesChecked && BHBot.settings.autoShrine) {
+								if (BHBot.settings.autoShrine) {
 									seg = detectCue(cues.get("X"));
 									clickOnSeg(seg);
 									readScreen(2 * SECOND);
@@ -2603,42 +2600,64 @@ public class MainThread implements Runnable {
 
 	boolean checkShrineSettings(boolean ignoreBoss, boolean ignoreShrines) {
 		//open settings
+		int ignoreBossCnt = 0;
+		int ignoreShrineCnt = 0;
+
 		if (openSettings(SECOND)) {
 			if (ignoreBoss) {
 				while ( detectCue(cues.get("IgnoreBoss"), SECOND) != null ) {
-					BHBot.logger.info("Enabling Ignore Boss");
+					BHBot.logger.debug("Enabling Ignore Boss");
 					clickInGame(194, 366);
 					readScreen(500);
+
+					if (ignoreBossCnt++ > 10) {
+						BHBot.logger.error("Impossible to enable Ignore Boss");
+						return false;
+					}
 				}
 				BHBot.logger.info("Ignore Boss Enabled");
 			} else {
 				while ( detectCue(cues.get("IgnoreBoss"), SECOND) == null ) {
-					BHBot.logger.info("Disabling Ignore Boss");
+					BHBot.logger.debug("Disabling Ignore Boss");
 					clickInGame(194, 366);
 					readScreen(500);
+
+					if (ignoreBossCnt++ > 10) {
+						BHBot.logger.error("Impossible to Disable Ignore Boss");
+						return false;
+					}
 				}
 				BHBot.logger.info("Ignore Boss Disabled");
 			}
 
 			if (ignoreShrines) {
 				while (detectCue(cues.get("IgnoreShrines"), SECOND) != null) {
-					BHBot.logger.info("Enabling Ignore Shrine");
+					BHBot.logger.debug("Enabling Ignore Shrine");
 					clickInGame(194, 402);
 					readScreen(500);
+
+					if (ignoreShrineCnt++ > 10) {
+						BHBot.logger.error("Impossible to enable Ignore Shrines");
+						return false;
+					}
 				}
 				BHBot.logger.info("Ignore Shrine Enabled");
 			} else {
 				while (detectCue(cues.get("IgnoreShrines"), SECOND) == null) {
-					BHBot.logger.info("Disabling Ignore Shrine");
+					BHBot.logger.debug("Disabling Ignore Shrine");
 					clickInGame(194, 402);
 					readScreen(500);
+
+					if (ignoreShrineCnt++ > 10) {
+						BHBot.logger.error("Impossible to disable Ignore Shrines");
+						return false;
+					}
 				}
 				BHBot.logger.info("Ignore Shrine Disabled");
 			}
 
 			readScreen(SECOND);
 
-			shrinesChecked = true;
 			closePopupSecurely(cues.get("Settings"), new Cue(cues.get("X"), new Bounds(608, 39, 711, 131)) );
 
 			return true;
@@ -3513,7 +3532,6 @@ public class MainThread implements Runnable {
 					BHBot.logger.error("Impossible to disable Auto Shrine after defeat!");
 				}
 				autoShrined = false;
-				shrinesChecked = false;
 				readScreen(SECOND *2);
 			}
 
@@ -3590,55 +3608,61 @@ public class MainThread implements Runnable {
 	}
 	
 	private void handleAutoShrine() {
-		MarvinSegment seg;
+		MarvinSegment guildButtonSeg;
 		//We use guild button visibility to determine whether we are in an encounter or not
-		seg = detectCue(cues.get("GuildButton"));
-		if (seg != null) {
+		guildButtonSeg = detectCue(cues.get("GuildButton"));
+		if (guildButtonSeg != null) {
 			outOfEncounterTimestamp = Misc.getTime() / 1000;
 		} else {
 			inEncounterTimestamp = Misc.getTime() / 1000;
 		}
 		
 		if (state == State.Raid || state == State.Trials || state == State.Expedition || state == State.UnidentifiedDungeon) {
-			if (activityDuration > 30 && !autoShrined) { //if we're past 30 seconds into the activity
-				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) { //and it's been the battleDelay setting since last encounter
-					BHBot.logger.info("No activity for " + BHBot.settings.battleDelay + "s, disabling ignore shrines");
+			if (activityDuration > 30) { //if we're past 30 seconds into the activity
+				if (!autoShrined) {
+					if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay && guildButtonSeg != null) { //and it's been the battleDelay setting since last encounter
+						BHBot.logger.info("No activity for " + BHBot.settings.battleDelay + "s, disabling ignore shrines");
 
-					if(!checkShrineSettings(true, false)) {
-						BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoShrine!");
-					}
-					readScreen(100);
+						if (!checkShrineSettings(true, false)) {
+							BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoShrine!");
+							return;
+						}
+						readScreen(100);
 
-					// We disable and re-enable the auto feature
-					while (detectCue(cues.get("AutoOn"), 500) != null) {
-						clickInGame(780,270); //auto off
-						readScreen(500);
-					}
-					while (detectCue(cues.get("AutoOff"), 500) != null) {
-						clickInGame(780,270); //auto on again
-						readScreen(500);
-					}
-					
-					BHBot.logger.info("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
-					sleep(BHBot.settings.shrineDelay*SECOND); //long sleep while we activate shrines
+						// We disable and re-enable the auto feature
+						while (detectCue(cues.get("AutoOn"), 500) != null) {
+							clickInGame(780, 270); //auto off
+							readScreen(500);
+						}
+						while (detectCue(cues.get("AutoOff"), 500) != null) {
+							clickInGame(780, 270); //auto on again
+							readScreen(500);
+						}
 
-					if(!checkShrineSettings(false, false)) {
-						BHBot.logger.error("Impossible to disable Ignore Boss in handleAutoShrine!");
-					}
-					readScreen(100);
+						BHBot.logger.info("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
+						sleep(BHBot.settings.shrineDelay * SECOND); //long sleep while we activate shrines
 
-					// We disable and re-enable the auto feature
-					while (detectCue(cues.get("AutoOn"), 500) != null) {
-						clickInGame(780,270); //auto off
-						readScreen(500);
-					}
-					while (detectCue(cues.get("AutoOff"), 500) != null) {
-						clickInGame(780,270); //auto on again
-						readScreen(500);
-					}
+						if (!checkShrineSettings(false, false)) {
+							BHBot.logger.error("Impossible to disable Ignore Boss in handleAutoShrine!");
+							return;
+						}
+						readScreen(100);
 
-					autoShrined = true;
+						// We disable and re-enable the auto feature
+						while (detectCue(cues.get("AutoOn"), 500) != null) {
+							clickInGame(780, 270); //auto off
+							readScreen(500);
+						}
+						while (detectCue(cues.get("AutoOff"), 500) != null) {
+							clickInGame(780, 270); //auto on again
+							readScreen(500);
+						}
+
+						autoShrined = true;
+					}
 				}
+			} else {
+				BHBot.logger.debug("Activity duration for handleAutoShrine is: " + activityDuration);
 			}
 		}
 	}
@@ -6204,8 +6228,6 @@ public class MainThread implements Runnable {
 	private void resetAppropriateTimers() {
 		startTimeCheck = false;
 		specialDungeon = false;
-		
-		if (BHBot.settings.autoShrine) shrinesChecked = false; //re-check ignore shrine/boss for next activity if it's enabled
 		
 		if ( (globalShards - 1) > BHBot.settings.minShards && state == State.Raid ) timeLastShardsCheck = 0;
 	
