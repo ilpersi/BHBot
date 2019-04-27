@@ -121,7 +121,7 @@ public class Settings {
 	List<String> autoRevive;
 	String potionOrder = "123";
 	boolean tankPriority = false;
-	int potionLimit = 3;
+	int potionLimit = 5;
 	
 	/** Autoshrine settings **/
     List<String> autoShrine;
