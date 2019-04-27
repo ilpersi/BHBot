@@ -278,6 +278,7 @@ public class MainThread implements Runnable {
 	private static int globalTokens;
 
 	private boolean[] revived = {false, false, false, false, false};
+	private int potionsUsed = 0;
 	
 	private boolean startTimeCheck = false;
 	private boolean oneTimeshrineCheck = false;
@@ -1447,7 +1448,6 @@ public class MainThread implements Runnable {
 							if (currentType != raidType) {
 								if 	(raidUnlocked < raidType) {
 									BHBot.logger.warn("Raid selected in settings (R" + raidType + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
-									BHBot.logger.info("If this is incorrect update your current unlocked tier in settings!");
 									if (!setRaidType(raidType, raidUnlocked)){
 										BHBot.logger.error("Impossible to set the raid type!");
 										continue;
@@ -3530,7 +3530,7 @@ public class MainThread implements Runnable {
 				raidDefeatCounter++;
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
-				BHBot.logger.info("Raid success rate: " + ( (raidVictoryCounter / totalRaids) / 100 ));
+				BHBot.logger.info("Raid success rate: " + ( (raidVictoryCounter / totalRaids) / 100 + "%"));
 				
 			} else {
 			BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
@@ -4104,7 +4104,7 @@ public class MainThread implements Runnable {
 
 				readScreen();
 				seg = detectCue(cues.get("Gravestone"), 1*SECOND);
-				if (seg != null) {		
+				if (seg != null && potionsUsed < BHBot.settings.potionLimit) {		
 				for (Map.Entry<Integer, Point> item : revivePositions.entrySet()) {
 					Integer slotNum = item.getKey();
 					Point slotPos = item.getValue();
@@ -4157,7 +4157,7 @@ public class MainThread implements Runnable {
 						continue;
 					}
 
-					// We check what potions are available, and we save the seg for future reuse
+					// We check what revives are available, and we save the seg for future reuse
 					HashMap<Character, MarvinSegment> availablePotions = new HashMap<>();
 					availablePotions.put('1', detectCue(cues.get("MinorAvailable")));
 					availablePotions.put('2', detectCue(cues.get("AverageAvailable")));
@@ -4198,6 +4198,7 @@ public class MainThread implements Runnable {
 								seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
 								clickOnSeg(seg);
 								revived[slotNum-1] = true;
+								potionsUsed++;
 								readScreen(SECOND);
 								break;
 							}
@@ -6256,6 +6257,7 @@ public class MainThread implements Runnable {
 	private void resetAppropriateTimers() {
 		startTimeCheck = false;
 		specialDungeon = false;
+		potionsUsed = 0;
 		
 		if ( (globalShards - 1) > BHBot.settings.minShards && state == State.Raid ) timeLastShardsCheck = 0;
 	
