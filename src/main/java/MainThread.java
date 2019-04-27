@@ -6330,7 +6330,7 @@ public class MainThread implements Runnable {
 			BHBot.settings.pvpOpponent = 1;
 			return new Bounds(544, 188, 661, 225); //1st opponent
 		}
-		switch (BHBot.settings.pvpOpponent) {
+		switch (pvpOpponent) {
 		case 1:
 			return new Bounds(545, 188, 660, 225); //1st opponent
 		case 2:
