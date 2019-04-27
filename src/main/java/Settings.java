@@ -80,6 +80,9 @@ public class Settings {
 	
 	/** The trials/gauntlet difficulty */
     int difficulty = 60;
+    
+	/** PvP Opponent */
+    int pvpOpponent = 1;
 
 	/**
 	 * List of expeditions we want to do (there are 4 portals: p1, p2, p3 and p4) with a difficulty level and percentage.
@@ -591,6 +594,7 @@ public class Settings {
 		tankPriority = lastUsedMap.getOrDefault("tankPriority", tankPriority ? "1" : "0").equals("1");
 		potionOrder  = lastUsedMap.getOrDefault("potionOrder", potionOrder);
 		
+		pvpOpponent = Integer.parseInt(lastUsedMap.getOrDefault("pvpOpponent", ""+pvpOpponent));
 		difficulty = Integer.parseInt(lastUsedMap.getOrDefault("difficulty", ""+difficulty));
 		minSolo  = Integer.parseInt(lastUsedMap.getOrDefault("minSolo", ""+minSolo));
 

@@ -1853,9 +1853,11 @@ public class MainThread implements Runnable {
 							// dismiss character dialog if it pops up:
 							detectCharacterDialogAndHandleIt();
 
-							seg = detectCue(cues.get("Fight"), 15*SECOND); // it will select the first fight button, top-most (so the easiest enemy)
+							Bounds pvpOpponentBounds = opponentSelector(BHBot.settings.pvpOpponent);
+							
+							seg = detectCue(cues.get("Fight"), 5*SECOND, pvpOpponentBounds);
 							clickOnSeg(seg);
-							readScreen(5*SECOND);
+							readScreen(2*SECOND);
 
 							seg = detectCue(cues.get("Accept"));
 							clickOnSeg(seg);
@@ -3564,7 +3566,7 @@ public class MainThread implements Runnable {
 		 * Hence I fixed it by checking if state==State.PVP.
 		 */
 		if (state == State.PVP) {
-		seg = detectCue(cues.get("VictoryPopup"));
+		seg = detectCue(cues.get("VictoryPopup"),500);
 		if (seg != null) {
 			closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
 
@@ -6307,5 +6309,24 @@ public class MainThread implements Runnable {
 		}
 
 		BHBot.logger.info(familiarString.toString());
+	}
+	
+	private Bounds opponentSelector(int pvpOpponent) {
+		if ( pvpOpponent < 1 || pvpOpponent > 4 ) {
+			//if setting outside 1-4th opponents we default to 1st
+			BHBot.logger.error("pvpOpponent must be between 1 and 4, defaulting to first opponent");
+			return new Bounds(544, 188, 661, 225); //1st opponent
+		}
+		switch (pvpOpponent) {
+		case 1:
+			return new Bounds(545, 188, 660, 225); //1st opponent
+		case 2:
+			return new Bounds(545, 243, 660, 279); //2nd opponent
+		case 3:
+			return new Bounds(544, 296, 660, 335); //1st opponent
+		case 4:
+			return new Bounds(544, 351, 660, 388); //1st opponent
+		}
+		return null;
 	}
 }
