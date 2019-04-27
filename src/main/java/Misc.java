@@ -7,7 +7,6 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -15,17 +14,11 @@ import java.util.*;
  * @author Betalord
  */
 public class Misc {
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("<HH:mm:ss>");
-	
-
-	public static void log(String s) {
-		System.out.println("<" + dateFormat.format(new Date()) + "> " + s);
-	}
 
 	/**
 	 * Return time in milliseconds from the start of the system. Can have a negative value. 
 	 */
-	public static long getTime() {
+	static long getTime() {
 		return System.nanoTime() / 1000000;
 	}
 	
