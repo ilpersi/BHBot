@@ -348,9 +348,6 @@ public class MainThread implements Runnable {
 	/** Used to format double numbers in a human readable way*/
 	private DecimalFormat df = new DecimalFormat("#.00");
 
-	/** */
-    private static Set<String> uniqueFamiliars = new TreeSet<>();
-
     private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
 		ClassLoader classLoader = MainThread.class.getClassLoader();
@@ -417,7 +414,6 @@ public class MainThread implements Runnable {
 						if (stripCueStr) cueName = cueName.replace("cue", "");
 
 						addCue(cueName.toLowerCase(), loadImage(cuesPath + resource), bounds);
-                        uniqueFamiliars.add(cueName.toLowerCase());
 						totalLoaded++;
 					}
 				}
@@ -478,7 +474,6 @@ public class MainThread implements Runnable {
 
 							// resourceRelativePath begins with a '/' char and we want to be sure to remove it
 							addCue(cueName.toLowerCase(), loadImage(resourceRelativePath.substring(1)), bounds);
-                            uniqueFamiliars.add(cueName.toLowerCase());
 							totalLoaded++;
 						}
 					}
@@ -6404,6 +6399,114 @@ public class MainThread implements Runnable {
 	}
 
 	static void printFamiliars () {
+
+		List<String> folders = new ArrayList<>();
+		folders.add("cues/familiars/old_format");
+		folders.add("cues/familiars/new_format");
+
+		Set<String> uniqueFamiliars = new TreeSet<>();
+
+		for (String cuesPath : folders) {
+            // We make sure that the last char of the path is a folder separator
+            if (!"/".equals(cuesPath.substring(cuesPath.length() - 1))) cuesPath += "/";
+
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+            URL url = classLoader.getResource(cuesPath);
+            if (url != null) { // Run from the IDE
+                if ("file".equals(url.getProtocol())) {
+
+                    InputStream in = classLoader.getResourceAsStream(cuesPath);
+                    if (in == null) {
+                        BHBot.logger.error("Impossible to create InputStream in printFamiliars");
+                        return ;
+                    }
+
+                    BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                    String resource;
+
+                    while (true) {
+                        try {
+                            resource = br.readLine();
+                            if (resource == null) break;
+                        } catch (IOException e) {
+                            BHBot.logger.error("Error while reading resources in printFamiliars");
+                            BHBot.logger.error(Throwables.getStackTraceAsString(e));
+                            continue;
+                        }
+                        int dotPosition = resource.lastIndexOf('.');
+                        String fileExtension = dotPosition > 0 ? resource.substring(dotPosition + 1) : "";
+                        if ("png".equals(fileExtension.toLowerCase())) {
+                            String cueName = resource.substring(0, dotPosition);
+
+                            cueName = cueName.replace("cue", "");
+
+                            uniqueFamiliars.add(cueName.toLowerCase());
+                        }
+                    }
+                } else if ("jar".equals(url.getProtocol())) { // Run from JAR
+                    BHBot.logger.debug("Reading JAR File for cues");
+                    String path = url.getPath();
+                    String jarPath = path.substring(5, path.indexOf("!"));
+
+                    String decodedURL;
+                    try {
+                        decodedURL = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
+                    } catch (UnsupportedEncodingException e) {
+                        BHBot.logger.error("Impossible to decode path for jar in printFamiliars: " + jarPath);
+                        BHBot.logger.error(Throwables.getStackTraceAsString(e));
+                        return;
+                    }
+
+                    JarFile jar;
+                    try {
+                        jar = new JarFile(decodedURL);
+                    } catch (IOException e) {
+                        BHBot.logger.error("Impossible to open JAR file in printFamiliars: " + decodedURL);
+                        BHBot.logger.error(Throwables.getStackTraceAsString(e));
+                        return;
+                    }
+
+                    Enumeration<JarEntry> entries = jar.entries();
+
+                    while (entries.hasMoreElements()) {
+                        JarEntry entry = entries.nextElement();
+                        String name = entry.getName();
+                        if (name.startsWith(cuesPath) && !cuesPath.equals(name)) {
+                            URL resource = classLoader.getResource(name);
+
+                            if (resource == null) continue;
+
+                            String resourcePath = resource.toString();
+                            BHBot.logger.trace("resourcePath: " +  resourcePath);
+                            if (!resourcePath.contains("!")) {
+                                BHBot.logger.warn("Unexpected resource filename in load printFamiliars");
+                                continue;
+                            }
+
+                            String[] fileDetails = resourcePath.split("!");
+                            String resourceRelativePath = fileDetails[1];
+                            BHBot.logger.trace("resourceRelativePath : " +  resourceRelativePath );
+                            int lastSlashPosition = resourceRelativePath.lastIndexOf('/');
+                            String fileName = resourceRelativePath.substring(lastSlashPosition + 1);
+
+                            int dotPosition = fileName.lastIndexOf('.');
+                            String fileExtension = dotPosition > 0 ? fileName.substring(dotPosition + 1) : "";
+                            if ("png".equals(fileExtension.toLowerCase())) {
+                                String cueName = fileName.substring(0, dotPosition);
+
+                                cueName = cueName.replace("cue", "");
+                                BHBot.logger.trace("cueName: " + cueName);
+
+                                // resourceRelativePath begins with a '/' char and we want to be sure to remove it
+                                uniqueFamiliars.add(cueName.toLowerCase());
+                            }
+                        }
+                    }
+
+                }
+            }
+		}
 
 		StringBuilder familiarString = new StringBuilder();
 		int currentFamiliar = 1;
