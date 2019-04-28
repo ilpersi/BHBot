@@ -2,18 +2,14 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -48,7 +44,6 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import com.assertthat.selenium_shutterbug.core.Shutterbug;
-import org.apache.commons.io.IOUtils;
 
 public class MainThread implements Runnable {
 	public enum State {
@@ -132,7 +127,7 @@ public class MainThread implements Runnable {
 		/**
 		 * Returns error with need to restart.
 		 */
-		public static ReturnResult error(String msg) {
+		static ReturnResult error(String msg) {
 			return new ReturnResult(msg, true);
 		}
 
@@ -319,7 +314,7 @@ public class MainThread implements Runnable {
 	private static JavascriptExecutor jsExecutor;
 	private static WebElement game;
 	private State state; // at which stage of the game/menu are we currently?
-	public BufferedImage img; // latest screen capture
+	private BufferedImage img; // latest screen capture
 
 	private final long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
 	private final long SHARDS_CHECK_INTERVAL = 15 * MINUTE;
@@ -393,8 +388,13 @@ public class MainThread implements Runnable {
 			if ("file".equals(url.getProtocol())) {
 
 				InputStream in = classLoader.getResourceAsStream(cuesPath);
+				if (in == null) {
+				    BHBot.logger.error("Impossible to create InputStream in loadCueFolder");
+				    return  totalLoaded;
+                }
+
 				BufferedReader br = new BufferedReader(new InputStreamReader(in));
-				String resource = null;
+				String resource;
 
 				while (true) {
 					try {
