@@ -559,7 +559,7 @@ public class Settings {
 	/**
 	 * Loads settings from list of string arguments (which are lines of the settings.ini file, for example)
 	 */
-	public void load(List<String> lines) {
+	void load(List<String> lines) {
 		for (String line : lines) {
 			if (line.trim().equals("")) continue;
 			if (line.startsWith("#")) continue; // a comment
@@ -666,14 +666,14 @@ public class Settings {
     }
 	
 	/** Loads settings from disk. */
-	public void load() {
+	void load() {
 		load(DEFAULT_SETTINGS_FILE);
 		checkDeprecatedSettings();
 		sanitizeSetting();
 	}
 	
 	/** Loads settings from disk. */
-	public void load(String file) {
+	void load(String file) {
 		List<String> lines = Misc.readTextFile2(file);
 		if (lines == null || lines.size() == 0)
 			return;
