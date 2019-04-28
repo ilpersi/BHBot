@@ -471,18 +471,6 @@ public class BHBot {
 			}
 		}
 
-		if (!cuePath.exists() || cuePath.isFile()) {
-		    logger.fatal("Impossible to find cues path in " + cuesPath + ". Bot will be stopped!");
-		    return false;
-        } else {
-            try {
-                logger.debug("Found cues in " + cuePath.getCanonicalPath());
-            } catch (IOException e) {
-				logger.error("Error while getting Canonical Path for cues");
-            	logger.error(Throwables.getStackTraceAsString(e));
-            }
-        }
-
 		if (!screenPath.exists()) {
 			if (!screenPath.mkdir()) {
 				logger.fatal("Impossible to create screenshot folder in " + screenshotPath);

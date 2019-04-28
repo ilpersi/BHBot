@@ -2,12 +2,20 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +48,7 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import com.assertthat.selenium_shutterbug.core.Shutterbug;
+import org.apache.commons.io.IOUtils;
 
 public class MainThread implements Runnable {
 	public enum State {
@@ -346,22 +355,22 @@ public class MainThread implements Runnable {
 
     private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
-//		ClassLoader classLoader = MainThread.class.getClassLoader();
-//		InputStream resourceURL = classLoader.getResourceAsStream(f);
-//
-//		if (resourceURL != null) {
-//			try {
-//				img = ImageIO.read(resourceURL);
-//			} catch (IOException e) {
-//				BHBot.logger.error(Throwables.getStackTraceAsString(e));
-//			}
-//		} else {
-//			BHBot.logger.error("Error with resource: " + f);
-		try {
-			img = ImageIO.read(new File(f));
-		} catch (IOException e) {
-			BHBot.logger.error("Error while loading image");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+		ClassLoader classLoader = MainThread.class.getClassLoader();
+		InputStream resourceURL = classLoader.getResourceAsStream(f);
+
+		if (resourceURL != null) {
+			try {
+				img = ImageIO.read(resourceURL);
+			} catch (IOException e) {
+				BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			}
+		} else {
+			BHBot.logger.error("Error with resource: " + f);
+//		try {
+//			img = ImageIO.read(new File(f));
+//		} catch (IOException e) {
+//			BHBot.logger.error("Error while loading image");
+//			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}
 
 		return img;
@@ -369,6 +378,111 @@ public class MainThread implements Runnable {
 
 	private static void addCue(String name, BufferedImage im, Bounds bounds) {
 		cues.put(name, new Cue(name, im, bounds));
+	}
+
+	private static int loadCueFolder(String cuesPath, String prefix, boolean stripCueStr, Bounds bounds) {
+		int totalLoaded = 0;
+
+		// We make sure that the last char of the path is a folder separator
+		if (!"/".equals(cuesPath.substring(cuesPath.length() - 1))) cuesPath += "/";
+
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+		URL url = classLoader.getResource(cuesPath);
+		if (url != null) { // Run from the IDE
+			if ("file".equals(url.getProtocol())) {
+
+				InputStream in = classLoader.getResourceAsStream(cuesPath);
+				BufferedReader br = new BufferedReader(new InputStreamReader(in));
+				String resource = null;
+
+				while (true) {
+					try {
+						resource = br.readLine();
+						if (resource == null) break;
+					} catch (IOException e) {
+						BHBot.logger.error("Error while reading resources in loadCueFoler");
+						BHBot.logger.error(Throwables.getStackTraceAsString(e));
+						continue;
+					}
+					int dotPosition = resource.lastIndexOf('.');
+					String fileExtension = dotPosition > 0 ? resource.substring(dotPosition + 1) : "";
+					if ("png".equals(fileExtension.toLowerCase())) {
+						String cueName = resource.substring(0, dotPosition);
+
+						if (prefix != null) cueName = prefix + cueName;
+						if (stripCueStr) cueName = cueName.replace("cue", "");
+
+						addCue(cueName.toLowerCase(), loadImage(cuesPath + resource), bounds);
+						totalLoaded++;
+					}
+				}
+			} else if ("jar".equals(url.getProtocol())) { // Run from JAR
+				BHBot.logger.debug("Reading JAR File for cues");
+				String path = url.getPath();
+				String jarPath = path.substring(5, path.indexOf("!"));
+
+				String decodedURL;
+				try {
+					decodedURL = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
+				} catch (UnsupportedEncodingException e) {
+					BHBot.logger.error("Impossible to decode pat for jar: " + jarPath);
+					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					return totalLoaded;
+				}
+
+				JarFile jar;
+				try {
+					jar = new JarFile(decodedURL);
+				} catch (IOException e) {
+					BHBot.logger.error("Impossible to open JAR file : " + decodedURL);
+					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					return totalLoaded;
+				}
+
+				Enumeration<JarEntry> entries = jar.entries();
+
+				while (entries.hasMoreElements()) {
+					JarEntry entry = entries.nextElement();
+					String name = entry.getName();
+					if (name.startsWith(cuesPath) && !cuesPath.equals(name)) {
+						URL resource = classLoader.getResource(name);
+
+						if (resource == null) continue;
+
+						String resourcePath = resource.toString();
+						BHBot.logger.trace("resourcePath: " +  resourcePath);
+						if (!resourcePath.contains("!")) {
+							BHBot.logger.warn("Unexpected resource filename in load Cue Folder");
+							continue;
+						}
+
+						String[] fileDetails = resourcePath.split("!");
+						String resourceRelativePath = fileDetails[1];
+						BHBot.logger.trace("resourceRelativePath : " +  resourceRelativePath );
+						int lastSlashPosition = resourceRelativePath.lastIndexOf('/');
+						String fileName = resourceRelativePath.substring(lastSlashPosition + 1);
+
+						int dotPosition = fileName.lastIndexOf('.');
+						String fileExtension = dotPosition > 0 ? fileName.substring(dotPosition + 1) : "";
+						if ("png".equals(fileExtension.toLowerCase())) {
+							String cueName = fileName.substring(0, dotPosition);
+
+							if (prefix != null) cueName = prefix + cueName;
+							if (stripCueStr) cueName = cueName.replace("cue", "");
+							BHBot.logger.trace("cueName: " + cueName);
+
+							// resourceRelativePath begins with a '/' char and we want to be sure to remove it
+							addCue(cueName.toLowerCase(), loadImage(resourceRelativePath.substring(1)), bounds);
+							totalLoaded++;
+						}
+					}
+				}
+
+			}
+		}
+
+		return totalLoaded;
 	}
 
 	static void loadCues() {
@@ -637,39 +751,12 @@ public class MainThread implements Runnable {
 		addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable.png"), new Bounds(535, 205, 635, 300));
 		addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
 
-		int oldFamCnt = loadCueFolder("cues/familiars/old_format", "OLD", true, null);
 		int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
+		int oldFamCnt = loadCueFolder("cues/familiars/old_format", "OLD", true, null);
 
-		if (oldFamCnt > 0) BHBot.logger.debug("Found " + oldFamCnt + " familiar cue(s) with old format.");
-		if (newFamCnt > 0) BHBot.logger.debug("Found " + newFamCnt + " familiar cue(s) with new format.");
+		BHBot.logger.debug("Found " + oldFamCnt + " familiar cue(s) with old format.");
+		BHBot.logger.debug("Found " + newFamCnt + " familiar cue(s) with new format.");
 
-	}
-
-	private static int loadCueFolder(String path, String prefix, boolean stripCueStr, Bounds bounds) {
-		int totalLoaded = 0;
-
-		//Dynamically load cues
-		File[] files = new File(path).listFiles();
-		if (files != null) {
-			for (File file : files) {
-				if (file.isFile()) {
-					String fileName = file.getName();
-					int dotPosition = fileName.lastIndexOf('.');
-					String fileExtension = dotPosition > 0 ? fileName.substring(dotPosition + 1) : "";
-					if ("png".equals(fileExtension.toLowerCase())) {
-						String cueName = fileName.substring(0, dotPosition);
-
-						if (prefix != null) cueName = prefix + cueName;
-						if (stripCueStr) cueName = cueName.replace("cue", "");
-
-						addCue(cueName.toLowerCase(), loadImage(file.getPath()), bounds);
-						totalLoaded++;
-					}
-				}
-			}
-		}
-
-		return totalLoaded;
 	}
 
 	private static void connectDriver() throws MalformedURLException {
