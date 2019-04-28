@@ -492,6 +492,16 @@ public class BHBot {
 			}
 		}
 
+		if (cuePath.exists() && !cuePath.isFile()) {
+			try {
+				logger.warn("Found cues in '" + cuePath.getCanonicalPath() +
+						"'. This folder is no longer required as all the cues are now part of the jar file.");
+			} catch (IOException e) {
+				logger.error("Error while checking cues folder");
+				logger.error(Throwables.getStackTraceAsString(e));
+			}
+		}
+
 		return true;
 	}
 
