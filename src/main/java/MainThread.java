@@ -636,7 +636,6 @@ public class MainThread implements Runnable {
 		addCue("AverageAvailable", loadImage("cues/autorevive/cueAverageAvailable.png"), new Bounds(350, 205, 450, 300));
 		addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable.png"), new Bounds(535, 205, 635, 300));
 		addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
-		addCue("Gravestone", loadImage("cues/autorevive/gravestone.png"), new Bounds(50, 240, 370, 410)); //Bounds for the are where gravestones will be
 
 		int oldFamCnt = loadCueFolder("cues/familiars/old_format", "OLD", true, null);
 		int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
