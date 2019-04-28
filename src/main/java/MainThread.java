@@ -418,7 +418,7 @@ public class MainThread implements Runnable {
 					}
 				}
 			} else if ("jar".equals(url.getProtocol())) { // Run from JAR
-				BHBot.logger.debug("Reading JAR File for cues");
+				BHBot.logger.debug("Reading JAR File for cues in path " + cuesPath);
 				String path = url.getPath();
 				String jarPath = path.substring(5, path.indexOf("!"));
 
@@ -6445,7 +6445,6 @@ public class MainThread implements Runnable {
                         }
                     }
                 } else if ("jar".equals(url.getProtocol())) { // Run from JAR
-                    BHBot.logger.debug("Reading JAR File for cues");
                     String path = url.getPath();
                     String jarPath = path.substring(5, path.indexOf("!"));
 
