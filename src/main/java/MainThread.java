@@ -340,10 +340,6 @@ public class MainThread implements Runnable {
 	/** Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through! */
 	long timeLastAdOffer;
 
-	private JavascriptExecutor getJS() {
-		return (JavascriptExecutor)driver;
-	}
-
 	private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
 //		ClassLoader classLoader = MainThread.class.getClassLoader();
@@ -2732,7 +2728,7 @@ public class MainThread implements Runnable {
 			return;
 
 		// open login popup window:
-		getJS().executeScript("active_user.activateInlineLogin(); return false;"); // I found this code within page source itself (it gets triggered upon clicking on some button)
+		jsExecutor.executeScript("active_user.activateInlineLogin(); return false;"); // I found this code within page source itself (it gets triggered upon clicking on some button)
 
 		sleep(5000); // if we don't sleep enough, login form may still be loading and code bellow will not get executed!
 
