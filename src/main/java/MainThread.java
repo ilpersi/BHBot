@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.BooleanSupplier;
@@ -340,7 +341,10 @@ public class MainThread implements Runnable {
 	/** Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through! */
 	long timeLastAdOffer;
 
-	private static BufferedImage loadImage(String f) {
+	/** Used to format double numbers in a human readable way*/
+	private DecimalFormat df = new DecimalFormat("#.00");
+
+    private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
 //		ClassLoader classLoader = MainThread.class.getClassLoader();
 //		InputStream resourceURL = classLoader.getResourceAsStream(f);
@@ -3452,7 +3456,7 @@ public class MainThread implements Runnable {
 				raidVictoryCounter++;
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
-				BHBot.logger.info("Raid success rate: " + ( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
+				BHBot.logger.info("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
 			} else {
 			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
 			}
@@ -3526,7 +3530,7 @@ public class MainThread implements Runnable {
 				raidDefeatCounter++;
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
-				BHBot.logger.info("Raid success rate: " + ( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
+				BHBot.logger.info("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
 				
 			} else {
 			BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
