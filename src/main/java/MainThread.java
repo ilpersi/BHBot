@@ -348,6 +348,9 @@ public class MainThread implements Runnable {
 	/** Used to format double numbers in a human readable way*/
 	private DecimalFormat df = new DecimalFormat("#.00");
 
+	/** */
+    private static Set<String> uniqueFamiliars = new TreeSet<>();
+
     private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
 		ClassLoader classLoader = MainThread.class.getClassLoader();
@@ -414,6 +417,7 @@ public class MainThread implements Runnable {
 						if (stripCueStr) cueName = cueName.replace("cue", "");
 
 						addCue(cueName.toLowerCase(), loadImage(cuesPath + resource), bounds);
+                        uniqueFamiliars.add(cueName.toLowerCase());
 						totalLoaded++;
 					}
 				}
@@ -474,6 +478,7 @@ public class MainThread implements Runnable {
 
 							// resourceRelativePath begins with a '/' char and we want to be sure to remove it
 							addCue(cueName.toLowerCase(), loadImage(resourceRelativePath.substring(1)), bounds);
+                            uniqueFamiliars.add(cueName.toLowerCase());
 							totalLoaded++;
 						}
 					}
@@ -6399,33 +6404,6 @@ public class MainThread implements Runnable {
 	}
 
 	static void printFamiliars () {
-
-		List<String> folders = new ArrayList<>();
-		folders.add("cues/familiars/old_format");
-		folders.add("cues/familiars/new_format");
-
-		Set<String> uniqueFamiliars = new TreeSet<>();
-
-		for (String path : folders) {
-			//Dynamically load cues
-			File[] files = new File(path).listFiles();
-			if (files != null) {
-				for (File file : files) {
-					if (file.isFile()) {
-						String fileName = file.getName();
-						int dotPosition = fileName.lastIndexOf('.');
-						String fileExtension = dotPosition > 0 ? fileName.substring(dotPosition + 1) : "";
-						if ("png".equals(fileExtension.toLowerCase())) {
-							String familiarName = fileName.substring(0, dotPosition);
-
-							familiarName = familiarName.replace("cue", "");
-
-							uniqueFamiliars.add(familiarName.toLowerCase());
-						}
-					}
-				}
-			}
-		}
 
 		StringBuilder familiarString = new StringBuilder();
 		int currentFamiliar = 1;
