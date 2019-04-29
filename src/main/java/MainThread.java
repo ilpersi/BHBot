@@ -340,13 +340,17 @@ public class MainThread implements Runnable {
 
 	/** Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale. */
 	private int numConsecutiveException = 0;
-	/** Amount of ads that were offered in main screen since last restart. We need it in order to do restart() after 2 ads, since sometimes ads won't get offered anymore after two restarts. */
+//	/** Amount of ads that were offered in main screen since last restart. We need it in order to do restart() after 2 ads, since sometimes ads won't get offered anymore after two restarts. */
 //	private int numAdOffers = 0;
 	/** Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through! */
 	long timeLastAdOffer;
 
 	/** Used to format double numbers in a human readable way*/
 	private DecimalFormat df = new DecimalFormat("#.00");
+
+	/** autoshrine settings save */
+	private boolean ignoreBossSetting = false;
+	private boolean ignoreShrinesSetting = false;
 
     private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
@@ -2712,6 +2716,7 @@ public class MainThread implements Runnable {
 						return false;
 					}
 				}
+				ignoreBossSetting = true;
 				BHBot.logger.info("Ignore Boss Enabled");
 			} else {
 				while ( detectCue(cues.get("IgnoreBoss"), SECOND) == null ) {
@@ -2724,6 +2729,7 @@ public class MainThread implements Runnable {
 						return false;
 					}
 				}
+				ignoreBossSetting = false;
 				BHBot.logger.info("Ignore Boss Disabled");
 			}
 
@@ -2738,6 +2744,7 @@ public class MainThread implements Runnable {
 						return false;
 					}
 				}
+				ignoreShrinesSetting = true;
 				BHBot.logger.info("Ignore Shrine Enabled");
 			} else {
 				while (detectCue(cues.get("IgnoreShrines"), SECOND) == null) {
@@ -2750,6 +2757,7 @@ public class MainThread implements Runnable {
 						return false;
 					}
 				}
+				ignoreShrinesSetting = false;
 				BHBot.logger.info("Ignore Shrine Disabled");
 			}
 
@@ -3678,6 +3686,19 @@ public class MainThread implements Runnable {
 			resetAppropriateTimers();
 			resetRevives();
 			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
+
+			/* Sometime Bit Heroes ignores the Ignore Boss / Ignore Shrines setting and so, when we finish a dungeon,
+			*  We make sure to disable them to avoid the idle time exceeded warning. */
+			if ( (state==State.Trials && BHBot.settings.autoShrine.contains("t")) ||
+					(state==State.Raid && BHBot.settings.autoShrine.contains("r")) ||
+					(state==State.Expedition && BHBot.settings.autoShrine.contains("e"))) {
+
+				if (ignoreShrinesSetting || ignoreBossSetting) {
+					readScreen(SECOND);
+					checkShrineSettings(false, false);
+				}
+			}
+
 			state = State.Main; // reset state
 			return;
 		}
