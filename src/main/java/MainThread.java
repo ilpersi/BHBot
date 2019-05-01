@@ -4282,7 +4282,11 @@ public class MainThread implements Runnable {
                     }
 
                     // We manage tank priority using the best potion we have
-                    if (slotNum == 1 && BHBot.settings.tankPriority && !revived[0]) {
+                    if (slotNum == 1 && !revived[0] &&
+                            ( (state==State.Trials && BHBot.settings.tankPriority.contains("t") ) ||
+                                    (state==State.Gauntlet && BHBot.settings.tankPriority.contains("g") ) ||
+                                    (state==State.Raid && BHBot.settings.tankPriority.contains("r")) ||
+                                    (state==State.Expedition && BHBot.settings.tankPriority.contains("e")) ) ) {
                         for (char potion: "321".toCharArray()) {
                             seg = availablePotions.get(potion);
                             if (seg != null) {

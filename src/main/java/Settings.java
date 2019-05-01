@@ -120,7 +120,7 @@ public class Settings {
 	/** Autorevive Settings **/
 	List<String> autoRevive;
 	String potionOrder = "123";
-	boolean tankPriority = false;
+	List<String> tankPriority;
 	int potionLimit = 5;
 	
 	/** Autoshrine settings **/
@@ -188,6 +188,7 @@ public class Settings {
 		consumables = new ArrayList<>();
 		familiars = new ArrayList<>();
 		autoRevive = new ArrayList<>();
+		tankPriority = new ArrayList<>();
 		autoShrine = new ArrayList<>();
 	}
 	
@@ -337,6 +338,16 @@ public class Settings {
 			this.autoRevive.add(add);
 		}
 	}
+
+	private void setTankPriority(String... types) {
+		this.tankPriority.clear();
+		for (String t : types) {
+			String add = t.trim();
+			if (add.equals(""))
+				continue;
+			this.tankPriority.add(add);
+		}
+	}
 	
 	private void setAutoShrine(String... types) {
 		this.autoShrine.clear();
@@ -410,6 +421,15 @@ public class Settings {
 	private String getAutoReviveAsString() {
 		StringBuilder result = new StringBuilder();
 		for (String s : autoRevive)
+			result.append(s).append(" ");
+		if (result.length() > 0)
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+		return result.toString();
+	}
+
+	private String getTankPriorityAsString() {
+		StringBuilder result = new StringBuilder();
+		for (String s : tankPriority)
 			result.append(s).append(" ");
 		if (result.length() > 0)
 			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
@@ -495,6 +515,16 @@ public class Settings {
 			autoRevive.set(i, autoRevive.get(i).trim());
 			if (autoRevive.get(i).equals(""))
 				autoRevive.remove(i);
+		}
+	}
+
+	private void setTankPriorityFromString(String s) {
+		setTankPriority(s.split(" "));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = tankPriority.size()-1; i >= 0; i--) {
+			tankPriority.set(i, tankPriority.get(i).trim());
+			if (tankPriority.get(i).equals(""))
+				tankPriority.remove(i);
 		}
 	}
 	
@@ -622,7 +652,7 @@ public class Settings {
 		worldBossSolo = lastUsedMap.getOrDefault("worldBossSolo", worldBossSolo ? "1" : "0").equals("1");
 
 		setAutoReviveFromString(lastUsedMap.getOrDefault("autoRevive", getAutoReviveAsString()));
-		tankPriority = lastUsedMap.getOrDefault("tankPriority", tankPriority ? "1" : "0").equals("1");
+		setTankPriorityFromString(lastUsedMap.getOrDefault("tankPriority", getTankPriorityAsString()));
 		potionOrder  = lastUsedMap.getOrDefault("potionOrder", potionOrder);
 		potionLimit = Integer.parseInt(lastUsedMap.getOrDefault("potionLimit", ""+potionLimit));
 		
@@ -724,6 +754,15 @@ public class Settings {
 					"this feature will be disabled" );
 			lastUsedMap.put("autoShrine", "");
 			setAutoShrineFromString("");
+		}
+
+		// sanitize tankPriority settings
+		String tankPriority= lastUsedMap.getOrDefault("tankPriority", "");
+		if (tankPriority.contains("1") || tankPriority.contains("2") || tankPriority.contains("3")) {
+			BHBot.logger.warn("WARNING: invalid format detected for tankPriority setting '" + tankPriority + "': " +
+					"this feature will be disabled" );
+			lastUsedMap.put("tankPriority", "");
+			setTankPriorityFromString("");
 		}
 
 		// sanitize pvpOpponent setting
