@@ -3643,9 +3643,11 @@ public class MainThread implements Runnable {
 			}
 
 			// We make sure to disable autoshrine when defeated
-			if (state == State.Trials || state == State.Raid || state == State.Expedition) {
-				if(!checkShrineSettings(false, false)) {
-					BHBot.logger.error("Impossible to disable Auto Shrine after defeat!");
+			if ( state == State.Trials || state == State.Raid || state == State.Expedition) {
+				if (ignoreBossSetting && ignoreShrinesSetting) {
+					if(!checkShrineSettings(false, false)) {
+						BHBot.logger.error("Impossible to disable Auto Shrine after defeat!");
+					}
 				}
 				autoShrined = false;
 				readScreen(SECOND *2);
@@ -3689,10 +3691,7 @@ public class MainThread implements Runnable {
 
 			/* Sometime Bit Heroes ignores the Ignore Boss / Ignore Shrines setting and so, when we finish a dungeon,
 			*  We make sure to disable them to avoid the idle time exceeded warning. */
-			if ( (state==State.Trials && BHBot.settings.autoShrine.contains("t")) ||
-					(state==State.Raid && BHBot.settings.autoShrine.contains("r")) ||
-					(state==State.Expedition && BHBot.settings.autoShrine.contains("e"))) {
-
+			if ( state==State.Trials || state==State.Raid ||state==State.Expedition ) {
 				if (ignoreShrinesSetting || ignoreBossSetting) {
 					readScreen(SECOND);
 					checkShrineSettings(false, false);
