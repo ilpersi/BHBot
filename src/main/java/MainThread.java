@@ -3646,7 +3646,8 @@ public class MainThread implements Runnable {
 			if ( state == State.Trials || state == State.Raid || state == State.Expedition) {
 				if (ignoreBossSetting && ignoreShrinesSetting) {
 					if(!checkShrineSettings(false, false)) {
-						BHBot.logger.error("Impossible to disable Auto Shrine after defeat!");
+						BHBot.logger.error("Impossible to disable Auto Shrine after defeat! Restarting..");
+						restart();
 					}
 				}
 				autoShrined = false;
@@ -4219,6 +4220,8 @@ public class MainThread implements Runnable {
 
                     if (potionsUsed == BHBot.settings.potionLimit) {
                         BHBot.logger.info("Potion limit reached, exiting from Auto Revive");
+                        seg = detectCue(cues.get("AutoOff"), SECOND);
+            			if (seg != null) clickOnSeg(seg);
                         break;
                     }
 
