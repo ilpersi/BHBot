@@ -26,7 +26,7 @@ If applicable, add screenshots to help explain your problem.
 **Desktop (please complete the following information):**
  - OS: [e.g. Windows]
  - Browser [e.g. Chrome, Chromium]
- - Version [e.g. 36]
+ - Version [e.g. v36] (use the `print version` command to get the exact version of BHBot)
 
 **Additional context**
 Add any other context about the problem here.
