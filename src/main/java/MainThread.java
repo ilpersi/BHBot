@@ -567,6 +567,7 @@ public class MainThread implements Runnable {
 		addCue("SettingsGear", loadImage("cues/cueSettingsGear.png"), new Bounds(655, 450, 730, 515)); // settings button
 		addCue("Settings", loadImage("cues/cueSettings.png"), new Bounds(249, 61, 558, 102)); // settings menu
 
+		addCue("Team", loadImage("cues/cueTeam.png"), null); // Team text part of pop-ups about teams
 		addCue("TeamNotFull", loadImage("cues/cueTeamNotFull.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
 		addCue("TeamNotOrdered", loadImage("cues/cueTeamNotOrdered.png"), new Bounds(230, 190, 350, 250)); // warning popup when some guild member left and your GvG team is not complete anymore
 		addCue("GuildLeaveConfirm", loadImage("cues/cueGuildLeaveConfirm.png"), new Bounds(195, 105, 605, 395)); // GVG confirm
@@ -1956,11 +1957,9 @@ public class MainThread implements Runnable {
 								continue;
 							}
 							clickOnSeg(seg);
-							readScreen(2*SECOND);
 
-							seg = detectCue(cues.get("Accept"));
+							seg = detectCue(cues.get("Accept"),2*SECOND, new Bounds(430, 430, 630, 500));
 							clickOnSeg(seg);
-							sleep(1*SECOND);
 							
 							handleTeamMalformedWarning();
 							if (handleTeamMalformedWarning()) {
@@ -5168,10 +5167,16 @@ public class MainThread implements Runnable {
 	 * @return true in case emergency restart is needed.
 	 */
 	private boolean handleTeamMalformedWarning() {
-		readScreen(SECOND * 3); // in case popup is still sliding downward
+
+		// We look for the team text on top of the text pop-up
+		MarvinSegment seg = detectCue(cues.get("Team"), SECOND*3, new Bounds(330, 135, 480, 180));
+		if (seg==null) {
+			return false;
+		}
+
 		if (detectCue(cues.get("TeamNotFull"), SECOND) != null || detectCue(cues.get("TeamNotOrdered"), SECOND) != null) {
 			readScreen(SECOND);
-			MarvinSegment seg = detectCue(cues.get("No"), 2 * SECOND);
+			seg = detectCue(cues.get("No"), 2 * SECOND);
 			if (seg == null) {
 				BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'No' button found. Restarting...");
 				return true;
