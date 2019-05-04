@@ -4156,7 +4156,12 @@ public class MainThread implements Runnable {
 		}
 
 		// we make sure that we stick with the limits
-		if (potionsUsed >= BHBot.settings.potionLimit) return;
+		if (potionsUsed >= BHBot.settings.potionLimit) {
+			BHBot.logger.info("Potion limit reached, skipping revive check");
+			seg = detectCue(cues.get("AutoOff"), SECOND);
+			if (seg != null) clickOnSeg(seg);
+			return;
+		}
 
 		seg = detectCue(cues.get("Potions"), SECOND * 2);
 		if (seg != null) {
