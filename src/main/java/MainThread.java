@@ -1950,6 +1950,11 @@ public class MainThread implements Runnable {
 							Bounds pvpOpponentBounds = opponentSelector(BHBot.settings.pvpOpponent);
 							BHBot.logger.info("Selecting opponent " + BHBot.settings.pvpOpponent);
 							seg = detectCue(cues.get("Fight"), 5*SECOND, pvpOpponentBounds);
+							if (seg == null) {
+								BHBot.logger.error("Imppossible to find the Fight button in the PVP screen, restarting!");
+								restart();
+								continue;
+							}
 							clickOnSeg(seg);
 							readScreen(2*SECOND);
 
@@ -2919,10 +2924,6 @@ public class MainThread implements Runnable {
 			BHBot.logger.info("Character dialog dismissed.");
 	}
 
-	/*private BufferedImage takeScreenshot() {
-		return takeScreenshot(true);
-	}*/
-
 	private BufferedImage takeScreenshot(boolean ofGame) {
 		if (ofGame)
 			return Shutterbug.shootElement(driver, game).getImage();
@@ -3036,8 +3037,7 @@ public class MainThread implements Runnable {
 		while (seg == null) {
 			if (Misc.getTime() - timer >= timeout)
 				break;
-			sleep(500);
-			readScreen(game);
+			readScreen(500, game);
 			seg = findSubimage(img, cue);
 		}
 
