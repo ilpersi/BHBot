@@ -585,7 +585,7 @@ public class MainThread implements Runnable {
 		addCue("Play", loadImage("cues/cuePlay.png"), null); // cue for play button in trials/gauntlet window
 		addCue("TokenBar", loadImage("cues/cueTokenBar.png"), null);
 		addCue("CloseGreen", loadImage("cues/cueCloseGreen.png"), null); // close button used with "You have been defeated" popup in gauntlet and also "Victory" window in gauntlet
-		addCue("Victory", loadImage("cues/cueVictory.png"), null); // victory window cue found upon completing gauntlet
+		addCue("Victory", loadImage("cues/cueVictory.png"), null); // victory window cue found upon completing gauntlet / PvP
 
 		addCue("UhOh", loadImage("cues/cueUhoh.png"), new Bounds(319, 122, 526, 184));
 		addCue("ReviveAverage", loadImage("cues/cueReviveAverage.png"), null);
@@ -1955,7 +1955,7 @@ public class MainThread implements Runnable {
 
 							seg = detectCue(cues.get("Accept"));
 							clickOnSeg(seg);
-							sleep(5*SECOND);
+							sleep(1*SECOND);
 							
 							handleTeamMalformedWarning();
 							if (handleTeamMalformedWarning()) {
@@ -4140,7 +4140,7 @@ public class MainThread implements Runnable {
 		// Auto Revive is disabled, we re-enable it
 		if ( (BHBot.settings.autoRevive.size() == 0) || (state != State.Trials && state != State.Gauntlet
 				&& state != State.Raid && state != State.Expedition) ){
-			BHBot.logger.info("AutoRevive disabled, reenabling auto.. State = '" + state + "'");
+			BHBot.logger.info("    AutoRevive disabled, reenabling auto.. State = '" + state + "'");
 			seg = detectCue(cues.get("AutoOff"));
 			if (seg != null) clickOnSeg(seg);
 			return;
@@ -4149,7 +4149,7 @@ public class MainThread implements Runnable {
 		// if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
 		seg = detectCue(cues.get("Defeat"), SECOND);
 		if (seg != null) {
-			BHBot.logger.info("Defeat screen, skipping revive check");
+			BHBot.logger.info("    Defeat screen, skipping revive check");
 			seg = detectCue(cues.get("AutoOff"), SECOND);
 			if (seg != null) clickOnSeg(seg);
 			return;
@@ -4173,12 +4173,12 @@ public class MainThread implements Runnable {
 			if (seg != null) {
 				seg = detectCue(cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400));
 				if (seg != null) {
-					BHBot.logger.info("None of the team members need a consumable, exiting from autoRevive");
+					BHBot.logger.info("    None of the team members need a consumable, exiting from autoRevive");
 					clickOnSeg(seg);
 					seg = detectCue(cues.get("AutoOff"), SECOND);
 					clickOnSeg(seg);
 				} else {
-					BHBot.logger.error("No potions cue detected, without close button, restarting!");
+					BHBot.logger.error("    No potions cue detected, without close button, restarting!");
 					saveGameScreen("autorevive-no-potions-no-close", img);
 					restart();
 				}
@@ -4331,7 +4331,7 @@ public class MainThread implements Runnable {
 			}
 		} else { // Impossible to find the potions button
 			saveGameScreen("auto-revive-no-potions");
-			BHBot.logger.info("Impossible to find the potions button!");
+			BHBot.logger.info("    Impossible to find the potions button!");
 		}
 
 		// If the unit selection screen is still open, we need to close it
