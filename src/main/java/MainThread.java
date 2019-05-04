@@ -1996,7 +1996,7 @@ public class MainThread implements Runnable {
 
 						if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion/Expedition event?)
 							BHBot.scheduler.restoreIdleTime();
-							BHBot.logger.warn("No badge event found, skipping");
+							BHBot.logger.debug("No badge event found, skipping");
 							continue;
 						}
 

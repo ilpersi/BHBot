@@ -64,6 +64,7 @@ command input box):
 - `do dungeon|expedition|gauntlet|gvg|pvp|raid|trials`: force the bot to perform a dungeon . Example: "do raid". Used for debugging purposes more or less (bot will automatically attempt dungeons).
 - `hide`: hides Chromium window.
 - `pause [mins]`: pauses bot's execution. Useful when you want to play the game yourself (either from the same Chromium window, or by starting another Chromium window). The bots is paused untill are resue command is issued or, if specified, for a number of minutes equal to _mins_
+- `plan <plan_name>`: if you have different configurations you can use this command to swith between them. BHBot will look for file named <plan_name.ini> in the plans/ subfolder
 - `pomessage [message]`: use this command to verify that the Pushover integration is correctly configured. Message parameter is optional and if not specified, a standard messabe will be sent.
 - `print`: Using this command, you can print different informations regarding the bot
   - `familiars`: output the full list of supported familiars in the encounter management system
