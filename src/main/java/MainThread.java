@@ -1958,7 +1958,13 @@ public class MainThread implements Runnable {
 							}
 							clickOnSeg(seg);
 
-							seg = detectCue(cues.get("Accept"),2*SECOND, new Bounds(430, 430, 630, 500));
+							readScreen();
+							seg = detectCue(cues.get("Accept"),5*SECOND, new Bounds(430, 430, 630, 500));
+							if (seg == null) {
+								BHBot.logger.error("Impossible to find the Accept button in the PVP screen, restarting");
+								restart();
+								continue;
+							}
 							clickOnSeg(seg);
 							
 							handleTeamMalformedWarning();
