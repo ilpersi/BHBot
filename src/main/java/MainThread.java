@@ -757,9 +757,7 @@ public class MainThread implements Runnable {
 		addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
 
 		int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
-		int oldFamCnt = loadCueFolder("cues/familiars/old_format", "OLD", true, null);
 
-		BHBot.logger.debug("Found " + oldFamCnt + " familiar cue(s) with old format.");
 		BHBot.logger.debug("Found " + newFamCnt + " familiar cue(s) with new format.");
 
 	}
