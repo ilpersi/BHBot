@@ -5000,16 +5000,16 @@ public class MainThread implements Runnable {
 		Date date = new Date();
 		String name = prefix + "_" + dateFormat.format(date) + ".png";
 		int num = 0;
-		File f = new File(name);
+		File f = new File(BHBot.screenshotPath + name);
 		while (f.exists()) {
 			num++;
 			name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
-			f = new File(name);
+			f = new File(BHBot.screenshotPath + name);
 		}
 
 		// save screen shot:
 		try {
-			Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length()-4)).save(BHBot.screenshotPath);
+			Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length()-4)).save();
 		} catch (Exception e) {
 			BHBot.logger.error("Error while saving game screenshot");
 			BHBot.logger.error(Throwables.getStackTraceAsString(e));
