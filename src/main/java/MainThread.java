@@ -1155,9 +1155,7 @@ public class MainThread implements Runnable {
 					BHBot.logger.warn("Idle time exceeded... perhaps caught in a loop? Restarting... (state=" + state + ")");
 
 					// Safety measure to avoid being stuck forever in dungeons
-					if (state != State.Main && (state==State.Trials && BHBot.settings.autoShrine.contains("t") ) ||
-							(state==State.Raid && BHBot.settings.autoShrine.contains("r")) ||
-							(state==State.Expedition && BHBot.settings.autoShrine.contains("e")) ) {
+					if (state != State.Main && state != State.Loading) {
 						BHBot.logger.info("Ensuring that autoShrine settings are disabled");
 						if (!checkShrineSettings(false, false)) {
 							BHBot.logger.error("It was not possible to verify auto shrine settings");
