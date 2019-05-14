@@ -5034,7 +5034,7 @@ public class MainThread implements Runnable {
 			BHBot.logger.error("Impossible to take a screenshot!");
 		}
 
-		return name;
+		return f.getPath();
 	}
 
 	private void contributeFamiliarShoot(String shootName, FamiliarType familiarType)  {
