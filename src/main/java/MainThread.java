@@ -2678,7 +2678,7 @@ public class MainThread implements Runnable {
 		} // main while loop
 
 		BHBot.logger.info("Stopping main thread...");
-		//driver.close();
+		driver.close();
 		driver.quit();
 		BHBot.logger.info("Main thread stopped.");
 	}
