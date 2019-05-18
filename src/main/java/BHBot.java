@@ -6,7 +6,14 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 import com.google.common.base.Throwables;
+import com.google.gson.Gson;
 import net.pushover.client.*;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -99,6 +106,12 @@ public class BHBot {
 
 		Properties gitPropertis = Misc.getGITInfo();
 		logger.info("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time")) ;
+
+		if (!"UNKNOWN".equals(BHBotVersion)) {
+			checkNewRelease();
+		} else {
+			logger.warn("Unknown BHBotVersion, impossible to check for updates.");
+		}
 
 		logger.info("Settings loaded from file");
 
@@ -510,6 +523,58 @@ public class BHBot {
 		ConfigurationFactory.setConfigurationFactory(configFactory);
 		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		ctx.start(configFactory.getConfiguration(ctx, ConfigurationSource.NULL_SOURCE));
+	}
+
+	private static void checkNewRelease() {
+
+		HttpClient httpClient = HttpClients.custom().useSystemProperties().build();
+		final HttpGet getReq = new HttpGet("https://api.github.com/repos/Betalord/BHBot/releases/latest");
+		Gson gson = new Gson();
+
+		Double currentVersion = Double.parseDouble(BHBotVersion);
+
+		HttpResponse response = null;
+		try {
+			response = httpClient.execute(getReq);
+		} catch (IOException e) {
+			logger.error("Impossible to reach GitHub latest release endpoing");
+			logger.error(Throwables.getStackTraceAsString(e));
+			return;
+		}
+
+		if (response != null) {
+			int statusCode = response.getStatusLine().getStatusCode();
+			if (statusCode != 200)
+			{
+				logger.error("GitHub version check failed with HTTP error code : " + statusCode);
+				return;
+			}
+
+			GitHubRelease lastReleaseInfo = null;
+			try {
+				lastReleaseInfo = gson.fromJson(EntityUtils.toString(response.getEntity()), GitHubRelease.class);
+
+			} catch (IOException e) {
+				logger.error("Error while parsing GitHub latest release JSON.");
+				logger.error(Throwables.getStackTraceAsString(e));
+				return;
+			}
+
+			Double onlineVersion = Double.parseDouble(lastReleaseInfo.tagName.replace("v", ""));
+
+			if (onlineVersion > currentVersion) {
+				logger.warn("A new BHBot version is available and you can get it from " + lastReleaseInfo.releaseURL);
+				logger.warn("Here are the news:");
+				logger.warn(lastReleaseInfo.releaseNotes);
+				logger.warn("The bot will pause for 15 seconds for you to read this message.");
+				try {
+					mainThread.sleep(15000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
 	}
 
 }
