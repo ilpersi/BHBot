@@ -574,6 +574,10 @@ public class BHBot {
 				} catch (InterruptedException e) {
 					logger.warn("Error while waiting for GitHub release check");
 				}
+			} else if (onlineVersion.equals(currentVersion)) {
+				logger.debug("BHBot is running on the latest version.");
+			} else {
+				logger.warn("You are running on a bleeding edge version of BHBot and there may be bugs.");
 			}
 		}
 
