@@ -274,6 +274,7 @@ public class MainThread implements Runnable {
 	private static final int HOUR = 60 * MINUTE;
 	private static final int DAY = 24 * HOUR;
 
+	@SuppressWarnings("FieldCanBeLocal")
 	private boolean idleMode = false;
 
 	private static int globalShards;
@@ -308,7 +309,9 @@ public class MainThread implements Runnable {
 	private int numFailedRestarts = 0; // in a row
 	// When we do not have anymore gems to use this is true
 	private boolean noGemsToBribe = false;
+	@SuppressWarnings("FieldCanBeLocal")
 	private final int MAX_NUM_FAILED_RESTARTS = 5;
+	@SuppressWarnings("FieldCanBeLocal")
 	private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
 	private static WebDriver driver;
 	private static JavascriptExecutor jsExecutor;
@@ -316,16 +319,26 @@ public class MainThread implements Runnable {
 	private State state; // at which stage of the game/menu are we currently?
 	private BufferedImage img; // latest screen capture
 
+	@SuppressWarnings("FieldCanBeLocal")
 	private final long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
+	@SuppressWarnings("FieldCanBeLocal")
 	private final long SHARDS_CHECK_INTERVAL = 15 * MINUTE;
+	@SuppressWarnings("FieldCanBeLocal")
 	private final long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
+	@SuppressWarnings("FieldCanBeLocal")
 	private final long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
+	@SuppressWarnings("FieldCanBeLocal")
 	private final long BADGES_CHECK_INTERVAL = 10 * MINUTE;
+	@SuppressWarnings("FieldCanBeLocal")
 	private final long BOUNTY_CHECK_INTERVAL = HOUR;
+	@SuppressWarnings("FieldCanBeLocal")
 	private final long BONUS_CHECK_INTERVAL = 10 * MINUTE;
+	@SuppressWarnings("FieldCanBeLocal")
 	private final long FISHING_CHECK_INTERVAL = DAY;
 
+	@SuppressWarnings("FieldCanBeLocal")
 	private final long MAX_IDLE_TIME = 30*MINUTE;
+	@SuppressWarnings("FieldCanBeLocal")
 	private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
 	private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
@@ -379,6 +392,7 @@ public class MainThread implements Runnable {
 		cues.put(name, new Cue(name, im, bounds));
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private static int loadCueFolder(String cuesPath, String prefix, boolean stripCueStr, Bounds bounds) {
 		int totalLoaded = 0;
 
@@ -2689,7 +2703,7 @@ public class MainThread implements Runnable {
 		BHBot.logger.info(Integer.toString(t));
 	}
 
-	private boolean openSettings(int delay) {
+	private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {
 		readScreen();
 
 		MarvinSegment seg = detectCue(cues.get("SettingsGear"));
@@ -3019,9 +3033,9 @@ public class MainThread implements Runnable {
 		return detectCue(new Cue(cue, bounds), timeout, true);
 	}
 
-	public MarvinSegment detectCue(Cue cue, Bounds bounds) {
+	/*public MarvinSegment detectCue(Cue cue, Bounds bounds) {
 		return detectCue(new Cue(cue, bounds), 0, true);
-	}
+	}*/
 
 	private MarvinSegment detectCue(Cue cue, int timeout) {
 		return detectCue(cue, timeout, true);
@@ -3031,7 +3045,7 @@ public class MainThread implements Runnable {
 	 * Will try (and retry) to detect cue from image until timeout is reached. May return null if cue has not been detected within given 'timeout' time. If 'timeout' is 0,
 	 * then it will attempt at cue detection only once and return the result immediately.
 	 */
-	private MarvinSegment detectCue(Cue cue, int timeout, boolean game) {
+	private MarvinSegment detectCue(Cue cue, int timeout, @SuppressWarnings("SameParameterValue") boolean game) {
 		long timer = Misc.getTime();
 		MarvinSegment seg = findSubimage(img, cue);
 
@@ -3261,17 +3275,17 @@ public class MainThread implements Runnable {
 	//TODO Farm ads again
 
 	ReturnResult trySkippingAd() {
-			
+
 //			Actions act = new Actions(driver);
 //			act.moveToElement(adWindow, 1, 1);
 //			act.click();
 //			act.moveToElement(adWindow, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
 //			act.perform();
-			
+
 			//save current tab to variable
 //			String oldTab = driver.getWindowHandle();
 			BHBot.logger.info(driver.getWindowHandle());
-			
+
 			//set Read Article xpath to variable and click using selenium
 			WebElement openWindow;
 			try {
@@ -3281,42 +3295,42 @@ public class MainThread implements Runnable {
 			}
 			openWindow.click();
 			BHBot.logger.info("Attempted to click button");
-			
+
 			sleep(2000);
-			
+
 //			Actions act = new Actions(driver);
 //			act.sendKeys(Keys.chord(Keys.CONTROL, "a"));
-			
+
 			driver.switchTo().window("Bit Heroes");
-			
+
 //			driver.close();
-			
+
 			//*[@id="play"]/div[20]/div[1]/div[3]
-			
+
 //			ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
 //			BHBot.logger.info(tabs);
-//			
+//
 //			sleep(1000);
-//			
+//
 //			driver.switchTo().window(oldTab);
-//			
+//
 //			sleep(1000);
-//			
+//
 //		    for(String handle : driver.getWindowHandles()) {
 //		        if (!handle.equals(oldTab)) {
 //		            driver.switchTo().window(oldTab);
 //		            driver.close();
 //		        }
 //		    }
-			
-			
+
+
 //			//wait for ad to load, and change back to original tab
 //			sleep(10*SECOND);
 //		    driver.switchTo().window(oldTab);
 //		    //pause just in case
 //		    sleep(5*SECOND);
 //		    //set 'X' close button xpath to variable and click using selenium
-			
+
 //			WebElement closeAdButton;
 //			try {
 //				closeAdButton = driver.findElement(By.xpath("//*[@id=\"play\"]/div[20]/div[1]/div[3]"));
@@ -5640,7 +5654,8 @@ public class MainThread implements Runnable {
 	 * Internal routine - do not use it manually! <br>
 	 * @return false on error (caller must do restart() if he gets false as a result from this method)
 	 */
-	private boolean selectDifficultyFromDropDownExpedition(int oldDifficulty, int newDifficulty, int recursionDepth) {
+	private boolean selectDifficultyFromDropDownExpedition(int oldDifficulty, int newDifficulty,
+														   @SuppressWarnings("SameParameterValue") int recursionDepth) {
 		// horizontal position of the 5 buttons:
 		final int posx = 390;
 		// vertical positions of the 5 buttons:
@@ -6414,7 +6429,7 @@ public class MainThread implements Runnable {
 		sendPushOverMessage(title, msg, "pushover", priority, attachment);
 	}
 
-	private void sendPushOverMessage(String title, String msg, String sound) {
+	private void sendPushOverMessage(String title, String msg, @SuppressWarnings("SameParameterValue") String sound) {
 		sendPushOverMessage(title, msg, sound, MessagePriority.NORMAL, null);
 	}
 
