@@ -11,7 +11,6 @@ import net.pushover.client.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
@@ -533,7 +532,7 @@ public class BHBot {
 
 		Double currentVersion = Double.parseDouble(BHBotVersion);
 
-		HttpResponse response = null;
+		HttpResponse response;
 		try {
 			response = httpClient.execute(getReq);
 		} catch (IOException e) {
@@ -550,7 +549,7 @@ public class BHBot {
 				return;
 			}
 
-			GitHubRelease lastReleaseInfo = null;
+			GitHubRelease lastReleaseInfo;
 			try {
 				lastReleaseInfo = gson.fromJson(EntityUtils.toString(response.getEntity()), GitHubRelease.class);
 
@@ -565,12 +564,15 @@ public class BHBot {
 			if (onlineVersion > currentVersion) {
 				logger.warn("A new BHBot version is available and you can get it from " + lastReleaseInfo.releaseURL);
 				logger.warn("Here are the news:");
-				logger.warn(lastReleaseInfo.releaseNotes);
+				for (String feature : lastReleaseInfo.releaseNotes.split("\n")) {
+					logger.warn(feature);
+				}
+
 				logger.warn("The bot will pause for 15 seconds for you to read this message.");
 				try {
-					mainThread.sleep(15000);
+					Thread.sleep(15000);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					logger.warn("Error while waiting for GitHub release check");
 				}
 			}
 		}
