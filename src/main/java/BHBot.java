@@ -39,6 +39,7 @@ public class BHBot {
 
 	static String chromiumExePath = "C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe";
 	static String chromeDriverExePath = "./chromedriver.exe";
+	@SuppressWarnings("FieldCanBeLocal")
 	private static String cuesPath = "./cues/";
 	static String screenshotPath = "./screenshots/";
 
@@ -185,8 +186,7 @@ public class BHBot {
 				break;
 			}
 			case "crash": {
-				int i = 3 / 0;
-				break;
+				throw new RuntimeException("CRASH!");
 			}
 			case "d": { // detect difficulty from screen
 				main.readScreen();
