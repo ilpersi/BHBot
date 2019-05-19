@@ -912,7 +912,6 @@ public class MainThread implements Runnable {
 					String value = token.nextToken();
 					String domain = token.nextToken();
 					String path = token.nextToken();
-					Date expiry = null;
 
 					String val;
 					if(!(val=token.nextToken()).equals("null"))
@@ -920,7 +919,7 @@ public class MainThread implements Runnable {
 						new Date(Long.parseLong(val));
 					}
 					boolean isSecure = Boolean.parseBoolean(token.nextToken());
-					Cookie ck = new Cookie(name,value,domain,path,expiry,isSecure);
+					Cookie ck = new Cookie(name,value,domain,path, null,isSecure);
 					try {
 						driver.manage().addCookie(ck); // This will add the stored cookie to your current session
 					} catch (Exception e) {
