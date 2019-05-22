@@ -6621,4 +6621,8 @@ public class MainThread implements Runnable {
 		}
 		return null;
 	}
+	
+	public void softReset() {
+		state = State.Main;
+	}
 }
