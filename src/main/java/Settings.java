@@ -81,8 +81,9 @@ public class Settings {
 	/** The trials/gauntlet difficulty */
     int difficulty = 60;
     
-	/** PvP Opponent */
+	/** PvP/GvG Opponent */
     int pvpOpponent = 1;
+    int gvgOpponent = 1;
 
 	/**
 	 * List of expeditions we want to do (there are 4 portals: p1, p2, p3 and p4) with a difficulty level and percentage.
@@ -657,6 +658,7 @@ public class Settings {
 		potionLimit = Integer.parseInt(lastUsedMap.getOrDefault("potionLimit", ""+potionLimit));
 		
 		pvpOpponent = Integer.parseInt(lastUsedMap.getOrDefault("pvpOpponent", ""+pvpOpponent));
+		gvgOpponent = Integer.parseInt(lastUsedMap.getOrDefault("gvgOpponent", ""+gvgOpponent));
 		difficulty = Integer.parseInt(lastUsedMap.getOrDefault("difficulty", ""+difficulty));
 		minSolo  = Integer.parseInt(lastUsedMap.getOrDefault("minSolo", ""+minSolo));
 
@@ -765,13 +767,22 @@ public class Settings {
 			setTankPriorityFromString("");
 		}
 
-		// sanitize pvpOpponent setting
+		// sanitize gvgOpponent setting
 		int pvpOpponentTmp = Integer.parseInt(lastUsedMap.getOrDefault("pvpOpponent", ""+pvpOpponent));
 		if (pvpOpponentTmp <1 || pvpOpponent > 4) {
 			BHBot.logger.warn("WARNING: invalid value for pvpOpponent setting '" + pvpOpponentTmp + "': " +
 					"setting it to '1'" );
 			lastUsedMap.put("pvpOpponent", "1");
 			pvpOpponent = 1;
+		}
+		
+		// sanitize gvgOpponent setting
+		int gvgOpponentTmp = Integer.parseInt(lastUsedMap.getOrDefault("gvgOpponent", ""+gvgOpponent));
+		if (gvgOpponentTmp <1 || gvgOpponent > 4) {
+			BHBot.logger.warn("WARNING: invalid value for gvgOpponent setting '" + gvgOpponentTmp + "': " +
+					"setting it to '1'" );
+			lastUsedMap.put("gvgOpponent", "1");
+			gvgOpponent = 1;
 		}
 
 	}

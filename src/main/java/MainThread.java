@@ -337,7 +337,7 @@ public class MainThread implements Runnable {
 	private final long FISHING_CHECK_INTERVAL = DAY;
 
 	@SuppressWarnings("FieldCanBeLocal")
-	private final long MAX_IDLE_TIME = 30*MINUTE;
+	private final long MAX_IDLE_TIME = 20*MINUTE;
 	@SuppressWarnings("FieldCanBeLocal")
 	private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
@@ -2101,9 +2101,19 @@ public class MainThread implements Runnable {
 									clickOnSeg(seg);
 								}
 
-								seg = detectCue(cues.get("Fight"), 5*SECOND);
+//								seg = detectCue(cues.get("Fight"), 5*SECOND);
+//								clickOnSeg(seg);
+//								sleep(5*SECOND);
+								
+								Bounds gvgOpponentBounds = opponentSelector(BHBot.settings.gvgOpponent);
+								BHBot.logger.info("Selecting opponent " + BHBot.settings.gvgOpponent);
+								seg = detectCue(cues.get("Fight"), 5*SECOND, gvgOpponentBounds);
+								if (seg == null) {
+									BHBot.logger.error("Imppossible to find the Fight button in the GvG screen, restarting!");
+									restart();
+									continue;
+								}
 								clickOnSeg(seg);
-								sleep(5*SECOND);
 
 								seg = detectCue(cues.get("Accept"), 5*SECOND);
 								clickOnSeg(seg);
@@ -3723,14 +3733,15 @@ public class MainThread implements Runnable {
 		 * Hence I fixed it by checking if state==State.PVP.
 		 */
 		if (state == State.PVP) {
-		seg = detectCue(cues.get("VictoryPopup"),500);
+//		seg = detectCue(cues.get("VictoryPopup"),500);
+		seg = detectCue(cues.get("VictoryPopup"));
 		if (seg != null) {
 			closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
 
 			// close the PVP window, in case it is open:
 			readScreen(2*SECOND);
 
-			seg = detectCue(cues.get("PVPWindow"), 15*SECOND);
+			seg = detectCue(cues.get("PVPWindow"), 5*SECOND);
 			if (seg != null)
 				closePopupSecurely(cues.get("PVPWindow"), cues.get("X")); // ignore failure
 			sleep(SECOND);
@@ -4154,7 +4165,9 @@ public class MainThread implements Runnable {
 		// Auto Revive is disabled, we re-enable it
 		if ( (BHBot.settings.autoRevive.size() == 0) || (state != State.Trials && state != State.Gauntlet
 				&& state != State.Raid && state != State.Expedition) ){
-			BHBot.logger.info("    AutoRevive disabled, reenabling auto.. State = '" + state + "'");
+			if (state != State.Invasion || state != State.PVP) { //we dont need these messages in PvP/Invasion
+			BHBot.logger.info("    AutoRevive disabled, reenabling auto.. State = '" + state + "'"); 
+			}
 			seg = detectCue(cues.get("AutoOff"));
 			if (seg != null) clickOnSeg(seg);
 			return;
@@ -4171,7 +4184,7 @@ public class MainThread implements Runnable {
 
 		// we make sure that we stick with the limits
 		if (potionsUsed >= BHBot.settings.potionLimit) {
-			BHBot.logger.info("Potion limit reached, skipping revive check");
+			BHBot.logger.info("    Potion limit reached, skipping revive check");
 			seg = detectCue(cues.get("AutoOff"), SECOND);
 			if (seg != null) clickOnSeg(seg);
 			return;
@@ -4346,6 +4359,13 @@ public class MainThread implements Runnable {
 		} else { // Impossible to find the potions button
 			saveGameScreen("auto-revive-no-potions");
 			BHBot.logger.info("    Impossible to find the potions button!");
+			seg = detectCue(cues.get("VictoryPopup"),500);
+			if (seg != null) {
+				closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
+			} else {
+				restart();
+			}
+
 		}
 
 		// If the unit selection screen is still open, we need to close it
@@ -6573,14 +6593,23 @@ public class MainThread implements Runnable {
 		BHBot.logger.info(familiarString.toString());
 	}
 	
-	private Bounds opponentSelector(int pvpOpponent) {
-		if ( pvpOpponent < 1 || pvpOpponent > 4 ) {
+	private Bounds opponentSelector(int opponent) {
+		
+		if ( BHBot.settings.pvpOpponent < 1 || BHBot.settings.pvpOpponent > 4 ) {
 			//if setting outside 1-4th opponents we default to 1st
 			BHBot.logger.warn("pvpOpponent must be between 1 and 4, defaulting to first opponent");
 			BHBot.settings.pvpOpponent = 1;
 			return new Bounds(544, 188, 661, 225); //1st opponent
 		}
-		switch (pvpOpponent) {
+		
+		if ( BHBot.settings.gvgOpponent < 1 || BHBot.settings.gvgOpponent > 4 ) {
+			//if setting outside 1-4th opponents we default to 1st
+			BHBot.logger.warn("gvgOpponent must be between 1 and 4, defaulting to first opponent");
+			BHBot.settings.gvgOpponent = 1;
+			return new Bounds(544, 188, 661, 225); //1st opponent
+		}
+		
+		switch (opponent) {
 		case 1:
 			return new Bounds(545, 188, 660, 225); //1st opponent
 		case 2:
