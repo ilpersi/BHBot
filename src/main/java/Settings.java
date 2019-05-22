@@ -122,6 +122,7 @@ public class Settings {
 	List<String> autoRevive;
 	String potionOrder = "123";
 	List<String> tankPriority;
+	int tankPosition = 1;
 	int potionLimit = 5;
 	
 	/** Autoshrine settings **/
@@ -654,6 +655,7 @@ public class Settings {
 
 		setAutoReviveFromString(lastUsedMap.getOrDefault("autoRevive", getAutoReviveAsString()));
 		setTankPriorityFromString(lastUsedMap.getOrDefault("tankPriority", getTankPriorityAsString()));
+		tankPosition = Integer.parseInt(lastUsedMap.getOrDefault("tankPosition", ""+tankPosition));
 		potionOrder  = lastUsedMap.getOrDefault("potionOrder", potionOrder);
 		potionLimit = Integer.parseInt(lastUsedMap.getOrDefault("potionLimit", ""+potionLimit));
 		

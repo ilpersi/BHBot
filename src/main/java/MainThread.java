@@ -3494,7 +3494,7 @@ public class MainThread implements Runnable {
 		//trials/raid revive code + auto-off check
 		seg = detectCue(cues.get("AutoOff"));
 		if (seg != null) {
-			handleAutoReviveEx();
+			handleAutoRevive();
 		}
 
 		/*
@@ -4156,7 +4156,7 @@ public class MainThread implements Runnable {
 		return false;
 	}
 
-	private void handleAutoReviveEx() {
+	private void handleAutoRevive() {
 
 		// We only use auto-revive for Trials, Gauntlet and Raids
 
@@ -4317,7 +4317,7 @@ public class MainThread implements Runnable {
                     }
 
                     // We manage tank priority using the best potion we have
-                    if (slotNum == 1 && !revived[0] &&
+                    if (slotNum == BHBot.settings.tankPosition && !revived[BHBot.settings.tankPosition-1] &&
                             ( (state==State.Trials && BHBot.settings.tankPriority.contains("t") ) ||
                                     (state==State.Gauntlet && BHBot.settings.tankPriority.contains("g") ) ||
                                     (state==State.Raid && BHBot.settings.tankPriority.contains("r")) ||
@@ -4325,7 +4325,7 @@ public class MainThread implements Runnable {
                         for (char potion: "321".toCharArray()) {
                             seg = availablePotions.get(potion);
                             if (seg != null) {
-                                BHBot.logger.info("Handling tank priority with " + potionTranslage.get(potion) + " revive.");
+                                BHBot.logger.info("Handling tank priority (position: " + BHBot.settings.tankPosition + ") with " + potionTranslage.get(potion) + " revive.");
                                 clickOnSeg(seg);
                                 readScreen(SECOND);
                                 seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
