@@ -7,6 +7,7 @@ import java.util.*;
 
 import com.google.common.base.Throwables;
 import com.google.gson.Gson;
+
 import net.pushover.client.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -443,6 +444,9 @@ public class BHBot {
                     case "ad":
                         main.trySkippingAd();
                         break;
+                    case "softreset":
+                    	main.softReset();
+                    	break;
                     default:
                         break;
                     case "runes":
