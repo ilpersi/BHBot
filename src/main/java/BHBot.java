@@ -45,7 +45,7 @@ public class BHBot {
 	static String screenshotPath = "./screenshots/";
 
 	/** log4j logger */
-	static Logger logger;
+	static BHBotLogger logger;
 
 	public static void main(String[] args) {
 		
@@ -87,7 +87,7 @@ public class BHBot {
 			settings.load(file);
 		}
 
-		logger = LogManager.getRootLogger();
+		logger = BHBotLogger.create();
 
 		Properties properties = new Properties();
 		try {
