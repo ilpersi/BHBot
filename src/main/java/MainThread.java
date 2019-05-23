@@ -4165,9 +4165,7 @@ public class MainThread implements Runnable {
 		// Auto Revive is disabled, we re-enable it
 		if ( (BHBot.settings.autoRevive.size() == 0) || (state != State.Trials && state != State.Gauntlet
 				&& state != State.Raid && state != State.Expedition) ){
-			if (state != State.Invasion || state != State.PVP) { //we dont need these messages in PvP/Invasion
-			BHBot.logger.info("    AutoRevive disabled, reenabling auto.. State = '" + state + "'"); 
-			}
+			BHBot.logger.debug("    AutoRevive disabled, reenabling auto.. State = '" + state + "'");
 			seg = detectCue(cues.get("AutoOff"));
 			if (seg != null) clickOnSeg(seg);
 			return;
@@ -6623,7 +6621,7 @@ public class MainThread implements Runnable {
 		return null;
 	}
 	
-	public void softReset() {
+	void softReset() {
 		state = State.Main;
 	}
 }
