@@ -4182,6 +4182,14 @@ public class MainThread implements Runnable {
 			return;
 		}
 
+		seg = detectCue(cues.get("VictoryPopup"),500);
+		if (seg != null) {
+			BHBot.logger.info("    Victory popup, skipping revive check");
+			seg = detectCue(cues.get("AutoOff"), SECOND);
+			if (seg != null) clickOnSeg(seg);
+			return;
+		}
+
 		// we make sure that we stick with the limits
 		if (potionsUsed >= BHBot.settings.potionLimit) {
 			BHBot.logger.info("    Potion limit reached, skipping revive check");
@@ -4359,13 +4367,6 @@ public class MainThread implements Runnable {
 		} else { // Impossible to find the potions button
 			saveGameScreen("auto-revive-no-potions");
 			BHBot.logger.info("    Impossible to find the potions button!");
-			seg = detectCue(cues.get("VictoryPopup"),500);
-			if (seg != null) {
-				closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
-			} else {
-				restart();
-			}
-
 		}
 
 		// If the unit selection screen is still open, we need to close it
