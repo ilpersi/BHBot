@@ -16,3 +16,9 @@ BHBot\.jar
 \.settings/org\.eclipse\.m2e\.core\.prefs
 
 logs/
+
+chrome_profile/
+
+chromedriver\.exe
+
+screenshots/

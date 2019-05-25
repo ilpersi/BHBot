@@ -445,6 +445,9 @@ public class BHBot {
                         break;
                     default:
                         break;
+                    case "runes":
+                    	main.detectEquippedMinorRunes();
+                    	break;
                 }
                 break;
             default:

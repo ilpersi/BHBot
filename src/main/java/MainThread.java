@@ -776,40 +776,40 @@ public class MainThread implements Runnable {
 		addCue("RunesPicker", loadImage("cues/cueRunesPicker.png"), null); // rune picker
 
 		addCue("MinorRuneExpCommon", loadImage("cues/runes/common-minor-experience.png"), null); // equipped rune
-		addCue("MinorRuneExpCommonSelect", loadImage("cues/runes/common-minor-experience-select.png"), null); // rune in rune selector/inventory
-//		addCue("MinorRuneExpRare", loadImage("cues/runes/rare-minor-experience.png"), null);
-//		addCue("MinorRuneExpRareSelect", loadImage("cues/runes/rare-minor-experience-select.png"), null);
+		addCue("MinorRuneExpCommonSelect", loadImage("cues/runes/common-minor-experience-select.png"), new Bounds(230, 180, 550, 350)); // rune in rune selector/inventory
+		addCue("MinorRuneExpRare", loadImage("cues/runes/rare-minor-experience.png"), null);
+		addCue("MinorRuneExpRareSelect", loadImage("cues/runes/rare-minor-experience-select.png"), new Bounds(230, 180, 550, 350));
 		addCue("MinorRuneExpEpic", loadImage("cues/runes/epic-minor-experience.png"), null);
-		addCue("MinorRuneExpEpicSelect", loadImage("cues/runes/epic-minor-experience-select.png"), null);
+		addCue("MinorRuneExpEpicSelect", loadImage("cues/runes/epic-minor-experience-select.png"), new Bounds(230, 180, 550, 350));
 		addCue("MinorRuneExpLegendary", loadImage("cues/runes/leg-minor-experience.png"), null); 
-		addCue("MinorRuneExpLegendarySelect", loadImage("cues/runes/leg-minor-experience-select.png"), null);
+		addCue("MinorRuneExpLegendarySelect", loadImage("cues/runes/leg-minor-experience-select.png"), new Bounds(230, 180, 550, 350));
 		
 		addCue("MinorRuneItemCommon", loadImage("cues/runes/common-minor-itemfind.png"), null);
-		addCue("MinorRuneItemCommonSelect", loadImage("cues/runes/common-minor-itemfind-select.png"), null);
+		addCue("MinorRuneItemCommonSelect", loadImage("cues/runes/common-minor-itemfind-select.png"), new Bounds(230, 180, 550, 350));
 		addCue("MinorRuneItemRare", loadImage("cues/runes/rare-minor-itemfind.png"), null);
-		addCue("MinorRuneItemRareSelect", loadImage("cues/runes/rare-minor-itemfind-select.png"), null);
+		addCue("MinorRuneItemRareSelect", loadImage("cues/runes/rare-minor-itemfind-select.png"), new Bounds(230, 180, 550, 350));
 		addCue("MinorRuneItemEpic", loadImage("cues/runes/epic-minor-itemfind.png"), null);
-		addCue("MinorRuneItemEpicSelect", loadImage("cues/runes/epic-minor-itemfind-select.png"), null);
+		addCue("MinorRuneItemEpicSelect", loadImage("cues/runes/epic-minor-itemfind-select.png"), new Bounds(230, 180, 550, 350));
 		addCue("MinorRuneItemLegendary", loadImage("cues/runes/leg-minor-itemfind.png"), null);
-		addCue("MinorRuneItemLegendarySelect", loadImage("cues/runes/leg-minor-itemfind-select.png"), null);
+		addCue("MinorRuneItemLegendarySelect", loadImage("cues/runes/leg-minor-itemfind-select.png"), new Bounds(230, 180, 550, 350));
 		
 		addCue("MinorRuneGoldCommon", loadImage("cues/runes/common-minor-gold.png"), null);
-		addCue("MinorRuneGoldCommonSelect", loadImage("cues/runes/common-minor-gold-select.png"), null);
+		addCue("MinorRuneGoldCommonSelect", loadImage("cues/runes/common-minor-gold-select.png"), new Bounds(230, 180, 550, 350));
 //		addCue("MinorRuneGoldRare", loadImage("cues/runes/rare-minor-gold.png"), null);
 //		addCue("MinorRuneGoldRareSelect", loadImage("cues/runes/rare-minor-gold-select.png"), null);
 //		addCue("MinorRuneGoldEpic", loadImage("cues/runes/epic-minor-gold.png"), null);
 //		addCue("MinorRuneGoldEpicSelect", loadImage("cues/runes/epic-minor-gold-select.png"), null);
 		addCue("MinorRuneGoldLegendary", loadImage("cues/runes/leg-minor-gold.png"), null);
-		addCue("MinorRuneGoldLegendarySelect", loadImage("cues/runes/leg-minor-gold-select.png"), null);
+		addCue("MinorRuneGoldLegendarySelect", loadImage("cues/runes/leg-minor-gold-select.png"), new Bounds(230, 180, 550, 350));
 		
 		addCue("MinorRuneCaptureCommon", loadImage("cues/runes/common-minor-capture.png"), null);
-		addCue("MinorRuneCaptureCommonSelect", loadImage("cues/runes/common-minor-capture-select.png"), null);
-//		addCue("MinorRuneCaptureRare", loadImage("cues/runes/rare-minor-capture.png"), null);
-//		addCue("MinorRuneCaptureRareSelect", loadImage("cues/runes/rare-minor-capture-select.png"), null);
-//		addCue("MinorRuneCaptureEpic", loadImage("cues/runes/epic-minor-capture.png"), null);
-//		addCue("MinorRuneCaptureEpicSelect", loadImage("cues/runes/epic-minor-capture-select.png"), null);
+		addCue("MinorRuneCaptureCommonSelect", loadImage("cues/runes/common-minor-capture-select.png"), new Bounds(230, 180, 550, 350));
+		addCue("MinorRuneCaptureRare", loadImage("cues/runes/rare-minor-capture.png"), null);
+		addCue("MinorRuneCaptureRareSelect", loadImage("cues/runes/rare-minor-capture-select.png"), new Bounds(230, 180, 550, 350));
+		addCue("MinorRuneCaptureEpic", loadImage("cues/runes/epic-minor-capture.png"), null);
+		addCue("MinorRuneCaptureEpicSelect", loadImage("cues/runes/epic-minor-capture-select.png"), new Bounds(230, 180, 550, 350));
 		addCue("MinorRuneCaptureLegendary", loadImage("cues/runes/leg-minor-capture.png"), null);
-		addCue("MinorRuneCaptureLegendarySelect", loadImage("cues/runes/leg-minor-capture-select.png"), null);
+		addCue("MinorRuneCaptureLegendarySelect", loadImage("cues/runes/leg-minor-capture-select.png"), new Bounds(230, 180, 550, 350));
 		
 		// invasion related:
 //		addCue("Invasion", loadImage("cues/cueInvasion.png"), new Bounds(720, 270, 770, 480)); // main Invasion button cue
@@ -1072,6 +1072,7 @@ public class MainThread implements Runnable {
 
 	private void restart() {
 		restart(true); // assume emergency restart
+		oneTimeshrineCheck = false; //reset first run shrine check in case its enabled after restarting
 	}
 
 	/**
@@ -2933,6 +2934,7 @@ public class MainThread implements Runnable {
         // determine equipped runes
         leftMinorRune = null;
         rightMinorRune = null;
+        readScreen();
         for (MinorRune rune : MinorRune.values()) {
             Cue runeCue = rune.getRuneCue();
             // left rune
