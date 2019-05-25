@@ -271,7 +271,7 @@ public class MainThread implements Runnable {
 
 	private enum MinorRune {
 		EXP_COMMON("exp_common", "MinorRuneExpCommon"),
-		EXP_RARE("exp_rare", "MinorRuneExpRare"),
+//		EXP_RARE("exp_rare", "MinorRuneExpRare"),
 		EXP_EPIC("exp_epic", "MinorRuneExpEpic"),
 		EXP_LEGENDARY("exp_legendary", "MinorRuneExpLegendary"),
 
@@ -281,13 +281,13 @@ public class MainThread implements Runnable {
 		ITEM_LEGENDARY("item_legendary", "MinorRuneItemLegendary"),
 
 		GOLD_COMMON("gold_common", "MinorRuneGoldCommon"),
-		GOLD_RARE("gold_rare", "MinorRuneGoldRare"),
-		GOLD_EPIC("gold_epic", "MinorRuneGoldEpic"),
+//		GOLD_RARE("gold_rare", "MinorRuneGoldRare"),
+//		GOLD_EPIC("gold_epic", "MinorRuneGoldEpic"),
 		GOLD_LEGENDARY("gold_legendary", "MinorRuneGoldLegendary"),
 
 		CAPTURE_COMMON("capture_common", "MinorRuneCaptureCommon"),
-		CAPTURE_RARE("capture_rare", "MinorRuneCaptureRare"),
-		CAPTURE_EPIC("capture_epic", "MinorRuneCaptureEpic"),
+//		CAPTURE_RARE("capture_rare", "MinorRuneCaptureRare"),
+//		CAPTURE_EPIC("capture_epic", "MinorRuneCaptureEpic"),
 		CAPTURE_LEGENDARY("capture_legendary", "MinorRuneCaptureLegendary");
 
 		private String name;
@@ -416,6 +416,11 @@ public class MainThread implements Runnable {
 	/** autoshrine settings save */
 	private boolean ignoreBossSetting = false;
 	private boolean ignoreShrinesSetting = false;
+
+	/** global autorune vals */
+	private boolean oneTimeRuneCheck = false;
+    private MinorRune leftMinorRune;
+    private MinorRune rightMinorRune;
 
     private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
@@ -766,26 +771,30 @@ public class MainThread implements Runnable {
 
 
 		// rune management related:
-//		addCue("MinorRuneExpCommon", loadImage("cues/runes/common-minor-experience.png"), null); // equipped rune
-//		addCue("MinorRuneExpCommonSelect", loadImage("cues/runes/common-minor-experience-select.png"), null); // rune in rune selector/inventory
+        addCue("Runes", loadImage("cues/cueRunes.png"), new Bounds(120, 450, 245, 495)); // runes button in profile
+        addCue("RunesLayout", loadImage("cues/cueRunesLayout.png"), new Bounds(340, 70, 460, 110)); // runes layout header
+		addCue("RunesPicker", loadImage("cues/cueRunesPicker.png"), null); // rune picker
+
+		addCue("MinorRuneExpCommon", loadImage("cues/runes/common-minor-experience.png"), null); // equipped rune
+		addCue("MinorRuneExpCommonSelect", loadImage("cues/runes/common-minor-experience-select.png"), null); // rune in rune selector/inventory
 //		addCue("MinorRuneExpRare", loadImage("cues/runes/rare-minor-experience.png"), null);
 //		addCue("MinorRuneExpRareSelect", loadImage("cues/runes/rare-minor-experience-select.png"), null);
-//		addCue("MinorRuneExpEpic", loadImage("cues/runes/epic-minor-experience.png"), null);
-//		addCue("MinorRuneExpEpicSelect", loadImage("cues/runes/epic-minor-experience-select.png"), null);
+		addCue("MinorRuneExpEpic", loadImage("cues/runes/epic-minor-experience.png"), null);
+		addCue("MinorRuneExpEpicSelect", loadImage("cues/runes/epic-minor-experience-select.png"), null);
 		addCue("MinorRuneExpLegendary", loadImage("cues/runes/leg-minor-experience.png"), null); 
 		addCue("MinorRuneExpLegendarySelect", loadImage("cues/runes/leg-minor-experience-select.png"), null);
 		
-//		addCue("MinorRuneItemCommon", loadImage("cues/runes/common-minor-itemfind.png"), null);
-//		addCue("MinorRuneItemCommonSelect", loadImage("cues/runes/common-minor-itemfind-select.png"), null);
-//		addCue("MinorRuneItemRare", loadImage("cues/runes/rare-minor-itemfind.png"), null);
-//		addCue("MinorRuneItemRareSelect", loadImage("cues/runes/rare-minor-itemfind-select.png"), null);
-//		addCue("MinorRuneItemEpic", loadImage("cues/runes/epic-minor-itemfind.png"), null);
-//		addCue("MinorRuneItemEpicSelect", loadImage("cues/runes/epic-minor-itemfind-select.png"), null);
+		addCue("MinorRuneItemCommon", loadImage("cues/runes/common-minor-itemfind.png"), null);
+		addCue("MinorRuneItemCommonSelect", loadImage("cues/runes/common-minor-itemfind-select.png"), null);
+		addCue("MinorRuneItemRare", loadImage("cues/runes/rare-minor-itemfind.png"), null);
+		addCue("MinorRuneItemRareSelect", loadImage("cues/runes/rare-minor-itemfind-select.png"), null);
+		addCue("MinorRuneItemEpic", loadImage("cues/runes/epic-minor-itemfind.png"), null);
+		addCue("MinorRuneItemEpicSelect", loadImage("cues/runes/epic-minor-itemfind-select.png"), null);
 		addCue("MinorRuneItemLegendary", loadImage("cues/runes/leg-minor-itemfind.png"), null);
 		addCue("MinorRuneItemLegendarySelect", loadImage("cues/runes/leg-minor-itemfind-select.png"), null);
 		
-//		addCue("MinorRuneGoldCommon", loadImage("cues/runes/common-minor-gold.png"), null);
-//		addCue("MinorRuneGoldCommonSelect", loadImage("cues/runes/common-minor-gold-select.png"), null);
+		addCue("MinorRuneGoldCommon", loadImage("cues/runes/common-minor-gold.png"), null);
+		addCue("MinorRuneGoldCommonSelect", loadImage("cues/runes/common-minor-gold-select.png"), null);
 //		addCue("MinorRuneGoldRare", loadImage("cues/runes/rare-minor-gold.png"), null);
 //		addCue("MinorRuneGoldRareSelect", loadImage("cues/runes/rare-minor-gold-select.png"), null);
 //		addCue("MinorRuneGoldEpic", loadImage("cues/runes/epic-minor-gold.png"), null);
@@ -793,8 +802,8 @@ public class MainThread implements Runnable {
 		addCue("MinorRuneGoldLegendary", loadImage("cues/runes/leg-minor-gold.png"), null);
 		addCue("MinorRuneGoldLegendarySelect", loadImage("cues/runes/leg-minor-gold-select.png"), null);
 		
-//		addCue("MinorRuneCaptureCommon", loadImage("cues/runes/common-minor-capture.png"), null);
-//		addCue("MinorRuneCaptureCommonSelect", loadImage("cues/runes/common-minor-capture-select.png"), null);
+		addCue("MinorRuneCaptureCommon", loadImage("cues/runes/common-minor-capture.png"), null);
+		addCue("MinorRuneCaptureCommonSelect", loadImage("cues/runes/common-minor-capture-select.png"), null);
 //		addCue("MinorRuneCaptureRare", loadImage("cues/runes/rare-minor-capture.png"), null);
 //		addCue("MinorRuneCaptureRareSelect", loadImage("cues/runes/rare-minor-capture-select.png"), null);
 //		addCue("MinorRuneCaptureEpic", loadImage("cues/runes/epic-minor-capture.png"), null);
@@ -1533,11 +1542,22 @@ public class MainThread implements Runnable {
 
                     	BHBot.logger.info("Startup check to make sure authoshrines is initially disabled");
 						if (!checkShrineSettings(false, false)) {
-							BHBot.logger.error("It was not possible to performe the auto shrines start-up check!");
+							BHBot.logger.error("It was not possible to perform the auto shrines start-up check!");
 						}
                         oneTimeshrineCheck = true;
                         readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
                     }
+
+					// One time check for equipped minor runes
+					if (!oneTimeRuneCheck) {
+
+						BHBot.logger.info("Startup check to determined configured minor runes");
+						if (!detectEquippedMinorRunes()) {
+							BHBot.logger.error("It was not possible to perform the equipped runes start-up check!");
+						}
+						oneTimeRuneCheck = true;
+						readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
+					}
 
 
 					// check for shards:
@@ -2891,77 +2911,60 @@ public class MainThread implements Runnable {
 		}
 	}
 
-	boolean checkMinorRuneSettings(String action, boolean ignoreShrines) {
-		//open settings
-		int ignoreBossCnt = 0;
-		int ignoreShrineCnt = 0;
+	boolean detectEquippedMinorRunes() {
 
-		if (openSettings(SECOND)) {
-			if (ignoreBoss) {
-				while ( detectCue(cues.get("IgnoreBoss"), SECOND) != null ) {
-					BHBot.logger.debug("Enabling Ignore Boss");
-					clickInGame(194, 366);
-					readScreen(500);
+	    // Open character menu
+        clickInGame(55, 465);
 
-					if (ignoreBossCnt++ > 10) {
-						BHBot.logger.error("Impossible to enable Ignore Boss");
-						return false;
-					}
-				}
-				ignoreBossSetting = true;
-				BHBot.logger.info("Ignore Boss Enabled");
-			} else {
-				while ( detectCue(cues.get("IgnoreBoss"), SECOND) == null ) {
-					BHBot.logger.debug("Disabling Ignore Boss");
-					clickInGame(194, 366);
-					readScreen(500);
+        MarvinSegment seg = detectCue(cues.get("Runes"), 15*SECOND);
+        if (seg == null) {
+            BHBot.logger.warn("Error: unable to detect runes button! Skipping...");
+            return false;
+        }
 
-					if (ignoreBossCnt++ > 10) {
-						BHBot.logger.error("Impossible to Disable Ignore Boss");
-						return false;
-					}
-				}
-				ignoreBossSetting = false;
-				BHBot.logger.info("Ignore Boss Disabled");
-			}
+        clickOnSeg(seg);
 
-			if (ignoreShrines) {
-				while (detectCue(cues.get("IgnoreShrines"), SECOND) != null) {
-					BHBot.logger.debug("Enabling Ignore Shrine");
-					clickInGame(194, 402);
-					readScreen(500);
+        seg = detectCue(cues.get("RunesLayout"), 15*SECOND);
+        if (seg == null) {
+            BHBot.logger.warn("Error: unable to detect rune layout! Skipping...");
+            return false;
+        }
 
-					if (ignoreShrineCnt++ > 10) {
-						BHBot.logger.error("Impossible to enable Ignore Shrines");
-						return false;
-					}
-				}
-				ignoreShrinesSetting = true;
-				BHBot.logger.info("Ignore Shrine Enabled");
-			} else {
-				while (detectCue(cues.get("IgnoreShrines"), SECOND) == null) {
-					BHBot.logger.debug("Disabling Ignore Shrine");
-					clickInGame(194, 402);
-					readScreen(500);
+        // determine equipped runes
+        leftMinorRune = null;
+        rightMinorRune = null;
+        for (MinorRune rune : MinorRune.values()) {
+            Cue runeCue = rune.getRuneCue();
+            // left rune
+            seg = detectCue(runeCue, 0, new Bounds(230, 245, 320, 330));
+            if (seg != null)
+                leftMinorRune = rune;
 
-					if (ignoreShrineCnt++ > 10) {
-						BHBot.logger.error("Impossible to disable Ignore Shrines");
-						return false;
-					}
-				}
-				ignoreShrinesSetting = false;
-				BHBot.logger.info("Ignore Shrine Disabled");
-			}
+            // right rune
+            seg = detectCue(runeCue, 0, new Bounds(480, 245, 565, 330));
+            if (seg != null)
+                rightMinorRune = rune;
+        }
 
-			readScreen(SECOND);
+        closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
+		closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
 
-			closePopupSecurely(cues.get("Settings"), new Cue(cues.get("X"), new Bounds(608, 39, 711, 131)) );
 
-			return true;
-		} else {
-			BHBot.logger.warn("Impossible to open settings menu!");
-			return  false;
+        boolean success = true;
+        if (leftMinorRune == null) {
+            BHBot.logger.warn("Error: Unable to detect left minor rune!");
+            success = false;
+        } else{
+			BHBot.logger.debug(leftMinorRune.getName() + " in left rune slot");
 		}
+        if (rightMinorRune == null) {
+            BHBot.logger.warn("Error: Unable to detect right minor rune!");
+            success = false;
+        } else{
+			BHBot.logger.debug(rightMinorRune.getName() + " in right rune slot");
+		}
+
+		return success;
 	}
 
 	/**
