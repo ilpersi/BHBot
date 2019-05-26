@@ -2116,6 +2116,11 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 
 								seg = detectCue(cues.get("Accept"), 5*SECOND);
+								if (seg == null) {
+									BHBot.logger.error("Imppossible to find the Accept button in the GvG screen, restarting!");
+									restart();
+									continue;
+								}
 								clickOnSeg(seg);
 								sleep(5*SECOND);
 
