@@ -643,7 +643,6 @@ public class MainThread implements Runnable {
 		addCue("GVG", loadImage("cues/cueGVG.png"), null); // main GVG button cue
 		addCue("BadgeBar", loadImage("cues/cueBadgeBar.png"), null);
 		addCue("GVGWindow", loadImage("cues/cueGVGWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
-		addCue("GVGWarning", loadImage("cues/cueGVGWarning.png"), null); //inital GvG run wanring
 
 		addCue("InGamePM", loadImage("cues/cueInGamePM.png"), new Bounds(450, 330, 530, 380)); // note that the guild window uses the same cue! That's why it's important that user doesn't open guild window while bot is working!
 
@@ -2092,14 +2091,10 @@ public class MainThread implements Runnable {
 								readScreen(2*SECOND);
 
 								//On initial GvG run you'll get a warning about not being able to leave guild, this will close that
-								readScreen(2*SECOND);
-								seg = detectCue(cues.get("GVGWarning"), 3*SECOND);
-								if (seg != null) {
-									BHBot.logger.info("Initial GvG run warning found, closing");
-									sleep(SECOND); //wait to stabilise just in case
-									seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-									clickOnSeg(seg);
-								}
+                                if (handleGuildLeaveConfirm()) {
+                                    restart();
+                                    continue;
+                                }
 
 //								seg = detectCue(cues.get("Fight"), 5*SECOND);
 //								clickOnSeg(seg);
@@ -5261,13 +5256,13 @@ public class MainThread implements Runnable {
 			readScreen();
 			MarvinSegment seg = detectCue(cues.get("YesGreen"), 10 * SECOND);
 			if (seg == null) {
-				BHBot.logger.error("Error: 'GVG Confirm' window detected, but no 'Yes' green button found. Restarting...");
+				BHBot.logger.error("Error: 'Guild Leave Confirm' window detected, but no 'Yes' green button found. Restarting...");
 				return true;
 			}
 			clickOnSeg(seg);
 			sleep(2 * SECOND);
 
-			BHBot.logger.info("'GVG' dialog detected and handled - GVG has been auto confirmed!");
+			BHBot.logger.info("'Guild Leave' dialog detected and handled!");
 		}
 
 		return false; // all ok
