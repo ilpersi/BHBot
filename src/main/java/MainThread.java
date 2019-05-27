@@ -49,26 +49,35 @@ public class MainThread implements Runnable {
 	public enum State {
 		Loading("Loading..."),
 		Main("Main screen"),
-		Raid("Raid"),
-		Trials("Trials"),
-		Gauntlet("Gauntlet"),
-		Dungeon("Dungeon"),
-		PVP("PVP"),
-		GVG("GVG"),
-		Invasion("Invasion"),
-		Expedition("Expedition"),
-		WorldBoss("World Boss"),
-		UnidentifiedDungeon("Unidentified dungeon"); // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
+		Raid("Raid", "r"),
+		Trials("Trials", "t"),
+		Gauntlet("Gauntlet", "g"),
+		Dungeon("Dungeon", "d"),
+		PVP("PVP", "p"),
+		GVG("GVG", "g"),
+		Invasion("Invasion", "i"),
+		Expedition("Expedition", "e"),
+		WorldBoss("World Boss", "w"),
+		UnidentifiedDungeon("Unidentified dungeon", "d"); // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
 
 		private String name;
+        private String shortcut;
 
 		State(String name) {
 			this.name = name;
+			this.shortcut = null;
 		}
 
-		public String getName() {
-			return name;
-		}
+        State(String name, String shortcut) {
+            this.name = name;
+            this.shortcut = shortcut;
+        }
+
+        public String getName() { return name; }
+
+        public String getShortcut() {
+            return shortcut;
+        }
 	}
 
     public enum PersuationType {
@@ -298,11 +307,6 @@ public class MainThread implements Runnable {
 			this.runeCue = runeCue;
 		}
 
-		/** Returns name as it appears in e.g. settings.ini. */
-		public String getName() {
-			return name;
-		}
-
 		public static MinorRune getTypeFromName(String name) {
 			for (MinorRune type : MinorRune.values())
 				if (type.name.equals(name))
@@ -314,6 +318,10 @@ public class MainThread implements Runnable {
 		public Cue getRuneCue() {
 			return cues.get(runeCue);
 		}
+
+        public Cue getRuneSelectCue() {
+            return cues.get(runeCue + "Select");
+        }
 
 		@Override
 		public String toString() {
@@ -774,11 +782,12 @@ public class MainThread implements Runnable {
         addCue("Runes", loadImage("cues/cueRunes.png"), new Bounds(120, 450, 245, 495)); // runes button in profile
         addCue("RunesLayout", loadImage("cues/cueRunesLayout.png"), new Bounds(340, 70, 460, 110)); // runes layout header
 		addCue("RunesPicker", loadImage("cues/cueRunesPicker.png"), null); // rune picker
+        addCue("RunesSwitch", loadImage("cues/cueRunesSwitch.png"), new Bounds(320, 260, 480, 295)); // rune picker
 
 		addCue("MinorRuneExpCommon", loadImage("cues/runes/common-minor-experience.png"), null); // equipped rune
 		addCue("MinorRuneExpCommonSelect", loadImage("cues/runes/common-minor-experience-select.png"), null); // rune in rune selector/inventory
-//		addCue("MinorRuneExpRare", loadImage("cues/runes/rare-minor-experience.png"), null);
-//		addCue("MinorRuneExpRareSelect", loadImage("cues/runes/rare-minor-experience-select.png"), null);
+		addCue("MinorRuneExpRare", loadImage("cues/runes/rare-minor-experience.png"), null);
+		addCue("MinorRuneExpRareSelect", loadImage("cues/runes/rare-minor-experience-select.png"), null);
 		addCue("MinorRuneExpEpic", loadImage("cues/runes/epic-minor-experience.png"), null);
 		addCue("MinorRuneExpEpicSelect", loadImage("cues/runes/epic-minor-experience-select.png"), null);
 		addCue("MinorRuneExpLegendary", loadImage("cues/runes/leg-minor-experience.png"), null); 
@@ -804,10 +813,10 @@ public class MainThread implements Runnable {
 		
 		addCue("MinorRuneCaptureCommon", loadImage("cues/runes/common-minor-capture.png"), null);
 		addCue("MinorRuneCaptureCommonSelect", loadImage("cues/runes/common-minor-capture-select.png"), null);
-//		addCue("MinorRuneCaptureRare", loadImage("cues/runes/rare-minor-capture.png"), null);
-//		addCue("MinorRuneCaptureRareSelect", loadImage("cues/runes/rare-minor-capture-select.png"), null);
-//		addCue("MinorRuneCaptureEpic", loadImage("cues/runes/epic-minor-capture.png"), null);
-//		addCue("MinorRuneCaptureEpicSelect", loadImage("cues/runes/epic-minor-capture-select.png"), null);
+		addCue("MinorRuneCaptureRare", loadImage("cues/runes/rare-minor-capture.png"), null);
+		addCue("MinorRuneCaptureRareSelect", loadImage("cues/runes/rare-minor-capture-select.png"), null);
+		addCue("MinorRuneCaptureEpic", loadImage("cues/runes/epic-minor-capture.png"), null);
+		addCue("MinorRuneCaptureEpicSelect", loadImage("cues/runes/epic-minor-capture-select.png"), null);
 		addCue("MinorRuneCaptureLegendary", loadImage("cues/runes/leg-minor-capture.png"), null);
 		addCue("MinorRuneCaptureLegendarySelect", loadImage("cues/runes/leg-minor-capture-select.png"), null);
 		
@@ -1552,7 +1561,7 @@ public class MainThread implements Runnable {
 					if (!oneTimeRuneCheck) {
 
 						BHBot.logger.info("Startup check to determined configured minor runes");
-						if (!detectEquippedMinorRunes()) {
+						if (!detectEquippedMinorRunes(true)) {
 							BHBot.logger.error("It was not possible to perform the equipped runes start-up check!");
 						}
 						oneTimeRuneCheck = true;
@@ -1626,6 +1635,8 @@ public class MainThread implements Runnable {
 								readScreen(SECOND);
 								clickOnSeg(raidBTNSeg);
 							}
+
+                            handleMinorRunes();
 
 							String raid = decideRaidRandomly();
 							if (raid == null) {
@@ -1770,6 +1781,8 @@ public class MainThread implements Runnable {
 								clickOnSeg(trialBTNSeg);
 							}
 
+							handleMinorRunes();
+
 							BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + BHBot.settings.difficulty + "...");
 
 							// select difficulty if needed:
@@ -1879,6 +1892,8 @@ public class MainThread implements Runnable {
 
 							if (BHBot.scheduler.doDungeonImmediately)
 								BHBot.scheduler.doDungeonImmediately = false; // reset it
+
+                            handleMinorRunes();
 
 							seg = detectCue(cues.get("Quest"));
 							clickOnSeg(seg);
@@ -2023,6 +2038,8 @@ public class MainThread implements Runnable {
 							if (BHBot.scheduler.doPVPImmediately)
 								BHBot.scheduler.doPVPImmediately = false; // reset it
 
+                            handleMinorRunes();
+
 							BHBot.logger.info("Attempting PVP...");
 							stripDown(BHBot.settings.pvpstrip);
 
@@ -2159,6 +2176,8 @@ public class MainThread implements Runnable {
 								if (BHBot.scheduler.doGVGImmediately)
 									BHBot.scheduler.doGVGImmediately = false; // reset it
 
+                                handleMinorRunes();
+
 								BHBot.logger.info("Attempting GVG...");
 
 								if (BHBot.settings.gvgstrip.size() > 0){
@@ -2256,6 +2275,8 @@ public class MainThread implements Runnable {
 								if (BHBot.scheduler.doInvasionImmediately)
 									BHBot.scheduler.doInvasionImmediately = false; // reset it
 
+                                handleMinorRunes();
+
 								BHBot.logger.info("Attempting invasion...");
 
 								// select cost if needed:
@@ -2334,6 +2355,8 @@ public class MainThread implements Runnable {
 									clickOnSeg(badgeBtn);
 									readScreen(SECOND * 2);
 								}
+
+                                handleMinorRunes();
 
 								BHBot.logger.info("Attempting expedition...");
 
@@ -2532,6 +2555,8 @@ public class MainThread implements Runnable {
 								BHBot.logger.warn("Invalid world boss settings detected, World Boss will be skipped");
 								continue;
 							}
+
+                            handleMinorRunes();
 
 							seg = detectCue(cues.get("WorldBoss"));
 							if (seg != null) {
@@ -2911,15 +2936,14 @@ public class MainThread implements Runnable {
 		}
 	}
 
-	boolean detectEquippedMinorRunes() {
-
-	    // Open character menu
+	boolean openRunesMenu() {
+        // Open character menu
         clickInGame(55, 465);
 
         MarvinSegment seg = detectCue(cues.get("Runes"), 15*SECOND);
         if (seg == null) {
             BHBot.logger.warn("Error: unable to detect runes button! Skipping...");
-            return false;
+            return true;
         }
 
         clickOnSeg(seg);
@@ -2927,8 +2951,16 @@ public class MainThread implements Runnable {
         seg = detectCue(cues.get("RunesLayout"), 15*SECOND);
         if (seg == null) {
             BHBot.logger.warn("Error: unable to detect rune layout! Skipping...");
-            return false;
+            return true;
         }
+
+        return false;
+    }
+
+	boolean detectEquippedMinorRunes(boolean needToOpenRunesMenu) {
+
+        if (needToOpenRunesMenu && openRunesMenu())
+            return false;
 
         // determine equipped runes
         leftMinorRune = null;
@@ -2936,7 +2968,7 @@ public class MainThread implements Runnable {
         for (MinorRune rune : MinorRune.values()) {
             Cue runeCue = rune.getRuneCue();
             // left rune
-            seg = detectCue(runeCue, 0, new Bounds(230, 245, 320, 330));
+            MarvinSegment seg = detectCue(runeCue, 0, new Bounds(230, 245, 320, 330));
             if (seg != null)
                 leftMinorRune = rune;
 
@@ -2955,13 +2987,13 @@ public class MainThread implements Runnable {
             BHBot.logger.warn("Error: Unable to detect left minor rune!");
             success = false;
         } else{
-			BHBot.logger.debug(leftMinorRune.getName() + " in left rune slot");
+			BHBot.logger.debug(leftMinorRune + " in left rune slot");
 		}
         if (rightMinorRune == null) {
             BHBot.logger.warn("Error: Unable to detect right minor rune!");
             success = false;
         } else{
-			BHBot.logger.debug(rightMinorRune.getName() + " in right rune slot");
+			BHBot.logger.debug(rightMinorRune + " in right rune slot");
 		}
 
 		return success;
@@ -3949,6 +3981,8 @@ public class MainThread implements Runnable {
 						}
 						readScreen(100);
 
+						handleMinorBossRunes();
+
 						// We disable and re-enable the auto feature
 						while (detectCue(cues.get("AutoOn"), 500) != null) {
 							clickInGame(780, 270); //auto off
@@ -3986,7 +4020,128 @@ public class MainThread implements Runnable {
 			}
 		}
 	}
-	
+
+	private void handleMinorRunes() {
+	    String activity = state.getShortcut();
+        List<String> desiredRunes;
+        if (!BHBot.settings.autoRune.containsKey(activity)) {
+            BHBot.logger.info("No autoRunes assigned for " + state.getName() + ", using defaults.");
+            desiredRunes = BHBot.settings.autoRuneDefault;
+        }
+        else {
+            desiredRunes = BHBot.settings.autoRune.get(activity);
+        }
+
+        if (!switchMinorRunes(desiredRunes))
+            BHBot.logger.info("AutoRune failed!");
+
+    }
+
+    private void handleMinorBossRunes() {
+        String activity = state.getShortcut();
+        if (!BHBot.settings.autoBossRune.containsKey(activity)) {
+            BHBot.logger.info("No autoBossRunes assigned for " + state.getName() + ", skipping.");
+            return;
+        }
+
+        if(!switchMinorRunes(BHBot.settings.autoBossRune.get(activity)))
+            BHBot.logger.info("AutoBossRune failed!");
+
+    }
+
+    private Boolean switchMinorRunes(List<String> desiredRunes) {
+
+	    if(desiredRunes.size() != 2) {
+            BHBot.logger.error("Got malformed desiredRunes: " + String.join(" ", desiredRunes));
+            return true;
+        }
+
+	    String strLeftRune = desiredRunes.get(0);
+	    MinorRune desiredLeftRune = MinorRune.getTypeFromName(strLeftRune);
+	    if (desiredLeftRune == null) {
+            BHBot.logger.error("No rune type found for left rune name " + strLeftRune);
+            desiredLeftRune = leftMinorRune;
+        }
+
+        String strRightRune = desiredRunes.get(1);
+        MinorRune desiredRightRune = MinorRune.getTypeFromName(strRightRune);
+        if (desiredRightRune == null) {
+            BHBot.logger.error("No rune type found for right rune name " + strRightRune);
+            desiredRightRune = rightMinorRune;
+        }
+
+        if (desiredLeftRune == leftMinorRune && desiredRightRune == rightMinorRune) {
+            BHBot.logger.info("No runes found that need switching.");
+            return true; // Nothing to do
+        }
+
+	    if (openRunesMenu()) {
+            BHBot.logger.error("Unable to open runes menu; aborting autoRunes!");
+            return false;
+        }
+
+        if (desiredLeftRune == leftMinorRune) {
+            BHBot.logger.info("Left minor rune doesn't need switching.");
+        }
+        else {
+            clickInGame(280, 290); // Click on left rune
+            if (!switchSingleMinorRune(desiredLeftRune)) {
+                BHBot.logger.error("Failed to switch left minor rune.");
+                return false;
+            }
+            BHBot.logger.info("Left minor rune switched to " + desiredLeftRune);
+        }
+
+        if (desiredRightRune == rightMinorRune) {
+            BHBot.logger.info("Right minor rune doesn't need switching.");
+        }
+        else {
+            clickInGame(280, 290); // Click on right rune
+            if (!switchSingleMinorRune(desiredRightRune)) {
+                BHBot.logger.error("Failed to switch right minor rune.");
+                return false;
+            }
+            BHBot.logger.info("Right minor rune switched to " + desiredRightRune);
+        }
+
+        if (!detectEquippedMinorRunes(false)) {
+            BHBot.logger.error("Unable to detect runes, post-equip.");
+            return false;
+        }
+
+        sleep(2 * SECOND);
+        boolean success = true;
+        if (desiredLeftRune != leftMinorRune) {
+            BHBot.logger.info("Left minor rune failed to switch for unknown reason.");
+            success = false;
+        }
+        if (desiredRightRune != rightMinorRune) {
+            BHBot.logger.info("Right minor rune failed to switch for unknown reason.");
+            success = false;
+        }
+
+        return success;
+    }
+
+    private Boolean switchSingleMinorRune(MinorRune desiredRune) {
+        MarvinSegment seg = detectCue(cues.get("RunesSwitch"), 5*SECOND);
+        if (seg == null) {
+            BHBot.logger.error("Failed to find rune switcher.");
+            return false;
+        }
+
+        seg = detectCue(desiredRune.getRuneSelectCue(), 0, new Bounds(235, 185, 540, 350));
+        if (seg == null) {
+            BHBot.logger.error("Unable to find " + desiredRune + "in rune switcher.");
+            return false;
+        }
+
+        clickOnSeg(seg);
+        sleep(SECOND);  // Wait for rune to "zoom in"
+
+        return true;
+    }
+
 	private boolean handleSkeletonKey() {
 		//TODO Add no key "Uh Oh" failsafe
 		MarvinSegment seg;

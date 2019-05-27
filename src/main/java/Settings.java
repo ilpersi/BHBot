@@ -381,7 +381,7 @@ public class Settings {
 
 	private void setAutoRune(String... runeSets) {
 		this.autoRune.clear();
-		String activity, left, right;
+		String activity;
 		String[] config;
 
 		for (String d : runeSets) {
