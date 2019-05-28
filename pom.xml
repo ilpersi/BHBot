@@ -20,6 +20,10 @@
             <id>ilpersi</id>
             <name>Lorenzo Persichetti</name>
         </developer>
+        <developer>
+            <id>eschwim</id>
+            <name>Eric Schwimmer</name>
+        </developer>
     </developers>
     <build>
         <resources>
