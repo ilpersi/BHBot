@@ -1569,7 +1569,7 @@ public class MainThread implements Runnable {
 					// One time check for equipped minor runes
 					if (!oneTimeRuneCheck) {
 
-						BHBot.logger.info("Startup check to determined configured minor runes");
+						BHBot.logger.info("Startup check to determined equipped minor runes");
 						if (!detectEquippedMinorRunes(true)) {
 							BHBot.logger.error("It was not possible to perform the equipped runes start-up check!");
 						}
@@ -1939,17 +1939,14 @@ public class MainThread implements Runnable {
 							handleMinorRunes("d");
 							
 							if (BHBot.settings.autoBossRune.containsKey("d") && !BHBot.settings.autoShrine.contains("d")) { //if autoshrine disabled but autorune enabled
-								readScreen();
-								seg = detectCue(cues.get("X"),SECOND);
-								clickOnSeg(seg);
-								readScreen(SECOND);
 
-								BHBot.logger.info("Enabling autoBossRune for Dungeon");
+								BHBot.logger.info("Enabling autoBossRune for Dungeons");
 								if (!checkShrineSettings(true, false)) {
-									BHBot.logger.error("Impossibile to enable autoBossRune for Raid!");
+									BHBot.logger.error("Impossibile to enable autoBossRune for Dungeons!");
 								}
 								
 								readScreen(SECOND);
+								sleep(2*SECOND);
 							}
 
 							seg = detectCue(cues.get("Quest"));
@@ -3049,14 +3046,18 @@ public class MainThread implements Runnable {
             MarvinSegment seg = detectCue(runeCue, 0, new Bounds(230, 245, 320, 330));
             if (seg != null)
                 leftMinorRune = rune;
+            	BHBot.logger.info(leftMinorRune + " equipped in left slot.");
 
             // right rune
             seg = detectCue(runeCue, 0, new Bounds(480, 245, 565, 330));
             if (seg != null)
                 rightMinorRune = rune;
+        		BHBot.logger.info(rightMinorRune + " equipped in right slot.");
         }
 
+        sleep(500); //delay for window close animation
         closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
+        sleep(SECOND); //delay for window close animation
 		closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
 
 
@@ -3855,7 +3856,7 @@ public class MainThread implements Runnable {
 				raidVictoryCounter++;
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
-				BHBot.logger.info("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
+				BHBot.logger.STATS("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
 			} else {
 			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
 			}
@@ -3929,7 +3930,7 @@ public class MainThread implements Runnable {
 				raidDefeatCounter++;
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
-				BHBot.logger.info("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
+				BHBot.logger.STATS("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
 
 			} else {
 			BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
@@ -4056,6 +4057,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	if ((state == State.Raid && !BHBot.settings.autoShrine.contains("r") && BHBot.settings.autoBossRune.containsKey("r")) ||
 	(state == State.Trials && !BHBot.settings.autoShrine.contains("t") && BHBot.settings.autoBossRune.containsKey("t")) || 
 	(state == State.Expedition && !BHBot.settings.autoShrine.contains("e") && BHBot.settings.autoBossRune.containsKey("e")) ||
+	(state == State.Dungeon && BHBot.settings.autoBossRune.containsKey("d")) ||
 	state == State.UnidentifiedDungeon) {
 		if (activityDuration > 30) { //if we're past 30 seconds into the activity
 			if (!autoBossRuned) {
@@ -4156,7 +4158,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private boolean handleMinorRunes(String activity) {
         List<String> desiredRunesAsStrs;
         String activityName = state.getNameFromShortcut(activity);
-		BHBot.logger.info("Checking autoRunes for " + activityName + "..");
+		BHBot.logger.debug("Checking autoRunes for " + activityName + "..");
         if (!BHBot.settings.autoRune.containsKey(activity)) {
             BHBot.logger.info("No autoRunes assigned for " + activityName + ". Using default runes.");
 			desiredRunesAsStrs = BHBot.settings.autoRuneDefault;

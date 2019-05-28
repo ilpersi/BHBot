@@ -19,8 +19,9 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
     private final ExtendedLoggerWrapper logger;
 
     private static final String FQCN = BHBotLogger.class.getName();
-    private static final Level READOUT = Level.forName("READOUT", 401);
-    private static final Level AUTOFUNCTION = Level.forName("AUTOFUNCTION", 402);
+    private static final Level STATS = Level.forName("STATS", 397);
+    private static final Level READOUT = Level.forName("READOUT", 398);
+    private static final Level AUTOFUNCTION = Level.forName("AUTOFUNCTION", 399);
 
     private BHBotLogger(final Logger logger) {
         super((AbstractLogger) logger, logger.getName(), logger.getMessageFactory());
@@ -1490,6 +1491,690 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      */
     public void autofunction(final MessageSupplier msgSupplier, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOFUNCTION, null, msgSupplier, t);
+    }
+
+    /**
+     * Logs a message with the specific Marker at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msg the message string to be logged
+     */
+    public void STATS(final Marker marker, final Message msg) {
+        logger.logIfEnabled(FQCN, STATS, marker, msg, (Throwable) null);
+    }
+
+    /**
+     * Logs a message with the specific Marker at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msg the message string to be logged
+     * @param t A Throwable or null.
+     */
+    public void STATS(final Marker marker, final Message msg, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, marker, msg, t);
+    }
+
+    /**
+     * Logs a message object with the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message object to log.
+     */
+    public void STATS(final Marker marker, final Object message) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message CharSequence with the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message CharSequence to log.
+     * @since Log4j-2.6
+     */
+    public void STATS(final Marker marker, final CharSequence message) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message at the {@code STATS} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log.
+     * @param t the exception to log, including its stack trace.
+     */
+    public void STATS(final Marker marker, final Object message, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, t);
+    }
+
+    /**
+     * Logs a message at the {@code STATS} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the CharSequence to log.
+     * @param t the exception to log, including its stack trace.
+     * @since Log4j-2.6
+     */
+    public void STATS(final Marker marker, final CharSequence message, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, t);
+    }
+
+    /**
+     * Logs a message object with the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message object to log.
+     */
+    public void STATS(final Marker marker, final String message) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param params parameters to the message.
+     * @see #getMessageFactory()
+     */
+    public void STATS(final Marker marker, final String message, final Object... params) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, params);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final Marker marker, final String message, final Object p0) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final Marker marker, final String message, final Object p0, final Object p1) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3, final Object p4) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3, final Object p4, final Object p5) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3, final Object p4, final Object p5, final Object p6) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5, p6);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3, final Object p4, final Object p5, final Object p6,
+                        final Object p7) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5, p6, p7);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @param p8 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3, final Object p4, final Object p5, final Object p6,
+                        final Object p7, final Object p8) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @param p8 parameter to the message.
+     * @param p9 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3, final Object p4, final Object p5, final Object p6,
+                        final Object p7, final Object p8, final Object p9) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+    }
+
+    /**
+     * Logs a message at the {@code STATS} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log.
+     * @param t the exception to log, including its stack trace.
+     */
+    public void STATS(final Marker marker, final String message, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, t);
+    }
+
+    /**
+     * Logs the specified Message at the {@code STATS} level.
+     *
+     * @param msg the message string to be logged
+     */
+    public void STATS(final Message msg) {
+        logger.logIfEnabled(FQCN, STATS, null, msg, (Throwable) null);
+    }
+
+    /**
+     * Logs the specified Message at the {@code STATS} level.
+     *
+     * @param msg the message string to be logged
+     * @param t A Throwable or null.
+     */
+    public void STATS(final Message msg, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, null, msg, t);
+    }
+
+    /**
+     * Logs a message object with the {@code STATS} level.
+     *
+     * @param message the message object to log.
+     */
+    public void STATS(final Object message) {
+        logger.logIfEnabled(FQCN, STATS, null, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message at the {@code STATS} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param message the message to log.
+     * @param t the exception to log, including its stack trace.
+     */
+    public void STATS(final Object message, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, null, message, t);
+    }
+
+    /**
+     * Logs a message CharSequence with the {@code STATS} level.
+     *
+     * @param message the message CharSequence to log.
+     * @since Log4j-2.6
+     */
+    public void STATS(final CharSequence message) {
+        logger.logIfEnabled(FQCN, STATS, null, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a CharSequence at the {@code STATS} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param message the CharSequence to log.
+     * @param t the exception to log, including its stack trace.
+     * @since Log4j-2.6
+     */
+    public void STATS(final CharSequence message, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, null, message, t);
+    }
+
+    /**
+     * Logs a message object with the {@code STATS} level.
+     *
+     * @param message the message object to log.
+     */
+    public void STATS(final String message) {
+        logger.logIfEnabled(FQCN, STATS, null, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param params parameters to the message.
+     * @see #getMessageFactory()
+     */
+    public void STATS(final String message, final Object... params) {
+        logger.logIfEnabled(FQCN, STATS, null, message, params);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final String message, final Object p0) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final String message, final Object p0, final Object p1) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final String message, final Object p0, final Object p1, final Object p2) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3, final Object p4) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3, final Object p4, final Object p5) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3, final Object p4, final Object p5, final Object p6) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5, p6);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3, final Object p4, final Object p5, final Object p6,
+                        final Object p7) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5, p6, p7);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @param p8 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3, final Object p4, final Object p5, final Object p6,
+                        final Object p7, final Object p8) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @param p8 parameter to the message.
+     * @param p9 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
+                        final Object p3, final Object p4, final Object p5, final Object p6,
+                        final Object p7, final Object p8, final Object p9) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+    }
+
+    /**
+     * Logs a message at the {@code STATS} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param message the message to log.
+     * @param t the exception to log, including its stack trace.
+     */
+    public void STATS(final String message, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, null, message, t);
+    }
+
+    /**
+     * Logs a message which is only to be constructed if the logging level is the {@code STATS}level.
+     *
+     * @param msgSupplier A function, which when called, produces the desired log message;
+     *            the format depends on the message factory.
+     * @since Log4j-2.4
+     */
+    public void STATS(final Supplier<?> msgSupplier) {
+        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, (Throwable) null);
+    }
+
+    /**
+     * Logs a message (only to be constructed if the logging level is the {@code STATS}
+     * level) including the stack trace of the {@link Throwable} <code>t</code> passed as parameter.
+     *
+     * @param msgSupplier A function, which when called, produces the desired log message;
+     *            the format depends on the message factory.
+     * @param t the exception to log, including its stack trace.
+     * @since Log4j-2.4
+     */
+    public void STATS(final Supplier<?> msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, t);
+    }
+
+    /**
+     * Logs a message which is only to be constructed if the logging level is the
+     * {@code STATS} level with the specified Marker.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msgSupplier A function, which when called, produces the desired log message;
+     *            the format depends on the message factory.
+     * @since Log4j-2.4
+     */
+    public void STATS(final Marker marker, final Supplier<?> msgSupplier) {
+        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, (Throwable) null);
+    }
+
+    /**
+     * Logs a message with parameters which are only to be constructed if the logging level is the
+     * {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
+     * @since Log4j-2.4
+     */
+    public void STATS(final Marker marker, final String message, final Supplier<?>... paramSuppliers) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, paramSuppliers);
+    }
+
+    /**
+     * Logs a message (only to be constructed if the logging level is the {@code STATS}
+     * level) with the specified Marker and including the stack trace of the {@link Throwable}
+     * <code>t</code> passed as parameter.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msgSupplier A function, which when called, produces the desired log message;
+     *            the format depends on the message factory.
+     * @param t A Throwable or null.
+     * @since Log4j-2.4
+     */
+    public void STATS(final Marker marker, final Supplier<?> msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, t);
+    }
+
+    /**
+     * Logs a message with parameters which are only to be constructed if the logging level is
+     * the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
+     * @since Log4j-2.4
+     */
+    public void STATS(final String message, final Supplier<?>... paramSuppliers) {
+        logger.logIfEnabled(FQCN, STATS, null, message, paramSuppliers);
+    }
+
+    /**
+     * Logs a message which is only to be constructed if the logging level is the
+     * {@code STATS} level with the specified Marker. The {@code MessageSupplier} may or may
+     * not use the {@link MessageFactory} to construct the {@code Message}.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msgSupplier A function, which when called, produces the desired log message.
+     * @since Log4j-2.4
+     */
+    public void STATS(final Marker marker, final MessageSupplier msgSupplier) {
+        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, (Throwable) null);
+    }
+
+    /**
+     * Logs a message (only to be constructed if the logging level is the {@code STATS}
+     * level) with the specified Marker and including the stack trace of the {@link Throwable}
+     * <code>t</code> passed as parameter. The {@code MessageSupplier} may or may not use the
+     * {@link MessageFactory} to construct the {@code Message}.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msgSupplier A function, which when called, produces the desired log message.
+     * @param t A Throwable or null.
+     * @since Log4j-2.4
+     */
+    public void STATS(final Marker marker, final MessageSupplier msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, t);
+    }
+
+    /**
+     * Logs a message which is only to be constructed if the logging level is the
+     * {@code STATS} level. The {@code MessageSupplier} may or may not use the
+     * {@link MessageFactory} to construct the {@code Message}.
+     *
+     * @param msgSupplier A function, which when called, produces the desired log message.
+     * @since Log4j-2.4
+     */
+    public void STATS(final MessageSupplier msgSupplier) {
+        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, (Throwable) null);
+    }
+
+    /**
+     * Logs a message (only to be constructed if the logging level is the {@code STATS}
+     * level) including the stack trace of the {@link Throwable} <code>t</code> passed as parameter.
+     * The {@code MessageSupplier} may or may not use the {@link MessageFactory} to construct the
+     * {@code Message}.
+     *
+     * @param msgSupplier A function, which when called, produces the desired log message.
+     * @param t the exception to log, including its stack trace.
+     * @since Log4j-2.4
+     */
+    public void STATS(final MessageSupplier msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, t);
     }
 }
 
