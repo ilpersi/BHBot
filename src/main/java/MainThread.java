@@ -1627,7 +1627,7 @@ public class MainThread implements Runnable {
 							if (BHBot.scheduler.doRaidImmediately)
 								BHBot.scheduler.doRaidImmediately = false; // reset it
 
-							// One time check for Autoshrine
+							//configure shrine for raid if applicable
 							if (BHBot.settings.autoShrine.contains("r")) {
 
 								// we need to close the raid window to check the autoshrine
@@ -1645,7 +1645,8 @@ public class MainThread implements Runnable {
 								clickOnSeg(raidBTNSeg);
 							}
 
-              if (handleMinorRunes("r")) {
+							//configure activity runes
+							if (handleMinorRunes("r")) {
 								seg = detectCue(cues.get("RaidButton"),SECOND);
 								if (seg == null) {
 									BHBot.logger.error("Can't find raid button after switching runes!");
@@ -1654,7 +1655,8 @@ public class MainThread implements Runnable {
 								sleep(SECOND);
 							}
 
-							if (BHBot.settings.autoBossRune.contains("r")) && !BHBot.settings.autoShrine.contains("r"))) { //if autohsrine disabled but autorune enabled
+							//configure boss runes if no autoshrine
+							if (BHBot.settings.autoBossRune.containsKey("r") && !BHBot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autorune enabled
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
@@ -1934,7 +1936,21 @@ public class MainThread implements Runnable {
 							if (BHBot.scheduler.doDungeonImmediately)
 								BHBot.scheduler.doDungeonImmediately = false; // reset it
 
-            	handleMinorRunes("d");
+							handleMinorRunes("d");
+							
+							if (BHBot.settings.autoBossRune.containsKey("d") && !BHBot.settings.autoShrine.contains("d")) { //if autoshrine disabled but autorune enabled
+								readScreen();
+								seg = detectCue(cues.get("X"),SECOND);
+								clickOnSeg(seg);
+								readScreen(SECOND);
+
+								BHBot.logger.info("Enabling autoBossRune for Dungeon");
+								if (!checkShrineSettings(true, false)) {
+									BHBot.logger.error("Impossibile to enable autoBossRune for Raid!");
+								}
+								
+								readScreen(SECOND);
+							}
 
 							seg = detectCue(cues.get("Quest"));
 							clickOnSeg(seg);
@@ -2050,6 +2066,7 @@ public class MainThread implements Runnable {
 								state = State.Dungeon;
 								BHBot.logger.info("Dungeon <" + dungeon + "> initiated!");
 								autoShrined = false;
+								autoBossRuned = false;
 							}
 						}
 						continue;
@@ -3743,7 +3760,7 @@ public class MainThread implements Runnable {
 		 * autoRune Code
 		 */
 
-		handleAutoRune();
+		handleAutoBossRune();
 
 		/*
 		 * autoShrine Code
@@ -3939,6 +3956,7 @@ public class MainThread implements Runnable {
 					}
 				}
 				autoShrined = false;
+				autoBossRuned = false;
 				readScreen(SECOND *2);
 			}
 
@@ -4025,7 +4043,7 @@ public class MainThread implements Runnable {
 		BHBot.scheduler.restoreIdleTime();
 	}
 
-private void handleAutoRune() { //seperate function so we can run autoRune without autoShrine
+private void handleAutoBossRune() { //seperate function so we can run autoRune without autoShrine
 	MarvinSegment guildButtonSeg;
 	//We use guild button visibility to determine whether we are in an encounter or not
 	guildButtonSeg = detectCue(cues.get("GuildButton"));
@@ -4035,9 +4053,9 @@ private void handleAutoRune() { //seperate function so we can run autoRune witho
 		inEncounterTimestamp = Misc.getTime() / 1000;
 	}
 
-	if ((state == State.Raid && !BHBot.settings.autoShrine.contains("r") && BHBot.settings.autoBossRune.contains("r")) ||
-	(state == State.Trials && !BHBot.settings.autoShrine.contains("t") && BHBot.settings.autoBossRune.contains("t")) ||
-	|| (state == State.Expedition && !BHBot.settings.autoShrine.contains("e") && BHBot.settings.autoBossRune.contains("e")) ||
+	if ((state == State.Raid && !BHBot.settings.autoShrine.contains("r") && BHBot.settings.autoBossRune.containsKey("r")) ||
+	(state == State.Trials && !BHBot.settings.autoShrine.contains("t") && BHBot.settings.autoBossRune.containsKey("t")) || 
+	(state == State.Expedition && !BHBot.settings.autoShrine.contains("e") && BHBot.settings.autoBossRune.containsKey("e")) ||
 	state == State.UnidentifiedDungeon) {
 		if (activityDuration > 30) { //if we're past 30 seconds into the activity
 			if (!autoBossRuned) {
@@ -4047,7 +4065,7 @@ private void handleAutoRune() { //seperate function so we can run autoRune witho
 					handleMinorBossRunes();
 
 					if (!checkShrineSettings(false, false)) {
-						BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoRune!");
+						BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoBossRune!");
 						return;
 					}
 
@@ -4065,10 +4083,9 @@ private void handleAutoRune() { //seperate function so we can run autoRune witho
 				}
 			}
 		} else {
-			BHBot.logger.debug("Activity duration for handleAutoRune is: " + activityDuration);
+			BHBot.logger.debug("Activity duration for handleAutoBossRune is: " + activityDuration);
 		}
 	}
-}
 }
 
 	private void handleAutoShrine() {
@@ -4081,7 +4098,10 @@ private void handleAutoRune() { //seperate function so we can run autoRune witho
 			inEncounterTimestamp = Misc.getTime() / 1000;
 		}
 
-		if (state == State.Raid || state == State.Trials || state == State.Expedition || state == State.UnidentifiedDungeon) {
+		if ( ( state == State.Raid && BHBot.settings.autoShrine.contains("r") ) || 
+			( state == State.Trials && BHBot.settings.autoShrine.contains("t") ) || 
+			( state == State.Expedition && BHBot.settings.autoShrine.contains("e") ) || 
+			( state == State.UnidentifiedDungeon) ) {
 			if (activityDuration > 30) { //if we're past 30 seconds into the activity
 				if (!autoShrined) {
 					if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay && guildButtonSeg != null) { //and it's been the battleDelay setting since last encounter
@@ -4136,9 +4156,9 @@ private void handleAutoRune() { //seperate function so we can run autoRune witho
 	private boolean handleMinorRunes(String activity) {
         List<String> desiredRunesAsStrs;
         String activityName = state.getNameFromShortcut(activity);
-		BHBot.logger.info("Doing autoRunes for: " + activityName);
+		BHBot.logger.info("Checking autoRunes for " + activityName + "..");
         if (!BHBot.settings.autoRune.containsKey(activity)) {
-            BHBot.logger.info("No autoRunes assigned for " + activityName + ", using defaults.");
+            BHBot.logger.info("No autoRunes assigned for " + activityName + ". Using default runes.");
 			desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
         }
         else {
@@ -4217,15 +4237,15 @@ private void handleAutoRune() { //seperate function so we can run autoRune witho
 		MinorRune desiredRightRune = desiredRunes.get(1);
 
 		if (desiredLeftRune == leftMinorRune && desiredRightRune == rightMinorRune) {
-			BHBot.logger.info("No runes found that need switching.");
+			BHBot.logger.debug("No runes found that need switching.");
 			return true; // Nothing to do
 		}
 
 		if (desiredLeftRune != leftMinorRune) {
-			BHBot.logger.info("Left minor rune needs to be switched.");
+			BHBot.logger.debug("Left minor rune needs to be switched.");
 		}
 		if (desiredRightRune != rightMinorRune) {
-			BHBot.logger.info("Right minor rune needs to be switched.");
+			BHBot.logger.debug("Right minor rune needs to be switched.");
 		}
 
 		return false;
@@ -4247,7 +4267,7 @@ private void handleAutoRune() { //seperate function so we can run autoRune witho
                 BHBot.logger.error("Failed to switch left minor rune.");
                 return false;
             }
-            BHBot.logger.info("Left minor rune switched to " + desiredLeftRune);
+            BHBot.logger.info("Switched left minor rune to " + desiredLeftRune);
         }
 
         if (desiredRightRune != rightMinorRune) {
@@ -4256,7 +4276,7 @@ private void handleAutoRune() { //seperate function so we can run autoRune witho
                 BHBot.logger.error("Failed to switch right minor rune.");
                 return false;
             }
-            BHBot.logger.info("Right minor rune switched to " + desiredRightRune);
+            BHBot.logger.info("Switched right minor rune to " + desiredRightRune);
         }
 
         if (!detectEquippedMinorRunes(false)) {
