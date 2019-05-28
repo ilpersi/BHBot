@@ -1810,6 +1810,18 @@ public class MainThread implements Runnable {
 								if(!checkShrineSettings(true, true)) {
 									BHBot.logger.error("Impossible to enable autoShrine for Trial");
 								}
+								
+							//configure boss runes if no autoshrine
+							if (trials && BHBot.settings.autoBossRune.containsKey("t") && !BHBot.settings.autoShrine.contains("t")) { //if autoshrine disabled but autorune enabled
+								seg = detectCue(cues.get("X"),SECOND);
+								clickOnSeg(seg);
+								readScreen(SECOND);
+
+								BHBot.logger.info("Enabling autoBossRune for Trials");
+								if (!checkShrineSettings(true, false)) {
+									BHBot.logger.error("Impossibile to enable autoBossRune for Trials!");
+								}
+							}
 
 								readScreen(SECOND);
 								clickOnSeg(trialBTNSeg);
@@ -1942,7 +1954,7 @@ public class MainThread implements Runnable {
 
 								BHBot.logger.info("Enabling autoBossRune for Dungeons");
 								if (!checkShrineSettings(true, false)) {
-									BHBot.logger.error("Impossibile to enable autoBossRune for Dungeons!");
+									BHBot.logger.error("Impossible to enable autoBossRune for Dungeons!");
 								}
 								
 								readScreen(SECOND);
@@ -2093,7 +2105,7 @@ public class MainThread implements Runnable {
 							if (BHBot.scheduler.doPVPImmediately)
 								BHBot.scheduler.doPVPImmediately = false; // reset it
 
-              handleMinorRunes("p");
+							handleMinorRunes("p");
 
 							BHBot.logger.info("Attempting PVP...");
 							stripDown(BHBot.settings.pvpstrip);
@@ -2171,7 +2183,7 @@ public class MainThread implements Runnable {
 						continue;
 					} // PvP
 
-					// check for badges (for GVG/Invasion/Expedtion):
+					// check for badges (for GVG/Invasion/Expedition):
 					if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || BHBot.scheduler.doExpeditionImmediately
 							|| ((BHBot.settings.doGVG || BHBot.settings.doInvasion || BHBot.settings.doExpedition) && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL)) {
 						timeLastBadgesCheck = Misc.getTime();
@@ -2427,9 +2439,21 @@ public class MainThread implements Runnable {
 									readScreen(SECOND * 2);
 								}
 
-								if(handleMinorRunes("i")) {
+								if(handleMinorRunes("e")) {
 									readScreen(SECOND);
 									clickOnSeg(badgeBtn);
+								}
+								
+								//configure boss runes if no autoshrine
+								if (BHBot.settings.autoBossRune.containsKey("e") && !BHBot.settings.autoShrine.contains("e")) { //if autoshrine disabled but autorune enabled
+									seg = detectCue(cues.get("X"),SECOND);
+									clickOnSeg(seg);
+									readScreen(SECOND);
+
+									BHBot.logger.info("Enabling autoBossRune for Expedition");
+									if (!checkShrineSettings(true, false)) {
+										BHBot.logger.error("Impossibile to enable autoBossRune for Raid!");
+									}
 								}
 
 								BHBot.logger.info("Attempting expedition...");
