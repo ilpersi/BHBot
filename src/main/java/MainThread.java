@@ -3880,7 +3880,7 @@ public class MainThread implements Runnable {
 				raidVictoryCounter++;
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
-				BHBot.logger.STATS("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
+				BHBot.logger.stats("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
 			} else {
 			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
 			}
@@ -3954,7 +3954,7 @@ public class MainThread implements Runnable {
 				raidDefeatCounter++;
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
-				BHBot.logger.STATS("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
+				BHBot.logger.stats("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
 
 			} else {
 			BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
@@ -4086,7 +4086,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		if (activityDuration > 30) { //if we're past 30 seconds into the activity
 			if (!autoBossRuned) {
 				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay && guildButtonSeg != null) { //and it's been the battleDelay setting since last encounter
-					BHBot.logger.AUTORUNE("No activity for " + BHBot.settings.battleDelay + "s, changing runes for boss encounter");
+					BHBot.logger.autorune("No activity for " + BHBot.settings.battleDelay + "s, changing runes for boss encounter");
 
 					handleMinorBossRunes();
 
@@ -4131,7 +4131,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			if (activityDuration > 30) { //if we're past 30 seconds into the activity
 				if (!autoShrined) {
 					if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay && guildButtonSeg != null) { //and it's been the battleDelay setting since last encounter
-						BHBot.logger.AUTOSHRINE("No activity for " + BHBot.settings.battleDelay + "s, disabling ignore shrines");
+						BHBot.logger.autoshrine("No activity for " + BHBot.settings.battleDelay + "s, disabling ignore shrines");
 
 						if (!checkShrineSettings(true, false)) {
 							BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoShrine!");
@@ -4151,7 +4151,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 							readScreen(500);
 						}
 
-						BHBot.logger.AUTOSHRINE("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
+						BHBot.logger.autoshrine("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
 						sleep(BHBot.settings.shrineDelay * SECOND); //long sleep while we activate shrines
 
 						if (!checkShrineSettings(false, false)) {
@@ -4184,7 +4184,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         String activityName = state.getNameFromShortcut(activity);
 		BHBot.logger.debug("Checking autoRunes for " + activityName + "..");
         if (!BHBot.settings.autoRune.containsKey(activity)) {
-            BHBot.logger.AUTORUNE("No specific autoRunes assigned for activity: " + activityName + ". Using default autoRunes.");
+            BHBot.logger.autorune("No specific autoRunes assigned for activity: " + activityName + ". Using default autoRunes.");
 			desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
         }
         else {
@@ -4203,7 +4203,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
         if (!switchMinorRunes(desiredRunes))
-            BHBot.logger.AUTORUNE("AutoRune failed!");
+            BHBot.logger.autorune("AutoRune failed!");
 
         return true;
 
@@ -4215,7 +4215,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		if (activity.equals("ud"))
 			activity = "d";
         if (!BHBot.settings.autoBossRune.containsKey(activity)) {
-            BHBot.logger.AUTORUNE("No autoBossRunes assigned for " + state.getName() + ", skipping.");
+            BHBot.logger.autorune("No autoBossRunes assigned for " + state.getName() + ", skipping.");
             return false;
         }
 
@@ -4225,7 +4225,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			return false;
 
         if(!switchMinorRunes(desiredRunes))
-            BHBot.logger.AUTORUNE("AutoBossRune failed!");
+            BHBot.logger.autorune("AutoBossRune failed!");
 
         return true;
     }
@@ -4293,7 +4293,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                 BHBot.logger.error("Failed to switch left minor rune.");
                 return false;
             }
-            BHBot.logger.AUTORUNE("Switched left minor rune to " + desiredLeftRune);
+            BHBot.logger.autorune("Switched left minor rune to " + desiredLeftRune);
         }
 
         if (desiredRightRune != rightMinorRune) {
@@ -4302,7 +4302,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                 BHBot.logger.error("Failed to switch right minor rune.");
                 return false;
             }
-            BHBot.logger.AUTORUNE("Switched right minor rune to " + desiredRightRune);
+            BHBot.logger.autorune("Switched right minor rune to " + desiredRightRune);
         }
 
         if (!detectEquippedMinorRunes(false)) {
@@ -4313,11 +4313,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         sleep(2 * SECOND);
         boolean success = true;
         if (desiredLeftRune != leftMinorRune) {
-            BHBot.logger.AUTORUNE("Left minor rune failed to switch for unknown reason.");
+            BHBot.logger.autorune("Left minor rune failed to switch for unknown reason.");
             success = false;
         }
         if (desiredRightRune != rightMinorRune) {
-            BHBot.logger.AUTORUNE("Right minor rune failed to switch for unknown reason.");
+            BHBot.logger.autorune("Right minor rune failed to switch for unknown reason.");
             success = false;
         }
 
@@ -4704,7 +4704,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		// if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
 		seg = detectCue(cues.get("Defeat"), SECOND);
 		if (seg != null) {
-			BHBot.logger.AUTOREVIVE("Defeat screen, skipping revive check");
+			BHBot.logger.autorevive("Defeat screen, skipping revive check");
 			seg = detectCue(cues.get("AutoOff"), SECOND);
 			if (seg != null) clickOnSeg(seg);
 			return;
@@ -4712,7 +4712,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 		seg = detectCue(cues.get("VictoryPopup"),500);
 		if (seg != null) {
-			BHBot.logger.AUTOREVIVE("Victory popup, skipping revive check");
+			BHBot.logger.autorevive("Victory popup, skipping revive check");
 			seg = detectCue(cues.get("AutoOff"), SECOND);
 			if (seg != null) clickOnSeg(seg);
 			return;
@@ -4720,7 +4720,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 		// we make sure that we stick with the limits
 		if (potionsUsed >= BHBot.settings.potionLimit) {
-			BHBot.logger.AUTOREVIVE("Potion limit reached, skipping revive check");
+			BHBot.logger.autorevive("Potion limit reached, skipping revive check");
 			seg = detectCue(cues.get("AutoOff"), SECOND);
 			if (seg != null) clickOnSeg(seg);
 			return;
@@ -4736,7 +4736,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			if (seg != null) {
 				seg = detectCue(cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400));
 				if (seg != null) {
-					BHBot.logger.AUTOREVIVE("None of the team members need a consumable, exiting from autoRevive");
+					BHBot.logger.autorevive("None of the team members need a consumable, exiting from autoRevive");
 					clickOnSeg(seg);
 					seg = detectCue(cues.get("AutoOff"), SECOND);
 					clickOnSeg(seg);
@@ -4787,7 +4787,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     if (revived[slotNum-1]) continue;
 
                     if (potionsUsed == BHBot.settings.potionLimit) {
-                        BHBot.logger.AUTOREVIVE("Potion limit reached, exiting from Auto Revive");
+                        BHBot.logger.autorevive("Potion limit reached, exiting from Auto Revive");
                         seg = detectCue(cues.get("AutoOff"), SECOND);
             			if (seg != null) clickOnSeg(seg);
                         break;
@@ -4806,7 +4806,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                             if (seg != null) {
                                 seg = detectCue(cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400));
                                 if (seg != null) {
-                                    BHBot.logger.AUTOREVIVE("None of the team members need a consumable, exiting from autoRevive");
+                                    BHBot.logger.autorevive("None of the team members need a consumable, exiting from autoRevive");
                                     clickOnSeg(seg);
                                     seg = detectCue(cues.get("AutoOff"), SECOND);
                                     clickOnSeg(seg);
@@ -4861,7 +4861,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                         for (char potion: "321".toCharArray()) {
                             seg = availablePotions.get(potion);
                             if (seg != null) {
-                                BHBot.logger.AUTOREVIVE("Handling tank priority (position: " + BHBot.settings.tankPosition + ") with " + potionTranslate.get(potion) + " revive.");
+                                BHBot.logger.autorevive("Handling tank priority (position: " + BHBot.settings.tankPosition + ") with " + potionTranslate.get(potion) + " revive.");
                                 clickOnSeg(seg);
                                 readScreen(SECOND);
                                 seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
@@ -4878,7 +4878,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                             // BHBot.logger.info("Checking potion " + potion);
                             seg = availablePotions.get(potion);
                             if (seg != null) {
-                                BHBot.logger.AUTOREVIVE("Using " + potionTranslate.get(potion) + " revive on slot " + slotNum + ".");
+                                BHBot.logger.autorevive("Using " + potionTranslate.get(potion) + " revive on slot " + slotNum + ".");
                                 clickOnSeg(seg);
                                 readScreen(SECOND);
                                 seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
@@ -4894,7 +4894,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			}
 		} else { // Impossible to find the potions button
 			saveGameScreen("auto-revive-no-potions");
-			BHBot.logger.AUTOREVIVE("Impossible to find the potions button!");
+			BHBot.logger.autorevive("Impossible to find the potions button!");
 		}
 
 		// If the unit selection screen is still open, we need to close it

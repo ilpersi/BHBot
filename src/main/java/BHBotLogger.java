@@ -11,11 +11,11 @@ import org.apache.logging.log4j.util.Supplier;
 
 /**
  * Extended Logger interface with convenience methods for
- * the READOUT and AUTOFUNCTION custom log levels.
+ * the STATS, READOUT, AUTOSHRINE, AUTOREVIVE and AUTORUNE custom log levels.
  * <p>Compatible with Log4j 2.6 or higher.</p>
  */
 public final class BHBotLogger extends ExtendedLoggerWrapper {
-    private static final long serialVersionUID = 400575377399529L;
+    private static final long serialVersionUID = 918354644352989L;
     private final ExtendedLoggerWrapper logger;
 
     private static final String FQCN = BHBotLogger.class.getName();
@@ -125,6 +125,690 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
     public static BHBotLogger create(final String name, final MessageFactory messageFactory) {
         final Logger wrapped = LogManager.getLogger(name, messageFactory);
         return new BHBotLogger(wrapped);
+    }
+
+    /**
+     * Logs a message with the specific Marker at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msg the message string to be logged
+     */
+    public void stats(final Marker marker, final Message msg) {
+        logger.logIfEnabled(FQCN, STATS, marker, msg, (Throwable) null);
+    }
+
+    /**
+     * Logs a message with the specific Marker at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msg the message string to be logged
+     * @param t A Throwable or null.
+     */
+    public void stats(final Marker marker, final Message msg, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, marker, msg, t);
+    }
+
+    /**
+     * Logs a message object with the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message object to log.
+     */
+    public void stats(final Marker marker, final Object message) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message CharSequence with the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message CharSequence to log.
+     * @since Log4j-2.6
+     */
+    public void stats(final Marker marker, final CharSequence message) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message at the {@code STATS} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log.
+     * @param t the exception to log, including its stack trace.
+     */
+    public void stats(final Marker marker, final Object message, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, t);
+    }
+
+    /**
+     * Logs a message at the {@code STATS} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the CharSequence to log.
+     * @param t the exception to log, including its stack trace.
+     * @since Log4j-2.6
+     */
+    public void stats(final Marker marker, final CharSequence message, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, t);
+    }
+
+    /**
+     * Logs a message object with the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message object to log.
+     */
+    public void stats(final Marker marker, final String message) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param params parameters to the message.
+     * @see #getMessageFactory()
+     */
+    public void stats(final Marker marker, final String message, final Object... params) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, params);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final Marker marker, final String message, final Object p0) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final Marker marker, final String message, final Object p0, final Object p1) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final Marker marker, final String message, final Object p0, final Object p1, final Object p2) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3, final Object p4) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3, final Object p4, final Object p5) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3, final Object p4, final Object p5, final Object p6) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5, p6);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3, final Object p4, final Object p5, final Object p6,
+                      final Object p7) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5, p6, p7);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @param p8 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3, final Object p4, final Object p5, final Object p6,
+                      final Object p7, final Object p8) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @param p8 parameter to the message.
+     * @param p9 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3, final Object p4, final Object p5, final Object p6,
+                      final Object p7, final Object p8, final Object p9) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+    }
+
+    /**
+     * Logs a message at the {@code STATS} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log.
+     * @param t the exception to log, including its stack trace.
+     */
+    public void stats(final Marker marker, final String message, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, t);
+    }
+
+    /**
+     * Logs the specified Message at the {@code STATS} level.
+     *
+     * @param msg the message string to be logged
+     */
+    public void stats(final Message msg) {
+        logger.logIfEnabled(FQCN, STATS, null, msg, (Throwable) null);
+    }
+
+    /**
+     * Logs the specified Message at the {@code STATS} level.
+     *
+     * @param msg the message string to be logged
+     * @param t A Throwable or null.
+     */
+    public void stats(final Message msg, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, null, msg, t);
+    }
+
+    /**
+     * Logs a message object with the {@code STATS} level.
+     *
+     * @param message the message object to log.
+     */
+    public void stats(final Object message) {
+        logger.logIfEnabled(FQCN, STATS, null, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message at the {@code STATS} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param message the message to log.
+     * @param t the exception to log, including its stack trace.
+     */
+    public void stats(final Object message, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, null, message, t);
+    }
+
+    /**
+     * Logs a message CharSequence with the {@code STATS} level.
+     *
+     * @param message the message CharSequence to log.
+     * @since Log4j-2.6
+     */
+    public void stats(final CharSequence message) {
+        logger.logIfEnabled(FQCN, STATS, null, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a CharSequence at the {@code STATS} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param message the CharSequence to log.
+     * @param t the exception to log, including its stack trace.
+     * @since Log4j-2.6
+     */
+    public void stats(final CharSequence message, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, null, message, t);
+    }
+
+    /**
+     * Logs a message object with the {@code STATS} level.
+     *
+     * @param message the message object to log.
+     */
+    public void stats(final String message) {
+        logger.logIfEnabled(FQCN, STATS, null, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param params parameters to the message.
+     * @see #getMessageFactory()
+     */
+    public void stats(final String message, final Object... params) {
+        logger.logIfEnabled(FQCN, STATS, null, message, params);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final String message, final Object p0) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final String message, final Object p0, final Object p1) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final String message, final Object p0, final Object p1, final Object p2) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3, final Object p4) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3, final Object p4, final Object p5) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3, final Object p4, final Object p5, final Object p6) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5, p6);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3, final Object p4, final Object p5, final Object p6,
+                      final Object p7) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5, p6, p7);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @param p8 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3, final Object p4, final Object p5, final Object p6,
+                      final Object p7, final Object p8) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @param p8 parameter to the message.
+     * @param p9 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void stats(final String message, final Object p0, final Object p1, final Object p2,
+                      final Object p3, final Object p4, final Object p5, final Object p6,
+                      final Object p7, final Object p8, final Object p9) {
+        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+    }
+
+    /**
+     * Logs a message at the {@code STATS} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param message the message to log.
+     * @param t the exception to log, including its stack trace.
+     */
+    public void stats(final String message, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, null, message, t);
+    }
+
+    /**
+     * Logs a message which is only to be constructed if the logging level is the {@code STATS}level.
+     *
+     * @param msgSupplier A function, which when called, produces the desired log message;
+     *            the format depends on the message factory.
+     * @since Log4j-2.4
+     */
+    public void stats(final Supplier<?> msgSupplier) {
+        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, (Throwable) null);
+    }
+
+    /**
+     * Logs a message (only to be constructed if the logging level is the {@code STATS}
+     * level) including the stack trace of the {@link Throwable} <code>t</code> passed as parameter.
+     *
+     * @param msgSupplier A function, which when called, produces the desired log message;
+     *            the format depends on the message factory.
+     * @param t the exception to log, including its stack trace.
+     * @since Log4j-2.4
+     */
+    public void stats(final Supplier<?> msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, t);
+    }
+
+    /**
+     * Logs a message which is only to be constructed if the logging level is the
+     * {@code STATS} level with the specified Marker.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msgSupplier A function, which when called, produces the desired log message;
+     *            the format depends on the message factory.
+     * @since Log4j-2.4
+     */
+    public void stats(final Marker marker, final Supplier<?> msgSupplier) {
+        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, (Throwable) null);
+    }
+
+    /**
+     * Logs a message with parameters which are only to be constructed if the logging level is the
+     * {@code STATS} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
+     * @since Log4j-2.4
+     */
+    public void stats(final Marker marker, final String message, final Supplier<?>... paramSuppliers) {
+        logger.logIfEnabled(FQCN, STATS, marker, message, paramSuppliers);
+    }
+
+    /**
+     * Logs a message (only to be constructed if the logging level is the {@code STATS}
+     * level) with the specified Marker and including the stack trace of the {@link Throwable}
+     * <code>t</code> passed as parameter.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msgSupplier A function, which when called, produces the desired log message;
+     *            the format depends on the message factory.
+     * @param t A Throwable or null.
+     * @since Log4j-2.4
+     */
+    public void stats(final Marker marker, final Supplier<?> msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, t);
+    }
+
+    /**
+     * Logs a message with parameters which are only to be constructed if the logging level is
+     * the {@code STATS} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
+     * @since Log4j-2.4
+     */
+    public void stats(final String message, final Supplier<?>... paramSuppliers) {
+        logger.logIfEnabled(FQCN, STATS, null, message, paramSuppliers);
+    }
+
+    /**
+     * Logs a message which is only to be constructed if the logging level is the
+     * {@code STATS} level with the specified Marker. The {@code MessageSupplier} may or may
+     * not use the {@link MessageFactory} to construct the {@code Message}.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msgSupplier A function, which when called, produces the desired log message.
+     * @since Log4j-2.4
+     */
+    public void stats(final Marker marker, final MessageSupplier msgSupplier) {
+        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, (Throwable) null);
+    }
+
+    /**
+     * Logs a message (only to be constructed if the logging level is the {@code STATS}
+     * level) with the specified Marker and including the stack trace of the {@link Throwable}
+     * <code>t</code> passed as parameter. The {@code MessageSupplier} may or may not use the
+     * {@link MessageFactory} to construct the {@code Message}.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msgSupplier A function, which when called, produces the desired log message.
+     * @param t A Throwable or null.
+     * @since Log4j-2.4
+     */
+    public void stats(final Marker marker, final MessageSupplier msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, t);
+    }
+
+    /**
+     * Logs a message which is only to be constructed if the logging level is the
+     * {@code STATS} level. The {@code MessageSupplier} may or may not use the
+     * {@link MessageFactory} to construct the {@code Message}.
+     *
+     * @param msgSupplier A function, which when called, produces the desired log message.
+     * @since Log4j-2.4
+     */
+    public void stats(final MessageSupplier msgSupplier) {
+        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, (Throwable) null);
+    }
+
+    /**
+     * Logs a message (only to be constructed if the logging level is the {@code STATS}
+     * level) including the stack trace of the {@link Throwable} <code>t</code> passed as parameter.
+     * The {@code MessageSupplier} may or may not use the {@link MessageFactory} to construct the
+     * {@code Message}.
+     *
+     * @param msgSupplier A function, which when called, produces the desired log message.
+     * @param t the exception to log, including its stack trace.
+     * @since Log4j-2.4
+     */
+    public void stats(final MessageSupplier msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, t);
     }
 
     /**
@@ -810,1374 +1494,6 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
     public void readout(final MessageSupplier msgSupplier, final Throwable t) {
         logger.logIfEnabled(FQCN, READOUT, null, msgSupplier, t);
     }
-    
-    /**
-     * Logs a message with the specific Marker at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param msg the message string to be logged
-     */
-    public void AUTORUNE(final Marker marker, final Message msg) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, msg, (Throwable) null);
-    }
-
-    /**
-     * Logs a message with the specific Marker at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param msg the message string to be logged
-     * @param t A Throwable or null.
-     */
-    public void AUTORUNE(final Marker marker, final Message msg, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, msg, t);
-    }
-
-    /**
-     * Logs a message object with the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message object to log.
-     */
-    public void AUTORUNE(final Marker marker, final Object message) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, (Throwable) null);
-    }
-
-    /**
-     * Logs a message CharSequence with the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message CharSequence to log.
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final Marker marker, final CharSequence message) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, (Throwable) null);
-    }
-
-    /**
-     * Logs a message at the {@code AUTORUNE} level including the stack trace of
-     * the {@link Throwable} {@code t} passed as parameter.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log.
-     * @param t the exception to log, including its stack trace.
-     */
-    public void AUTORUNE(final Marker marker, final Object message, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, t);
-    }
-
-    /**
-     * Logs a message at the {@code AUTORUNE} level including the stack trace of
-     * the {@link Throwable} {@code t} passed as parameter.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the CharSequence to log.
-     * @param t the exception to log, including its stack trace.
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final Marker marker, final CharSequence message, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, t);
-    }
-
-    /**
-     * Logs a message object with the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message object to log.
-     */
-    public void AUTORUNE(final Marker marker, final String message) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, (Throwable) null);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param params parameters to the message.
-     * @see #getMessageFactory()
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Object... params) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, params);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Object p0) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Object p0, final Object p1) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3, p4);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3, p4, p5);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3, p4, p5, p6);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @param p7 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @param p7 parameter to the message.
-     * @param p8 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7, final Object p8) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @param p7 parameter to the message.
-     * @param p8 parameter to the message.
-     * @param p9 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7, final Object p8, final Object p9) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
-    }
-
-    /**
-     * Logs a message at the {@code AUTORUNE} level including the stack trace of
-     * the {@link Throwable} {@code t} passed as parameter.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log.
-     * @param t the exception to log, including its stack trace.
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, t);
-    }
-
-    /**
-     * Logs the specified Message at the {@code AUTORUNE} level.
-     *
-     * @param msg the message string to be logged
-     */
-    public void AUTORUNE(final Message msg) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, msg, (Throwable) null);
-    }
-
-    /**
-     * Logs the specified Message at the {@code AUTORUNE} level.
-     *
-     * @param msg the message string to be logged
-     * @param t A Throwable or null.
-     */
-    public void AUTORUNE(final Message msg, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, msg, t);
-    }
-
-    /**
-     * Logs a message object with the {@code AUTORUNE} level.
-     *
-     * @param message the message object to log.
-     */
-    public void AUTORUNE(final Object message) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, (Throwable) null);
-    }
-
-    /**
-     * Logs a message at the {@code AUTORUNE} level including the stack trace of
-     * the {@link Throwable} {@code t} passed as parameter.
-     *
-     * @param message the message to log.
-     * @param t the exception to log, including its stack trace.
-     */
-    public void AUTORUNE(final Object message, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, t);
-    }
-
-    /**
-     * Logs a message CharSequence with the {@code AUTORUNE} level.
-     *
-     * @param message the message CharSequence to log.
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final CharSequence message) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, (Throwable) null);
-    }
-
-    /**
-     * Logs a CharSequence at the {@code AUTORUNE} level including the stack trace of
-     * the {@link Throwable} {@code t} passed as parameter.
-     *
-     * @param message the CharSequence to log.
-     * @param t the exception to log, including its stack trace.
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final CharSequence message, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, t);
-    }
-
-    /**
-     * Logs a message object with the {@code AUTORUNE} level.
-     *
-     * @param message the message object to log.
-     */
-    public void AUTORUNE(final String message) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, (Throwable) null);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param params parameters to the message.
-     * @see #getMessageFactory()
-     */
-    public void AUTORUNE(final String message, final Object... params) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, params);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final String message, final Object p0) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final String message, final Object p0, final Object p1) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final String message, final Object p0, final Object p1, final Object p2) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3, p4);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3, p4, p5);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3, p4, p5, p6);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @param p7 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3, p4, p5, p6, p7);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @param p7 parameter to the message.
-     * @param p8 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7, final Object p8) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTORUNE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @param p7 parameter to the message.
-     * @param p8 parameter to the message.
-     * @param p9 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTORUNE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7, final Object p8, final Object p9) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
-    }
-
-    /**
-     * Logs a message at the {@code AUTORUNE} level including the stack trace of
-     * the {@link Throwable} {@code t} passed as parameter.
-     *
-     * @param message the message to log.
-     * @param t the exception to log, including its stack trace.
-     */
-    public void AUTORUNE(final String message, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, t);
-    }
-
-    /**
-     * Logs a message which is only to be constructed if the logging level is the {@code AUTORUNE}level.
-     *
-     * @param msgSupplier A function, which when called, produces the desired log message;
-     *            the format depends on the message factory.
-     * @since Log4j-2.4
-     */
-    public void AUTORUNE(final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, msgSupplier, (Throwable) null);
-    }
-
-    /**
-     * Logs a message (only to be constructed if the logging level is the {@code AUTORUNE}
-     * level) including the stack trace of the {@link Throwable} <code>t</code> passed as parameter.
-     *
-     * @param msgSupplier A function, which when called, produces the desired log message;
-     *            the format depends on the message factory.
-     * @param t the exception to log, including its stack trace.
-     * @since Log4j-2.4
-     */
-    public void AUTORUNE(final Supplier<?> msgSupplier, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, msgSupplier, t);
-    }
-
-    /**
-     * Logs a message which is only to be constructed if the logging level is the
-     * {@code AUTORUNE} level with the specified Marker.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param msgSupplier A function, which when called, produces the desired log message;
-     *            the format depends on the message factory.
-     * @since Log4j-2.4
-     */
-    public void AUTORUNE(final Marker marker, final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, msgSupplier, (Throwable) null);
-    }
-
-    /**
-     * Logs a message with parameters which are only to be constructed if the logging level is the
-     * {@code AUTORUNE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
-     * @since Log4j-2.4
-     */
-    public void AUTORUNE(final Marker marker, final String message, final Supplier<?>... paramSuppliers) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, paramSuppliers);
-    }
-
-    /**
-     * Logs a message (only to be constructed if the logging level is the {@code AUTORUNE}
-     * level) with the specified Marker and including the stack trace of the {@link Throwable}
-     * <code>t</code> passed as parameter.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param msgSupplier A function, which when called, produces the desired log message;
-     *            the format depends on the message factory.
-     * @param t A Throwable or null.
-     * @since Log4j-2.4
-     */
-    public void AUTORUNE(final Marker marker, final Supplier<?> msgSupplier, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, msgSupplier, t);
-    }
-
-    /**
-     * Logs a message with parameters which are only to be constructed if the logging level is
-     * the {@code AUTORUNE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
-     * @since Log4j-2.4
-     */
-    public void AUTORUNE(final String message, final Supplier<?>... paramSuppliers) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, paramSuppliers);
-    }
-
-    /**
-     * Logs a message which is only to be constructed if the logging level is the
-     * {@code AUTORUNE} level with the specified Marker. The {@code MessageSupplier} may or may
-     * not use the {@link MessageFactory} to construct the {@code Message}.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param msgSupplier A function, which when called, produces the desired log message.
-     * @since Log4j-2.4
-     */
-    public void AUTORUNE(final Marker marker, final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, msgSupplier, (Throwable) null);
-    }
-
-    /**
-     * Logs a message (only to be constructed if the logging level is the {@code AUTORUNE}
-     * level) with the specified Marker and including the stack trace of the {@link Throwable}
-     * <code>t</code> passed as parameter. The {@code MessageSupplier} may or may not use the
-     * {@link MessageFactory} to construct the {@code Message}.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param msgSupplier A function, which when called, produces the desired log message.
-     * @param t A Throwable or null.
-     * @since Log4j-2.4
-     */
-    public void AUTORUNE(final Marker marker, final MessageSupplier msgSupplier, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, msgSupplier, t);
-    }
-
-    /**
-     * Logs a message which is only to be constructed if the logging level is the
-     * {@code AUTORUNE} level. The {@code MessageSupplier} may or may not use the
-     * {@link MessageFactory} to construct the {@code Message}.
-     *
-     * @param msgSupplier A function, which when called, produces the desired log message.
-     * @since Log4j-2.4
-     */
-    public void AUTORUNE(final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, msgSupplier, (Throwable) null);
-    }
-
-    /**
-     * Logs a message (only to be constructed if the logging level is the {@code AUTORUNE}
-     * level) including the stack trace of the {@link Throwable} <code>t</code> passed as parameter.
-     * The {@code MessageSupplier} may or may not use the {@link MessageFactory} to construct the
-     * {@code Message}.
-     *
-     * @param msgSupplier A function, which when called, produces the desired log message.
-     * @param t the exception to log, including its stack trace.
-     * @since Log4j-2.4
-     */
-    public void AUTORUNE(final MessageSupplier msgSupplier, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, msgSupplier, t);
-    }
-    
-    /**
-     * Logs a message with the specific Marker at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param msg the message string to be logged
-     */
-    public void AUTOREVIVE(final Marker marker, final Message msg) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msg, (Throwable) null);
-    }
-
-    /**
-     * Logs a message with the specific Marker at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param msg the message string to be logged
-     * @param t A Throwable or null.
-     */
-    public void AUTOREVIVE(final Marker marker, final Message msg, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msg, t);
-    }
-
-    /**
-     * Logs a message object with the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message object to log.
-     */
-    public void AUTOREVIVE(final Marker marker, final Object message) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, (Throwable) null);
-    }
-
-    /**
-     * Logs a message CharSequence with the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message CharSequence to log.
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final Marker marker, final CharSequence message) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, (Throwable) null);
-    }
-
-    /**
-     * Logs a message at the {@code AUTOREVIVE} level including the stack trace of
-     * the {@link Throwable} {@code t} passed as parameter.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log.
-     * @param t the exception to log, including its stack trace.
-     */
-    public void AUTOREVIVE(final Marker marker, final Object message, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, t);
-    }
-
-    /**
-     * Logs a message at the {@code AUTOREVIVE} level including the stack trace of
-     * the {@link Throwable} {@code t} passed as parameter.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the CharSequence to log.
-     * @param t the exception to log, including its stack trace.
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final Marker marker, final CharSequence message, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, t);
-    }
-
-    /**
-     * Logs a message object with the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message object to log.
-     */
-    public void AUTOREVIVE(final Marker marker, final String message) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, (Throwable) null);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param params parameters to the message.
-     * @see #getMessageFactory()
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Object... params) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, params);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Object p0) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Object p0, final Object p1) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3, p4);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3, p4, p5);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3, p4, p5, p6);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @param p7 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @param p7 parameter to the message.
-     * @param p8 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7, final Object p8) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @param p7 parameter to the message.
-     * @param p8 parameter to the message.
-     * @param p9 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7, final Object p8, final Object p9) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
-    }
-
-    /**
-     * Logs a message at the {@code AUTOREVIVE} level including the stack trace of
-     * the {@link Throwable} {@code t} passed as parameter.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log.
-     * @param t the exception to log, including its stack trace.
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, t);
-    }
-
-    /**
-     * Logs the specified Message at the {@code AUTOREVIVE} level.
-     *
-     * @param msg the message string to be logged
-     */
-    public void AUTOREVIVE(final Message msg) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msg, (Throwable) null);
-    }
-
-    /**
-     * Logs the specified Message at the {@code AUTOREVIVE} level.
-     *
-     * @param msg the message string to be logged
-     * @param t A Throwable or null.
-     */
-    public void AUTOREVIVE(final Message msg, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msg, t);
-    }
-
-    /**
-     * Logs a message object with the {@code AUTOREVIVE} level.
-     *
-     * @param message the message object to log.
-     */
-    public void AUTOREVIVE(final Object message) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, (Throwable) null);
-    }
-
-    /**
-     * Logs a message at the {@code AUTOREVIVE} level including the stack trace of
-     * the {@link Throwable} {@code t} passed as parameter.
-     *
-     * @param message the message to log.
-     * @param t the exception to log, including its stack trace.
-     */
-    public void AUTOREVIVE(final Object message, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, t);
-    }
-
-    /**
-     * Logs a message CharSequence with the {@code AUTOREVIVE} level.
-     *
-     * @param message the message CharSequence to log.
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final CharSequence message) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, (Throwable) null);
-    }
-
-    /**
-     * Logs a CharSequence at the {@code AUTOREVIVE} level including the stack trace of
-     * the {@link Throwable} {@code t} passed as parameter.
-     *
-     * @param message the CharSequence to log.
-     * @param t the exception to log, including its stack trace.
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final CharSequence message, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, t);
-    }
-
-    /**
-     * Logs a message object with the {@code AUTOREVIVE} level.
-     *
-     * @param message the message object to log.
-     */
-    public void AUTOREVIVE(final String message) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, (Throwable) null);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param params parameters to the message.
-     * @see #getMessageFactory()
-     */
-    public void AUTOREVIVE(final String message, final Object... params) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, params);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final String message, final Object p0) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final String message, final Object p0, final Object p1) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final String message, final Object p0, final Object p1, final Object p2) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3, p4);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3, p4, p5);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3, p4, p5, p6);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @param p7 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3, p4, p5, p6, p7);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @param p7 parameter to the message.
-     * @param p8 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7, final Object p8) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
-    }
-
-    /**
-     * Logs a message with parameters at the {@code AUTOREVIVE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param p0 parameter to the message.
-     * @param p1 parameter to the message.
-     * @param p2 parameter to the message.
-     * @param p3 parameter to the message.
-     * @param p4 parameter to the message.
-     * @param p5 parameter to the message.
-     * @param p6 parameter to the message.
-     * @param p7 parameter to the message.
-     * @param p8 parameter to the message.
-     * @param p9 parameter to the message.
-     * @see #getMessageFactory()
-     * @since Log4j-2.6
-     */
-    public void AUTOREVIVE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7, final Object p8, final Object p9) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
-    }
-
-    /**
-     * Logs a message at the {@code AUTOREVIVE} level including the stack trace of
-     * the {@link Throwable} {@code t} passed as parameter.
-     *
-     * @param message the message to log.
-     * @param t the exception to log, including its stack trace.
-     */
-    public void AUTOREVIVE(final String message, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, t);
-    }
-
-    /**
-     * Logs a message which is only to be constructed if the logging level is the {@code AUTOREVIVE}level.
-     *
-     * @param msgSupplier A function, which when called, produces the desired log message;
-     *            the format depends on the message factory.
-     * @since Log4j-2.4
-     */
-    public void AUTOREVIVE(final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msgSupplier, (Throwable) null);
-    }
-
-    /**
-     * Logs a message (only to be constructed if the logging level is the {@code AUTOREVIVE}
-     * level) including the stack trace of the {@link Throwable} <code>t</code> passed as parameter.
-     *
-     * @param msgSupplier A function, which when called, produces the desired log message;
-     *            the format depends on the message factory.
-     * @param t the exception to log, including its stack trace.
-     * @since Log4j-2.4
-     */
-    public void AUTOREVIVE(final Supplier<?> msgSupplier, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msgSupplier, t);
-    }
-
-    /**
-     * Logs a message which is only to be constructed if the logging level is the
-     * {@code AUTOREVIVE} level with the specified Marker.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param msgSupplier A function, which when called, produces the desired log message;
-     *            the format depends on the message factory.
-     * @since Log4j-2.4
-     */
-    public void AUTOREVIVE(final Marker marker, final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msgSupplier, (Throwable) null);
-    }
-
-    /**
-     * Logs a message with parameters which are only to be constructed if the logging level is the
-     * {@code AUTOREVIVE} level.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param message the message to log; the format depends on the message factory.
-     * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
-     * @since Log4j-2.4
-     */
-    public void AUTOREVIVE(final Marker marker, final String message, final Supplier<?>... paramSuppliers) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, paramSuppliers);
-    }
-
-    /**
-     * Logs a message (only to be constructed if the logging level is the {@code AUTOREVIVE}
-     * level) with the specified Marker and including the stack trace of the {@link Throwable}
-     * <code>t</code> passed as parameter.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param msgSupplier A function, which when called, produces the desired log message;
-     *            the format depends on the message factory.
-     * @param t A Throwable or null.
-     * @since Log4j-2.4
-     */
-    public void AUTOREVIVE(final Marker marker, final Supplier<?> msgSupplier, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msgSupplier, t);
-    }
-
-    /**
-     * Logs a message with parameters which are only to be constructed if the logging level is
-     * the {@code AUTOREVIVE} level.
-     *
-     * @param message the message to log; the format depends on the message factory.
-     * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
-     * @since Log4j-2.4
-     */
-    public void AUTOREVIVE(final String message, final Supplier<?>... paramSuppliers) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, paramSuppliers);
-    }
-
-    /**
-     * Logs a message which is only to be constructed if the logging level is the
-     * {@code AUTOREVIVE} level with the specified Marker. The {@code MessageSupplier} may or may
-     * not use the {@link MessageFactory} to construct the {@code Message}.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param msgSupplier A function, which when called, produces the desired log message.
-     * @since Log4j-2.4
-     */
-    public void AUTOREVIVE(final Marker marker, final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msgSupplier, (Throwable) null);
-    }
-
-    /**
-     * Logs a message (only to be constructed if the logging level is the {@code AUTOREVIVE}
-     * level) with the specified Marker and including the stack trace of the {@link Throwable}
-     * <code>t</code> passed as parameter. The {@code MessageSupplier} may or may not use the
-     * {@link MessageFactory} to construct the {@code Message}.
-     *
-     * @param marker the marker data specific to this log statement
-     * @param msgSupplier A function, which when called, produces the desired log message.
-     * @param t A Throwable or null.
-     * @since Log4j-2.4
-     */
-    public void AUTOREVIVE(final Marker marker, final MessageSupplier msgSupplier, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msgSupplier, t);
-    }
-
-    /**
-     * Logs a message which is only to be constructed if the logging level is the
-     * {@code AUTOREVIVE} level. The {@code MessageSupplier} may or may not use the
-     * {@link MessageFactory} to construct the {@code Message}.
-     *
-     * @param msgSupplier A function, which when called, produces the desired log message.
-     * @since Log4j-2.4
-     */
-    public void AUTOREVIVE(final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msgSupplier, (Throwable) null);
-    }
-
-    /**
-     * Logs a message (only to be constructed if the logging level is the {@code AUTOREVIVE}
-     * level) including the stack trace of the {@link Throwable} <code>t</code> passed as parameter.
-     * The {@code MessageSupplier} may or may not use the {@link MessageFactory} to construct the
-     * {@code Message}.
-     *
-     * @param msgSupplier A function, which when called, produces the desired log message.
-     * @param t the exception to log, including its stack trace.
-     * @since Log4j-2.4
-     */
-    public void AUTOREVIVE(final MessageSupplier msgSupplier, final Throwable t) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msgSupplier, t);
-    }
 
     /**
      * Logs a message with the specific Marker at the {@code AUTOSHRINE} level.
@@ -2185,7 +1501,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param marker the marker data specific to this log statement
      * @param msg the message string to be logged
      */
-    public void AUTOSHRINE(final Marker marker, final Message msg) {
+    public void autoshrine(final Marker marker, final Message msg) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, msg, (Throwable) null);
     }
 
@@ -2196,7 +1512,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      * @param t A Throwable or null.
      */
-    public void AUTOSHRINE(final Marker marker, final Message msg, final Throwable t) {
+    public void autoshrine(final Marker marker, final Message msg, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, msg, t);
     }
 
@@ -2206,7 +1522,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param marker the marker data specific to this log statement
      * @param message the message object to log.
      */
-    public void AUTOSHRINE(final Marker marker, final Object message) {
+    public void autoshrine(final Marker marker, final Object message) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, (Throwable) null);
     }
 
@@ -2217,7 +1533,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message CharSequence to log.
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final Marker marker, final CharSequence message) {
+    public void autoshrine(final Marker marker, final CharSequence message) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, (Throwable) null);
     }
 
@@ -2229,7 +1545,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message to log.
      * @param t the exception to log, including its stack trace.
      */
-    public void AUTOSHRINE(final Marker marker, final Object message, final Throwable t) {
+    public void autoshrine(final Marker marker, final Object message, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, t);
     }
 
@@ -2242,7 +1558,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param t the exception to log, including its stack trace.
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final Marker marker, final CharSequence message, final Throwable t) {
+    public void autoshrine(final Marker marker, final CharSequence message, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, t);
     }
 
@@ -2252,7 +1568,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param marker the marker data specific to this log statement
      * @param message the message object to log.
      */
-    public void AUTOSHRINE(final Marker marker, final String message) {
+    public void autoshrine(final Marker marker, final String message) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, (Throwable) null);
     }
 
@@ -2264,7 +1580,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param params parameters to the message.
      * @see #getMessageFactory()
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Object... params) {
+    public void autoshrine(final Marker marker, final String message, final Object... params) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, params);
     }
 
@@ -2277,7 +1593,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Object p0) {
+    public void autoshrine(final Marker marker, final String message, final Object p0) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, p0);
     }
 
@@ -2291,7 +1607,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Object p0, final Object p1) {
+    public void autoshrine(final Marker marker, final String message, final Object p0, final Object p1) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, p0, p1);
     }
 
@@ -2306,7 +1622,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2) {
+    public void autoshrine(final Marker marker, final String message, final Object p0, final Object p1, final Object p2) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, p0, p1, p2);
     }
 
@@ -2322,8 +1638,8 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3) {
+    public void autoshrine(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, p0, p1, p2, p3);
     }
 
@@ -2340,8 +1656,8 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4) {
+    public void autoshrine(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, p0, p1, p2, p3, p4);
     }
 
@@ -2359,8 +1675,8 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5) {
+    public void autoshrine(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, p0, p1, p2, p3, p4, p5);
     }
 
@@ -2379,8 +1695,8 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6) {
+    public void autoshrine(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, p0, p1, p2, p3, p4, p5, p6);
     }
 
@@ -2400,9 +1716,9 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7) {
+    public void autoshrine(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6,
+                           final Object p7) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7);
     }
 
@@ -2423,9 +1739,9 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7, final Object p8) {
+    public void autoshrine(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6,
+                           final Object p7, final Object p8) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
     }
 
@@ -2447,9 +1763,9 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7, final Object p8, final Object p9) {
+    public void autoshrine(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6,
+                           final Object p7, final Object p8, final Object p9) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
     }
 
@@ -2461,7 +1777,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message to log.
      * @param t the exception to log, including its stack trace.
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Throwable t) {
+    public void autoshrine(final Marker marker, final String message, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, t);
     }
 
@@ -2470,7 +1786,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      *
      * @param msg the message string to be logged
      */
-    public void AUTOSHRINE(final Message msg) {
+    public void autoshrine(final Message msg) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, msg, (Throwable) null);
     }
 
@@ -2480,7 +1796,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      * @param t A Throwable or null.
      */
-    public void AUTOSHRINE(final Message msg, final Throwable t) {
+    public void autoshrine(final Message msg, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, msg, t);
     }
 
@@ -2489,7 +1805,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      *
      * @param message the message object to log.
      */
-    public void AUTOSHRINE(final Object message) {
+    public void autoshrine(final Object message) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, (Throwable) null);
     }
 
@@ -2500,7 +1816,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message to log.
      * @param t the exception to log, including its stack trace.
      */
-    public void AUTOSHRINE(final Object message, final Throwable t) {
+    public void autoshrine(final Object message, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, t);
     }
 
@@ -2510,7 +1826,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message CharSequence to log.
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final CharSequence message) {
+    public void autoshrine(final CharSequence message) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, (Throwable) null);
     }
 
@@ -2522,7 +1838,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param t the exception to log, including its stack trace.
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final CharSequence message, final Throwable t) {
+    public void autoshrine(final CharSequence message, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, t);
     }
 
@@ -2531,7 +1847,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      *
      * @param message the message object to log.
      */
-    public void AUTOSHRINE(final String message) {
+    public void autoshrine(final String message) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, (Throwable) null);
     }
 
@@ -2542,7 +1858,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param params parameters to the message.
      * @see #getMessageFactory()
      */
-    public void AUTOSHRINE(final String message, final Object... params) {
+    public void autoshrine(final String message, final Object... params) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, params);
     }
 
@@ -2554,7 +1870,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final String message, final Object p0) {
+    public void autoshrine(final String message, final Object p0) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, p0);
     }
 
@@ -2567,7 +1883,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final String message, final Object p0, final Object p1) {
+    public void autoshrine(final String message, final Object p0, final Object p1) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, p0, p1);
     }
 
@@ -2581,7 +1897,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final String message, final Object p0, final Object p1, final Object p2) {
+    public void autoshrine(final String message, final Object p0, final Object p1, final Object p2) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, p0, p1, p2);
     }
 
@@ -2596,8 +1912,8 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3) {
+    public void autoshrine(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, p0, p1, p2, p3);
     }
 
@@ -2613,8 +1929,8 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4) {
+    public void autoshrine(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, p0, p1, p2, p3, p4);
     }
 
@@ -2631,8 +1947,8 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5) {
+    public void autoshrine(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, p0, p1, p2, p3, p4, p5);
     }
 
@@ -2650,8 +1966,8 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6) {
+    public void autoshrine(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, p0, p1, p2, p3, p4, p5, p6);
     }
 
@@ -2670,9 +1986,9 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7) {
+    public void autoshrine(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6,
+                           final Object p7) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, p0, p1, p2, p3, p4, p5, p6, p7);
     }
 
@@ -2692,9 +2008,9 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7, final Object p8) {
+    public void autoshrine(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6,
+                           final Object p7, final Object p8) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
     }
 
@@ -2715,9 +2031,9 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void AUTOSHRINE(final String message, final Object p0, final Object p1, final Object p2,
-                             final Object p3, final Object p4, final Object p5, final Object p6,
-                             final Object p7, final Object p8, final Object p9) {
+    public void autoshrine(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6,
+                           final Object p7, final Object p8, final Object p9) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
     }
 
@@ -2728,7 +2044,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message to log.
      * @param t the exception to log, including its stack trace.
      */
-    public void AUTOSHRINE(final String message, final Throwable t) {
+    public void autoshrine(final String message, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, t);
     }
 
@@ -2739,7 +2055,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      *            the format depends on the message factory.
      * @since Log4j-2.4
      */
-    public void AUTOSHRINE(final Supplier<?> msgSupplier) {
+    public void autoshrine(final Supplier<?> msgSupplier) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, msgSupplier, (Throwable) null);
     }
 
@@ -2752,7 +2068,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param t the exception to log, including its stack trace.
      * @since Log4j-2.4
      */
-    public void AUTOSHRINE(final Supplier<?> msgSupplier, final Throwable t) {
+    public void autoshrine(final Supplier<?> msgSupplier, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, msgSupplier, t);
     }
 
@@ -2765,7 +2081,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      *            the format depends on the message factory.
      * @since Log4j-2.4
      */
-    public void AUTOSHRINE(final Marker marker, final Supplier<?> msgSupplier) {
+    public void autoshrine(final Marker marker, final Supplier<?> msgSupplier) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, msgSupplier, (Throwable) null);
     }
 
@@ -2778,7 +2094,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
      * @since Log4j-2.4
      */
-    public void AUTOSHRINE(final Marker marker, final String message, final Supplier<?>... paramSuppliers) {
+    public void autoshrine(final Marker marker, final String message, final Supplier<?>... paramSuppliers) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, paramSuppliers);
     }
 
@@ -2793,7 +2109,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param t A Throwable or null.
      * @since Log4j-2.4
      */
-    public void AUTOSHRINE(final Marker marker, final Supplier<?> msgSupplier, final Throwable t) {
+    public void autoshrine(final Marker marker, final Supplier<?> msgSupplier, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, msgSupplier, t);
     }
 
@@ -2805,7 +2121,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
      * @since Log4j-2.4
      */
-    public void AUTOSHRINE(final String message, final Supplier<?>... paramSuppliers) {
+    public void autoshrine(final String message, final Supplier<?>... paramSuppliers) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, paramSuppliers);
     }
 
@@ -2818,7 +2134,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msgSupplier A function, which when called, produces the desired log message.
      * @since Log4j-2.4
      */
-    public void AUTOSHRINE(final Marker marker, final MessageSupplier msgSupplier) {
+    public void autoshrine(final Marker marker, final MessageSupplier msgSupplier) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, msgSupplier, (Throwable) null);
     }
 
@@ -2833,7 +2149,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param t A Throwable or null.
      * @since Log4j-2.4
      */
-    public void AUTOSHRINE(final Marker marker, final MessageSupplier msgSupplier, final Throwable t) {
+    public void autoshrine(final Marker marker, final MessageSupplier msgSupplier, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, marker, msgSupplier, t);
     }
 
@@ -2845,7 +2161,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msgSupplier A function, which when called, produces the desired log message.
      * @since Log4j-2.4
      */
-    public void AUTOSHRINE(final MessageSupplier msgSupplier) {
+    public void autoshrine(final MessageSupplier msgSupplier) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, msgSupplier, (Throwable) null);
     }
 
@@ -2859,66 +2175,66 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param t the exception to log, including its stack trace.
      * @since Log4j-2.4
      */
-    public void AUTOSHRINE(final MessageSupplier msgSupplier, final Throwable t) {
+    public void autoshrine(final MessageSupplier msgSupplier, final Throwable t) {
         logger.logIfEnabled(FQCN, AUTOSHRINE, null, msgSupplier, t);
     }
 
     /**
-     * Logs a message with the specific Marker at the {@code STATS} level.
+     * Logs a message with the specific Marker at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param msg the message string to be logged
      */
-    public void STATS(final Marker marker, final Message msg) {
-        logger.logIfEnabled(FQCN, STATS, marker, msg, (Throwable) null);
+    public void autorevive(final Marker marker, final Message msg) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msg, (Throwable) null);
     }
 
     /**
-     * Logs a message with the specific Marker at the {@code STATS} level.
+     * Logs a message with the specific Marker at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param msg the message string to be logged
      * @param t A Throwable or null.
      */
-    public void STATS(final Marker marker, final Message msg, final Throwable t) {
-        logger.logIfEnabled(FQCN, STATS, marker, msg, t);
+    public void autorevive(final Marker marker, final Message msg, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msg, t);
     }
 
     /**
-     * Logs a message object with the {@code STATS} level.
+     * Logs a message object with the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message object to log.
      */
-    public void STATS(final Marker marker, final Object message) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, (Throwable) null);
+    public void autorevive(final Marker marker, final Object message) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, (Throwable) null);
     }
 
     /**
-     * Logs a message CharSequence with the {@code STATS} level.
+     * Logs a message CharSequence with the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message CharSequence to log.
      * @since Log4j-2.6
      */
-    public void STATS(final Marker marker, final CharSequence message) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, (Throwable) null);
+    public void autorevive(final Marker marker, final CharSequence message) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, (Throwable) null);
     }
 
     /**
-     * Logs a message at the {@code STATS} level including the stack trace of
+     * Logs a message at the {@code AUTOREVIVE} level including the stack trace of
      * the {@link Throwable} {@code t} passed as parameter.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log.
      * @param t the exception to log, including its stack trace.
      */
-    public void STATS(final Marker marker, final Object message, final Throwable t) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, t);
+    public void autorevive(final Marker marker, final Object message, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, t);
     }
 
     /**
-     * Logs a message at the {@code STATS} level including the stack trace of
+     * Logs a message at the {@code AUTOREVIVE} level including the stack trace of
      * the {@link Throwable} {@code t} passed as parameter.
      *
      * @param marker the marker data specific to this log statement
@@ -2926,34 +2242,34 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param t the exception to log, including its stack trace.
      * @since Log4j-2.6
      */
-    public void STATS(final Marker marker, final CharSequence message, final Throwable t) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, t);
+    public void autorevive(final Marker marker, final CharSequence message, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, t);
     }
 
     /**
-     * Logs a message object with the {@code STATS} level.
+     * Logs a message object with the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message object to log.
      */
-    public void STATS(final Marker marker, final String message) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, (Throwable) null);
+    public void autorevive(final Marker marker, final String message) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, (Throwable) null);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log; the format depends on the message factory.
      * @param params parameters to the message.
      * @see #getMessageFactory()
      */
-    public void STATS(final Marker marker, final String message, final Object... params) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, params);
+    public void autorevive(final Marker marker, final String message, final Object... params) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, params);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log; the format depends on the message factory.
@@ -2961,12 +2277,12 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final Marker marker, final String message, final Object p0) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, p0);
+    public void autorevive(final Marker marker, final String message, final Object p0) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log; the format depends on the message factory.
@@ -2975,12 +2291,12 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final Marker marker, final String message, final Object p0, final Object p1) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1);
+    public void autorevive(final Marker marker, final String message, final Object p0, final Object p1) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log; the format depends on the message factory.
@@ -2990,12 +2306,12 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2);
+    public void autorevive(final Marker marker, final String message, final Object p0, final Object p1, final Object p2) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log; the format depends on the message factory.
@@ -3006,13 +2322,13 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3);
+    public void autorevive(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log; the format depends on the message factory.
@@ -3024,13 +2340,13 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3, final Object p4) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4);
+    public void autorevive(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3, p4);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log; the format depends on the message factory.
@@ -3043,13 +2359,13 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3, final Object p4, final Object p5) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5);
+    public void autorevive(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3, p4, p5);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log; the format depends on the message factory.
@@ -3063,13 +2379,13 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3, final Object p4, final Object p5, final Object p6) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5, p6);
+    public void autorevive(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3, p4, p5, p6);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log; the format depends on the message factory.
@@ -3084,14 +2400,14 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3, final Object p4, final Object p5, final Object p6,
-                        final Object p7) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5, p6, p7);
+    public void autorevive(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6,
+                           final Object p7) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log; the format depends on the message factory.
@@ -3107,14 +2423,14 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3, final Object p4, final Object p5, final Object p6,
-                        final Object p7, final Object p8) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
+    public void autorevive(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6,
+                           final Object p7, final Object p8) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log; the format depends on the message factory.
@@ -3131,119 +2447,119 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3, final Object p4, final Object p5, final Object p6,
-                        final Object p7, final Object p8, final Object p9) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+    public void autorevive(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6,
+                           final Object p7, final Object p8, final Object p9) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
     }
 
     /**
-     * Logs a message at the {@code STATS} level including the stack trace of
+     * Logs a message at the {@code AUTOREVIVE} level including the stack trace of
      * the {@link Throwable} {@code t} passed as parameter.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log.
      * @param t the exception to log, including its stack trace.
      */
-    public void STATS(final Marker marker, final String message, final Throwable t) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, t);
+    public void autorevive(final Marker marker, final String message, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, t);
     }
 
     /**
-     * Logs the specified Message at the {@code STATS} level.
+     * Logs the specified Message at the {@code AUTOREVIVE} level.
      *
      * @param msg the message string to be logged
      */
-    public void STATS(final Message msg) {
-        logger.logIfEnabled(FQCN, STATS, null, msg, (Throwable) null);
+    public void autorevive(final Message msg) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msg, (Throwable) null);
     }
 
     /**
-     * Logs the specified Message at the {@code STATS} level.
+     * Logs the specified Message at the {@code AUTOREVIVE} level.
      *
      * @param msg the message string to be logged
      * @param t A Throwable or null.
      */
-    public void STATS(final Message msg, final Throwable t) {
-        logger.logIfEnabled(FQCN, STATS, null, msg, t);
+    public void autorevive(final Message msg, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msg, t);
     }
 
     /**
-     * Logs a message object with the {@code STATS} level.
+     * Logs a message object with the {@code AUTOREVIVE} level.
      *
      * @param message the message object to log.
      */
-    public void STATS(final Object message) {
-        logger.logIfEnabled(FQCN, STATS, null, message, (Throwable) null);
+    public void autorevive(final Object message) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, (Throwable) null);
     }
 
     /**
-     * Logs a message at the {@code STATS} level including the stack trace of
+     * Logs a message at the {@code AUTOREVIVE} level including the stack trace of
      * the {@link Throwable} {@code t} passed as parameter.
      *
      * @param message the message to log.
      * @param t the exception to log, including its stack trace.
      */
-    public void STATS(final Object message, final Throwable t) {
-        logger.logIfEnabled(FQCN, STATS, null, message, t);
+    public void autorevive(final Object message, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, t);
     }
 
     /**
-     * Logs a message CharSequence with the {@code STATS} level.
+     * Logs a message CharSequence with the {@code AUTOREVIVE} level.
      *
      * @param message the message CharSequence to log.
      * @since Log4j-2.6
      */
-    public void STATS(final CharSequence message) {
-        logger.logIfEnabled(FQCN, STATS, null, message, (Throwable) null);
+    public void autorevive(final CharSequence message) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, (Throwable) null);
     }
 
     /**
-     * Logs a CharSequence at the {@code STATS} level including the stack trace of
+     * Logs a CharSequence at the {@code AUTOREVIVE} level including the stack trace of
      * the {@link Throwable} {@code t} passed as parameter.
      *
      * @param message the CharSequence to log.
      * @param t the exception to log, including its stack trace.
      * @since Log4j-2.6
      */
-    public void STATS(final CharSequence message, final Throwable t) {
-        logger.logIfEnabled(FQCN, STATS, null, message, t);
+    public void autorevive(final CharSequence message, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, t);
     }
 
     /**
-     * Logs a message object with the {@code STATS} level.
+     * Logs a message object with the {@code AUTOREVIVE} level.
      *
      * @param message the message object to log.
      */
-    public void STATS(final String message) {
-        logger.logIfEnabled(FQCN, STATS, null, message, (Throwable) null);
+    public void autorevive(final String message) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, (Throwable) null);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param message the message to log; the format depends on the message factory.
      * @param params parameters to the message.
      * @see #getMessageFactory()
      */
-    public void STATS(final String message, final Object... params) {
-        logger.logIfEnabled(FQCN, STATS, null, message, params);
+    public void autorevive(final String message, final Object... params) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, params);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param message the message to log; the format depends on the message factory.
      * @param p0 parameter to the message.
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final String message, final Object p0) {
-        logger.logIfEnabled(FQCN, STATS, null, message, p0);
+    public void autorevive(final String message, final Object p0) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param message the message to log; the format depends on the message factory.
      * @param p0 parameter to the message.
@@ -3251,12 +2567,12 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final String message, final Object p0, final Object p1) {
-        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1);
+    public void autorevive(final String message, final Object p0, final Object p1) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param message the message to log; the format depends on the message factory.
      * @param p0 parameter to the message.
@@ -3265,12 +2581,12 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final String message, final Object p0, final Object p1, final Object p2) {
-        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2);
+    public void autorevive(final String message, final Object p0, final Object p1, final Object p2) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param message the message to log; the format depends on the message factory.
      * @param p0 parameter to the message.
@@ -3280,13 +2596,13 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3) {
-        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3);
+    public void autorevive(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param message the message to log; the format depends on the message factory.
      * @param p0 parameter to the message.
@@ -3297,13 +2613,13 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3, final Object p4) {
-        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4);
+    public void autorevive(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3, p4);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param message the message to log; the format depends on the message factory.
      * @param p0 parameter to the message.
@@ -3315,13 +2631,13 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3, final Object p4, final Object p5) {
-        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5);
+    public void autorevive(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3, p4, p5);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param message the message to log; the format depends on the message factory.
      * @param p0 parameter to the message.
@@ -3334,13 +2650,13 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3, final Object p4, final Object p5, final Object p6) {
-        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5, p6);
+    public void autorevive(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3, p4, p5, p6);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param message the message to log; the format depends on the message factory.
      * @param p0 parameter to the message.
@@ -3354,14 +2670,14 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3, final Object p4, final Object p5, final Object p6,
-                        final Object p7) {
-        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5, p6, p7);
+    public void autorevive(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6,
+                           final Object p7) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3, p4, p5, p6, p7);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param message the message to log; the format depends on the message factory.
      * @param p0 parameter to the message.
@@ -3376,14 +2692,14 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3, final Object p4, final Object p5, final Object p6,
-                        final Object p7, final Object p8) {
-        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
+    public void autorevive(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6,
+                           final Object p7, final Object p8) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
     }
 
     /**
-     * Logs a message with parameters at the {@code STATS} level.
+     * Logs a message with parameters at the {@code AUTOREVIVE} level.
      *
      * @param message the message to log; the format depends on the message factory.
      * @param p0 parameter to the message.
@@ -3399,36 +2715,36 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @see #getMessageFactory()
      * @since Log4j-2.6
      */
-    public void STATS(final String message, final Object p0, final Object p1, final Object p2,
-                        final Object p3, final Object p4, final Object p5, final Object p6,
-                        final Object p7, final Object p8, final Object p9) {
-        logger.logIfEnabled(FQCN, STATS, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+    public void autorevive(final String message, final Object p0, final Object p1, final Object p2,
+                           final Object p3, final Object p4, final Object p5, final Object p6,
+                           final Object p7, final Object p8, final Object p9) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
     }
 
     /**
-     * Logs a message at the {@code STATS} level including the stack trace of
+     * Logs a message at the {@code AUTOREVIVE} level including the stack trace of
      * the {@link Throwable} {@code t} passed as parameter.
      *
      * @param message the message to log.
      * @param t the exception to log, including its stack trace.
      */
-    public void STATS(final String message, final Throwable t) {
-        logger.logIfEnabled(FQCN, STATS, null, message, t);
+    public void autorevive(final String message, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, t);
     }
 
     /**
-     * Logs a message which is only to be constructed if the logging level is the {@code STATS}level.
+     * Logs a message which is only to be constructed if the logging level is the {@code AUTOREVIVE}level.
      *
      * @param msgSupplier A function, which when called, produces the desired log message;
      *            the format depends on the message factory.
      * @since Log4j-2.4
      */
-    public void STATS(final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, (Throwable) null);
+    public void autorevive(final Supplier<?> msgSupplier) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msgSupplier, (Throwable) null);
     }
 
     /**
-     * Logs a message (only to be constructed if the logging level is the {@code STATS}
+     * Logs a message (only to be constructed if the logging level is the {@code AUTOREVIVE}
      * level) including the stack trace of the {@link Throwable} <code>t</code> passed as parameter.
      *
      * @param msgSupplier A function, which when called, produces the desired log message;
@@ -3436,38 +2752,38 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param t the exception to log, including its stack trace.
      * @since Log4j-2.4
      */
-    public void STATS(final Supplier<?> msgSupplier, final Throwable t) {
-        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, t);
+    public void autorevive(final Supplier<?> msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msgSupplier, t);
     }
 
     /**
      * Logs a message which is only to be constructed if the logging level is the
-     * {@code STATS} level with the specified Marker.
+     * {@code AUTOREVIVE} level with the specified Marker.
      *
      * @param marker the marker data specific to this log statement
      * @param msgSupplier A function, which when called, produces the desired log message;
      *            the format depends on the message factory.
      * @since Log4j-2.4
      */
-    public void STATS(final Marker marker, final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, (Throwable) null);
+    public void autorevive(final Marker marker, final Supplier<?> msgSupplier) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msgSupplier, (Throwable) null);
     }
 
     /**
      * Logs a message with parameters which are only to be constructed if the logging level is the
-     * {@code STATS} level.
+     * {@code AUTOREVIVE} level.
      *
      * @param marker the marker data specific to this log statement
      * @param message the message to log; the format depends on the message factory.
      * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
      * @since Log4j-2.4
      */
-    public void STATS(final Marker marker, final String message, final Supplier<?>... paramSuppliers) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, paramSuppliers);
+    public void autorevive(final Marker marker, final String message, final Supplier<?>... paramSuppliers) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, paramSuppliers);
     }
 
     /**
-     * Logs a message (only to be constructed if the logging level is the {@code STATS}
+     * Logs a message (only to be constructed if the logging level is the {@code AUTOREVIVE}
      * level) with the specified Marker and including the stack trace of the {@link Throwable}
      * <code>t</code> passed as parameter.
      *
@@ -3477,37 +2793,37 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param t A Throwable or null.
      * @since Log4j-2.4
      */
-    public void STATS(final Marker marker, final Supplier<?> msgSupplier, final Throwable t) {
-        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, t);
+    public void autorevive(final Marker marker, final Supplier<?> msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msgSupplier, t);
     }
 
     /**
      * Logs a message with parameters which are only to be constructed if the logging level is
-     * the {@code STATS} level.
+     * the {@code AUTOREVIVE} level.
      *
      * @param message the message to log; the format depends on the message factory.
      * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
      * @since Log4j-2.4
      */
-    public void STATS(final String message, final Supplier<?>... paramSuppliers) {
-        logger.logIfEnabled(FQCN, STATS, null, message, paramSuppliers);
+    public void autorevive(final String message, final Supplier<?>... paramSuppliers) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, paramSuppliers);
     }
 
     /**
      * Logs a message which is only to be constructed if the logging level is the
-     * {@code STATS} level with the specified Marker. The {@code MessageSupplier} may or may
+     * {@code AUTOREVIVE} level with the specified Marker. The {@code MessageSupplier} may or may
      * not use the {@link MessageFactory} to construct the {@code Message}.
      *
      * @param marker the marker data specific to this log statement
      * @param msgSupplier A function, which when called, produces the desired log message.
      * @since Log4j-2.4
      */
-    public void STATS(final Marker marker, final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, (Throwable) null);
+    public void autorevive(final Marker marker, final MessageSupplier msgSupplier) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msgSupplier, (Throwable) null);
     }
 
     /**
-     * Logs a message (only to be constructed if the logging level is the {@code STATS}
+     * Logs a message (only to be constructed if the logging level is the {@code AUTOREVIVE}
      * level) with the specified Marker and including the stack trace of the {@link Throwable}
      * <code>t</code> passed as parameter. The {@code MessageSupplier} may or may not use the
      * {@link MessageFactory} to construct the {@code Message}.
@@ -3517,24 +2833,24 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param t A Throwable or null.
      * @since Log4j-2.4
      */
-    public void STATS(final Marker marker, final MessageSupplier msgSupplier, final Throwable t) {
-        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, t);
+    public void autorevive(final Marker marker, final MessageSupplier msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msgSupplier, t);
     }
 
     /**
      * Logs a message which is only to be constructed if the logging level is the
-     * {@code STATS} level. The {@code MessageSupplier} may or may not use the
+     * {@code AUTOREVIVE} level. The {@code MessageSupplier} may or may not use the
      * {@link MessageFactory} to construct the {@code Message}.
      *
      * @param msgSupplier A function, which when called, produces the desired log message.
      * @since Log4j-2.4
      */
-    public void STATS(final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, (Throwable) null);
+    public void autorevive(final MessageSupplier msgSupplier) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msgSupplier, (Throwable) null);
     }
 
     /**
-     * Logs a message (only to be constructed if the logging level is the {@code STATS}
+     * Logs a message (only to be constructed if the logging level is the {@code AUTOREVIVE}
      * level) including the stack trace of the {@link Throwable} <code>t</code> passed as parameter.
      * The {@code MessageSupplier} may or may not use the {@link MessageFactory} to construct the
      * {@code Message}.
@@ -3543,8 +2859,692 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param t the exception to log, including its stack trace.
      * @since Log4j-2.4
      */
-    public void STATS(final MessageSupplier msgSupplier, final Throwable t) {
-        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, t);
+    public void autorevive(final MessageSupplier msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msgSupplier, t);
+    }
+
+    /**
+     * Logs a message with the specific Marker at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msg the message string to be logged
+     */
+    public void autorune(final Marker marker, final Message msg) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, msg, (Throwable) null);
+    }
+
+    /**
+     * Logs a message with the specific Marker at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msg the message string to be logged
+     * @param t A Throwable or null.
+     */
+    public void autorune(final Marker marker, final Message msg, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, msg, t);
+    }
+
+    /**
+     * Logs a message object with the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message object to log.
+     */
+    public void autorune(final Marker marker, final Object message) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message CharSequence with the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message CharSequence to log.
+     * @since Log4j-2.6
+     */
+    public void autorune(final Marker marker, final CharSequence message) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message at the {@code AUTORUNE} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log.
+     * @param t the exception to log, including its stack trace.
+     */
+    public void autorune(final Marker marker, final Object message, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, t);
+    }
+
+    /**
+     * Logs a message at the {@code AUTORUNE} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the CharSequence to log.
+     * @param t the exception to log, including its stack trace.
+     * @since Log4j-2.6
+     */
+    public void autorune(final Marker marker, final CharSequence message, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, t);
+    }
+
+    /**
+     * Logs a message object with the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message object to log.
+     */
+    public void autorune(final Marker marker, final String message) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param params parameters to the message.
+     * @see #getMessageFactory()
+     */
+    public void autorune(final Marker marker, final String message, final Object... params) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, params);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final Marker marker, final String message, final Object p0) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final Marker marker, final String message, final Object p0, final Object p1) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final Marker marker, final String message, final Object p0, final Object p1, final Object p2) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3, final Object p4) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3, p4);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3, final Object p4, final Object p5) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3, p4, p5);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3, final Object p4, final Object p5, final Object p6) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3, p4, p5, p6);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3, final Object p4, final Object p5, final Object p6,
+                         final Object p7) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @param p8 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3, final Object p4, final Object p5, final Object p6,
+                         final Object p7, final Object p8) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @param p8 parameter to the message.
+     * @param p9 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final Marker marker, final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3, final Object p4, final Object p5, final Object p6,
+                         final Object p7, final Object p8, final Object p9) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+    }
+
+    /**
+     * Logs a message at the {@code AUTORUNE} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log.
+     * @param t the exception to log, including its stack trace.
+     */
+    public void autorune(final Marker marker, final String message, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, t);
+    }
+
+    /**
+     * Logs the specified Message at the {@code AUTORUNE} level.
+     *
+     * @param msg the message string to be logged
+     */
+    public void autorune(final Message msg) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, msg, (Throwable) null);
+    }
+
+    /**
+     * Logs the specified Message at the {@code AUTORUNE} level.
+     *
+     * @param msg the message string to be logged
+     * @param t A Throwable or null.
+     */
+    public void autorune(final Message msg, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, msg, t);
+    }
+
+    /**
+     * Logs a message object with the {@code AUTORUNE} level.
+     *
+     * @param message the message object to log.
+     */
+    public void autorune(final Object message) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message at the {@code AUTORUNE} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param message the message to log.
+     * @param t the exception to log, including its stack trace.
+     */
+    public void autorune(final Object message, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, t);
+    }
+
+    /**
+     * Logs a message CharSequence with the {@code AUTORUNE} level.
+     *
+     * @param message the message CharSequence to log.
+     * @since Log4j-2.6
+     */
+    public void autorune(final CharSequence message) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a CharSequence at the {@code AUTORUNE} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param message the CharSequence to log.
+     * @param t the exception to log, including its stack trace.
+     * @since Log4j-2.6
+     */
+    public void autorune(final CharSequence message, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, t);
+    }
+
+    /**
+     * Logs a message object with the {@code AUTORUNE} level.
+     *
+     * @param message the message object to log.
+     */
+    public void autorune(final String message) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, (Throwable) null);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param params parameters to the message.
+     * @see #getMessageFactory()
+     */
+    public void autorune(final String message, final Object... params) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, params);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final String message, final Object p0) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final String message, final Object p0, final Object p1) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final String message, final Object p0, final Object p1, final Object p2) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3, final Object p4) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3, p4);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3, final Object p4, final Object p5) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3, p4, p5);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3, final Object p4, final Object p5, final Object p6) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3, p4, p5, p6);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3, final Object p4, final Object p5, final Object p6,
+                         final Object p7) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3, p4, p5, p6, p7);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @param p8 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3, final Object p4, final Object p5, final Object p6,
+                         final Object p7, final Object p8) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8);
+    }
+
+    /**
+     * Logs a message with parameters at the {@code AUTORUNE} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param p0 parameter to the message.
+     * @param p1 parameter to the message.
+     * @param p2 parameter to the message.
+     * @param p3 parameter to the message.
+     * @param p4 parameter to the message.
+     * @param p5 parameter to the message.
+     * @param p6 parameter to the message.
+     * @param p7 parameter to the message.
+     * @param p8 parameter to the message.
+     * @param p9 parameter to the message.
+     * @see #getMessageFactory()
+     * @since Log4j-2.6
+     */
+    public void autorune(final String message, final Object p0, final Object p1, final Object p2,
+                         final Object p3, final Object p4, final Object p5, final Object p6,
+                         final Object p7, final Object p8, final Object p9) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+    }
+
+    /**
+     * Logs a message at the {@code AUTORUNE} level including the stack trace of
+     * the {@link Throwable} {@code t} passed as parameter.
+     *
+     * @param message the message to log.
+     * @param t the exception to log, including its stack trace.
+     */
+    public void autorune(final String message, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, t);
+    }
+
+    /**
+     * Logs a message which is only to be constructed if the logging level is the {@code AUTORUNE}level.
+     *
+     * @param msgSupplier A function, which when called, produces the desired log message;
+     *            the format depends on the message factory.
+     * @since Log4j-2.4
+     */
+    public void autorune(final Supplier<?> msgSupplier) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, msgSupplier, (Throwable) null);
+    }
+
+    /**
+     * Logs a message (only to be constructed if the logging level is the {@code AUTORUNE}
+     * level) including the stack trace of the {@link Throwable} <code>t</code> passed as parameter.
+     *
+     * @param msgSupplier A function, which when called, produces the desired log message;
+     *            the format depends on the message factory.
+     * @param t the exception to log, including its stack trace.
+     * @since Log4j-2.4
+     */
+    public void autorune(final Supplier<?> msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, msgSupplier, t);
+    }
+
+    /**
+     * Logs a message which is only to be constructed if the logging level is the
+     * {@code AUTORUNE} level with the specified Marker.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msgSupplier A function, which when called, produces the desired log message;
+     *            the format depends on the message factory.
+     * @since Log4j-2.4
+     */
+    public void autorune(final Marker marker, final Supplier<?> msgSupplier) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, msgSupplier, (Throwable) null);
+    }
+
+    /**
+     * Logs a message with parameters which are only to be constructed if the logging level is the
+     * {@code AUTORUNE} level.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param message the message to log; the format depends on the message factory.
+     * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
+     * @since Log4j-2.4
+     */
+    public void autorune(final Marker marker, final String message, final Supplier<?>... paramSuppliers) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, paramSuppliers);
+    }
+
+    /**
+     * Logs a message (only to be constructed if the logging level is the {@code AUTORUNE}
+     * level) with the specified Marker and including the stack trace of the {@link Throwable}
+     * <code>t</code> passed as parameter.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msgSupplier A function, which when called, produces the desired log message;
+     *            the format depends on the message factory.
+     * @param t A Throwable or null.
+     * @since Log4j-2.4
+     */
+    public void autorune(final Marker marker, final Supplier<?> msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, msgSupplier, t);
+    }
+
+    /**
+     * Logs a message with parameters which are only to be constructed if the logging level is
+     * the {@code AUTORUNE} level.
+     *
+     * @param message the message to log; the format depends on the message factory.
+     * @param paramSuppliers An array of functions, which when called, produce the desired log message parameters.
+     * @since Log4j-2.4
+     */
+    public void autorune(final String message, final Supplier<?>... paramSuppliers) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, paramSuppliers);
+    }
+
+    /**
+     * Logs a message which is only to be constructed if the logging level is the
+     * {@code AUTORUNE} level with the specified Marker. The {@code MessageSupplier} may or may
+     * not use the {@link MessageFactory} to construct the {@code Message}.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msgSupplier A function, which when called, produces the desired log message.
+     * @since Log4j-2.4
+     */
+    public void autorune(final Marker marker, final MessageSupplier msgSupplier) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, msgSupplier, (Throwable) null);
+    }
+
+    /**
+     * Logs a message (only to be constructed if the logging level is the {@code AUTORUNE}
+     * level) with the specified Marker and including the stack trace of the {@link Throwable}
+     * <code>t</code> passed as parameter. The {@code MessageSupplier} may or may not use the
+     * {@link MessageFactory} to construct the {@code Message}.
+     *
+     * @param marker the marker data specific to this log statement
+     * @param msgSupplier A function, which when called, produces the desired log message.
+     * @param t A Throwable or null.
+     * @since Log4j-2.4
+     */
+    public void autorune(final Marker marker, final MessageSupplier msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, msgSupplier, t);
+    }
+
+    /**
+     * Logs a message which is only to be constructed if the logging level is the
+     * {@code AUTORUNE} level. The {@code MessageSupplier} may or may not use the
+     * {@link MessageFactory} to construct the {@code Message}.
+     *
+     * @param msgSupplier A function, which when called, produces the desired log message.
+     * @since Log4j-2.4
+     */
+    public void autorune(final MessageSupplier msgSupplier) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, msgSupplier, (Throwable) null);
+    }
+
+    /**
+     * Logs a message (only to be constructed if the logging level is the {@code AUTORUNE}
+     * level) including the stack trace of the {@link Throwable} <code>t</code> passed as parameter.
+     * The {@code MessageSupplier} may or may not use the {@link MessageFactory} to construct the
+     * {@code Message}.
+     *
+     * @param msgSupplier A function, which when called, produces the desired log message.
+     * @param t the exception to log, including its stack trace.
+     * @since Log4j-2.4
+     */
+    public void autorune(final MessageSupplier msgSupplier, final Throwable t) {
+        logger.logIfEnabled(FQCN, AUTORUNE, null, msgSupplier, t);
     }
 }
 
