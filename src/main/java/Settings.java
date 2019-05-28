@@ -872,7 +872,7 @@ public class Settings {
 			setTankPriorityFromString("");
 		}
 
-		// sanitize gvgOpponent setting
+		// sanitize pvpOpponent setting
 		int pvpOpponentTmp = Integer.parseInt(lastUsedMap.getOrDefault("pvpOpponent", ""+pvpOpponent));
 		if (pvpOpponentTmp <1 || pvpOpponent > 4) {
 			BHBot.logger.warn("WARNING: invalid value for pvpOpponent setting '" + pvpOpponentTmp + "': " +
