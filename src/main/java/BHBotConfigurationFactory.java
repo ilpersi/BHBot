@@ -34,7 +34,7 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
         // STD ERR
         AppenderComponentBuilder stdErrBuilder = builder.newAppender("StdErr", "CONSOLE").
                 addAttribute("target", ConsoleAppender.Target.SYSTEM_ERR);
-        stdErrBuilder.add(builder.newLayout("PatternLayout").addAttribute("pattern", "%style{%d{HH:mm:ss.SSS} %highlight{%level}{FATAL=bg_red, ERROR=bg_red, WARN=bg_yellow, AUTOREVIVE=blue, AUTOSHRINE=blue, AUTORUNE=blue, STATS=magenta, READOUT=yellow, INFO=green, DEBUG=cyan} - %msg%n}{red}"));
+        stdErrBuilder.add(builder.newLayout("PatternLayout").addAttribute("pattern", "%style{%d{HH:mm:ss.SSS} %highlight{%level}{FATAL=bg_red, ERROR=red, WARN=bg_yellow, AUTOREVIVE=blue, AUTOSHRINE=blue, AUTORUNE=blue, STATS=magenta, READOUT=yellow, INFO=green, DEBUG=cyan} - %msg%n}{red}"));
         stdErrBuilder.add(builder.newFilter("ThresholdFilter", Filter.Result.ACCEPT,
                 Filter.Result.DENY).addAttribute("level", Level.ERROR));
         builder.add(stdErrBuilder);
