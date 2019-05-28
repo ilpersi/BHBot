@@ -287,7 +287,7 @@ public class MainThread implements Runnable {
 
 	private enum MinorRune {
 		EXP_COMMON("exp_common", "MinorRuneExpCommon"),
-//		EXP_RARE("exp_rare", "MinorRuneExpRare"),
+		EXP_RARE("exp_rare", "MinorRuneExpRare"),
 		EXP_EPIC("exp_epic", "MinorRuneExpEpic"),
 		EXP_LEGENDARY("exp_legendary", "MinorRuneExpLegendary"),
 
@@ -302,8 +302,8 @@ public class MainThread implements Runnable {
 		GOLD_LEGENDARY("gold_legendary", "MinorRuneGoldLegendary"),
 
 		CAPTURE_COMMON("capture_common", "MinorRuneCaptureCommon"),
-//		CAPTURE_RARE("capture_rare", "MinorRuneCaptureRare"),
-//		CAPTURE_EPIC("capture_epic", "MinorRuneCaptureEpic"),
+		CAPTURE_RARE("capture_rare", "MinorRuneCaptureRare"),
+		CAPTURE_EPIC("capture_epic", "MinorRuneCaptureEpic"),
 		CAPTURE_LEGENDARY("capture_legendary", "MinorRuneCaptureLegendary");
 
 		private String name;
@@ -4118,7 +4118,7 @@ public class MainThread implements Runnable {
 		String strLeftRune = desiredRunesAsStrs.get(0);
 		MinorRune desiredLeftRune = MinorRune.getTypeFromName(strLeftRune);
 		if (desiredLeftRune == null) {
-			BHBot.logger.error("No rune type found for left rune name " + strLeftRune);
+			BHBot.logger.error("No rune type configured for left rune name " + strLeftRune + ". Check the settings are configured correctly.");
 			desiredLeftRune = leftMinorRune;
 		}
 		desiredRunes.add(desiredLeftRune);
@@ -4126,7 +4126,7 @@ public class MainThread implements Runnable {
 		String strRightRune = desiredRunesAsStrs.get(1);
 		MinorRune desiredRightRune = MinorRune.getTypeFromName(strRightRune);
 		if (desiredRightRune == null) {
-			BHBot.logger.error("No rune type found for right rune name " + strRightRune);
+			BHBot.logger.error("No rune type configured for right rune name " + strRightRune + ". Check the settings are configured correctly.");
 			desiredRightRune = rightMinorRune;
 		}
 
