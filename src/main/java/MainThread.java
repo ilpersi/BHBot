@@ -658,6 +658,7 @@ public class MainThread implements Runnable {
 		addCue("TeamNotFull", loadImage("cues/cueTeamNotFull.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
 		addCue("TeamNotOrdered", loadImage("cues/cueTeamNotOrdered.png"), new Bounds(230, 190, 350, 250)); // warning popup when some guild member left and your GvG team is not complete anymore
 		addCue("GuildLeaveConfirm", loadImage("cues/cueGuildLeaveConfirm.png"), new Bounds(195, 105, 605, 395)); // GVG confirm
+		addCue("DisabledBattles", loadImage("cues/cueDisabledBattles.png"), new Bounds(240, 210, 560, 330)); // Disabled Battles Poppup
 
 		addCue("No", loadImage("cues/cueNo.png"), null); // cue for a blue "No" button used for example with "Your team is not full" dialog, or for "Replace consumable" dialog, etc. This is why we can't put concrete borders as position varies a lot.
 		addCue("AutoTeam", loadImage("cues/cueAutoTeam.png"), null); // "Auto" button that automatically assigns team (in raid, GvG, ...)
@@ -716,7 +717,6 @@ public class MainThread implements Runnable {
 		addCue("GVG", loadImage("cues/cueGVG.png"), null); // main GVG button cue
 		addCue("BadgeBar", loadImage("cues/cueBadgeBar.png"), null);
 		addCue("GVGWindow", loadImage("cues/cueGVGWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
-		addCue("GVGWarning", loadImage("cues/cueGVGWarning.png"), null); //inital GvG run wanring
 
 		addCue("InGamePM", loadImage("cues/cueInGamePM.png"), new Bounds(450, 330, 530, 380)); // note that the guild window uses the same cue! That's why it's important that user doesn't open guild window while bot is working!
 
@@ -2265,20 +2265,24 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 								readScreen(2*SECOND);
 
-								//On initial GvG run you'll get a warning about not being able to leave guild, this will close that
-								readScreen(2*SECOND);
-								seg = detectCue(cues.get("GVGWarning"), 3*SECOND);
-								if (seg != null) {
-									BHBot.logger.info("Initial GvG run warning found, closing");
-									sleep(SECOND); //wait to stabilise just in case
-									seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-									clickOnSeg(seg);
+								// Sometimes, before the reset, battles are disabled
+								Boolean disabledBattles = handleDisabledBattles();
+								if (disabledBattles == null) {
+									restart();
+									continue;
+								} else if (disabledBattles) {
+									readScreen();
+									closePopupSecurely(cues.get("GVGWindow"), cues.get("X"));
+									continue;
 								}
 
-//								seg = detectCue(cues.get("Fight"), 5*SECOND);
-//								clickOnSeg(seg);
-//								sleep(5*SECOND);
+								//On initial GvG run you'll get a warning about not being able to leave guild, this will close that
+                                if (handleGuildLeaveConfirm()) {
+                                    restart();
+                                    continue;
+                                }
 
+								
 								Bounds gvgOpponentBounds = opponentSelector(BHBot.settings.gvgOpponent);
 								BHBot.logger.info("Selecting opponent " + BHBot.settings.gvgOpponent);
 								seg = detectCue(cues.get("Fight"), 5*SECOND, gvgOpponentBounds);
@@ -2290,6 +2294,11 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 
 								seg = detectCue(cues.get("Accept"), 5*SECOND);
+								if (seg == null) {
+									BHBot.logger.error("Imppossible to find the Accept button in the GvG screen, restarting!");
+									restart();
+									continue;
+								}
 								clickOnSeg(seg);
 								sleep(5*SECOND);
 
@@ -5731,17 +5740,37 @@ private void handleAutoRune() { //seperate function so we can run autoRune witho
 			readScreen();
 			MarvinSegment seg = detectCue(cues.get("YesGreen"), 10 * SECOND);
 			if (seg == null) {
-				BHBot.logger.error("Error: 'GVG Confirm' window detected, but no 'Yes' green button found. Restarting...");
+				BHBot.logger.error("Error: 'Guild Leave Confirm' window detected, but no 'Yes' green button found. Restarting...");
 				return true;
 			}
 			clickOnSeg(seg);
 			sleep(2 * SECOND);
 
-			BHBot.logger.info("'GVG' dialog detected and handled - GVG has been auto confirmed!");
+			BHBot.logger.info("'Guild Leave' dialog detected and handled!");
 		}
 
 		return false; // all ok
 	}
+
+    private Boolean handleDisabledBattles() {
+        readScreen();
+        if (detectCue(cues.get("DisabledBattles"), SECOND * 3) != null ) {
+            sleep(500); // in case popup is still sliding downward
+            readScreen();
+            MarvinSegment seg = detectCue(cues.get("Close"), 10 * SECOND);
+            if (seg == null) {
+                BHBot.logger.error("Error: 'Disabled battles' popup detected, but no 'Close' blue button found. Restarting...");
+                return null;
+            }
+            clickOnSeg(seg);
+            sleep(2 * SECOND);
+
+            BHBot.logger.info("'Disabled battles' popup detected and handled!");
+            return true;
+        }
+
+        return false; // all ok, battles are enabled
+    }
 
 	/**
 	 * Will check if "Not enough energy" popup is open. If it is, it will automatically close it and close all other windows
@@ -7099,4 +7128,5 @@ private void handleAutoRune() { //seperate function so we can run autoRune witho
 	void softReset() {
 		state = State.Main;
 	}
+
 }
