@@ -3066,17 +3066,17 @@ public class MainThread implements Runnable {
         readScreen();
         for (MinorRune rune : MinorRune.values()) {
             Cue runeCue = rune.getRuneCue();
+            
             // left rune
             MarvinSegment seg = detectCue(runeCue, 0, new Bounds(230, 245, 320, 330));
             if (seg != null)
                 leftMinorRune = rune;
-            	BHBot.logger.info(leftMinorRune + " equipped in left slot.");
 
             // right rune
             seg = detectCue(runeCue, 0, new Bounds(480, 245, 565, 330));
             if (seg != null)
                 rightMinorRune = rune;
-        		BHBot.logger.info(rightMinorRune + " equipped in right slot.");
+   
         }
 
         sleep(500); //delay for window close animation
@@ -3090,13 +3090,13 @@ public class MainThread implements Runnable {
             BHBot.logger.warn("Error: Unable to detect left minor rune!");
             success = false;
         } else{
-			BHBot.logger.debug(leftMinorRune + " in left rune slot");
+        	BHBot.logger.info(leftMinorRune + " equipped in left slot.");
 		}
         if (rightMinorRune == null) {
             BHBot.logger.warn("Error: Unable to detect right minor rune!");
             success = false;
         } else{
-			BHBot.logger.debug(rightMinorRune + " in right rune slot");
+        	BHBot.logger.info(rightMinorRune + " equipped in right slot.");
 		}
 
 		return success;
@@ -4184,7 +4184,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         String activityName = state.getNameFromShortcut(activity);
 		BHBot.logger.debug("Checking autoRunes for " + activityName + "..");
         if (!BHBot.settings.autoRune.containsKey(activity)) {
-            BHBot.logger.info("No autoRunes assigned for " + activityName + ". Using default runes.");
+            BHBot.logger.info("No specific autoRunes assigned for activity: " + activityName + ". Using default autoRunes.");
 			desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
         }
         else {
@@ -4775,10 +4775,10 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 					(state==State.Expedition && BHBot.settings.autoRevive.contains("e")) ) {
 
 				// from char to potion name
-				HashMap<Character, String> potionTranslage = new HashMap<>();
-				potionTranslage.put('1', "Minor");
-				potionTranslage.put('2', "Average");
-				potionTranslage.put('3', "Major");
+				HashMap<Character, String> potionTranslate = new HashMap<>();
+				potionTranslate.put('1', "Minor");
+				potionTranslate.put('2', "Average");
+				potionTranslate.put('3', "Major");
 
                 for (Map.Entry<Integer, Point> item : revivePositions.entrySet()) {
                     Integer slotNum = item.getKey();
@@ -4861,7 +4861,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                         for (char potion: "321".toCharArray()) {
                             seg = availablePotions.get(potion);
                             if (seg != null) {
-                                BHBot.logger.autofunction("    Handling tank priority (position: " + BHBot.settings.tankPosition + ") with " + potionTranslage.get(potion) + " revive.");
+                                BHBot.logger.autofunction("    Handling tank priority (position: " + BHBot.settings.tankPosition + ") with " + potionTranslate.get(potion) + " revive.");
                                 clickOnSeg(seg);
                                 readScreen(SECOND);
                                 seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
@@ -4878,7 +4878,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                             // BHBot.logger.info("Checking potion " + potion);
                             seg = availablePotions.get(potion);
                             if (seg != null) {
-                                BHBot.logger.autofunction("    Using " + potionTranslage.get(potion) + " revive on slot " + slotNum + ".");
+                                BHBot.logger.autofunction("    Using " + potionTranslate.get(potion) + " revive on slot " + slotNum + ".");
                                 clickOnSeg(seg);
                                 readScreen(SECOND);
                                 seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
