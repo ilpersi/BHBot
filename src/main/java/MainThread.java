@@ -1290,6 +1290,13 @@ public class MainThread implements Runnable {
 							BHBot.logger.error("It was not possible to verify auto shrine settings");
 						}
 						autoShrined = false;
+
+						if(!BHBot.settings.autoRuneDefault.isEmpty()) {
+							BHBot.logger.info("Re-validating autoRunes");
+							if (!detectEquippedMinorRunes(true, true)) {
+								BHBot.logger.error("It was not possible to verify the equipped runes!");
+							}
+						}
 					}
 
 					restart();
@@ -1566,10 +1573,10 @@ public class MainThread implements Runnable {
                     }
 
 					// One time check for equipped minor runes
-					if (!oneTimeRuneCheck) {
+					if (!BHBot.settings.autoRuneDefault.isEmpty() && !oneTimeRuneCheck) {
 
 						BHBot.logger.info("Startup check to determined configured minor runes");
-						if (!detectEquippedMinorRunes(true)) {
+						if (!detectEquippedMinorRunes(true, true)) {
 							BHBot.logger.error("It was not possible to perform the equipped runes start-up check!");
 						}
 						oneTimeRuneCheck = true;
@@ -2387,7 +2394,7 @@ public class MainThread implements Runnable {
 									readScreen(SECOND * 2);
 								}
 
-								if(handleMinorRunes("i")) {
+								if(handleMinorRunes("e")) {
 									readScreen(SECOND);
 									clickOnSeg(badgeBtn);
 								}
@@ -2991,9 +2998,9 @@ public class MainThread implements Runnable {
         return false;
     }
 
-	boolean detectEquippedMinorRunes(boolean needToOpenRunesMenu) {
+	boolean detectEquippedMinorRunes(boolean enterRunesMenu, boolean exitRunesMenu) {
 
-        if (needToOpenRunesMenu && openRunesMenu())
+        if (enterRunesMenu && openRunesMenu())
             return false;
 
         // determine equipped runes
@@ -3013,9 +3020,10 @@ public class MainThread implements Runnable {
                 rightMinorRune = rune;
         }
 
-        closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
-		closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
-
+        if (exitRunesMenu) {
+			closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
+			closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
+		}
 
         boolean success = true;
         if (leftMinorRune == null) {
@@ -4059,9 +4067,14 @@ public class MainThread implements Runnable {
 	private boolean handleMinorRunes(String activity) {
         List<String> desiredRunesAsStrs;
         String activityName = state.getNameFromShortcut(activity);
+        if (BHBot.settings.autoRuneDefault.isEmpty()) {
+			BHBot.logger.debug("autoRunesDefault not defined; aborting autoRunes");
+			return false;
+		}
+
 		BHBot.logger.info("Doing autoRunes for: " + activityName);
         if (!BHBot.settings.autoRune.containsKey(activity)) {
-            BHBot.logger.info("No autoRunes assigned for " + activityName + ", using defaults.");
+            BHBot.logger.debug("No autoRunes assigned for " + activityName + ", using defaults.");
 			desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
         }
         else {
@@ -4087,6 +4100,11 @@ public class MainThread implements Runnable {
     }
 
     private boolean handleMinorBossRunes() {
+		if (BHBot.settings.autoRuneDefault.isEmpty()) {
+			BHBot.logger.debug("autoRunesDefault not defined; aborting autoBossRunes");
+			return false;
+		}
+
         String activity = state.getShortcut();
         // Hack to work around unknown dungeons
 		if (activity.equals("ud"))
@@ -4140,15 +4158,15 @@ public class MainThread implements Runnable {
 		MinorRune desiredRightRune = desiredRunes.get(1);
 
 		if (desiredLeftRune == leftMinorRune && desiredRightRune == rightMinorRune) {
-			BHBot.logger.info("No runes found that need switching.");
+			BHBot.logger.debug("No runes found that need switching.");
 			return true; // Nothing to do
 		}
 
 		if (desiredLeftRune != leftMinorRune) {
-			BHBot.logger.info("Left minor rune needs to be switched.");
+			BHBot.logger.debug("Left minor rune needs to be switched.");
 		}
 		if (desiredRightRune != rightMinorRune) {
-			BHBot.logger.info("Right minor rune needs to be switched.");
+			BHBot.logger.debug("Right minor rune needs to be switched.");
 		}
 
 		return false;
@@ -4159,9 +4177,9 @@ public class MainThread implements Runnable {
 		MinorRune desiredLeftRune = desiredRunes.get(0);
 		MinorRune desiredRightRune = desiredRunes.get(1);
 
-		if (openRunesMenu()) {
-			BHBot.logger.error("Unable to open runes menu; aborting autoRunes!");
-			return true;
+		if (!detectEquippedMinorRunes(true, false)) {
+			BHBot.logger.error("Unable to detect runes, pre-equip.");
+			return false;
 		}
 
 		if (desiredLeftRune != leftMinorRune) {
@@ -4182,7 +4200,7 @@ public class MainThread implements Runnable {
             BHBot.logger.info("Right minor rune switched to " + desiredRightRune);
         }
 
-        if (!detectEquippedMinorRunes(false)) {
+        if (!detectEquippedMinorRunes(false, true)) {
             BHBot.logger.error("Unable to detect runes, post-equip.");
             return false;
         }
@@ -4190,11 +4208,11 @@ public class MainThread implements Runnable {
         sleep(2 * SECOND);
         boolean success = true;
         if (desiredLeftRune != leftMinorRune) {
-            BHBot.logger.info("Left minor rune failed to switch for unknown reason.");
+            BHBot.logger.error("Left minor rune failed to switch for unknown reason.");
             success = false;
         }
         if (desiredRightRune != rightMinorRune) {
-            BHBot.logger.info("Right minor rune failed to switch for unknown reason.");
+            BHBot.logger.error("Right minor rune failed to switch for unknown reason.");
             success = false;
         }
 
@@ -4219,6 +4237,7 @@ public class MainThread implements Runnable {
         seg = detectCue(desiredRune.getRuneSelectCue(), 0, new Bounds(235, 185, 540, 350));
         if (seg == null) {
             BHBot.logger.error("Unable to find " + desiredRune + " in rune picker.");
+			closePopupSecurely(cues.get("RunesPicker"), cues.get("X"));
             return false;
         }
 
