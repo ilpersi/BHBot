@@ -1573,6 +1573,8 @@ public class MainThread implements Runnable {
 						if (!detectEquippedMinorRunes(true)) {
 							BHBot.logger.error("It was not possible to perform the equipped runes start-up check!");
 						}
+			        	BHBot.logger.info(leftMinorRune + " equipped in left slot.");
+			        	BHBot.logger.info(rightMinorRune + " equipped in right slot.");
 						oneTimeRuneCheck = true;
 						readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
 					}
@@ -3088,13 +3090,13 @@ public class MainThread implements Runnable {
             BHBot.logger.warn("Error: Unable to detect left minor rune!");
             success = false;
         } else{
-        	BHBot.logger.info(leftMinorRune + " equipped in left slot.");
+        	BHBot.logger.debug(leftMinorRune + " equipped in left slot.");
 		}
         if (rightMinorRune == null) {
             BHBot.logger.warn("Error: Unable to detect right minor rune!");
             success = false;
         } else{
-        	BHBot.logger.info(rightMinorRune + " equipped in right slot.");
+        	BHBot.logger.debug(rightMinorRune + " equipped in right slot.");
 		}
 
         sleep(500); //delay for window close animation
@@ -4189,7 +4191,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         String activityName = state.getNameFromShortcut(activity);
 		BHBot.logger.debug("Checking autoRunes for " + activityName + "..");
         if (!BHBot.settings.autoRune.containsKey(activity)) {
-            BHBot.logger.autorune("No specific autoRunes assigned for activity: " + activityName + ". Using default autoRunes.");
+            BHBot.logger.debug("No specific autoRunes assigned for activity: " + activityName + ". Using default autoRunes.");
 			desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
         }
         else {
@@ -4293,6 +4295,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
 		if (desiredLeftRune != leftMinorRune) {
+	   		sleep(1*SECOND); //sleep while we wait for window animation
             clickInGame(280, 290); // Click on left rune
             if (!switchSingleMinorRune(desiredLeftRune)) {
                 BHBot.logger.error("Failed to switch left minor rune.");
@@ -4300,8 +4303,10 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             }
             BHBot.logger.autorune("Switched left minor rune to " + desiredLeftRune);
         }
+		
 
         if (desiredRightRune != rightMinorRune) {
+       		sleep(1*SECOND); //sleep while we wait for window animation
             clickInGame(520, 290); // Click on right rune
             if (!switchSingleMinorRune(desiredRightRune)) {
                 BHBot.logger.error("Failed to switch right minor rune.");
@@ -4309,6 +4314,8 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             }
             BHBot.logger.autorune("Switched right minor rune to " + desiredRightRune);
         }
+        
+   		sleep(1*SECOND); //sleep while we wait for window animation
 
         if (!detectEquippedMinorRunes(false)) {
             BHBot.logger.error("Unable to detect runes, post-equip.");
