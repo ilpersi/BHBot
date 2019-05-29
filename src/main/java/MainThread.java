@@ -886,6 +886,12 @@ public class MainThread implements Runnable {
 		addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable.png"), new Bounds(535, 205, 635, 300));
 		addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
 
+		//Items related cues
+		addCue("ItemLeg", loadImage("cues/items/cueItemLeg.png"), null); // Legendary Item border
+		addCue("ItemSet", loadImage("cues/items/cueItemSet.png"), null); // Set Item border
+		addCue("ItemMyt", loadImage("cues/items/cueItemMyt.png"), null); // Mythical Item border
+
+
 		int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
 
 		BHBot.logger.debug("Found " + newFamCnt + " familiar cue(s) with new format.");
@@ -4048,6 +4054,37 @@ public class MainThread implements Runnable {
 //		seg = detectCue(cues.get("VictoryPopup"),500);
 		seg = detectCue(cues.get("VictoryPopup"));
 		if (seg != null) {
+
+			if (BHBot.settings.enablePushover) {
+				readScreen();
+
+				String DroppedItem = "";
+				Bounds victoryDropArea = new Bounds(175, 340, 625, 425);
+				BufferedImage victoryPopUpImg = img;
+
+				if (BHBot.settings.poNotifyDrop.contains("l") &&
+						detectCue(cues.get("ItemLeg"), 0, victoryDropArea) != null ) {
+						DroppedItem += "Legendary Item dropped";
+				}
+				if (BHBot.settings.poNotifyDrop.contains("s") &&
+						detectCue(cues.get("ItemSet"), 0, victoryDropArea) != null ) {
+					if (DroppedItem.length() > 0) DroppedItem += "\n";
+					DroppedItem += "Set Item dropped";
+				}
+				if (BHBot.settings.poNotifyDrop.contains("m") &&
+						detectCue(cues.get("ItemMyt"), 0, victoryDropArea) != null ) {
+					if (DroppedItem.length() > 0) DroppedItem += "\n";
+					DroppedItem += "Mythical Item dropped";
+				}
+
+				if (DroppedItem.length() > 0) {
+					String victoryScreenName = saveGameScreen("victory-screen", victoryPopUpImg);
+					File victoryScreenFile = new File(victoryScreenName);
+					sendPushOverMessage("Item Drop", DroppedItem, "magic", MessagePriority.HIGH, victoryScreenFile);
+					if(!victoryScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img file for victory drop.");
+				}
+			}
+
 			closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
 
 			// close the PVP window, in case it is open:
