@@ -26,7 +26,7 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
         AppenderComponentBuilder stdOutBuilder = builder.newAppender("StdOut", "CONSOLE")
                 .addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT);
         stdOutBuilder.add(builder.newLayout("PatternLayout")
-                .addAttribute("pattern", "%d{HH:mm:ss.SSS} %highlight{%level}{FATAL=bg_red, ERROR=bg_red, WARN=bg_yellow, AUTOREVIVE=blue, AUTOSHRINE=blue, AUTORUNE=blue, STATS=magenta, READOUT=yellow, INFO=green, DEBUG=cyan} - %msg%n"));
+                .addAttribute("pattern", "%d{HH:mm:ss.SSS} %highlight{%level}{FATAL=bg_red, ERROR=bg_red, WARN=bg_yellow, AUTOREVIVE=cyan, AUTOSHRINE=cyan, AUTORUNE=cyan, STATS=magenta, READOUT=yellow, INFO=green, DEBUG=blue} - %msg%n"));
         stdOutBuilder.add(builder.newFilter("ThresholdFilter", Filter.Result.DENY,
                 Filter.Result.ACCEPT).addAttribute("level", Level.ERROR));
         builder.add(stdOutBuilder);
@@ -34,7 +34,8 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
         // STD ERR
         AppenderComponentBuilder stdErrBuilder = builder.newAppender("StdErr", "CONSOLE").
                 addAttribute("target", ConsoleAppender.Target.SYSTEM_ERR);
-        stdErrBuilder.add(builder.newLayout("PatternLayout").addAttribute("pattern", "%style{%d{HH:mm:ss.SSS} %highlight{%level}{FATAL=bg_red, ERROR=red, WARN=bg_yellow, AUTOREVIVE=blue, AUTOSHRINE=blue, AUTORUNE=blue, STATS=magenta, READOUT=yellow, INFO=green, DEBUG=cyan} - %msg%n}{red}"));
+        stdErrBuilder.add(builder.newLayout("PatternLayout")
+        		.addAttribute("pattern", "%d{HH:mm:ss.SSS} %style{%highlight{%level}{FATAL=bg_red, ERROR=red, WARN=bg_yellow, AUTOREVIVE=cyan, AUTOSHRINE=cyan, AUTORUNE=cyan, STATS=magenta, READOUT=yellow, INFO=green, DEBUG=blue} - %msg%n}{red}"));
         stdErrBuilder.add(builder.newFilter("ThresholdFilter", Filter.Result.ACCEPT,
                 Filter.Result.DENY).addAttribute("level", Level.ERROR));
         builder.add(stdErrBuilder);

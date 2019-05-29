@@ -1908,6 +1908,7 @@ public class MainThread implements Runnable {
 								state = trials ? State.Trials : State.Gauntlet;
 								BHBot.logger.info((trials ? "Trials" : "Gauntlet") + " initiated!");
 								autoShrined = false;
+								autoBossRuned = false;
 							}
 						}
 						continue;
@@ -2055,6 +2056,7 @@ public class MainThread implements Runnable {
 								state = State.Dungeon;
 								BHBot.logger.info("Dungeon <" + dungeon + "> initiated solo!");
 								autoShrined = false;
+								autoBossRuned = false;
 								continue;
 
 							} else { // d1-d3
@@ -2599,6 +2601,7 @@ public class MainThread implements Runnable {
 									state = State.Expedition;
 									BHBot.logger.info(expedName + " portal initiated!");
 									autoShrined = false;
+									autoBossRuned = false;
 								}
 
 								if (handleGuildLeaveConfirm()) {
@@ -4071,6 +4074,7 @@ public class MainThread implements Runnable {
 private void handleAutoBossRune() { //seperate function so we can run autoRune without autoShrine
 	MarvinSegment guildButtonSeg;
 	//We use guild button visibility to determine whether we are in an encounter or not
+	readScreen();
 	guildButtonSeg = detectCue(cues.get("GuildButton"));
 	if (guildButtonSeg != null) {
 		outOfEncounterTimestamp = Misc.getTime() / 1000;
@@ -4117,6 +4121,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private void handleAutoShrine() {
 		MarvinSegment guildButtonSeg;
 		//We use guild button visibility to determine whether we are in an encounter or not
+		readScreen();
 		guildButtonSeg = detectCue(cues.get("GuildButton"));
 		if (guildButtonSeg != null) {
 			outOfEncounterTimestamp = Misc.getTime() / 1000;
