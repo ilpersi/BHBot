@@ -134,6 +134,9 @@ public class Settings {
     List<String> autoRuneDefault;
 	Map<String, List<String>> autoRune = new HashMap<>();
 	Map<String, List<String>> autoBossRune = new HashMap<>();
+
+	/** Drop notificatoin settings **/
+	List<String> poNotifyDrop;
 	
 	/**
 	 * List of equipment that should be stripped before attempting PvP (and dressed up again after PvP is done).
@@ -198,6 +201,7 @@ public class Settings {
 		tankPriority = new ArrayList<>();
 		autoShrine = new ArrayList<>();
 		autoRuneDefault = new ArrayList<>();
+		poNotifyDrop = new ArrayList<>();
 	}
 	
 	// a handy shortcut for some debug settings:
@@ -347,6 +351,16 @@ public class Settings {
 		}
 	}
 
+	private void setPoNotifyDrop(String... types) {
+		this.poNotifyDrop.clear();
+		for (String t : types) {
+			String add = t.trim();
+			if (add.equals(""))
+				continue;
+			this.poNotifyDrop.add(add);
+		}
+	}
+
 	private void setTankPriority(String... types) {
 		this.tankPriority.clear();
 		for (String t : types) {
@@ -491,6 +505,15 @@ public class Settings {
 		return result.toString();
 	}
 
+	private String getPoNotifyDropAsString() {
+		StringBuilder result = new StringBuilder();
+		for (String s : poNotifyDrop)
+			result.append(s).append(" ");
+		if (result.length() > 0)
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+		return result.toString();
+	}
+
 	private String getTankPriorityAsString() {
 		StringBuilder result = new StringBuilder();
 		for (String s : tankPriority)
@@ -604,6 +627,16 @@ public class Settings {
 			autoRevive.set(i, autoRevive.get(i).trim());
 			if (autoRevive.get(i).equals(""))
 				autoRevive.remove(i);
+		}
+	}
+
+	private void setPoNotifyDropFromString(String s) {
+		setPoNotifyDrop(s.split(" "));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = poNotifyDrop.size()-1; i >= 0; i--) {
+			poNotifyDrop.set(i, poNotifyDrop.get(i).trim());
+			if (poNotifyDrop.get(i).equals(""))
+				poNotifyDrop.remove(i);
 		}
 	}
 
@@ -753,6 +786,7 @@ public class Settings {
 		worldBossSolo = lastUsedMap.getOrDefault("worldBossSolo", worldBossSolo ? "1" : "0").equals("1");
 
 		setAutoReviveFromString(lastUsedMap.getOrDefault("autoRevive", getAutoReviveAsString()));
+		setPoNotifyDropFromString(lastUsedMap.getOrDefault("poNotifyDrop", getPoNotifyDropAsString()));
 		setTankPriorityFromString(lastUsedMap.getOrDefault("tankPriority", getTankPriorityAsString()));
 		tankPosition = Integer.parseInt(lastUsedMap.getOrDefault("tankPosition", ""+tankPosition));
 		potionOrder  = lastUsedMap.getOrDefault("potionOrder", potionOrder);
@@ -857,7 +891,7 @@ public class Settings {
 		// sanitize autoshrine settings
 		String autoShrine= lastUsedMap.getOrDefault("autoShrine", "");
 		if (autoShrine.contains("1") || autoShrine.contains("2") || autoShrine.contains("3")) {
-            BHBot.logger.warn("WARNING: invalid format detected for autoRevive setting '" + autoShrine + "': " +
+            BHBot.logger.warn("WARNING: invalid format detected for autoShrine setting '" + autoShrine + "': " +
 					"this feature will be disabled" );
 			lastUsedMap.put("autoShrine", "");
 			setAutoShrineFromString("");
