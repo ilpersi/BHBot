@@ -3770,12 +3770,26 @@ public class MainThread implements Runnable {
 
 		if (!startTimeCheck) {
 			activityStartTime = (System.currentTimeMillis() / 1000L);
-//			BHBot.logger.info("Start time: " + Long.toString(activityStartTime));
+			BHBot.logger.debug("Start time: " + Long.toString(activityStartTime));
+			outOfEncounterTimestamp = Misc.getTime() / 1000;
+			inEncounterTimestamp = Misc.getTime() / 1000;
 			startTimeCheck = true;
 		}
 
 		activityDuration = ((System.currentTimeMillis() / 1000L) - activityStartTime);
 
+		//We use guild button visibility to determine whether we are in an encounter or not
+		MarvinSegment guildButtonSeg = detectCue(cues.get("GuildButton"));
+		if (guildButtonSeg != null) {
+			outOfEncounterTimestamp = Misc.getTime() / 1000;
+			BHBot.logger.debug("Encounter: Out");
+		} else {
+			inEncounterTimestamp = Misc.getTime() / 1000;
+			BHBot.logger.debug("Encounter: In");
+		}
+		
+		BHBot.logger.debug("Time since encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
+		
 		// handle "Not enough energy" popup:
 		if (activityDuration < 30) {
 			boolean insufficientEnergy = handleNotEnoughEnergyPopup();
@@ -3785,6 +3799,7 @@ public class MainThread implements Runnable {
 			}
 			return;
 		}
+		
 
 		/*
 		 * autoRune Code
@@ -4075,21 +4090,14 @@ public class MainThread implements Runnable {
 
 private void handleAutoBossRune() { //seperate function so we can run autoRune without autoShrine
 	MarvinSegment guildButtonSeg;
-	//We use guild button visibility to determine whether we are in an encounter or not
-	readScreen();
 	guildButtonSeg = detectCue(cues.get("GuildButton"));
-	if (guildButtonSeg != null) {
-		outOfEncounterTimestamp = Misc.getTime() / 1000;
-	} else {
-		inEncounterTimestamp = Misc.getTime() / 1000;
-	}
-
+	
 	if ((state == State.Raid && !BHBot.settings.autoShrine.contains("r") && BHBot.settings.autoBossRune.containsKey("r")) ||
 	(state == State.Trials && !BHBot.settings.autoShrine.contains("t") && BHBot.settings.autoBossRune.containsKey("t")) || 
 	(state == State.Expedition && !BHBot.settings.autoShrine.contains("e") && BHBot.settings.autoBossRune.containsKey("e")) ||
 	(state == State.Dungeon && BHBot.settings.autoBossRune.containsKey("d")) ||
 	state == State.UnidentifiedDungeon) {
-		if (activityDuration > 30) { //if we're past 30 seconds into the activity
+		if (activityDuration > 60) { //if we're past 60 seconds into the activity
 			if (!autoBossRuned) {
 				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay && guildButtonSeg != null) { //and it's been the battleDelay setting since last encounter
 					BHBot.logger.autorune("No activity for " + BHBot.settings.battleDelay + "s, changing runes for boss encounter");
@@ -4122,20 +4130,13 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 	private void handleAutoShrine() {
 		MarvinSegment guildButtonSeg;
-		//We use guild button visibility to determine whether we are in an encounter or not
-		readScreen();
 		guildButtonSeg = detectCue(cues.get("GuildButton"));
-		if (guildButtonSeg != null) {
-			outOfEncounterTimestamp = Misc.getTime() / 1000;
-		} else {
-			inEncounterTimestamp = Misc.getTime() / 1000;
-		}
 
 		if ( ( state == State.Raid && BHBot.settings.autoShrine.contains("r") ) || 
 			( state == State.Trials && BHBot.settings.autoShrine.contains("t") ) || 
 			( state == State.Expedition && BHBot.settings.autoShrine.contains("e") ) || 
 			( state == State.UnidentifiedDungeon) ) {
-			if (activityDuration > 30) { //if we're past 30 seconds into the activity
+			if (activityDuration > 60) { //if we're past 60 seconds into the activity
 				if (!autoShrined) {
 					if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay && guildButtonSeg != null) { //and it's been the battleDelay setting since last encounter
 						BHBot.logger.autoshrine("No activity for " + BHBot.settings.battleDelay + "s, disabling ignore shrines");
@@ -4350,7 +4351,9 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			BHBot.logger.error("Failed to find rune picker.");
 			return false;
 		}
-
+		
+		sleep(SECOND); //sleep for window animation
+		
         seg = detectCue(desiredRune.getRuneSelectCue(), 0, new Bounds(235, 185, 540, 350));
         if (seg == null) {
             BHBot.logger.error("Unable to find " + desiredRune + " in rune picker.");
@@ -5849,6 +5852,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 				seg = detectCue(cues.get("X"), 5*SECOND);
 				if (seg != null)
 				clickOnSeg(seg);
+				specialDungeon = false;
 			} else {
 			// close difficulty selection screen:
 				closePopupSecurely(cues.get("Normal"), cues.get("X"));
