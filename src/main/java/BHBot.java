@@ -447,8 +447,11 @@ public class BHBot {
                     case "softreset":
                     	main.softReset();
                     	break;
-                    default:
-                        break;
+                    case "runes":
+                    	main.detectEquippedMinorRunes(true);
+                    	break;
+					default:
+						break;
                 }
                 break;
             default:

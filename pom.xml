@@ -6,7 +6,7 @@
 
     <groupId>com.github.betalord</groupId>
     <artifactId>BHBot</artifactId>
-    <version>39.4</version>
+    <version>39.9</version>
     <developers>
         <developer>
             <id>betalord</id>
@@ -19,6 +19,10 @@
         <developer>
             <id>ilpersi</id>
             <name>Lorenzo Persichetti</name>
+        </developer>
+        <developer>
+            <id>eschwim</id>
+            <name>Eric Schwimmer</name>
         </developer>
     </developers>
     <build>

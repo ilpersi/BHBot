@@ -129,6 +129,14 @@ public class Settings {
     List<String> autoShrine;
 	int battleDelay = 60;
 	int shrineDelay = 20;
+
+	/** Autorune settings **/
+    List<String> autoRuneDefault;
+	Map<String, List<String>> autoRune = new HashMap<>();
+	Map<String, List<String>> autoBossRune = new HashMap<>();
+
+	/** Drop notificatoin settings **/
+	List<String> poNotifyDrop;
 	
 	/**
 	 * List of equipment that should be stripped before attempting PvP (and dressed up again after PvP is done).
@@ -192,6 +200,8 @@ public class Settings {
 		autoRevive = new ArrayList<>();
 		tankPriority = new ArrayList<>();
 		autoShrine = new ArrayList<>();
+		autoRuneDefault = new ArrayList<>();
+		poNotifyDrop = new ArrayList<>();
 	}
 	
 	// a handy shortcut for some debug settings:
@@ -341,6 +351,16 @@ public class Settings {
 		}
 	}
 
+	private void setPoNotifyDrop(String... types) {
+		this.poNotifyDrop.clear();
+		for (String t : types) {
+			String add = t.trim();
+			if (add.equals(""))
+				continue;
+			this.poNotifyDrop.add(add);
+		}
+	}
+
 	private void setTankPriority(String... types) {
 		this.tankPriority.clear();
 		for (String t : types) {
@@ -360,6 +380,62 @@ public class Settings {
 			this.autoShrine.add(add);
 		}
 	}
+
+    private void setAutoRuneDefault(String... runes) {
+        this.autoRuneDefault.clear();
+
+        this.autoRuneDefault.add(runes[0]);
+        if (runes.length == 2) {
+            this.autoRuneDefault.add(runes[1]);
+        }
+        else {
+            this.autoRuneDefault.add(runes[0]);
+        }
+    }
+
+	private void setAutoRune(String... runeSets) {
+		this.autoRune.clear();
+		String activity;
+		String[] config;
+
+		for (String d : runeSets) {
+			config = d.split(" +");
+			if (config.length < 2)
+				continue;
+			activity = config[0];
+			List<String> runes = new ArrayList<>();
+			runes.add(config[1]);
+			if (config.length == 3) {
+				runes.add(config[2]);
+			}
+			else {
+				runes.add(config[1]);
+			}
+			this.autoRune.put(activity, runes);
+		}
+	}
+
+    private void setAutoBossRune(String... runeSets) {
+		this.autoBossRune.clear();
+		String activity;
+		String[] config;
+
+		for (String d : runeSets) {
+			config = d.split(" +");
+			if (config.length < 2)
+				continue;
+			activity = config[0];
+			List<String> runes = new ArrayList<>();
+			runes.add(config[1]);
+			if (config.length == 3) {
+				runes.add(config[2]);
+			}
+			else {
+				runes.add(config[1]);
+			}
+			this.autoBossRune.put(activity, runes);
+		}
+    }
 
 	private void setGVGStrips(String... types) {
 		this.gvgstrip.clear();
@@ -429,6 +505,15 @@ public class Settings {
 		return result.toString();
 	}
 
+	private String getPoNotifyDropAsString() {
+		StringBuilder result = new StringBuilder();
+		for (String s : poNotifyDrop)
+			result.append(s).append(" ");
+		if (result.length() > 0)
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+		return result.toString();
+	}
+
 	private String getTankPriorityAsString() {
 		StringBuilder result = new StringBuilder();
 		for (String s : tankPriority)
@@ -447,6 +532,31 @@ public class Settings {
 		return result.toString();
 	}
 
+    private String getAutoRuneDefaultAsString() {
+        StringBuilder result = new StringBuilder();
+        for (String s : autoRuneDefault)
+            result.append(s).append(" ");
+        if (result.length() > 0)
+            result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+        return result.toString();
+    }
+
+	private String getAutoRuneAsString() {
+		List<String> actionList = new ArrayList<>();
+		for (Map.Entry<String, List<String>> entry : autoRune.entrySet()) {
+			actionList.add(entry.getKey() + " " + String.join(" ", entry.getValue()));
+		}
+		return  String.join("; ", actionList);
+	}
+
+
+	private String getAutoBossRuneAsString() {
+		List<String> actionList = new ArrayList<>();
+		for (Map.Entry<String, List<String>> entry : autoBossRune.entrySet()) {
+			actionList.add(entry.getKey() + " " + String.join(" ", entry.getValue()));
+		}
+		return  String.join("; ", actionList);
+	}
 	private String getGVGStripsAsString() {
 		StringBuilder result = new StringBuilder();
 		for (String s : gvgstrip)
@@ -520,6 +630,16 @@ public class Settings {
 		}
 	}
 
+	private void setPoNotifyDropFromString(String s) {
+		setPoNotifyDrop(s.split(" "));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = poNotifyDrop.size()-1; i >= 0; i--) {
+			poNotifyDrop.set(i, poNotifyDrop.get(i).trim());
+			if (poNotifyDrop.get(i).equals(""))
+				poNotifyDrop.remove(i);
+		}
+	}
+
 	private void setTankPriorityFromString(String s) {
 		setTankPriority(s.split(" "));
 		// clean up (trailing spaces and remove if empty):
@@ -538,6 +658,18 @@ public class Settings {
 			if (autoShrine.get(i).equals(""))
 				autoShrine.remove(i);
 		}
+	}
+
+    private void setAutoRuneDefaultFromString(String s) {
+        setAutoRuneDefault(s.trim().split(" +"));
+    }
+
+    private void setAutoRuneFromString(String s) {
+		setAutoRune(s.trim().split(" *; *"));
+    }
+
+	private void setAutoBossRuneFromString(String s) {
+		setAutoBossRune(s.trim().split(" *; *"));
 	}
 
 	private void setGVGStripsFromString(String s) {
@@ -654,6 +786,7 @@ public class Settings {
 		worldBossSolo = lastUsedMap.getOrDefault("worldBossSolo", worldBossSolo ? "1" : "0").equals("1");
 
 		setAutoReviveFromString(lastUsedMap.getOrDefault("autoRevive", getAutoReviveAsString()));
+		setPoNotifyDropFromString(lastUsedMap.getOrDefault("poNotifyDrop", getPoNotifyDropAsString()));
 		setTankPriorityFromString(lastUsedMap.getOrDefault("tankPriority", getTankPriorityAsString()));
 		tankPosition = Integer.parseInt(lastUsedMap.getOrDefault("tankPosition", ""+tankPosition));
 		potionOrder  = lastUsedMap.getOrDefault("potionOrder", potionOrder);
@@ -690,6 +823,10 @@ public class Settings {
 		setAutoShrineFromString(lastUsedMap.getOrDefault("autoShrine", getAutoShrineAsString()));
         battleDelay = Integer.parseInt(lastUsedMap.getOrDefault("battleDelay", ""+battleDelay));
         shrineDelay = Integer.parseInt(lastUsedMap.getOrDefault("shrineDelay", ""+shrineDelay));
+
+        setAutoRuneDefaultFromString(lastUsedMap.getOrDefault("autoRuneDefault", getAutoRuneDefaultAsString()));
+        setAutoRuneFromString(lastUsedMap.getOrDefault("autoRune", getAutoRuneAsString()));
+        setAutoBossRuneFromString(lastUsedMap.getOrDefault("autoBossRune", getAutoBossRuneAsString()));
 
         persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", ""+persuasionLevel));
         bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", ""+bribeLevel));
@@ -754,7 +891,7 @@ public class Settings {
 		// sanitize autoshrine settings
 		String autoShrine= lastUsedMap.getOrDefault("autoShrine", "");
 		if (autoShrine.contains("1") || autoShrine.contains("2") || autoShrine.contains("3")) {
-            BHBot.logger.warn("WARNING: invalid format detected for autoRevive setting '" + autoShrine + "': " +
+            BHBot.logger.warn("WARNING: invalid format detected for autoShrine setting '" + autoShrine + "': " +
 					"this feature will be disabled" );
 			lastUsedMap.put("autoShrine", "");
 			setAutoShrineFromString("");
@@ -787,5 +924,40 @@ public class Settings {
 			gvgOpponent = 1;
 		}
 
+		// sanitize autorune-related settings
+		String runeTypes = "(capture|exp|gold|item)";
+		String runeRarities = "(common|rare|epic|legendary)";
+		String runeActions = "[degiprtw]";
+		// match one or two rune specs
+		String runeRegex = runeTypes + "_" + runeRarities + "( +" + runeTypes + "_" + runeRarities + ")?";
+		// match one or more actions, each followed by one or two runes
+		String runeActionRegex = runeActions + " +" + runeRegex + "( *; *" + runeActions + " +" + runeRegex + ")*";
+
+		// autoRune defaults
+		String autoRuneDefault = lastUsedMap.getOrDefault("autoRuneDefault", "");
+		if (!autoRuneDefault.equals("") && !autoRuneDefault.matches(runeRegex)) {
+			BHBot.logger.warn("WARNING: invalid format detected for autoRuneDefault setting '" + autoRuneDefault + "': " +
+					"this feature will be disabled");
+			lastUsedMap.put("autoRuneDefault", "");
+			setAutoRuneDefaultFromString("");
+		}
+
+		// autoRunes
+		String autoRune = lastUsedMap.getOrDefault("autoRune", "");
+		if (!autoRune.equals("") && !autoRune.matches(runeActionRegex)) {
+			BHBot.logger.warn("WARNING: invalid format detected for autoRune setting '" + autoRune + "': " +
+					"this feature will be disabled" + ": " + runeActionRegex  );
+			lastUsedMap.put("autoRune", "");
+			setAutoRuneFromString("");
+		}
+
+		// autoBossRunes
+		String autoBossRune = lastUsedMap.getOrDefault("autoBossRune", "");
+		if (!autoBossRune.equals("") && !autoBossRune.matches(runeActionRegex)) {
+			BHBot.logger.warn("WARNING: invalid format detected for autoBossRune setting '" + autoBossRune + "': " +
+					"this feature will be disabled" );
+			lastUsedMap.put("autoBossRune", "");
+			setAutoBossRuneFromString("");
+		}
 	}
 }
