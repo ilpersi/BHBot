@@ -1579,8 +1579,8 @@ public class MainThread implements Runnable {
 						if (!detectEquippedMinorRunes(true)) {
 							BHBot.logger.error("It was not possible to perform the equipped runes start-up check!");
 						}
-			        	BHBot.logger.info(leftMinorRune + " equipped in left slot.");
-			        	BHBot.logger.info(rightMinorRune + " equipped in right slot.");
+			        	BHBot.logger.info(getRuneName(leftMinorRune.name) + " equipped in left slot.");
+			        	BHBot.logger.info(getRuneName(rightMinorRune.name) + " equipped in right slot.");
 						oneTimeRuneCheck = true;
 						readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
 					}
@@ -1645,9 +1645,9 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 								readScreen(SECOND);
 
-								BHBot.logger.info("Enabling autoShrine for Raid");
+								BHBot.logger.info("Configuring autoShrine for Raid");
 								if (!checkShrineSettings(true, true)) {
-									BHBot.logger.error("Impossibile to enable autoshrine for Raid!");
+									BHBot.logger.error("Impossible to configure autoShrine for Raid!");
 								}
 
 								readScreen(SECOND);
@@ -1671,9 +1671,9 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 								readScreen(SECOND);
 
-								BHBot.logger.info("Enabling autoBossRune for Raid");
+								BHBot.logger.info("Configuring autoBossRune for Raid");
 								if (!checkShrineSettings(true, false)) {
-									BHBot.logger.error("Impossibile to enable autoBossRune for Raid!");
+									BHBot.logger.error("Impossible to configure autoBossRune for Raid!");
 								}
 
 								readScreen(SECOND);
@@ -1815,9 +1815,9 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 								readScreen(SECOND);
 
-								BHBot.logger.info("Enabling autoShrine for Trial");
+								BHBot.logger.info("Configuring autoShrine for Trial");
 								if(!checkShrineSettings(true, true)) {
-									BHBot.logger.error("Impossible to enable autoShrine for Trial");
+									BHBot.logger.error("Impossible to configure autoShrine for Trial");
 								}
 								
 							//configure boss runes if no autoshrine
@@ -1826,9 +1826,9 @@ public class MainThread implements Runnable {
 								clickOnSeg(seg);
 								readScreen(SECOND);
 
-								BHBot.logger.info("Enabling autoBossRune for Trials");
+								BHBot.logger.info("Configuring autoBossRune for Trials");
 								if (!checkShrineSettings(true, false)) {
-									BHBot.logger.error("Impossibile to enable autoBossRune for Trials!");
+									BHBot.logger.error("Impossible to configure autoBossRune for Trials!");
 								}
 							}
 
@@ -1962,9 +1962,9 @@ public class MainThread implements Runnable {
 							
 							if (BHBot.settings.autoBossRune.containsKey("d") && !BHBot.settings.autoShrine.contains("d")) { //if autoshrine disabled but autorune enabled
 
-								BHBot.logger.info("Enabling autoBossRune for Dungeons");
+								BHBot.logger.info("Configuring autoBossRune for Dungeons");
 								if (!checkShrineSettings(true, false)) {
-									BHBot.logger.error("Impossible to enable autoBossRune for Dungeons!");
+									BHBot.logger.error("Impossible to configure autoBossRune for Dungeons!");
 								}
 								
 								readScreen(SECOND);
@@ -2440,9 +2440,9 @@ public class MainThread implements Runnable {
 									clickOnSeg(seg);
 									readScreen(2 * SECOND);
 
-									BHBot.logger.info("Enabling autoShrine for Expedition");
+									BHBot.logger.info("Configuring autoShrine for Expedition");
 									if(!checkShrineSettings(true, true)) {
-										BHBot.logger.error("Impossible to enable autoShrine for Expedition!");
+										BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
 									}
 
 									readScreen(SECOND);
@@ -2461,9 +2461,9 @@ public class MainThread implements Runnable {
 									clickOnSeg(seg);
 									readScreen(SECOND);
 
-									BHBot.logger.info("Enabling autoBossRune for Expedition");
+									BHBot.logger.info("Configuring autoBossRune for Expedition");
 									if (!checkShrineSettings(true, false)) {
-										BHBot.logger.error("Impossibile to enable autoBossRune for Raid!");
+										BHBot.logger.error("Impossible to configure autoBossRune for Expedition!");
 									}
 								}
 
@@ -2991,7 +2991,7 @@ public class MainThread implements Runnable {
 					}
 				}
 				ignoreBossSetting = true;
-				BHBot.logger.info("Ignore Boss Enabled");
+				BHBot.logger.debug("Ignore Boss Enabled");
 			} else {
 				while ( detectCue(cues.get("IgnoreBoss"), SECOND) == null ) {
 					BHBot.logger.debug("Disabling Ignore Boss");
@@ -3019,7 +3019,7 @@ public class MainThread implements Runnable {
 					}
 				}
 				ignoreShrinesSetting = true;
-				BHBot.logger.info("Ignore Shrine Enabled");
+				BHBot.logger.debug("Ignore Shrine Enabled");
 			} else {
 				while (detectCue(cues.get("IgnoreShrines"), SECOND) == null) {
 					BHBot.logger.debug("Disabling Ignore Shrine");
@@ -3788,13 +3788,14 @@ public class MainThread implements Runnable {
 		MarvinSegment guildButtonSeg = detectCue(cues.get("GuildButton"));
 		if (guildButtonSeg != null) {
 			outOfEncounterTimestamp = Misc.getTime() / 1000;
-			BHBot.logger.debug("Encounter: Out");
 		} else {
 			inEncounterTimestamp = Misc.getTime() / 1000;
-			BHBot.logger.debug("Encounter: In");
+//			BHBot.logger.debug("Encounter detected");
 		}
 		
-		BHBot.logger.debug("Time since encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
+		if ((outOfEncounterTimestamp - inEncounterTimestamp) > 0) {
+		BHBot.logger.debug("Time since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
+		}
 		
 		// handle "Not enough energy" popup:
 		if (activityDuration < 30) {
@@ -4159,8 +4160,6 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 					autoBossRuned = true;
 				}
 			}
-		} else {
-			BHBot.logger.debug("Activity duration for handleAutoBossRune is: " + activityDuration);
 		}
 	}
 }
@@ -4218,8 +4217,6 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 						autoShrined = true;
 					}
 				}
-			} else {
-				BHBot.logger.debug("Activity duration for handleAutoShrine is: " + activityDuration);
 			}
 		}
 	}
@@ -4339,7 +4336,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                 BHBot.logger.error("Failed to switch left minor rune.");
                 return false;
             }
-            BHBot.logger.autorune("Switched left minor rune to " + desiredLeftRune);
+            BHBot.logger.autorune("Switched left minor rune to " + getRuneName(desiredLeftRune.name));
         }
 		
 
@@ -4350,7 +4347,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                 BHBot.logger.error("Failed to switch right minor rune.");
                 return false;
             }
-            BHBot.logger.autorune("Switched right minor rune to " + desiredRightRune);
+            BHBot.logger.autorune("Switched right minor rune to " + getRuneName(desiredRightRune.name));
         }
         
    		sleep(1*SECOND); //sleep while we wait for window animation
@@ -4393,7 +4390,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		
         seg = detectCue(desiredRune.getRuneSelectCue(), 0, new Bounds(235, 185, 540, 350));
         if (seg == null) {
-            BHBot.logger.error("Unable to find " + desiredRune + " in rune picker.");
+            BHBot.logger.error("Unable to find " + getRuneName(desiredRune.name) + " in rune picker.");
             return false;
         }
 
@@ -4402,6 +4399,49 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
         return true;
     }
+    
+	/**
+	 * Function to return the name of the runes for console output
+	 */
+	private String getRuneName(String runeName) {
+
+		switch (runeName) {
+				case "exp_common":
+					return "Common Experience";
+				case "exp_rare":
+					return "Rare Experience";
+				case "exp_epic":
+					return "Epic Experience";
+				case "exp_legendary":
+					return "Legendary Experience";
+				case "item_common":
+					return "Common Item Find";
+				case "item_rare":
+					return "Rare Item Find";
+				case "item_epic":
+					return "Epic Item Find";
+				case "item_legendary":
+					return "Legendary Item Find";
+				case "gold_common":
+					return "Common Gold Find";
+				case "gold_rare":
+					return "Rare Gold Find";
+				case "gold_epic":
+					return "Epic Gold Find";
+				case "gold_legendary":
+					return "Legendary Gold Find";
+				case "capture_common":
+					return "Common Capture Rate";
+				case "capture_rare":
+					return "Rare Capture Rate";
+				case "capture_epic":
+					return "Epic Capture Rate";
+				case "capture_legendary":
+					return "Legendary Capture Rate";
+				default:
+					return null;
+			}
+	}
 
 	private boolean handleSkeletonKey() {
 		//TODO Add no key "Uh Oh" failsafe
@@ -4478,7 +4518,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private void handleFamiliarEncounter() {
 		MarvinSegment seg;
 
-		BHBot.logger.info("Familiar encountered");
+		BHBot.logger.autobribe("Familiar encountered");
 		readScreen(2*SECOND);
 
 		FamiliarType familiarLevel;
@@ -4540,9 +4580,9 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		// We attempt persuasion or bribe based on settings
 		if (persuasion == PersuationType.BRIBE) {
 			if (!bribeFamiliar()) {
-				BHBot.logger.info("Bribe attempt failed! Trying with persuasion...");
+				BHBot.logger.autobribe("Bribe attempt failed! Trying with persuasion...");
 				if (persuadeFamiliar()) {
-					BHBot.logger.info(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
+					BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
 				} else {
 					BHBot.logger.error("Impossible to persuade familiar, restarting...");
 					restart();
@@ -4552,7 +4592,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			}
 		} else if (persuasion == PersuationType.PERSUADE) {
 			if (persuadeFamiliar()) {
-				BHBot.logger.info(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
+				BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
 			} else {
 			    BHBot.logger.error("Impossible to attempt persuasion, restarting.");
 				restart();
@@ -4564,7 +4604,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 				readScreen(SECOND * 2);
 				seg = detectCue(cues.get("YesGreen"), SECOND);
 				clickOnSeg(seg);
-				BHBot.logger.info(familiarLevel.toString().toUpperCase() + " persuasion declined.");
+				BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion declined.");
 			} else {
 				BHBot.logger.error("Impossible to find the decline button, restarting...");
 				restart();
@@ -4650,7 +4690,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     }
 
 					if (detectCue(familiarCue, SECOND * 3) != null) {
-						BHBot.logger.info("Detected familiar " + familiarDetails + " as valid in familiars");
+						BHBot.logger.autobribe("Detected familiar " + familiarDetails + " as valid in familiars");
 						result.toBribeCnt = toBribeCnt;
 						result.familiarName = familiarName;
 						break;
@@ -4905,7 +4945,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     }
 
                     // We manage tank priority using the best potion we have
-                    if (slotNum == BHBot.settings.tankPosition && !revived[BHBot.settings.tankPosition-1] &&
+                    if (slotNum == (BHBot.settings.tankPosition - 1) &&
                             ( (state==State.Trials && BHBot.settings.tankPriority.contains("t") ) ||
                                     (state==State.Gauntlet && BHBot.settings.tankPriority.contains("g") ) ||
                                     (state==State.Raid && BHBot.settings.tankPriority.contains("r")) ||
@@ -4918,7 +4958,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                                 readScreen(SECOND);
                                 seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
                                 clickOnSeg(seg);
-                                revived[0] = true;
+                                revived[BHBot.settings.tankPosition - 1] = true;
                                 readScreen(SECOND);
                                 break;
                             }
