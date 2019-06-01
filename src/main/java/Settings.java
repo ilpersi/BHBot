@@ -103,7 +103,7 @@ public class Settings {
 	RandomCollection<String> thursdayDungeons;
 	
 	/**
-	 * List of raids we want to do (there are 3 raids: 1, 2 and 3) with a difficulty level and percentage.
+	 * List of raids we want to do with a difficulty level and percentage.
 	 * Examples:
 	 * '1 3 70;2 1 30' ==> in 70% of cases it will do R1 on heroic, in 30% of cases it will do R2 normal
 	 * '1 3 100' ==> in 100% of cases it will do R1 on heroic

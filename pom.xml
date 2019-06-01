@@ -6,7 +6,7 @@
 
     <groupId>com.github.betalord</groupId>
     <artifactId>BHBot</artifactId>
-    <version>39.9</version>
+    <version>40</version>
     <developers>
         <developer>
             <id>betalord</id>
