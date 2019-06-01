@@ -1839,7 +1839,8 @@ public class MainThread implements Runnable {
 
 							if(trials) {
 								if(handleMinorRunes("t")) {
-									sleep(SECOND);
+									readScreen(SECOND);
+									clickOnSeg(trialBTNSeg);
 								}
 							} else {
 								if(handleMinorRunes("g")) {
@@ -1858,7 +1859,7 @@ public class MainThread implements Runnable {
 								continue;
 							}
 							if (difficulty != BHBot.settings.difficulty) {
-								BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level:" + difficulty + ", settings level is " + BHBot.settings.difficulty + ". Changing..");
+								BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + BHBot.settings.difficulty + ". Changing..");
 								boolean result = selectDifficulty(difficulty, BHBot.settings.difficulty);
 								if (!result) { // error!
 									// see if drop down menu is still open and close it:
