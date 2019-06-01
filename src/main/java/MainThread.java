@@ -1834,6 +1834,7 @@ public class MainThread implements Runnable {
 
 								readScreen(SECOND);
 								clickOnSeg(trialBTNSeg);
+								sleep(SECOND); //wait for window animation
 							}
 
 							if(trials) {
@@ -5250,7 +5251,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			case 1:
 				return new Point(215, 315);
 			case 2:
-				return new Point(70, 175);
+				return new Point(570, 165);
 			case 3:
 				return new Point(400, 290);
 			case 4:
