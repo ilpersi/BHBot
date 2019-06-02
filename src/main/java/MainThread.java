@@ -4947,7 +4947,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     }
 
                     // We manage tank priority using the best potion we have
-                    if (slotNum == (BHBot.settings.tankPosition - 1) &&
+                    if (slotNum == (BHBot.settings.tankPosition) &&
                             ( (state==State.Trials && BHBot.settings.tankPriority.contains("t") ) ||
                                     (state==State.Gauntlet && BHBot.settings.tankPriority.contains("g") ) ||
                                     (state==State.Raid && BHBot.settings.tankPriority.contains("r")) ||
@@ -4961,6 +4961,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                                 seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
                                 clickOnSeg(seg);
                                 revived[BHBot.settings.tankPosition - 1] = true;
+                                potionsUsed++;
                                 readScreen(SECOND);
                                 break;
                             }
