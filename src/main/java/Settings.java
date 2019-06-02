@@ -925,11 +925,10 @@ public class Settings {
 		}
 
 		// sanitize autorune-related settings
-		String runeTypes = "(capture|exp|gold|item)";
-		String runeRarities = "(common|rare|epic|legendary)";
+		String runeTypes = "(capture|experience|gold|itemfind)";
 		String runeActions = "[degiprtw]";
 		// match one or two rune specs
-		String runeRegex = runeTypes + "_" + runeRarities + "( +" + runeTypes + "_" + runeRarities + ")?";
+		String runeRegex = runeTypes + "(\\s+" + runeTypes + ")?";
 		// match one or more actions, each followed by one or two runes
 		String runeActionRegex = runeActions + " +" + runeRegex + "( *; *" + runeActions + " +" + runeRegex + ")*";
 

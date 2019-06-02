@@ -285,54 +285,136 @@ public class MainThread implements Runnable {
 		}
 	}
 
-	private enum MinorRune {
-		EXP_COMMON("exp_common", "MinorRuneExpCommon"),
-		EXP_RARE("exp_rare", "MinorRuneExpRare"),
-		EXP_EPIC("exp_epic", "MinorRuneExpEpic"),
-		EXP_LEGENDARY("exp_legendary", "MinorRuneExpLegendary"),
+	public enum ItemGrade {
+		COMMON("Common", 1),
+		RARE("Rare", 2),
+		EPIC("Epic", 3),
+		LEGENDARY("Legendary",4),
+		SET("Set", 5),
+		MYTHIC("Mythic", 6),
+		ANCIENT("Ancient", 6);
 
-		ITEM_COMMON("item_common", "MinorRuneItemCommon"),
-		ITEM_RARE("item_rare", "MinorRuneItemRare"),
-		ITEM_EPIC("item_epic", "MinorRuneItemEpic"),
-		ITEM_LEGENDARY("item_legendary", "MinorRuneItemLegendary"),
+		private final String name;
+		private final int value;
 
-		GOLD_COMMON("gold_common", "MinorRuneGoldCommon"),
-//		GOLD_RARE("gold_rare", "MinorRuneGoldRare"),
-//		GOLD_EPIC("gold_epic", "MinorRuneGoldEpic"),
-		GOLD_LEGENDARY("gold_legendary", "MinorRuneGoldLegendary"),
-
-		CAPTURE_COMMON("capture_common", "MinorRuneCaptureCommon"),
-		CAPTURE_RARE("capture_rare", "MinorRuneCaptureRare"),
-		CAPTURE_EPIC("capture_epic", "MinorRuneCaptureEpic"),
-		CAPTURE_LEGENDARY("capture_legendary", "MinorRuneCaptureLegendary");
-
-		private String name;
-		private String runeCue;
-
-		MinorRune(String name, String runeCue) {
+		ItemGrade(String name, int value) {
 			this.name = name;
-			this.runeCue = runeCue;
+			this.value = value;
 		}
 
-		public static MinorRune getTypeFromName(String name) {
-			for (MinorRune type : MinorRune.values())
-				if (type.name.equals(name))
-					return type;
+		public static ItemGrade getGradeFromValue(int value) {
+			for (ItemGrade grade : ItemGrade.values())
+				if (grade.value == value)
+					return grade;
 			return null;
 		}
 
-		/** Returns image cue from rune window */
-		public Cue getRuneCue() {
-			return cues.get(runeCue);
+		public int getValue(){
+			return value;
 		}
-
-        public Cue getRuneSelectCue() {
-            return cues.get(runeCue + "Select");
-        }
 
 		@Override
 		public String toString() {
 			return name;
+		}
+	}
+
+	private enum MinorRuneEffect {
+		CAPTURE("Capture"),
+		EXPERIENCE("Experience"),
+		GOLD("Gold"),
+		ITEM_FIND("ItemFind");
+
+		private final String name;
+
+		MinorRuneEffect(String name) {
+			this.name = name;
+		}
+
+		public static MinorRuneEffect getEffectFromName(String name) {
+			for (MinorRuneEffect effect : MinorRuneEffect.values())
+				if (effect.name.toLowerCase().equals(name.toLowerCase()))
+					return effect;
+			return null;
+		}
+
+		@Override
+		public String toString() {
+			return name;
+		}
+	}
+
+	private enum MinorRune {
+		EXP_COMMON(MinorRuneEffect.EXPERIENCE, ItemGrade.COMMON),
+		EXP_RARE(MinorRuneEffect.EXPERIENCE, ItemGrade.RARE),
+		EXP_EPIC(MinorRuneEffect.EXPERIENCE, ItemGrade.EPIC),
+		EXP_LEGENDARY(MinorRuneEffect.EXPERIENCE, ItemGrade.LEGENDARY),
+
+		ITEM_COMMON(MinorRuneEffect.ITEM_FIND, ItemGrade.COMMON),
+		ITEM_RARE(MinorRuneEffect.ITEM_FIND, ItemGrade.RARE),
+		ITEM_EPIC(MinorRuneEffect.ITEM_FIND, ItemGrade.EPIC),
+		ITEM_LEGENDARY(MinorRuneEffect.ITEM_FIND, ItemGrade.LEGENDARY),
+
+		GOLD_COMMON(MinorRuneEffect.GOLD, ItemGrade.COMMON),
+		//		GOLD_RARE(MinorRuneEffect.GOLD, ItemGrade.RARE),
+//		GOLD_EPIC(MinorRuneEffect.GOLD, ItemGrade.EPIC),
+		GOLD_LEGENDARY(MinorRuneEffect.GOLD, ItemGrade.LEGENDARY),
+
+		CAPTURE_COMMON(MinorRuneEffect.CAPTURE, ItemGrade.COMMON),
+		CAPTURE_RARE(MinorRuneEffect.CAPTURE, ItemGrade.RARE),
+		CAPTURE_EPIC(MinorRuneEffect.CAPTURE, ItemGrade.EPIC),
+		CAPTURE_LEGENDARY(MinorRuneEffect.CAPTURE, ItemGrade.LEGENDARY);
+
+		private MinorRuneEffect effect;
+		private ItemGrade grade;
+
+		public static ItemGrade maxGrade = ItemGrade.LEGENDARY;
+
+		MinorRune(MinorRuneEffect effect, ItemGrade grade) {
+			this.effect = effect;
+			this.grade = grade;
+		}
+
+		public static MinorRune getRune(MinorRuneEffect effect, ItemGrade grade) {
+			for(MinorRune rune : MinorRune.values()) {
+				if(rune.effect == effect && rune.grade == grade)
+					return rune;
+			}
+			return null;
+		}
+
+		public MinorRuneEffect getRuneEffect() {
+			return effect;
+		}
+
+		public String getRuneCueName() {
+			return "MinorRune" + effect + grade;
+		}
+
+		public String getRuneCueFileName() {
+			return "cues/runes/minor" + effect + grade + ".png";
+		}
+
+		public Cue getRuneCue() {
+			return cues.get(getRuneCueName());
+		}
+
+
+		public String getRuneSelectCueName() {
+			return "MinorRune" + effect + grade + "Select";
+		}
+
+		public String getRuneSelectCueFileName() {
+			return "cues/runes/minor" + effect + grade + "Select.png";
+		}
+
+		public Cue getRuneSelectCue() {
+			return cues.get(getRuneSelectCueName());
+		}
+
+		@Override
+		public String toString() {
+			return grade.toString().toLowerCase() + "_" + effect.toString().toLowerCase();
 		}
 	}
 
@@ -435,10 +517,11 @@ public class MainThread implements Runnable {
 	/** global autorune vals */
 	private boolean autoBossRuned = false;
 	private boolean oneTimeRuneCheck = false;
+
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
 
-    private static BufferedImage loadImage(String f) {
+	private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
 		ClassLoader classLoader = MainThread.class.getClassLoader();
 		InputStream resourceURL = classLoader.getResourceAsStream(f);
@@ -792,41 +875,11 @@ public class MainThread implements Runnable {
 		addCue("RunesPicker", loadImage("cues/cueRunesPicker.png"), null); // rune picker
         addCue("RunesSwitch", loadImage("cues/cueRunesSwitch.png"), new Bounds(320, 260, 480, 295)); // rune picker
 
-		addCue("MinorRuneExpCommon", loadImage("cues/runes/common-minor-experience.png"), null); // equipped rune
-		addCue("MinorRuneExpCommonSelect", loadImage("cues/runes/common-minor-experience-select.png"), null); // rune in rune selector/inventory
-		addCue("MinorRuneExpRare", loadImage("cues/runes/rare-minor-experience.png"), null);
-		addCue("MinorRuneExpRareSelect", loadImage("cues/runes/rare-minor-experience-select.png"), null);
-		addCue("MinorRuneExpEpic", loadImage("cues/runes/epic-minor-experience.png"), null);
-		addCue("MinorRuneExpEpicSelect", loadImage("cues/runes/epic-minor-experience-select.png"), null);
-		addCue("MinorRuneExpLegendary", loadImage("cues/runes/leg-minor-experience.png"), null);
-		addCue("MinorRuneExpLegendarySelect", loadImage("cues/runes/leg-minor-experience-select.png"), null);
-
-		addCue("MinorRuneItemCommon", loadImage("cues/runes/common-minor-itemfind.png"), null);
-		addCue("MinorRuneItemCommonSelect", loadImage("cues/runes/common-minor-itemfind-select.png"), null);
-		addCue("MinorRuneItemRare", loadImage("cues/runes/rare-minor-itemfind.png"), null);
-		addCue("MinorRuneItemRareSelect", loadImage("cues/runes/rare-minor-itemfind-select.png"), null);
-		addCue("MinorRuneItemEpic", loadImage("cues/runes/epic-minor-itemfind.png"), null);
-		addCue("MinorRuneItemEpicSelect", loadImage("cues/runes/epic-minor-itemfind-select.png"), null);
-		addCue("MinorRuneItemLegendary", loadImage("cues/runes/leg-minor-itemfind.png"), null);
-		addCue("MinorRuneItemLegendarySelect", loadImage("cues/runes/leg-minor-itemfind-select.png"), null);
-
-		addCue("MinorRuneGoldCommon", loadImage("cues/runes/common-minor-gold.png"), null);
-		addCue("MinorRuneGoldCommonSelect", loadImage("cues/runes/common-minor-gold-select.png"), null);
-//		addCue("MinorRuneGoldRare", loadImage("cues/runes/rare-minor-gold.png"), null);
-//		addCue("MinorRuneGoldRareSelect", loadImage("cues/runes/rare-minor-gold-select.png"), null);
-//		addCue("MinorRuneGoldEpic", loadImage("cues/runes/epic-minor-gold.png"), null);
-//		addCue("MinorRuneGoldEpicSelect", loadImage("cues/runes/epic-minor-gold-select.png"), null);
-		addCue("MinorRuneGoldLegendary", loadImage("cues/runes/leg-minor-gold.png"), null);
-		addCue("MinorRuneGoldLegendarySelect", loadImage("cues/runes/leg-minor-gold-select.png"), null);
-
-		addCue("MinorRuneCaptureCommon", loadImage("cues/runes/common-minor-capture.png"), null);
-		addCue("MinorRuneCaptureCommonSelect", loadImage("cues/runes/common-minor-capture-select.png"), null);
-		addCue("MinorRuneCaptureRare", loadImage("cues/runes/rare-minor-capture.png"), null);
-		addCue("MinorRuneCaptureRareSelect", loadImage("cues/runes/rare-minor-capture-select.png"), null);
-		addCue("MinorRuneCaptureEpic", loadImage("cues/runes/epic-minor-capture.png"), null);
-		addCue("MinorRuneCaptureEpicSelect", loadImage("cues/runes/epic-minor-capture-select.png"), null);
-		addCue("MinorRuneCaptureLegendary", loadImage("cues/runes/leg-minor-capture.png"), null);
-		addCue("MinorRuneCaptureLegendarySelect", loadImage("cues/runes/leg-minor-capture-select.png"), null);
+		// All minor rune cues
+		for (MinorRune rune : MinorRune.values()) {
+			addCue(rune.getRuneCueName(), loadImage(rune.getRuneCueFileName()), null);
+			addCue(rune.getRuneSelectCueName(), loadImage(rune.getRuneSelectCueFileName()), new Bounds(235, 185, 540, 350));
+		}
 
 		// invasion related:
 //		addCue("Invasion", loadImage("cues/cueInvasion.png"), new Bounds(720, 270, 770, 480)); // main Invasion button cue
@@ -1297,6 +1350,13 @@ public class MainThread implements Runnable {
 							BHBot.logger.error("It was not possible to verify autoShrine settings");
 						}
 						autoShrined = false;
+
+						if(!BHBot.settings.autoRuneDefault.isEmpty()) {
+							BHBot.logger.info("Re-validating autoRunes");
+							if (!detectEquippedMinorRunes(true, true)) {
+								BHBot.logger.error("It was not possible to verify the equipped runes!");
+							}
+						}
 					}
 
 					restart();
@@ -1573,10 +1633,10 @@ public class MainThread implements Runnable {
                     }
 
 					// One time check for equipped minor runes
-					if (!oneTimeRuneCheck) {
+					if (!BHBot.settings.autoRuneDefault.isEmpty() && !oneTimeRuneCheck) {
 
-						BHBot.logger.info("Startup check to determined equipped minor runes");
-						if (!detectEquippedMinorRunes(true)) {
+						BHBot.logger.info("Startup check to determined configured minor runes");
+						if (!detectEquippedMinorRunes(true, true)) {
 							BHBot.logger.error("It was not possible to perform the equipped runes start-up check!");
 						}
 			        	BHBot.logger.info(getRuneName(leftMinorRune.name) + " equipped in left slot.");
@@ -3069,9 +3129,9 @@ public class MainThread implements Runnable {
         return false;
     }
 
-	boolean detectEquippedMinorRunes(boolean needToOpenRunesMenu) {
+	boolean detectEquippedMinorRunes(boolean enterRunesMenu, boolean exitRunesMenu) {
 
-        if (needToOpenRunesMenu && openRunesMenu())
+        if (enterRunesMenu && openRunesMenu())
             return false;
 
         // determine equipped runes
@@ -3092,7 +3152,12 @@ public class MainThread implements Runnable {
                 rightMinorRune = rune;
    
         }
-        
+
+        if (exitRunesMenu) {
+			closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
+			closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
+		}
+
         boolean success = true;
         if (leftMinorRune == null) {
             BHBot.logger.warn("Error: Unable to detect left minor rune!");
@@ -4226,16 +4291,21 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private boolean handleMinorRunes(String activity) {
         List<String> desiredRunesAsStrs;
         String activityName = state.getNameFromShortcut(activity);
-		BHBot.logger.debug("Checking autoRunes for " + activityName + "..");
+        if (BHBot.settings.autoRuneDefault.isEmpty()) {
+			BHBot.logger.debug("autoRunesDefault not defined; aborting autoRunes");
+			return false;
+		}
+
+		BHBot.logger.info("Doing autoRunes for: " + activityName);
         if (!BHBot.settings.autoRune.containsKey(activity)) {
-            BHBot.logger.debug("No specific autoRunes assigned for activity: " + activityName + ". Using default autoRunes.");
+            BHBot.logger.debug("No autoRunes assigned for " + activityName + ", using defaults.");
 			desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
         }
         else {
 			desiredRunesAsStrs = BHBot.settings.autoRune.get(activity);
         }
 
-		List<MinorRune> desiredRunes = resolveDesiredRunes(desiredRunesAsStrs);
+		List<MinorRuneEffect> desiredRunes = resolveDesiredRunes(desiredRunesAsStrs);
 		if (noRunesNeedSwitching(desiredRunes))
 			return false;
 
@@ -4253,29 +4323,33 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
     }
 
-    private boolean handleMinorBossRunes() {
+    private void handleMinorBossRunes() {
+		if (BHBot.settings.autoRuneDefault.isEmpty()) {
+			BHBot.logger.debug("autoRunesDefault not defined; aborting autoBossRunes");
+			return;
+		}
+
         String activity = state.getShortcut();
         // Hack to work around unknown dungeons
 		if (activity.equals("ud"))
 			activity = "d";
         if (!BHBot.settings.autoBossRune.containsKey(activity)) {
-            BHBot.logger.autorune("No autoBossRunes assigned for " + state.getName() + ", skipping.");
-            return false;
+            BHBot.logger.info("No autoBossRunes assigned for " + state.getName() + ", skipping.");
+            return;
         }
 
 		List<String> desiredRunesAsStrs = BHBot.settings.autoBossRune.get(activity);
-		List<MinorRune> desiredRunes = resolveDesiredRunes(desiredRunesAsStrs);
+		List<MinorRuneEffect> desiredRunes = resolveDesiredRunes(desiredRunesAsStrs);
 		if (noRunesNeedSwitching(desiredRunes))
-			return false;
+			return;
 
         if(!switchMinorRunes(desiredRunes))
             BHBot.logger.autorune("AutoBossRune failed!");
 
-        return true;
     }
 
-    private List<MinorRune> resolveDesiredRunes(List<String> desiredRunesAsStrs) {
-		List<MinorRune> desiredRunes = new ArrayList<>();
+    private List<MinorRuneEffect> resolveDesiredRunes(List<String> desiredRunesAsStrs) {
+		List<MinorRuneEffect> desiredRunes = new ArrayList<>();
 
 		if(desiredRunesAsStrs.size() != 2) {
 			BHBot.logger.error("Got malformed autoRunes, using defaults: " + String.join(" ", desiredRunesAsStrs));
@@ -4283,18 +4357,18 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
 		String strLeftRune = desiredRunesAsStrs.get(0);
-		MinorRune desiredLeftRune = MinorRune.getTypeFromName(strLeftRune);
+		MinorRuneEffect desiredLeftRune = MinorRuneEffect.getEffectFromName(strLeftRune);
 		if (desiredLeftRune == null) {
-			BHBot.logger.error("No rune type configured for left rune name " + strLeftRune + ". Check the settings are configured correctly.");
-			desiredLeftRune = leftMinorRune;
+			BHBot.logger.error("No rune type found for left rune name " + strLeftRune);
+			desiredLeftRune = leftMinorRune.getRuneEffect();
 		}
 		desiredRunes.add(desiredLeftRune);
 
 		String strRightRune = desiredRunesAsStrs.get(1);
-		MinorRune desiredRightRune = MinorRune.getTypeFromName(strRightRune);
+		MinorRuneEffect desiredRightRune = MinorRuneEffect.getEffectFromName(strRightRune);
 		if (desiredRightRune == null) {
-			BHBot.logger.error("No rune type configured for right rune name " + strRightRune + ". Check the settings are configured correctly.");
-			desiredRightRune = rightMinorRune;
+			BHBot.logger.error("No rune type found for right rune name " + strRightRune);
+			desiredRightRune = rightMinorRune.getRuneEffect();
 		}
 
 		desiredRunes.add(desiredRightRune);
@@ -4302,19 +4376,21 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		return desiredRunes;
 	}
 
-	private boolean noRunesNeedSwitching(List<MinorRune> desiredRunes) {
-		MinorRune desiredLeftRune = desiredRunes.get(0);
-		MinorRune desiredRightRune = desiredRunes.get(1);
+	private boolean noRunesNeedSwitching(List<MinorRuneEffect> desiredRunes) {
+		MinorRuneEffect desiredLeftRune = desiredRunes.get(0);
+		MinorRuneEffect desiredRightRune = desiredRunes.get(1);
+		MinorRuneEffect currentLeftRune = leftMinorRune.getRuneEffect();
+		MinorRuneEffect currentRightRune = rightMinorRune.getRuneEffect();
 
-		if (desiredLeftRune == leftMinorRune && desiredRightRune == rightMinorRune) {
+		if (desiredLeftRune == currentLeftRune && desiredRightRune == currentRightRune) {
 			BHBot.logger.debug("No runes found that need switching.");
 			return true; // Nothing to do
 		}
 
-		if (desiredLeftRune != leftMinorRune) {
+		if (desiredLeftRune != currentLeftRune) {
 			BHBot.logger.debug("Left minor rune needs to be switched.");
 		}
-		if (desiredRightRune != rightMinorRune) {
+		if (desiredRightRune != currentRightRune) {
 			BHBot.logger.debug("Right minor rune needs to be switched.");
 		}
 
@@ -4322,58 +4398,56 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 	}
 
-    private Boolean switchMinorRunes(List<MinorRune> desiredRunes) {
-		MinorRune desiredLeftRune = desiredRunes.get(0);
-		MinorRune desiredRightRune = desiredRunes.get(1);
+    private Boolean switchMinorRunes(List<MinorRuneEffect> desiredRunes) {
+		MinorRuneEffect desiredLeftRune = desiredRunes.get(0);
+		MinorRuneEffect desiredRightRune = desiredRunes.get(1);
 
-		if (openRunesMenu()) {
-			BHBot.logger.error("Unable to open runes menu; aborting autoRunes!");
-			return true;
+		if (!detectEquippedMinorRunes(true, false)) {
+			BHBot.logger.error("Unable to detect runes, pre-equip.");
+			return false;
 		}
 
-		if (desiredLeftRune != leftMinorRune) {
-	   		sleep(1*SECOND); //sleep while we wait for window animation
+		if (desiredLeftRune != leftMinorRune.getRuneEffect()) {
+			BHBot.logger.info("Switching left minor rune.");
             clickInGame(280, 290); // Click on left rune
             if (!switchSingleMinorRune(desiredLeftRune)) {
                 BHBot.logger.error("Failed to switch left minor rune.");
                 return false;
             }
-            BHBot.logger.autorune("Switched left minor rune to " + getRuneName(desiredLeftRune.name));
         }
 		
 
-        if (desiredRightRune != rightMinorRune) {
-       		sleep(1*SECOND); //sleep while we wait for window animation
+        if (desiredRightRune != rightMinorRune.getRuneEffect()) {
+			BHBot.logger.info("Switching right minor rune.");
             clickInGame(520, 290); // Click on right rune
             if (!switchSingleMinorRune(desiredRightRune)) {
                 BHBot.logger.error("Failed to switch right minor rune.");
                 return false;
             }
-            BHBot.logger.autorune("Switched right minor rune to " + getRuneName(desiredRightRune.name));
         }
         
    		sleep(1*SECOND); //sleep while we wait for window animation
 
-        if (!detectEquippedMinorRunes(false)) {
+        if (!detectEquippedMinorRunes(false, true)) {
             BHBot.logger.error("Unable to detect runes, post-equip.");
             return false;
         }
 
         sleep(2 * SECOND);
         boolean success = true;
-        if (desiredLeftRune != leftMinorRune) {
-            BHBot.logger.autorune("Left minor rune failed to switch for unknown reason.");
+        if (desiredLeftRune != leftMinorRune.getRuneEffect()) {
+            BHBot.logger.error("Left minor rune failed to switch for unknown reason.");
             success = false;
         }
-        if (desiredRightRune != rightMinorRune) {
-            BHBot.logger.autorune("Right minor rune failed to switch for unknown reason.");
+        if (desiredRightRune != rightMinorRune.getRuneEffect()) {
+            BHBot.logger.error("Right minor rune failed to switch for unknown reason.");
             success = false;
         }
 
         return success;
     }
 
-    private Boolean switchSingleMinorRune(MinorRune desiredRune) {
+    private Boolean switchSingleMinorRune(MinorRuneEffect desiredRune) {
 
 		MarvinSegment seg = detectCue(cues.get("RunesSwitch"), 5*SECOND);
         if (seg == null) {
@@ -4387,19 +4461,33 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			BHBot.logger.error("Failed to find rune picker.");
 			return false;
 		}
-		
-		sleep(SECOND); //sleep for window animation
-		
-        seg = detectCue(desiredRune.getRuneSelectCue(), 0, new Bounds(235, 185, 540, 350));
-        if (seg == null) {
-            BHBot.logger.error("Unable to find " + getRuneName(desiredRune.name) + " in rune picker.");
-            return false;
-        }
 
-        clickOnSeg(seg);
-        sleep(SECOND);  // Wait for rune to "zoom in"
+		seg = null;
+		ItemGrade maxRuneGrade = MinorRune.maxGrade;
+		for (int runeGradeVal = maxRuneGrade.getValue(); runeGradeVal > 0; runeGradeVal--) {
+			ItemGrade runeGrade = ItemGrade.getGradeFromValue(runeGradeVal);
+			MinorRune thisRune = MinorRune.getRune(desiredRune, runeGrade);
 
-        return true;
+
+			Cue runeCue = thisRune.getRuneSelectCue();
+			if (runeCue == null) {
+				BHBot.logger.error("Unable to find cue for rune " + thisRune);
+				continue;
+			}
+			seg = detectCue(runeCue);
+			if (seg == null) {
+				BHBot.logger.debug("Unable to find " + thisRune + " in rune picker.");
+				continue;
+			}
+			BHBot.logger.info("Switched to " + thisRune);
+			clickOnSeg(seg);
+			sleep(SECOND);
+			return true;
+		}
+
+		BHBot.logger.error("Unable to find rune of type " + desiredRune);
+		closePopupSecurely(cues.get("RunesPicker"), cues.get("X"));
+		return false;
     }
     
 	/**
