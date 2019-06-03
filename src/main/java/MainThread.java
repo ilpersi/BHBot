@@ -4889,6 +4889,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			BHBot.logger.autorevive("Defeat screen, skipping revive check");
 			seg = detectCue(cues.get("AutoOff"), SECOND);
 			if (seg != null) clickOnSeg(seg);
+			readScreen(SECOND);
 			return;
 		}
 
