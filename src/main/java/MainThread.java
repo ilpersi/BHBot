@@ -1639,8 +1639,8 @@ public class MainThread implements Runnable {
 						if (!detectEquippedMinorRunes(true, true)) {
 							BHBot.logger.error("It was not possible to perform the equipped runes start-up check!");
 						}
-			        	BHBot.logger.info(getRuneName(leftMinorRune.name) + " equipped in left slot.");
-			        	BHBot.logger.info(getRuneName(rightMinorRune.name) + " equipped in right slot.");
+			        	BHBot.logger.info(getRuneName(leftMinorRune.getRuneCueName()) + " equipped in left slot.");
+			        	BHBot.logger.info(getRuneName(rightMinorRune.getRuneCueName()) + " equipped in right slot.");
 						oneTimeRuneCheck = true;
 						readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
 					}
