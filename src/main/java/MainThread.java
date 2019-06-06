@@ -1,14 +1,14 @@
-import java.awt.Color;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -19,6 +19,7 @@ import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
 
 import com.google.common.base.Throwables;
+import io.appium.java_client.windows.WindowsDriver;
 import net.pushover.client.MessagePriority;
 import net.pushover.client.PushoverException;
 import net.pushover.client.PushoverMessage;
@@ -462,7 +463,8 @@ public class MainThread implements Runnable {
 	private final int MAX_NUM_FAILED_RESTARTS = 5;
 	@SuppressWarnings("FieldCanBeLocal")
 	private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
-	private static WebDriver driver;
+	private static WindowsDriver DesktopSession = null;
+	private static WindowsDriver driver;
 	private static JavascriptExecutor jsExecutor;
 	private static WebElement game;
 	private State state; // at which stage of the game/menu are we currently?
@@ -952,97 +954,38 @@ public class MainThread implements Runnable {
 	}
 
 	private static void connectDriver() throws MalformedURLException {
-		ChromeOptions options = new ChromeOptions();
 
-		options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
-		options.setBinary(BHBot.chromiumExePath); //set Chromium v69 binary location
-
-        if (BHBot.settings.autoStartChromeDriver) {
-            System.setProperty("webdriver.chrome.driver", BHBot.chromeDriverExePath);
-        } else {
-            BHBot.logger.info("chromedriver auto start is off, make sure it is started before running BHBot");
-            if (System.getProperty("webdriver.chrome.driver", null) != null) {
-                System.clearProperty("webdriver.chrome.driver");
-            }
-        }
-
-		// disable ephemeral flash permissions flag
-		options.addArguments("--disable-features=EnableEphemeralFlashPermission");
-		options.addArguments("disable-infobars");
-//		options.addArguments("--log-level=OFF");
-//		options.addArguments("--silent");
-		Map<String, Object> prefs = new HashMap<>();
-		// Enable flash for all sites for Chrome 69
-		prefs.put("profile.content_settings.exceptions.plugins.*,*.setting", 1);
-		options.setExperimentalOption("prefs", prefs);
-
-//		if (BHBot.settings.useHeadlessMode) {
-//			options.setBinary("C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe"); //set chromium v69 binary location
-
-//
-//
-//			// https://sites.google.com/a/chromium.org/chromedriver/capabilities
-//
-//			options.addArguments("--headless");
-//			//options.addArguments("--disable-gpu"); // in future versions of Chrome this flag will not be needed
-//
-//			/*
-//			options.addArguments("--disable-plugins");
-//			options.addArguments("--disable-internal-flash");
-//			options.addArguments("--disable-plugins-discovery");
-//			*/
-//			//options.addArguments("--disable-bundled-ppapi-flash");
-//
-//
-//
-//			options.addArguments("--always-authorize-plugins");
-//			options.addArguments("--allow-outdated-plugins");
-//			options.addArguments("--allow-file-access-from-files");
-//			options.addArguments("--allow-running-insecure-content");
-//			options.addArguments("--disable-translate");
-//			options.addArguments("-�allow-webui-compositing"); // https://adestefawp.wordpress.com/software/chromium-command-line-switches/
-//			options.addArguments("-�ppapi-flash-in-process");
-//
-//			options.addArguments("--use-fake-device-for-media-stream");
-//			options.addArguments("--disable-web-security");
-//
-//
-//			options.setExperimentalOption("excludeSwitches", Arrays.asList("disable-component-update", "disable-default-apps"));
-
-			//options.setExperimentalOption("#run-all-flash-in-allow-mode", Arrays.asList("Enabled"));
-			//options.setExperimentalOption("#run-all-flash-in-allow-mode", "Enabled");
-
-//			Map<String, Object> prefs = new HashMap<>();
-//			prefs.put("run-all-flash-in-allow-mode", Boolean.valueOf(true));
-//			prefs.put("profile.run_all_flash_in_allow_mode", Boolean.valueOf(true));
-//			options.setExperimentalOption("prefs", prefs);
-
-			//options.addExtensions(new File("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/Application/chrome_profile_test/PepperFlash/26.0.0.137/pepflashplayer.dll"));
-			//options.addExtensions(new File("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/User Data/PepperFlash/26.0.0.137/pepflashplayer.dll"));
-
-			//options.addArguments("--remote-debugging-port=9222"); // this doesn't work because ChromeDriver uses dubuging port internally. Read about it here: https://bugs.chromium.org/p/chromedriver/issues/detail?id=878#c16
-//		}
-
-		//options.addArguments("--no-startup-window"); // does not work with WebDriver. Read about it here: https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/5351
-
-
-		//options.addArguments("--headless");
-		//options.addArguments("--disable-gpu");
-//		options.addArguments("--mute-audio"); // found this solution here: https://stackoverflow.com/questions/39392479/how-to-mute-all-sounds-in-chrome-webdriver-with-selenium/39392601#39392601
-
-		//***ChromeDriverService chromeDriverService = ChromeDriverService.createDefaultService();
-		//***chromeDriverService.CHROME_DRIVER_SILENT_OUTPUT_PROPERTY
-
-		DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-		capabilities.setCapability("chrome.verbose", false);
-		capabilities.setCapability(ChromeOptions.CAPABILITY, options);
-//		driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
-		if (BHBot.settings.autoStartChromeDriver) {
-			driver = new ChromeDriver(options);
-		} else {
-			driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
+		// We launch Bit Heroes
+		if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+			try {
+				Desktop.getDesktop().browse(new URI("steam://rungameid/666860"));
+			} catch (IOException | URISyntaxException e) {
+				e.printStackTrace();
+			}
 		}
-		jsExecutor = (JavascriptExecutor) driver;
+
+		DesiredCapabilities desktopCapabilities = new DesiredCapabilities();
+		desktopCapabilities.setCapability("platformName", "Windows");
+		desktopCapabilities.setCapability("deviceName", "WindowsPC");
+		desktopCapabilities.setCapability("app", "Root");
+
+		DesktopSession = new WindowsDriver(new URL("http://127.0.0.1:4723/wd/hub"), desktopCapabilities);
+		DesktopSession.manage().timeouts().implicitlyWait(10, TimeUnit.MINUTES);
+
+		WebElement BHWebElement = DesktopSession.findElementByName("Bit Heroes");
+		String BHWinHandleStr = BHWebElement.getAttribute("NativeWindowHandle");
+		int BHWinHandleInt = Integer.parseInt(BHWinHandleStr);
+		String BHWinHandleHex = Integer.toHexString(BHWinHandleInt);
+
+		DesiredCapabilities BHCapabilities = new DesiredCapabilities();
+		BHCapabilities.setCapability("platformName", "Windows");
+		BHCapabilities.setCapability("deviceName", "WindowsPC");
+		BHCapabilities.setCapability("appTopLevelWindow", BHWinHandleHex);
+		System.out.println("BH Handle is: " + BHWinHandleHex);
+
+		driver = new WindowsDriver(new URL("http://127.0.0.1:4723/wd/hub"), BHCapabilities);
+
+//		jsExecutor = (JavascriptExecutor) driver;
 	}
 
 	// http://www.qaautomationsimplified.com/selenium/selenium-webdriver-get-cookies-from-an-existing-session-and-add-those-to-a-newly-instantiated-webdriver-browser-instance/
@@ -1176,12 +1119,12 @@ public class MainThread implements Runnable {
 			connectDriver();
 			if (BHBot.settings.hideWindowOnRestart)
 				hideBrowser();
-			driver.navigate().to("http://www.kongregate.com/games/Juppiomenz/bit-heroes");
+//			driver.navigate().to("http://www.kongregate.com/games/Juppiomenz/bit-heroes");
 			//sleep(5000);
 			//driver.navigate().to("chrome://flags/#run-all-flash-in-allow-mode");
 			//driver.navigate().to("chrome://settings/content");
 			//BHBot.processCommand("shot");
-			game = driver.findElement(By.id("game"));
+//			game = driver.findElement(By.id("game"));
 		} catch (Exception e) {
 
 			if (e instanceof org.openqa.selenium.NoSuchElementException)
@@ -1209,16 +1152,16 @@ public class MainThread implements Runnable {
 			}
 		}
 
-		detectSignInFormAndHandleIt(); // just in case (happens seldom though)
+		/*detectSignInFormAndHandleIt(); // just in case (happens seldom though)
 
 		int vw = Math.toIntExact ((Long) jsExecutor.executeScript("return window.outerWidth - window.innerWidth + arguments[0];", game.getSize().width));
 		int vh = Math.toIntExact ((Long) jsExecutor.executeScript("return window.outerHeight - window.innerHeight + arguments[0];", game.getSize().height));
 		vw += 50; // compensate for scrollbars 70
 		vh += 30; // compensate for scrollbars 50
 		driver.manage().window().setSize(new Dimension(vw, vh));
-		scrollGameIntoView();
+		scrollGameIntoView();*/
 
-		int counter = 0;
+		/*int counter = 0;
 		boolean restart = false;
 		while (true) {
 			try {
@@ -1240,7 +1183,7 @@ public class MainThread implements Runnable {
 		if (restart) {
 			restart();
 			return;
-		}
+		}*/
 
 //		BHBot.logger.info("Window handle is: " + driver.getWindowHandle());
 		BHBot.logger.info("Game element found. Starting to run bot..");
@@ -3335,7 +3278,7 @@ public class MainThread implements Runnable {
 	}
 
 	void readScreen() {
-		readScreen(true);
+		readScreen(false);
 	}
 
 	/**
@@ -3347,7 +3290,7 @@ public class MainThread implements Runnable {
 
 	/** First sleeps 'wait' milliseconds and then reads the screen. It's a handy utility method that does two things in one command. */
 	private void readScreen(int wait) {
-		readScreen(wait, true);
+		readScreen(wait, false);
 	}
 
 	/**

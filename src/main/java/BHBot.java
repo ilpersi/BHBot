@@ -461,12 +461,12 @@ public class BHBot {
 	}
 
 	private static boolean checkPaths() {
-		File chromiumExe = new File(chromiumExePath);
-		File chromeDriverExe = new File(chromeDriverExePath);
+		/*File chromiumExe = new File(chromiumExePath);
+		File chromeDriverExe = new File(chromeDriverExePath);*/
 		File cuePath = new File(cuesPath);
 		File screenPath = new File(screenshotPath);
 
-		if (!chromiumExe.exists()) {
+		/*if (!chromiumExe.exists()) {
 			logger.fatal("Impossible to find Chromium executable in path " + chromiumExePath + ". Bot will be stopped!");
 			return false;
 		} else {
@@ -488,7 +488,7 @@ public class BHBot {
 				logger.error("Error while getting Canonical Path for chromedriver");
 				logger.error(Throwables.getStackTraceAsString(e));
 			}
-		}
+		}*/
 
 		if (!screenPath.exists()) {
 			if (!screenPath.mkdir()) {
