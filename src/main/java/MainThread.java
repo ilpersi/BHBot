@@ -984,6 +984,8 @@ public class MainThread implements Runnable {
 		System.out.println("BH Handle is: " + BHWinHandleHex);
 
 		driver = new WindowsDriver(new URL("http://127.0.0.1:4723/wd/hub"), BHCapabilities);
+		// The Bit Heros application only has one element
+		game = driver.findElementByXPath("*");
 
 //		jsExecutor = (JavascriptExecutor) driver;
 	}
