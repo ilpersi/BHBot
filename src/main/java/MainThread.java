@@ -685,8 +685,8 @@ public class MainThread implements Runnable {
 		addCue("Bounties", loadImage("cues/cueBounties.png"), new Bounds(320, 63, 480, 103));
 		addCue("Loot", loadImage("cues/cueLoot.png"), null);
 
-		addCue("News", loadImage("cues/cueNewsPopup.png"), new Bounds(345, 60, 365, 85)); // news popup
-		addCue("Close", loadImage("cues/cueClose.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
+		addCue("News", loadImage("cues/cueSteamNewsPopup.png"), new Bounds(345, 110, 455, 170)); // news popup
+		addCue("Close", loadImage("cues/cueSteamClose.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
 
 		addCue("Ad", loadImage("cues/cueAd.png"), new Bounds(720, 100, 750, 410)); // main screen ad button cue. Note that sometimes it is higher up on the screen than other times (during GvG week, it will be higher up, above GvG icon)
 		addCue("AdPopup", loadImage("cues/cueAdPopup.png"), null);
