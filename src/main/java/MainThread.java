@@ -1121,12 +1121,7 @@ public class MainThread implements Runnable {
 			connectDriver();
 			if (BHBot.settings.hideWindowOnRestart)
 				hideBrowser();
-//			driver.navigate().to("http://www.kongregate.com/games/Juppiomenz/bit-heroes");
-			//sleep(5000);
-			//driver.navigate().to("chrome://flags/#run-all-flash-in-allow-mode");
-			//driver.navigate().to("chrome://settings/content");
-			//BHBot.processCommand("shot");
-//			game = driver.findElement(By.id("game"));
+
 		} catch (Exception e) {
 
 			if (e instanceof org.openqa.selenium.NoSuchElementException)
@@ -5698,7 +5693,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 		// save screen shot:
 		try {
-			Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length()-4)).save();
+			Shutterbug.shootPage(driver, false).withName(name.substring(0, name.length()-4)).save();
 		} catch (Exception e) {
 			BHBot.logger.error("Error while saving game screenshot");
 			BHBot.logger.error(Throwables.getStackTraceAsString(e));
