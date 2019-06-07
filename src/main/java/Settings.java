@@ -34,6 +34,7 @@ public class Settings {
 	boolean dungeonOnTimeout = true;
 	boolean countActivities = false;
 	
+	//activity settings
 	boolean doRaids = false;
 	boolean doDungeons = false;
 	boolean doTrials = false;
@@ -44,6 +45,9 @@ public class Settings {
 	boolean doInvasion = false;
 	boolean doExpedition = false;
 	boolean doWorldBoss = false;
+	
+	//activity settings alpha
+	List<String> activitysEnabled;
 
 	// Pushover settings
 	boolean enablePushover = false;
@@ -183,6 +187,7 @@ public class Settings {
 	private Map<String, String> lastUsedMap = new HashMap<>();
 
 	public Settings() {
+		activitysEnabled = new ArrayList<>();
 		dungeons = new RandomCollection<>();
 		setDungeons("z1d4 3 100"); // some default value
 		thursdayDungeons = new RandomCollection<>();
@@ -246,6 +251,16 @@ public class Settings {
 	
 	/* Cleans the data from the input and saves it at a string */
 
+	private void setActivitysEnabled(String... types) {
+		this.activitysEnabled.clear();
+		for (String t : types) {
+			String add = t.trim();
+			if (add.equals(""))
+				continue;
+			this.activitysEnabled.add(add);
+		}
+	}
+    
 	private void setDungeons(String... dungeons) {
 		this.dungeons.clear();
 		double weight;
@@ -468,6 +483,15 @@ public class Settings {
 	}
 	
 	/* Gets the string from the previous method and creates a list if there are multiple items */
+	
+	private String getActivitysEnabledAsString() {
+		StringBuilder result = new StringBuilder();
+		for (String s : activitysEnabled)
+			result.append(s).append(" ");
+		if (result.length() > 0)
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+		return result.toString();
+	}
 
 	private String getDungeonsAsString() {
 		return dungeons.toString();
@@ -589,6 +613,16 @@ public class Settings {
     }
 	
 	/* Cleans up the data in the list again */
+    
+	private void setActivitysEnabledFromString(String s) {
+		setActivitysEnabled(s.split(" "));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = activitysEnabled.size()-1; i >= 0; i--) {
+			activitysEnabled.set(i, activitysEnabled.get(i).trim());
+			if (activitysEnabled.get(i).equals(""))
+				activitysEnabled.remove(i);
+		}
+	}
 
 	private void setDungeonsFromString(String s) {
 		setDungeons(s.split(";"));
@@ -751,6 +785,9 @@ public class Settings {
 		doInvasion = lastUsedMap.getOrDefault("doInvasion", doInvasion ? "1" : "0").equals("1");
 		doExpedition = lastUsedMap.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("1");
 		doWorldBoss = lastUsedMap.getOrDefault("doWorldBoss", doWorldBoss ? "1" : "0").equals("1");
+		
+		setActivitysEnabledFromString(lastUsedMap.getOrDefault("activitysEnabled", getActivitysEnabledAsString()));
+		
 		enablePushover = lastUsedMap.getOrDefault("enablePushover", enablePushover ? "1" : "0").equals("1");
 		poNotifyPM = lastUsedMap.getOrDefault("poNotifyPM", poNotifyPM ? "1" : "0").equals("1");
 		poNotifyCrash = lastUsedMap.getOrDefault("poNotifyCrash", poNotifyCrash ? "1" : "0").equals("1");
