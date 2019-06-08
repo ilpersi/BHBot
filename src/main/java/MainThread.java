@@ -521,6 +521,8 @@ public class MainThread implements Runnable {
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
 
+    private Iterator<String> activitysIerator = BHBot.settings.activitysEnabled.iterator();
+
 	private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
 		ClassLoader classLoader = MainThread.class.getClassLoader();
@@ -1645,9 +1647,23 @@ public class MainThread implements Runnable {
 						readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
 					}
 
+					String currentActivity = "n/a";
+
+					if (!BHBot.scheduler.doRaidImmediately && !BHBot.scheduler.doDungeonImmediately &&
+							!BHBot.scheduler.doTrialsOrGauntletImmediately && !BHBot.scheduler.doPVPImmediately &&
+							!BHBot.scheduler.doGVGImmediately && !BHBot.scheduler.doInvasionImmediately &&
+							!BHBot.scheduler.doExpeditionImmediately && !BHBot.scheduler.doWorldBossImmediately) {
+
+						if (!activitysIerator.hasNext())
+							activitysIerator = BHBot.settings.activitysEnabled.iterator();
+
+						currentActivity = activitysIerator.next();
+					}
+
 
 					// check for shards:
-					if (BHBot.scheduler.doRaidImmediately || (BHBot.settings.doRaids && Misc.getTime() - timeLastShardsCheck > SHARDS_CHECK_INTERVAL)) {
+					if (BHBot.scheduler.doRaidImmediately ||
+							((BHBot.settings.doRaids && "r".equals(currentActivity)) && Misc.getTime() - timeLastShardsCheck > SHARDS_CHECK_INTERVAL ) ) {
 						timeLastShardsCheck = Misc.getTime();
 
 						readScreen();
@@ -1816,7 +1832,8 @@ public class MainThread implements Runnable {
 					} // shards
 
 					// check for tokens (trials and gauntlet):
-					if (BHBot.scheduler.doTrialsOrGauntletImmediately || ((BHBot.settings.doTrials || BHBot.settings.doGauntlet) && Misc.getTime() - timeLastTokensCheck > TOKENS_CHECK_INTERVAL)) {
+					if (BHBot.scheduler.doTrialsOrGauntletImmediately ||
+							( ( (BHBot.settings.doTrials && "t".equals(currentActivity)) || (BHBot.settings.doGauntlet && "g".equals(currentActivity))) && Misc.getTime() - timeLastTokensCheck > TOKENS_CHECK_INTERVAL)) {
 						timeLastTokensCheck = Misc.getTime();
 
 						readScreen();
@@ -1985,7 +2002,7 @@ public class MainThread implements Runnable {
 					} // tokens (trials and gauntlet)
 
 					// check for energy:
-					if (BHBot.scheduler.doDungeonImmediately || (BHBot.settings.doDungeons && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
+					if (BHBot.scheduler.doDungeonImmediately || ((BHBot.settings.doDungeons && "d".equals(currentActivity)) && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
 						timeLastEnergyCheck = Misc.getTime();
 
 						readScreen();
@@ -2155,7 +2172,7 @@ public class MainThread implements Runnable {
 					} // energy
 
 					// check for Tickets (PvP):
-					if (BHBot.scheduler.doPVPImmediately || (BHBot.settings.doPVP && Misc.getTime() - timeLastTicketsCheck > TICKETS_CHECK_INTERVAL)) {
+					if (BHBot.scheduler.doPVPImmediately || ((BHBot.settings.doPVP && "p".equals(currentActivity)) && Misc.getTime() - timeLastTicketsCheck > TICKETS_CHECK_INTERVAL) ) {
 						timeLastTicketsCheck = Misc.getTime();
 
 						readScreen();
@@ -2258,7 +2275,7 @@ public class MainThread implements Runnable {
 
 					// check for badges (for GVG/Invasion/Expedition):
 					if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || BHBot.scheduler.doExpeditionImmediately
-							|| ((BHBot.settings.doGVG || BHBot.settings.doInvasion || BHBot.settings.doExpedition) && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL)) {
+							|| ( ( (BHBot.settings.doGVG && "v".equals(currentActivity)) || (BHBot.settings.doInvasion && "i".equals(currentActivity)) || (BHBot.settings.doExpedition && "e".equals(currentActivity))) && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL)) {
 						timeLastBadgesCheck = Misc.getTime();
 
 						readScreen();
@@ -2695,7 +2712,7 @@ public class MainThread implements Runnable {
 					} // badges
 
 					// Check worldBoss:
-					if (BHBot.scheduler.doWorldBossImmediately || (BHBot.settings.doWorldBoss && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
+					if (BHBot.scheduler.doWorldBossImmediately || ( (BHBot.settings.doWorldBoss && "w".equals(currentActivity)) && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
 						timeLastEnergyCheck = Misc.getTime();
 						int energy = getEnergy();
 						globalEnergy = energy;
