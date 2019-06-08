@@ -414,7 +414,7 @@ public class MainThread implements Runnable {
 
 		@Override
 		public String toString() {
-			return grade.toString().toLowerCase() + " " + effect.toString().toLowerCase();
+			return grade.toString().toLowerCase() + "_" + effect.toString().toLowerCase();
 		}
 	}
 
@@ -1639,6 +1639,8 @@ public class MainThread implements Runnable {
 						if (!detectEquippedMinorRunes(true, true)) {
 							BHBot.logger.error("It was not possible to perform the equipped runes start-up check!");
 						}
+			        	BHBot.logger.info(getRuneName(leftMinorRune.getRuneCueName()) + " equipped in left slot.");
+			        	BHBot.logger.info(getRuneName(rightMinorRune.getRuneCueName()) + " equipped in right slot.");
 						oneTimeRuneCheck = true;
 						readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
 					}
@@ -2526,6 +2528,10 @@ public class MainThread implements Runnable {
 										BHBot.logger.error("Impossible to configure autoBossRune for Expedition!");
 									}
 								}
+								
+								readScreen(SECOND);
+								clickOnSeg(badgeBtn);
+								sleep(SECOND); //wait for window animation
 
 								BHBot.logger.info("Attempting expedition...");
 
@@ -3151,26 +3157,29 @@ public class MainThread implements Runnable {
    
         }
 
+        if (exitRunesMenu) {
+			closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
+			closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
+		}
+
         boolean success = true;
         if (leftMinorRune == null) {
             BHBot.logger.warn("Error: Unable to detect left minor rune!");
             success = false;
         } else{
-        	BHBot.logger.autorune("Equipped in left slot: " + leftMinorRune + " rune.");
+        	BHBot.logger.debug(leftMinorRune + " equipped in left slot.");
 		}
         if (rightMinorRune == null) {
             BHBot.logger.warn("Error: Unable to detect right minor rune!");
             success = false;
         } else{
-        	BHBot.logger.autorune("Equipped in right slot: " + rightMinorRune + " rune.");
+        	BHBot.logger.debug(rightMinorRune + " equipped in right slot.");
 		}
 
-        if (exitRunesMenu) {
-        	sleep(500); //delay for window close animation
-        	closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
-        	sleep(SECOND); //delay for window close animation
-			closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
-		}
+        sleep(500); //delay for window close animation
+        closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
+        sleep(SECOND); //delay for window close animation
+		closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
 
 		return success;
 	}
@@ -4329,7 +4338,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		if (activity.equals("ud"))
 			activity = "d";
         if (!BHBot.settings.autoBossRune.containsKey(activity)) {
-			BHBot.logger.debug("No autoBossRunes assigned for " + state.getName() + ", skipping.");
+            BHBot.logger.info("No autoBossRunes assigned for " + state.getName() + ", skipping.");
             return;
         }
 
@@ -4403,7 +4412,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
 		if (desiredLeftRune != leftMinorRune.getRuneEffect()) {
-			BHBot.logger.autorune("Switching left minor rune.");
+			BHBot.logger.info("Switching left minor rune.");
             clickInGame(280, 290); // Click on left rune
             if (!switchSingleMinorRune(desiredLeftRune)) {
                 BHBot.logger.error("Failed to switch left minor rune.");
@@ -4413,7 +4422,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		
 
         if (desiredRightRune != rightMinorRune.getRuneEffect()) {
-			BHBot.logger.autorune("Switching right minor rune.");
+			BHBot.logger.info("Switching right minor rune.");
             clickInGame(520, 290); // Click on right rune
             if (!switchSingleMinorRune(desiredRightRune)) {
                 BHBot.logger.error("Failed to switch right minor rune.");
@@ -4474,7 +4483,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 				BHBot.logger.debug("Unable to find " + thisRune + " in rune picker.");
 				continue;
 			}
-			BHBot.logger.autorune("Switched to " + thisRune);
+			BHBot.logger.info("Switched to " + thisRune);
 			clickOnSeg(seg);
 			sleep(SECOND);
 			return true;
@@ -4485,6 +4494,49 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		return false;
     }
     
+	/**
+	 * Function to return the name of the runes for console output
+	 */
+	private String getRuneName(String runeName) {
+
+		switch (runeName) {
+				case "exp_common":
+					return "Common Experience";
+				case "exp_rare":
+					return "Rare Experience";
+				case "exp_epic":
+					return "Epic Experience";
+				case "exp_legendary":
+					return "Legendary Experience";
+				case "item_common":
+					return "Common Item Find";
+				case "item_rare":
+					return "Rare Item Find";
+				case "item_epic":
+					return "Epic Item Find";
+				case "item_legendary":
+					return "Legendary Item Find";
+				case "gold_common":
+					return "Common Gold Find";
+				case "gold_rare":
+					return "Rare Gold Find";
+				case "gold_epic":
+					return "Epic Gold Find";
+				case "gold_legendary":
+					return "Legendary Gold Find";
+				case "capture_common":
+					return "Common Capture Rate";
+				case "capture_rare":
+					return "Rare Capture Rate";
+				case "capture_epic":
+					return "Epic Capture Rate";
+				case "capture_legendary":
+					return "Legendary Capture Rate";
+				default:
+					return null;
+			}
+	}
+
 	private boolean handleSkeletonKey() {
 		//TODO Add no key "Uh Oh" failsafe
 		MarvinSegment seg;
