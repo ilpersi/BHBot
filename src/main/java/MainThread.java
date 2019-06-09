@@ -323,7 +323,7 @@ public class MainThread implements Runnable {
 		CAPTURE("Capture"),
 		EXPERIENCE("Experience"),
 		GOLD("Gold"),
-		ITEM_FIND("ItemFind");
+		ITEM_FIND("Item_Find");
 
 		private final String name;
 
@@ -356,7 +356,7 @@ public class MainThread implements Runnable {
 		ITEM_LEGENDARY(MinorRuneEffect.ITEM_FIND, ItemGrade.LEGENDARY),
 
 		GOLD_COMMON(MinorRuneEffect.GOLD, ItemGrade.COMMON),
-		//		GOLD_RARE(MinorRuneEffect.GOLD, ItemGrade.RARE),
+//		GOLD_RARE(MinorRuneEffect.GOLD, ItemGrade.RARE),
 //		GOLD_EPIC(MinorRuneEffect.GOLD, ItemGrade.EPIC),
 		GOLD_LEGENDARY(MinorRuneEffect.GOLD, ItemGrade.LEGENDARY),
 
@@ -1624,7 +1624,7 @@ public class MainThread implements Runnable {
                     // One time check for Autoshrine
                     if (!oneTimeshrineCheck) {
 
-                    	BHBot.logger.info("Startup check to make sure authoshrines is initially disabled");
+                    	BHBot.logger.info("Startup check to make sure autoShrine is initially disabled");
 						if (!checkShrineSettings(false, false)) {
 							BHBot.logger.error("It was not possible to perform the autoShrine start-up check!");
 						}
@@ -3075,7 +3075,7 @@ public class MainThread implements Runnable {
 					}
 				}
 				ignoreBossSetting = false;
-				BHBot.logger.info("Ignore Boss Disabled");
+				BHBot.logger.debug("Ignore Boss Disabled");
 			}
 
 			if (ignoreShrines) {
@@ -3103,7 +3103,7 @@ public class MainThread implements Runnable {
 					}
 				}
 				ignoreShrinesSetting = false;
-				BHBot.logger.info("Ignore Shrine Disabled");
+				BHBot.logger.debug("Ignore Shrine Disabled");
 			}
 
 			readScreen(SECOND);
@@ -3163,7 +3163,9 @@ public class MainThread implements Runnable {
         }
 
         if (exitRunesMenu) {
+        	sleep(500);
 			closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
+			sleep(500);
 			closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
 		}
 
@@ -3180,11 +3182,6 @@ public class MainThread implements Runnable {
         } else{
         	BHBot.logger.debug(rightMinorRune + " equipped in right slot.");
 		}
-
-        sleep(500); //delay for window close animation
-        closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
-        sleep(SECOND); //delay for window close animation
-		closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
 
 		return success;
 	}
@@ -4480,15 +4477,15 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 			Cue runeCue = thisRune.getRuneSelectCue();
 			if (runeCue == null) {
-				BHBot.logger.error("Unable to find cue for rune " + thisRune);
+				BHBot.logger.error("Unable to find cue for rune " + getRuneName(thisRune.getRuneCueName()));
 				continue;
 			}
 			seg = detectCue(runeCue);
 			if (seg == null) {
-				BHBot.logger.debug("Unable to find " + thisRune + " in rune picker.");
+				BHBot.logger.debug("Unable to find " + getRuneName(thisRune.getRuneCueName()) + " in rune picker.");
 				continue;
 			}
-			BHBot.logger.info("Switched to " + thisRune);
+			BHBot.logger.info("Switched to " + getRuneName(thisRune.getRuneCueName()));
 			clickOnSeg(seg);
 			sleep(SECOND);
 			return true;
@@ -4505,38 +4502,38 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private String getRuneName(String runeName) {
 
 		switch (runeName) {
-				case "exp_common":
+				case "MinorRuneExperienceCommon":
 					return "Common Experience";
-				case "exp_rare":
+				case "MinorRuneExperienceRare":
 					return "Rare Experience";
-				case "exp_epic":
+				case "MinorRuneExperienceEpic":
 					return "Epic Experience";
-				case "exp_legendary":
+				case "MinorRuneExperienceLegendary":
 					return "Legendary Experience";
-				case "item_common":
+				case "MinorRuneItem_FindCommon":
 					return "Common Item Find";
-				case "item_rare":
+				case "MinorRuneItem_FindRare":
 					return "Rare Item Find";
-				case "item_epic":
+				case "MinorRuneItem_FindEpic":
 					return "Epic Item Find";
-				case "item_legendary":
+				case "MinorRuneItem_FindLegendary":
 					return "Legendary Item Find";
-				case "gold_common":
-					return "Common Gold Find";
-				case "gold_rare":
-					return "Rare Gold Find";
-				case "gold_epic":
-					return "Epic Gold Find";
-				case "gold_legendary":
-					return "Legendary Gold Find";
-				case "capture_common":
-					return "Common Capture Rate";
-				case "capture_rare":
-					return "Rare Capture Rate";
-				case "capture_epic":
-					return "Epic Capture Rate";
-				case "capture_legendary":
-					return "Legendary Capture Rate";
+				case "MinorRuneGoldCommon":
+					return "Common Gold";
+				case "MinorRuneGoldRare":
+					return "Rare Gold";
+				case "MinorRuneGoldEpic":
+					return "Epic Gold";
+				case "MinorRuneGoldLegendary":
+					return "Legendary Gold";
+				case "MinorRuneCaptureCommon":
+					return "Common Capture";
+				case "MinorRuneCaptureRare":
+					return "Rare Capture";
+				case "MinorRuneCaptureEpic":
+					return "Epic Capture";
+				case "MinorRuneCaptureLegendary":
+					return "Legendary Capture";
 				default:
 					return null;
 			}
