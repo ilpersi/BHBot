@@ -694,15 +694,15 @@ public class Settings {
 		}
 	}
 
-    private void setAutoRuneDefaultFromString(String s) {
+    public void setAutoRuneDefaultFromString(String s) {
         setAutoRuneDefault(s.trim().split(" +"));
     }
 
-    private void setAutoRuneFromString(String s) {
+    public void setAutoRuneFromString(String s) {
 		setAutoRune(s.trim().split(" *; *"));
     }
 
-	private void setAutoBossRuneFromString(String s) {
+	public void setAutoBossRuneFromString(String s) {
 		setAutoBossRune(s.trim().split(" *; *"));
 	}
 

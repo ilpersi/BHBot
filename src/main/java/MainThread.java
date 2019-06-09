@@ -1637,7 +1637,12 @@ public class MainThread implements Runnable {
 
 						BHBot.logger.info("Startup check to determined configured minor runes");
 						if (!detectEquippedMinorRunes(true, true)) {
-							BHBot.logger.error("It was not possible to perform the equipped runes start-up check!");
+							BHBot.logger.error("It was not possible to perform the equipped runes start-up check! Disabling autoRune..");
+							BHBot.settings.setAutoRuneDefaultFromString("");
+							BHBot.settings.setAutoRuneFromString("");
+							BHBot.settings.setAutoBossRuneFromString("");
+							continue;
+							
 						}
 			        	BHBot.logger.info(getRuneName(leftMinorRune.getRuneCueName()) + " equipped in left slot.");
 			        	BHBot.logger.info(getRuneName(rightMinorRune.getRuneCueName()) + " equipped in right slot.");
