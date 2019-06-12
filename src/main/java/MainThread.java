@@ -467,7 +467,7 @@ public class MainThread implements Runnable {
 	private static WebElement game;
 	private State state; // at which stage of the game/menu are we currently?
 	private BufferedImage img; // latest screen capture
-
+	
 	@SuppressWarnings("FieldCanBeLocal")
 	private final long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
 	@SuppressWarnings("FieldCanBeLocal")
@@ -521,7 +521,8 @@ public class MainThread implements Runnable {
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
 
-    private Iterator<String> activitysIerator = BHBot.settings.activitysEnabled.iterator();
+    private Iterator<String> activitysIterator = BHBot.settings.activitysEnabled.iterator();
+	public String currentActivity = activitysIterator.next();
 
 	private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
@@ -1653,23 +1654,20 @@ public class MainThread implements Runnable {
 						readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
 					}
 
-					String currentActivity = "n/a";
-
 					if (!BHBot.scheduler.doRaidImmediately && !BHBot.scheduler.doDungeonImmediately &&
 							!BHBot.scheduler.doTrialsOrGauntletImmediately && !BHBot.scheduler.doPVPImmediately &&
 							!BHBot.scheduler.doGVGImmediately && !BHBot.scheduler.doInvasionImmediately &&
 							!BHBot.scheduler.doExpeditionImmediately && !BHBot.scheduler.doWorldBossImmediately) {
 
-						if (!activitysIerator.hasNext())
-							activitysIerator = BHBot.settings.activitysEnabled.iterator();
-
-						currentActivity = activitysIerator.next();
+						if (!activitysIterator.hasNext()) activitysIterator = BHBot.settings.activitysEnabled.iterator();
 					}
-
+					
+					BHBot.logger.info("Current activity: " + currentActivity);
+					
 
 					// check for shards:
 					if (BHBot.scheduler.doRaidImmediately ||
-							((BHBot.settings.doRaids && "r".equals(currentActivity)) && Misc.getTime() - timeLastShardsCheck > SHARDS_CHECK_INTERVAL ) ) {
+							(("r".equals(currentActivity)) && Misc.getTime() - timeLastShardsCheck > SHARDS_CHECK_INTERVAL ) ) {
 						timeLastShardsCheck = Misc.getTime();
 
 						readScreen();
@@ -1706,10 +1704,6 @@ public class MainThread implements Runnable {
 							seg = detectCue(cues.get("X"),SECOND);
 							clickOnSeg(seg);
 							sleep(SECOND);
-
-							/*if (!shrinesChecked) {
-							checkShrineSettings(false, false);
-							}*/
 
 							continue;
 
@@ -1840,7 +1834,7 @@ public class MainThread implements Runnable {
 
 					// check for tokens (trials and gauntlet):
 					if (BHBot.scheduler.doTrialsOrGauntletImmediately ||
-							( ( (BHBot.settings.doTrials && "t".equals(currentActivity)) || (BHBot.settings.doGauntlet && "g".equals(currentActivity))) && Misc.getTime() - timeLastTokensCheck > TOKENS_CHECK_INTERVAL)) {
+							( ( ("t".equals(currentActivity)) || (BHBot.settings.doGauntlet && "g".equals(currentActivity))) && Misc.getTime() - timeLastTokensCheck > TOKENS_CHECK_INTERVAL)) {
 						timeLastTokensCheck = Misc.getTime();
 
 						readScreen();
@@ -1885,6 +1879,7 @@ public class MainThread implements Runnable {
 
 							if (BHBot.scheduler.doTrialsOrGauntletImmediately)
 								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // if we don't have resources to run we need to disable force it
+							
 							continue;
 						} else {
 							// do the trials/gauntlet!
@@ -2008,7 +2003,7 @@ public class MainThread implements Runnable {
 					} // tokens (trials and gauntlet)
 
 					// check for energy:
-					if (BHBot.scheduler.doDungeonImmediately || ((BHBot.settings.doDungeons && "d".equals(currentActivity)) && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
+					if (BHBot.scheduler.doDungeonImmediately || (("d".equals(currentActivity)) && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
 						timeLastEnergyCheck = Misc.getTime();
 
 						readScreen();
@@ -2036,6 +2031,7 @@ public class MainThread implements Runnable {
 
 						if (!BHBot.scheduler.doDungeonImmediately && (energy <= BHBot.settings.minEnergyPercentage || BHBot.settings.dungeons.size() == 0)) {
 							sleep(SECOND);
+							
 							continue;
 						} else {
 							// do the dungeon!
@@ -2179,7 +2175,7 @@ public class MainThread implements Runnable {
 					} // energy
 
 					// check for Tickets (PvP):
-					if (BHBot.scheduler.doPVPImmediately || ((BHBot.settings.doPVP && "p".equals(currentActivity)) && Misc.getTime() - timeLastTicketsCheck > TICKETS_CHECK_INTERVAL) ) {
+					if (BHBot.scheduler.doPVPImmediately || (("p".equals(currentActivity)) && Misc.getTime() - timeLastTicketsCheck > TICKETS_CHECK_INTERVAL) ) {
 						timeLastTicketsCheck = Misc.getTime();
 
 						readScreen();
@@ -2195,6 +2191,7 @@ public class MainThread implements Runnable {
 
 						if ((!BHBot.scheduler.doPVPImmediately && (tickets <= BHBot.settings.minTickets)) || (tickets < BHBot.settings.costPVP)) {
 							sleep(SECOND);
+							
 							continue;
 						} else {
 							// do the pvp!
@@ -2284,7 +2281,7 @@ public class MainThread implements Runnable {
 
 					// check for badges (for GVG/Invasion/Expedition):
 					if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || BHBot.scheduler.doExpeditionImmediately
-							|| ( ( (BHBot.settings.doGVG && "v".equals(currentActivity)) || (BHBot.settings.doInvasion && "i".equals(currentActivity)) || (BHBot.settings.doExpedition && "e".equals(currentActivity))) && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL)) {
+							|| ( ( ("v".equals(currentActivity)) || ("i".equals(currentActivity)) || ("e".equals(currentActivity))) && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL)) {
 						timeLastBadgesCheck = Misc.getTime();
 
 						readScreen();
@@ -2325,16 +2322,17 @@ public class MainThread implements Runnable {
 
 						if (badges == -1) { // error
 							BHBot.scheduler.restoreIdleTime();
+							currentActivity = activitysIterator.next();
 							continue;
 						}
 
 						// check GVG:
-						if (badgeEvent == BadgeEvent.GVG && BHBot.settings.doGVG) {
+						if (badgeEvent == BadgeEvent.GVG && "v".equals(currentActivity)) {
 							if ((!BHBot.scheduler.doGVGImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costGVG)) {
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
-								sleep(SECOND);
+								sleep(SECOND);							
 								continue;
 							} else {
 								// do the GVG!
@@ -2440,7 +2438,7 @@ public class MainThread implements Runnable {
 							continue;
 						} // GvG
 						// check invasion:
-						else if (badgeEvent == BadgeEvent.Invasion && BHBot.settings.doInvasion) {
+						else if (badgeEvent == BadgeEvent.Invasion && "i".equals(currentActivity)) {
 							if ((!BHBot.scheduler.doInvasionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costInvasion)) {
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
@@ -2508,7 +2506,7 @@ public class MainThread implements Runnable {
 						} // invasion
 
 						// check Expedition
-						else if (badgeEvent == BadgeEvent.Expedition && BHBot.settings.doExpedition) {
+						else if (badgeEvent == BadgeEvent.Expedition && "e".equals(currentActivity)) {
 
 							if ((!BHBot.scheduler.doExpeditionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costExpedition)) {
 								seg = detectCue(cues.get("X"));
@@ -2721,7 +2719,7 @@ public class MainThread implements Runnable {
 					} // badges
 
 					// Check worldBoss:
-					if (BHBot.scheduler.doWorldBossImmediately || ( (BHBot.settings.doWorldBoss && "w".equals(currentActivity)) && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
+					if (BHBot.scheduler.doWorldBossImmediately || ( ("w".equals(currentActivity)) && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
 						timeLastEnergyCheck = Misc.getTime();
 						int energy = getEnergy();
 						globalEnergy = energy;
@@ -2731,6 +2729,8 @@ public class MainThread implements Runnable {
 							if (BHBot.scheduler.doWorldBossImmediately)
 								BHBot.scheduler.doWorldBossImmediately = false; // reset it
 							BHBot.scheduler.restoreIdleTime();
+
+							
 							continue;
 						}
 
@@ -2974,6 +2974,9 @@ public class MainThread implements Runnable {
 						timeLastBountyCheck = Misc.getTime();
 						handleBounties();
 						}
+					
+					currentActivity = activitysIterator.next(); //if we get to the end of the function and nothing has been run we move to the next activity
+					BHBot.logger.info("End of loop, changing activity to: " + currentActivity);
 
 				} // main screen processing
 			} catch (Exception e) {
@@ -4322,7 +4325,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private boolean handleMinorRunes(String activity) {
         List<String> desiredRunesAsStrs;
         String activityName = state.getNameFromShortcut(activity);
-        if (BHBot.settings.autoRuneDefault.isEmpty()) {
+        if (BHBot.settings.autoRuneDefault.isEmpty() || BHBot.settings.autoRuneDefault.equals("")) {
 			BHBot.logger.debug("autoRunesDefault not defined; aborting autoRunes");
 			return false;
 		}
@@ -4330,15 +4333,14 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         if (!BHBot.settings.autoRune.containsKey(activity)) {
             BHBot.logger.debug("No autoRunes assigned for " + activityName + ", using defaults.");
 			desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
-        }
-        else {
+			return false;
+        } else {
     		BHBot.logger.info("Configuring autoRunes for " + activityName);
 			desiredRunesAsStrs = BHBot.settings.autoRune.get(activity);
         }
 
 		List<MinorRuneEffect> desiredRunes = resolveDesiredRunes(desiredRunesAsStrs);
 		if (noRunesNeedSwitching(desiredRunes)) {
-			BHBot.logger.debug("log#3");
 			return false;
 			}
 
