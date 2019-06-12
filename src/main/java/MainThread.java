@@ -1662,7 +1662,7 @@ public class MainThread implements Runnable {
 						if (!activitysIterator.hasNext()) activitysIterator = BHBot.settings.activitysEnabled.iterator();
 					}
 					
-					BHBot.logger.info("Current activity: " + currentActivity);
+					BHBot.logger.debug("Checking activity: " + currentActivity);
 					
 
 					// check for shards:
@@ -2322,7 +2322,6 @@ public class MainThread implements Runnable {
 
 						if (badges == -1) { // error
 							BHBot.scheduler.restoreIdleTime();
-							currentActivity = activitysIterator.next();
 							continue;
 						}
 
@@ -2974,9 +2973,12 @@ public class MainThread implements Runnable {
 						timeLastBountyCheck = Misc.getTime();
 						handleBounties();
 						}
-					
-					currentActivity = activitysIterator.next(); //if we get to the end of the function and nothing has been run we move to the next activity
-					BHBot.logger.info("End of loop, changing activity to: " + currentActivity);
+
+					if (!activitysIterator.hasNext()) {
+						activitysIterator = BHBot.settings.activitysEnabled.iterator();
+					} else {
+						currentActivity = activitysIterator.next(); //if we get to the end of the function and nothing has been run we move to the next activity
+					}
 
 				} // main screen processing
 			} catch (Exception e) {
