@@ -4370,7 +4370,6 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         if (!BHBot.settings.autoRune.containsKey(activity)) {
             BHBot.logger.debug("No autoRunes assigned for " + activityName + ", using defaults.");
 			desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
-			return false;
         } else {
     		BHBot.logger.info("Configuring autoRunes for " + activityName);
 			desiredRunesAsStrs = BHBot.settings.autoRune.get(activity);
