@@ -1288,7 +1288,7 @@ public class MainThread implements Runnable {
 //		BHBot.logger.info(Integer.toString(BHBot.settings.battleDelay));
 //		BHBot.logger.info(Integer.toString(BHBot.settings.shrineDelay));
 
-
+//		BHBot.logger.info(BHBot.settings.worldBossSettings);
 
 		//End debugging section
 
@@ -2756,16 +2756,22 @@ public class MainThread implements Runnable {
 							detectCharacterDialogAndHandleIt(); //clear dialogue
 
 							//load settings
-							String worldBossType = BHBot.settings.worldBossType;
-							int worldBossTier = BHBot.settings.worldBossTier;
+
+							
+							String worldBossType = BHBot.settings.worldBossSettings.get(0);
+							int worldBossDifficulty = Integer.parseInt(BHBot.settings.worldBossSettings.get(1));
+							int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
 							int worldBossTimer = BHBot.settings.worldBossTimer;
-							int worldBossDifficulty = BHBot.settings.worldBossDifficulty;
+
+							
+							//new settings loading
 
 							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
+							String worldBossNameText = worldBossType == "o" ? "Orlag Clan" : worldBossType == "n" ? "Netherworld" : "Melvin Factory";
 							if (!BHBot.settings.worldBossSolo) {
-								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s.");
+								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossNameText + ". Lobby timeout is " +  worldBossTimer + "s.");
 							} else {
-								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " Solo");
+								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossNameText + " Solo");
 							}
 
 							seg = detectCue(cues.get("BlueSummon"),SECOND);
@@ -2840,17 +2846,14 @@ public class MainThread implements Runnable {
 									readScreen();
 
 									switch (worldBossType) {
-										case "Orlag":  //shouldn't have this inside the loop but it doesn't work if its outside
+										case "o":  //shouldn't have this inside the loop but it doesn't work if its outside
 											seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
-
 											break;
-										case "Nether":
+										case "n":
 											seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether
-
 											break;
-										case "Melvin":
+										case "m":
 											seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
-
 											break;
 									}
 
@@ -2904,7 +2907,7 @@ public class MainThread implements Runnable {
 													sleep(2*SECOND); //wait for animation to finish
 													clickInGame(330,360); //yesgreen cue has issues so we use XY to click on Yes
 												}
-											BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
+											BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossNameText + " started!");
 											state = State.WorldBoss;
 											sleep(6*SECOND); //long wait to make sure we are in the world boss dungeon
 											readScreen();
@@ -5577,12 +5580,15 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	}
 
 	/** Check world boss inputs are valid **/
-	private boolean checkWorldBossInput() {
+	public boolean checkWorldBossInput() {
 		boolean failed = false;
 		int passed = 0;
+		
+		String worldBossType = BHBot.settings.worldBossSettings.get(0);
+		int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
 
 		//check name
-		if (BHBot.settings.worldBossType.equals("Orlag") || BHBot.settings.worldBossType.equals("Nether") || BHBot.settings.worldBossType.equals("Melvin")) {
+		if (worldBossType.equals("o") || worldBossType.equals("n") || worldBossType.equals("m")) {
 			passed++;
 		} else {
 			BHBot.logger.error("Invalid world boss name, check settings file");
@@ -5590,7 +5596,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
 		//check tier
-		if (BHBot.settings.worldBossTier <= 10 || BHBot.settings.worldBossTier >= 1) {
+		if (worldBossTier <= 10 || worldBossTier >= 1) {
 			passed++;
 		} else {
 			BHBot.logger.error("Invalid world boss tier, must between 1 and 10");
@@ -5716,11 +5722,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private String readSelectedWorldBoss() {
 		readScreen(SECOND);
 		if (detectCue(cues.get("OrlagWB")) != null)
-			return "Orlag";
+			return "o";
 		else if (detectCue(cues.get("NetherWB")) != null)
-			return "Nether";
+			return "n";
 		else if (detectCue(cues.get("MelvinWB")) != null)
-			return "Melvin";
+			return "m";
 		else return "Error";
 	}
 
@@ -6151,7 +6157,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private int detectWorldBossTier() {
 
 		//Melvins only available in T10 so we don't need to read the image
-		if (BHBot.settings.worldBossType.equals("Melvin")) return 10;
+		if (BHBot.settings.worldBossSettings.get(0).equals("m")) return 10;
 
 		readScreen();
 		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),SECOND);
