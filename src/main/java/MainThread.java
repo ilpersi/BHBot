@@ -522,7 +522,7 @@ public class MainThread implements Runnable {
     private MinorRune rightMinorRune;
 
     private Iterator<String> activitysIterator = BHBot.settings.activitysEnabled.iterator();
-	public String currentActivity = activitysIterator.next();
+	public String currentActivity = activitySelector();
 
 	private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
@@ -1624,6 +1624,10 @@ public class MainThread implements Runnable {
 						timeLastFishingCheck = Misc.getTime();
 						handleFishingBaits();
 					}
+					
+					//faster testing
+//					oneTimeshrineCheck = true;
+//					oneTimeRuneCheck = true;				
 
                     // One time check for Autoshrine
                     if (!oneTimeshrineCheck) {
@@ -1662,7 +1666,7 @@ public class MainThread implements Runnable {
 						if (!activitysIterator.hasNext()) activitysIterator = BHBot.settings.activitysEnabled.iterator();
 					}
 					
-					BHBot.logger.debug("Checking activity: " + currentActivity);
+					BHBot.logger.info("Checking activity: " + currentActivity);
 					
 
 					// check for shards:
@@ -2974,11 +2978,8 @@ public class MainThread implements Runnable {
 						handleBounties();
 						}
 
-					if (!activitysIterator.hasNext()) {
-						activitysIterator = BHBot.settings.activitysEnabled.iterator();
-					} else {
-						currentActivity = activitysIterator.next(); //if we get to the end of the function and nothing has been run we move to the next activity
-					}
+					currentActivity = activitySelector();
+						
 
 				} // main screen processing
 			} catch (Exception e) {
@@ -3053,6 +3054,36 @@ public class MainThread implements Runnable {
 	void wbTest() {
 		int t = detectWorldBossTier();
 		BHBot.logger.info(Integer.toString(t));
+	}
+	
+	private String activitySelector() {
+		
+		//loop through in defined order, if we match activity and timer we select the activity
+		while (activitysIterator.hasNext()) {
+			String activity = activitysIterator.next();
+			if ( activity.equals("r") && Misc.getTime() - timeLastShardsCheck > SHARDS_CHECK_INTERVAL ) {
+				return "r";
+			} else if ( activity.toString().equals("d") && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL ) {
+				return "d";
+			} else if ( activity.toString().equals("w") && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL ) {
+				return "w";
+			} else if ( activity.toString().equals("t") && Misc.getTime() - timeLastTokensCheck > TOKENS_CHECK_INTERVAL ) {
+				return "t";
+			} else if ( activity.toString().equals("g") && Misc.getTime() - timeLastTokensCheck > TOKENS_CHECK_INTERVAL ) {
+				return "g";
+			} else if ( activity.toString().equals("p") && Misc.getTime() - timeLastTicketsCheck > TICKETS_CHECK_INTERVAL ) {
+				return "p";
+			} else if ( activity.toString().equals("e") && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL ) {
+				return "e";
+			} else if ( activity.toString().equals("i") && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL ) {
+				return "i";
+			} else if ( activity.toString().equals("v") && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL ) {
+				return "v";
+			} else activitysIterator.next(); //if we get to the end of the function and nothing has been selected we move to the next activity and check again
+		}
+		
+		return "selection failure";
+		
 	}
 
 	private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {

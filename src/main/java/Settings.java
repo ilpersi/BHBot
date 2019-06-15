@@ -245,6 +245,7 @@ public class Settings {
 		poNotifyErrors = false;
 		poNotifyBribe = false;
 		autoConsume = false;
+		setAutoRuneDefaultFromString("");
 		collectBounties = false;
 		collectFishingBaits = false;
 	}
