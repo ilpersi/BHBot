@@ -921,6 +921,7 @@ public class MainThread implements Runnable {
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
 		addCue("Fishing", loadImage("cues/cueFishing.png"), new Bounds(720, 200, 799, 519));
+		addCue("FishingClose", loadImage("cues/fishingClose.png"),  null);
 
 		//Familiar bribing cues
 		addCue("NotEnoughGems", loadImage("cues/cueNotEnoughGems.png"), null); // used when not enough gems are available
@@ -7386,6 +7387,54 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 	void softReset() {
 		state = State.Main;
+	}
+	
+	void handleFishing() {
+		MarvinSegment seg;
+		int fishingTime = (BHBot.settings.baitAmount * 30)/60; //pause for around 30 seconds per bait used
+
+        seg = detectCue(cues.get("Fishing"), SECOND * 5);
+        if (seg != null) {
+            clickOnSeg(seg);
+            sleep(SECOND * 2);
+        }
+
+        detectCharacterDialogAndHandleIt();
+        
+        seg = detectCue(cues.get("Play"), SECOND * 5);
+        if (seg != null) {
+            clickOnSeg(seg);
+            sleep(SECOND * 12); // Long pause while we get in position to fish
+        }
+        
+        //TODO check if we have any bait before starting
+		//TODO create cue and check for start button before launching fishing bot
+        
+		try{
+			//we run an AutoIT script that launches the fishing bot, and inputs rod type and bait command based on launch parameters
+		    Process p = Runtime.getRuntime().exec("cmd /c \"cd DIRECTORY & fishing.exe\" " + BHBot.settings.rodType + " " + BHBot.settings.baitAmount);
+		    p.waitFor();
+		    
+		    BHBot.logger.info("Pausing for " + fishingTime + " minutes to fish");
+			BHBot.scheduler.pause(); // we need to pause as shutterbug causes the screen to move when it captures the screen, this can crash the fishing bot
+			sleep(fishingTime * MINUTE);
+			BHBot.scheduler.resume();
+			
+			p.destroy(); //close when we're done
+
+		}catch( IOException ex ){
+		    BHBot.logger.error("Can't start fisher.exe #1");
+
+		}catch( InterruptedException ex ){
+		    BHBot.logger.error("Can't start fisher.exe #2");
+		}
+		
+		
+        seg = detectCue(cues.get("FishingClose"), SECOND * 5);
+        if (seg != null) {
+            clickOnSeg(seg);
+            sleep(SECOND * 2);
+        }
 	}
 
 }

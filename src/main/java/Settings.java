@@ -177,6 +177,10 @@ public class Settings {
 	String dungeonsRun = "dungeonsrun 0";
 	String worldBossRun = "worldbossrun 0";
 
+    boolean doFishing = false;
+    int rodType;
+    int baitAmount;
+
 	/** log4j settings */
 	// Where do we save the logs?
 	String logBaseDir = "logs";
@@ -898,7 +902,11 @@ public class Settings {
         setAutoBossRuneFromString(lastUsedMap.getOrDefault("autoBossRune", getAutoBossRuneAsString()));
 
         persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", ""+persuasionLevel));
-        bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", ""+bribeLevel));
+        bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", ""+bribeLevel));  
+
+        doFishing = lastUsedMap.getOrDefault("doFishing", doFishing ? "1" : "0").equals("1");
+        rodType = Integer.parseInt(lastUsedMap.getOrDefault("rodType", ""+rodType));
+        baitAmount = Integer.parseInt(lastUsedMap.getOrDefault("baitAmount", ""+baitAmount));
 
         logMaxDays  = Integer.parseInt(lastUsedMap.getOrDefault("logMaxDays", ""+ logMaxDays));
         logBaseDir = lastUsedMap.getOrDefault("logBaseDir", logBaseDir);
