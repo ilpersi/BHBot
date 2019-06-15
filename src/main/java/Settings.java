@@ -22,6 +22,7 @@ public class Settings {
 	boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
 	private boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
 	int reconnectTimer = 60;
+	boolean idleMode = false;
 
 	// chromedriver autostart
 	boolean autoStartChromeDriver = true; // if true, BHBot will automatically run chromedriver at startup
@@ -246,8 +247,10 @@ public class Settings {
 		poNotifyBribe = false;
 		autoConsume = false;
 		setAutoRuneDefaultFromString("");
+		setActivitysEnabledFromString("");
 		collectBounties = false;
 		collectFishingBaits = false;
+		idleMode = true;
 	}
 	
 	/* Cleans the data from the input and saves it at a string */

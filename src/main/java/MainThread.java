@@ -521,8 +521,8 @@ public class MainThread implements Runnable {
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
 
-    private Iterator<String> activitysIterator = BHBot.settings.activitysEnabled.iterator();
-	public String currentActivity = activitySelector();
+//    private Iterator<String> activitysIterator = BHBot.settings.activitysEnabled.iterator();
+	public String currentActivity;
 
 	private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
@@ -1294,6 +1294,11 @@ public class MainThread implements Runnable {
 
 
 		//End debugging section
+		
+		if (BHBot.settings.idleMode) { //skip startup checks if we are in idle mode
+			oneTimeshrineCheck = true;
+			oneTimeRuneCheck = true;
+		}
 
 		if ((BHBot.settings.doDungeons) && (BHBot.settings.doWorldBoss)) {
 			BHBot.logger.info("Both Dungeons and World Boss selected, disabling World Boss.");
@@ -1658,20 +1663,20 @@ public class MainThread implements Runnable {
 						readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
 					}
 
-					if (!BHBot.scheduler.doRaidImmediately && !BHBot.scheduler.doDungeonImmediately &&
-							!BHBot.scheduler.doTrialsOrGauntletImmediately && !BHBot.scheduler.doPVPImmediately &&
-							!BHBot.scheduler.doGVGImmediately && !BHBot.scheduler.doInvasionImmediately &&
-							!BHBot.scheduler.doExpeditionImmediately && !BHBot.scheduler.doWorldBossImmediately) {
-
-						if (!activitysIterator.hasNext()) activitysIterator = BHBot.settings.activitysEnabled.iterator();
-					}
+//					if (!BHBot.scheduler.doRaidImmediately && !BHBot.scheduler.doDungeonImmediately &&
+//							!BHBot.scheduler.doTrialsOrGauntletImmediately && !BHBot.scheduler.doPVPImmediately &&
+//							!BHBot.scheduler.doGVGImmediately && !BHBot.scheduler.doInvasionImmediately &&
+//							!BHBot.scheduler.doExpeditionImmediately && !BHBot.scheduler.doWorldBossImmediately) {
+//
+//						if (!activitysIterator.hasNext()) activitysIterator = BHBot.settings.activitysEnabled.iterator();
+//					}
 					
-					BHBot.logger.info("Checking activity: " + currentActivity);
+					currentActivity = activitySelector(); //else select the activity to attempt
+					BHBot.logger.debug("Checking activity: " + currentActivity);
 					
 
 					// check for shards:
-					if (BHBot.scheduler.doRaidImmediately ||
-							(("r".equals(currentActivity)) && Misc.getTime() - timeLastShardsCheck > SHARDS_CHECK_INTERVAL ) ) {
+					if ( BHBot.scheduler.doRaidImmediately || ("r".equals(currentActivity)) ) {
 						timeLastShardsCheck = Misc.getTime();
 
 						readScreen();
@@ -1837,8 +1842,7 @@ public class MainThread implements Runnable {
 					} // shards
 
 					// check for tokens (trials and gauntlet):
-					if (BHBot.scheduler.doTrialsOrGauntletImmediately ||
-							( ( ("t".equals(currentActivity)) || (BHBot.settings.doGauntlet && "g".equals(currentActivity))) && Misc.getTime() - timeLastTokensCheck > TOKENS_CHECK_INTERVAL)) {
+					if ( BHBot.scheduler.doTrialsOrGauntletImmediately || ("t".equals(currentActivity)) || ("g".equals(currentActivity)) ) {
 						timeLastTokensCheck = Misc.getTime();
 
 						readScreen();
@@ -2007,7 +2011,7 @@ public class MainThread implements Runnable {
 					} // tokens (trials and gauntlet)
 
 					// check for energy:
-					if (BHBot.scheduler.doDungeonImmediately || (("d".equals(currentActivity)) && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
+					if (BHBot.scheduler.doDungeonImmediately || ("d".equals(currentActivity))) {
 						timeLastEnergyCheck = Misc.getTime();
 
 						readScreen();
@@ -2179,7 +2183,7 @@ public class MainThread implements Runnable {
 					} // energy
 
 					// check for Tickets (PvP):
-					if (BHBot.scheduler.doPVPImmediately || (("p".equals(currentActivity)) && Misc.getTime() - timeLastTicketsCheck > TICKETS_CHECK_INTERVAL) ) {
+					if ( BHBot.scheduler.doPVPImmediately || ("p".equals(currentActivity)) ) {
 						timeLastTicketsCheck = Misc.getTime();
 
 						readScreen();
@@ -2285,7 +2289,7 @@ public class MainThread implements Runnable {
 
 					// check for badges (for GVG/Invasion/Expedition):
 					if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || BHBot.scheduler.doExpeditionImmediately
-							|| ( ( ("v".equals(currentActivity)) || ("i".equals(currentActivity)) || ("e".equals(currentActivity))) && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL)) {
+							|| ( ("v".equals(currentActivity)) || ("i".equals(currentActivity)) || ("e".equals(currentActivity))) ) {
 						timeLastBadgesCheck = Misc.getTime();
 
 						readScreen();
@@ -2722,7 +2726,7 @@ public class MainThread implements Runnable {
 					} // badges
 
 					// Check worldBoss:
-					if (BHBot.scheduler.doWorldBossImmediately || ( ("w".equals(currentActivity)) && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL)) {
+					if ( BHBot.scheduler.doWorldBossImmediately || ("w".equals(currentActivity)) ) {
 						timeLastEnergyCheck = Misc.getTime();
 						int energy = getEnergy();
 						globalEnergy = energy;
@@ -2977,9 +2981,7 @@ public class MainThread implements Runnable {
 						timeLastBountyCheck = Misc.getTime();
 						handleBounties();
 						}
-
-					currentActivity = activitySelector();
-						
+					
 
 				} // main screen processing
 			} catch (Exception e) {
@@ -3058,31 +3060,33 @@ public class MainThread implements Runnable {
 	
 	private String activitySelector() {
 		
+		Iterator<String> activitysIterator = BHBot.settings.activitysEnabled.iterator(); //load list as iterator
+		String activity = activitysIterator.next(); //set iterator to string for .equals()
+		
 		//loop through in defined order, if we match activity and timer we select the activity
 		while (activitysIterator.hasNext()) {
-			String activity = activitysIterator.next();
-			if ( activity.equals("r") && Misc.getTime() - timeLastShardsCheck > SHARDS_CHECK_INTERVAL ) {
+			if ( activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL) ) {
 				return "r";
-			} else if ( activity.toString().equals("d") && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL ) {
+			} else if ( activity.equals("d") && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
 				return "d";
-			} else if ( activity.toString().equals("w") && Misc.getTime() - timeLastEnergyCheck > ENERGY_CHECK_INTERVAL ) {
+			} else if ( activity.equals("w") && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
 				return "w";
-			} else if ( activity.toString().equals("t") && Misc.getTime() - timeLastTokensCheck > TOKENS_CHECK_INTERVAL ) {
+			} else if ( activity.equals("t") && ((Misc.getTime() - timeLastTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
 				return "t";
-			} else if ( activity.toString().equals("g") && Misc.getTime() - timeLastTokensCheck > TOKENS_CHECK_INTERVAL ) {
+			} else if ( activity.equals("g") && ((Misc.getTime() - timeLastTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
 				return "g";
-			} else if ( activity.toString().equals("p") && Misc.getTime() - timeLastTicketsCheck > TICKETS_CHECK_INTERVAL ) {
+			} else if ( activity.equals("p") && ((Misc.getTime() - timeLastTicketsCheck) > TICKETS_CHECK_INTERVAL) ) {
 				return "p";
-			} else if ( activity.toString().equals("e") && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL ) {
+			} else if ( activity.equals("e") && ((Misc.getTime() - timeLastBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
 				return "e";
-			} else if ( activity.toString().equals("i") && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL ) {
+			} else if ( activity.equals("i") && ((Misc.getTime() - timeLastBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
 				return "i";
-			} else if ( activity.toString().equals("v") && Misc.getTime() - timeLastBadgesCheck > BADGES_CHECK_INTERVAL ) {
+			} else if ( activity.equals("v") && ((Misc.getTime() - timeLastBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
 				return "v";
-			} else activitysIterator.next(); //if we get to the end of the function and nothing has been selected we move to the next activity and check again
+			} else activity = activitysIterator.next();; //if we get to the end of the loop and nothing has been selected we move to the next activity and check again
 		}
 		
-		return "selection failure";
+		return null; //return null if no matches
 		
 	}
 
