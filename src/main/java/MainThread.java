@@ -494,7 +494,9 @@ public class MainThread implements Runnable {
 	private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
 	private long timeLastTicketsCheck = 0; // when did we check for Tickets the last time?
 	private long timeLastTokensCheck = 0; // when did we check for Tokens the last time?
-	private long timeLastBadgesCheck = 0; // when did we check for badges the last time?
+	private long timeLastExpBadgesCheck = 0; // when did we check for badges the last time?
+	private long timeLastInvBadgesCheck = 0; // when did we check for badges the last time?
+	private long timeLastGVGBadgesCheck = 0; // when did we check for badges the last time?
 	private long timeLastBountyCheck = 0; // when did we check for bounties the last time?
 	private long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
 	private long timeLastFishingCheck = 0; // when did we check for fishing baits the last time?
@@ -522,7 +524,6 @@ public class MainThread implements Runnable {
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
 
-//    private Iterator<String> activitysIterator = BHBot.settings.activitysEnabled.iterator();
 	public String currentActivity;
 
 	private static BufferedImage loadImage(String f) {
@@ -1294,6 +1295,8 @@ public class MainThread implements Runnable {
 //		BHBot.logger.info(Integer.toString(BHBot.settings.shrineDelay));
 		
 
+//		BHBot.logger.info(BHBot.settings.activitysEnabled);
+
 		//End debugging section
 		
 		if (BHBot.settings.idleMode) { //skip startup checks if we are in idle mode
@@ -1311,7 +1314,6 @@ public class MainThread implements Runnable {
 //		numAdOffers = 0; // reset ad offers counter
 		timeLastAdOffer = Misc.getTime();
 		BHBot.scheduler.resume(); // in case it was paused
-
 		numFailedRestarts = 0; // must be last line in this method!
 	}
 
@@ -2296,7 +2298,12 @@ public class MainThread implements Runnable {
 					// check for badges (for GVG/Invasion/Expedition):
 					if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || BHBot.scheduler.doExpeditionImmediately
 							|| ( ("v".equals(currentActivity)) || ("i".equals(currentActivity)) || ("e".equals(currentActivity))) ) {
-						timeLastBadgesCheck = Misc.getTime();
+						
+						String checkedActivity = currentActivity;
+						
+						if ("v".equals(currentActivity)) timeLastGVGBadgesCheck = Misc.getTime();
+						if ("i".equals(currentActivity)) timeLastInvBadgesCheck = Misc.getTime();
+						if ("e".equals(currentActivity)) timeLastExpBadgesCheck = Misc.getTime();
 
 						readScreen();
 
@@ -2316,10 +2323,19 @@ public class MainThread implements Runnable {
 								break;
 							}
 						}
+						
 
 						if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion/Expedition event?)
 							BHBot.scheduler.restoreIdleTime();
 							BHBot.logger.debug("No badge event found, skipping");
+							continue;
+						}
+						
+						if (badgeEvent == BadgeEvent.Expedition) currentActivity = "e";
+						if (badgeEvent == BadgeEvent.Invasion) currentActivity = "i";
+						if (badgeEvent == BadgeEvent.GVG) currentActivity = "v";
+						
+						if (!checkedActivity.equals(currentActivity)) { //if checked activity and chosen activity don't match
 							continue;
 						}
 
@@ -2333,7 +2349,7 @@ public class MainThread implements Runnable {
 						globalBadges = badges;
 						BHBot.logger.readout("Badges: " + badges + ", required: >" + BHBot.settings.minBadges + ", " + badgeEvent.toString() +  " cost: " +
 								(badgeEvent == BadgeEvent.GVG ? BHBot.settings.costGVG : badgeEvent == BadgeEvent.Invasion ? BHBot.settings.costInvasion : BHBot.settings.costExpedition));
-
+						
 						if (badges == -1) { // error
 							BHBot.scheduler.restoreIdleTime();
 							continue;
@@ -2345,13 +2361,15 @@ public class MainThread implements Runnable {
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
-								sleep(SECOND);							
+								sleep(SECOND);
+								BHBot.logger.info("Closing gvg");
 								continue;
 							} else {
 								// do the GVG!
 
 								if (BHBot.scheduler.doGVGImmediately)
 									BHBot.scheduler.doGVGImmediately = false; // reset it
+								
 
 								//configure activity runes
 								handleMinorRunes("v");
@@ -2457,7 +2475,7 @@ public class MainThread implements Runnable {
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
 								sleep(SECOND);
-
+								BHBot.logger.info("Closing inv");
 								continue;
 							} else {
 								// do the invasion!
@@ -2525,7 +2543,7 @@ public class MainThread implements Runnable {
 								seg = detectCue(cues.get("X"));
 								clickOnSeg(seg);
 								sleep(2 * SECOND);
-
+								BHBot.logger.info("Closing exped");
 								continue;
 							} else {
 								// do the expedition!
@@ -3065,7 +3083,7 @@ public class MainThread implements Runnable {
 	}
 	
 	private String activitySelector() {
-		
+			
 		if (BHBot.settings.activitysEnabled.isEmpty()) {
 			return null;
 		} else {
@@ -3087,13 +3105,13 @@ public class MainThread implements Runnable {
 					return "g";
 				} else if ( activity.equals("p") && ((Misc.getTime() - timeLastTicketsCheck) > TICKETS_CHECK_INTERVAL) ) {
 					return "p";
-				} else if ( activity.equals("e") && ((Misc.getTime() - timeLastBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
-					return "e";
-				} else if ( activity.equals("i") && ((Misc.getTime() - timeLastBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
+				} else if ( activity.equals("i") && ((Misc.getTime() - timeLastInvBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
 					return "i";
-				} else if ( activity.equals("v") && ((Misc.getTime() - timeLastBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
+				} else if ( activity.equals("v") && ((Misc.getTime() - timeLastGVGBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
 					return "v";
-				} else activity = activitysIterator.next();; //if we get to the end of the loop and nothing has been selected we move to the next activity and check again
+				} else if ( activity.equals("e") && ((Misc.getTime() - timeLastExpBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
+					return "e";
+				} else activity = activitysIterator.next(); //if we get to the end of the loop and nothing has been selected we move to the next activity and check again
 			}
 			return null; //return null if no matches
 		}
@@ -5182,7 +5200,9 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 				readScreen(SECOND);
 			}
 		}
-
+		
+		inEncounterTimestamp = Misc.getTime() / 1000; //after reviving we update encounter timestamp as it wasn't updating from processDungeon
+		
 		seg = detectCue(cues.get("AutoOff"), SECOND);
 		if (seg != null) clickOnSeg(seg);
 	}
@@ -7229,7 +7249,9 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 	/** Will reset readout timers. */
 	void resetTimers() {
-		timeLastBadgesCheck = 0;
+		timeLastExpBadgesCheck = 0;
+		timeLastInvBadgesCheck = 0;
+		timeLastGVGBadgesCheck = 0;
 		timeLastEnergyCheck = 0;
 		timeLastShardsCheck = 0;
 		timeLastTicketsCheck = 0;
@@ -7247,11 +7269,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 		if ( (globalShards - 1) > BHBot.settings.minShards && state == State.Raid ) timeLastShardsCheck = 0;
 
-		if ( (globalBadges - BHBot.settings.costExpedition) > BHBot.settings.minBadges && (state == State.Expedition) ) timeLastBadgesCheck = 0;
+		if ( (globalBadges - BHBot.settings.costExpedition) > BHBot.settings.minBadges && (state == State.Expedition) ) timeLastExpBadgesCheck = 0;
 
-		if ( (globalBadges - BHBot.settings.costInvasion) > BHBot.settings.minBadges && (state == State.Invasion ) ) timeLastBadgesCheck = 0;
+		if ( (globalBadges - BHBot.settings.costInvasion) > BHBot.settings.minBadges && (state == State.Invasion ) ) timeLastInvBadgesCheck = 0;
 
-		if ( (globalBadges - BHBot.settings.costGVG) > BHBot.settings.minBadges && (state == State.GVG) ) timeLastBadgesCheck = 0;
+		if ( (globalBadges - BHBot.settings.costGVG) > BHBot.settings.minBadges && (state == State.GVG) ) timeLastGVGBadgesCheck = 0;
 
 		if ( (globalEnergy - 10) > BHBot.settings.minEnergyPercentage && (state == State.Dungeon || state == State.WorldBoss) ) timeLastEnergyCheck = 0;
 

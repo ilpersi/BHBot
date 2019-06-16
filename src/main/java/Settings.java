@@ -795,7 +795,7 @@ public class Settings {
 		doExpedition = lastUsedMap.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("1");
 		doWorldBoss = lastUsedMap.getOrDefault("doWorldBoss", doWorldBoss ? "1" : "0").equals("1");
 		
-		setActivitysEnabledFromString(lastUsedMap.getOrDefault("activitysEnabled", getActivitysEnabledAsString()));
+		setActivitysEnabledFromString(lastUsedMap.getOrDefault("activitysEnabled", getActivitysEnabledAsString()) + " z"); //we add a z to the end else hasNext() skips the last activity in activitySelector()
 		
 		enablePushover = lastUsedMap.getOrDefault("enablePushover", enablePushover ? "1" : "0").equals("1");
 		poNotifyPM = lastUsedMap.getOrDefault("poNotifyPM", poNotifyPM ? "1" : "0").equals("1");
