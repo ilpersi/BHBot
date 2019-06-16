@@ -506,6 +506,7 @@ public class MainThread implements Runnable {
 //	private int numAdOffers = 0;
 	/** Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through! */
 	long timeLastAdOffer;
+	private boolean fished = false;
 
 	/** Used to format double numbers in a human readable way*/
 	private DecimalFormat df = new DecimalFormat("#.00");
@@ -924,6 +925,7 @@ public class MainThread implements Runnable {
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
 		addCue("Fishing", loadImage("cues/cueFishing.png"), new Bounds(720, 200, 799, 519));
+		addCue("FishingClose", loadImage("cues/fishingClose.png"),  null);
 
 		//Familiar bribing cues
 		addCue("NotEnoughGems", loadImage("cues/cueNotEnoughGems.png"), null); // used when not enough gems are available
@@ -1290,8 +1292,7 @@ public class MainThread implements Runnable {
 //		BHBot.logger.info(Boolean.toString(BHBot.settings.worldBossSolo));
 //		BHBot.logger.info(Integer.toString(BHBot.settings.battleDelay));
 //		BHBot.logger.info(Integer.toString(BHBot.settings.shrineDelay));
-
-
+		
 
 		//End debugging section
 		
@@ -1628,6 +1629,11 @@ public class MainThread implements Runnable {
 					if (BHBot.settings.collectFishingBaits && ((Misc.getTime() - timeLastFishingCheck > FISHING_CHECK_INTERVAL) || timeLastFishingCheck == 0)) {
 						timeLastFishingCheck = Misc.getTime();
 						handleFishingBaits();
+					}
+					
+					if (BHBot.settings.doFishing && !fished) {
+						handleFishing();
+						fished = true;
 					}
 					
 					//faster testing
@@ -3060,34 +3066,37 @@ public class MainThread implements Runnable {
 	
 	private String activitySelector() {
 		
-		Iterator<String> activitysIterator = BHBot.settings.activitysEnabled.iterator(); //load list as iterator
-		String activity = activitysIterator.next(); //set iterator to string for .equals()
-		
-		//loop through in defined order, if we match activity and timer we select the activity
-		while (activitysIterator.hasNext()) {
-			if ( activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL) ) {
-				return "r";
-			} else if ( activity.equals("d") && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
-				return "d";
-			} else if ( activity.equals("w") && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
-				return "w";
-			} else if ( activity.equals("t") && ((Misc.getTime() - timeLastTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
-				return "t";
-			} else if ( activity.equals("g") && ((Misc.getTime() - timeLastTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
-				return "g";
-			} else if ( activity.equals("p") && ((Misc.getTime() - timeLastTicketsCheck) > TICKETS_CHECK_INTERVAL) ) {
-				return "p";
-			} else if ( activity.equals("e") && ((Misc.getTime() - timeLastBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
-				return "e";
-			} else if ( activity.equals("i") && ((Misc.getTime() - timeLastBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
-				return "i";
-			} else if ( activity.equals("v") && ((Misc.getTime() - timeLastBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
-				return "v";
-			} else activity = activitysIterator.next();; //if we get to the end of the loop and nothing has been selected we move to the next activity and check again
+		if (BHBot.settings.activitysEnabled.isEmpty()) {
+			return null;
+		} else {
+			
+			Iterator<String> activitysIterator = BHBot.settings.activitysEnabled.iterator(); //load list as iterator
+			String activity = activitysIterator.next(); //set iterator to string for .equals()
+			
+			//loop through in defined order, if we match activity and timer we select the activity
+			while (activitysIterator.hasNext()) {
+				if ( activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL) ) {
+					return "r";
+				} else if ( activity.equals("d") && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
+					return "d";
+				} else if ( activity.equals("w") && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
+					return "w";
+				} else if ( activity.equals("t") && ((Misc.getTime() - timeLastTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
+					return "t";
+				} else if ( activity.equals("g") && ((Misc.getTime() - timeLastTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
+					return "g";
+				} else if ( activity.equals("p") && ((Misc.getTime() - timeLastTicketsCheck) > TICKETS_CHECK_INTERVAL) ) {
+					return "p";
+				} else if ( activity.equals("e") && ((Misc.getTime() - timeLastBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
+					return "e";
+				} else if ( activity.equals("i") && ((Misc.getTime() - timeLastBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
+					return "i";
+				} else if ( activity.equals("v") && ((Misc.getTime() - timeLastBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
+					return "v";
+				} else activity = activitysIterator.next();; //if we get to the end of the loop and nothing has been selected we move to the next activity and check again
+			}
+			return null; //return null if no matches
 		}
-		
-		return null; //return null if no matches
-		
 	}
 
 	private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {
@@ -3195,6 +3204,10 @@ public class MainThread implements Runnable {
         seg = detectCue(cues.get("RunesLayout"), 15*SECOND);
         if (seg == null) {
             BHBot.logger.warn("Error: unable to detect rune layout! Skipping...");
+            seg = detectCue(cues.get("X"), 5*SECOND);
+            if (seg == null) {
+            	clickOnSeg(seg);
+            }
             return true;
         }
 
@@ -7437,6 +7450,51 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 	void softReset() {
 		state = State.Main;
+	}
+	
+	void handleFishing() {
+		MarvinSegment seg;
+		int fishingTime = (BHBot.settings.baitAmount * 30)/60; //pause for around 30 sconds per bait used
+
+        seg = detectCue(cues.get("Fishing"), SECOND * 5);
+        if (seg != null) {
+            clickOnSeg(seg);
+            sleep(SECOND * 2); // we allow some seconds as maybe the reward popup is sliding down
+        }
+
+        detectCharacterDialogAndHandleIt();
+        
+        seg = detectCue(cues.get("Play"), SECOND * 5);
+        if (seg != null) {
+            clickOnSeg(seg);
+            sleep(SECOND * 12); // Long pause while we get in position to fish
+        }
+        
+		
+		try{    
+		    Process p = Runtime.getRuntime().exec("cmd /c \"cd DIRECTORY & fishing.exe\" " + BHBot.settings.rodType + " " + BHBot.settings.baitAmount);
+		    p.waitFor();
+		    
+		    BHBot.logger.info("Pausing for " + fishingTime + " minutes to fish");
+			BHBot.scheduler.pause();
+			sleep(fishingTime * MINUTE);
+			BHBot.scheduler.resume();
+			
+			p.destroy();
+
+		}catch( IOException ex ){
+		    BHBot.logger.error("Can't start fisher.exe");
+
+		}catch( InterruptedException ex ){
+		    BHBot.logger.error("Can't start fisher.exe");
+		}
+		
+		
+        seg = detectCue(cues.get("FishingClose"), SECOND * 5);
+        if (seg != null) {
+            clickOnSeg(seg);
+            sleep(SECOND * 2); // Long pause while we get in position to fish
+        }
 	}
 
 }

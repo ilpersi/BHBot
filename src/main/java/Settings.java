@@ -176,6 +176,11 @@ public class Settings {
 	int minSolo = 2;
 	String dungeonsRun = "dungeonsrun 0";
 	String worldBossRun = "worldbossrun 0";
+	
+	/** Fishing Settings **/
+	boolean doFishing = false;
+	int rodType = 4;
+	int baitAmount = 5;
 
 	/** log4j settings */
 	// Where do we save the logs?
@@ -871,6 +876,10 @@ public class Settings {
 
         persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", ""+persuasionLevel));
         bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", ""+bribeLevel));
+        
+        doFishing = lastUsedMap.getOrDefault("doFishing", doFishing ? "1" : "0").equals("1");
+        rodType = Integer.parseInt(lastUsedMap.getOrDefault("rodType", ""+rodType));
+        baitAmount = Integer.parseInt(lastUsedMap.getOrDefault("baitAmount", ""+baitAmount));
 
         logMaxDays  = Integer.parseInt(lastUsedMap.getOrDefault("logMaxDays", ""+ logMaxDays));
         logBaseDir = lastUsedMap.getOrDefault("logBaseDir", logBaseDir);
