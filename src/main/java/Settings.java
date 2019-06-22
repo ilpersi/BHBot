@@ -183,10 +183,6 @@ public class Settings {
 	int rodType = 4;
 	int baitAmount = 5;
 
-    boolean doFishing = false;
-    int rodType;
-    int baitAmount;
-
 	/** log4j settings */
 	// Where do we save the logs?
 	String logBaseDir = "logs";

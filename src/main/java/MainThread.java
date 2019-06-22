@@ -2333,7 +2333,7 @@ public class MainThread implements Runnable {
 						if (badgeEvent == BadgeEvent.Invasion) currentActivity = "i";
 						if (badgeEvent == BadgeEvent.GVG) currentActivity = "v";
 						
-						if (!checkedActivity.equals(currentActivity)) { //if checked activity and chosen activity don't match
+						if (!checkedActivity.equals(currentActivity)) { //if checked activity and chosen activity don't match we skip
 							continue;
 						}
 
@@ -2360,7 +2360,6 @@ public class MainThread implements Runnable {
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
 								sleep(SECOND);
-								BHBot.logger.info("Closing gvg");
 								continue;
 							} else {
 								// do the GVG!
@@ -2473,7 +2472,6 @@ public class MainThread implements Runnable {
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
 								sleep(SECOND);
-								BHBot.logger.info("Closing inv");
 								continue;
 							} else {
 								// do the invasion!
@@ -2541,7 +2539,6 @@ public class MainThread implements Runnable {
 								seg = detectCue(cues.get("X"));
 								clickOnSeg(seg);
 								sleep(2 * SECOND);
-								BHBot.logger.info("Closing exped");
 								continue;
 							} else {
 								// do the expedition!
@@ -7506,7 +7503,6 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         seg = detectCue(cues.get("Play"), SECOND * 5);
         if (seg != null) {
             clickOnSeg(seg);
-//            sleep(SECOND * 12); // Long pause while we get in position to fish
         }
         
         seg = detectCue(cues.get("Start"), SECOND * 20);
@@ -7518,7 +7514,6 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 				Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fishing.exe\" " + BHBot.settings.rodType + " " + BHBot.settings.baitAmount);
 				if (!fisher.waitFor(fishingTime, TimeUnit.SECONDS)) { //run and wait for fishingTime seconds
 					BHBot.scheduler.resume();
-	//			    fisher.destroyForcibly(); // consider using destroyForcibly instead
 				}
 				
 				Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisher-v1.2.4.exe\"\"");
@@ -7531,12 +7526,6 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			    BHBot.logger.error("Can't start fisher.exe");
 			}
 		} else BHBot.logger.info("start not found");
-		
-//        seg = detectCue(cues.get("FishingClose"), SECOND * 5);
-//        if (seg != null) {
-//            clickOnSeg(seg);
-//            sleep(SECOND * 2); // Long pause while we get in position to fish
-//        }
 	}
 
 }
