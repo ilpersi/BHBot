@@ -324,7 +324,7 @@ public class MainThread implements Runnable {
 		CAPTURE("Capture"),
 		EXPERIENCE("Experience"),
 		GOLD("Gold"),
-		ITEM_FIND("ItemFind");
+		ITEM_FIND("Item_Find");
 
 		private final String name;
 
@@ -357,7 +357,7 @@ public class MainThread implements Runnable {
 		ITEM_LEGENDARY(MinorRuneEffect.ITEM_FIND, ItemGrade.LEGENDARY),
 
 		GOLD_COMMON(MinorRuneEffect.GOLD, ItemGrade.COMMON),
-		//		GOLD_RARE(MinorRuneEffect.GOLD, ItemGrade.RARE),
+//		GOLD_RARE(MinorRuneEffect.GOLD, ItemGrade.RARE),
 //		GOLD_EPIC(MinorRuneEffect.GOLD, ItemGrade.EPIC),
 		GOLD_LEGENDARY(MinorRuneEffect.GOLD, ItemGrade.LEGENDARY),
 
@@ -415,7 +415,7 @@ public class MainThread implements Runnable {
 
 		@Override
 		public String toString() {
-			return grade.toString().toLowerCase() + " " + effect.toString().toLowerCase();
+			return grade.toString().toLowerCase() + "_" + effect.toString().toLowerCase();
 		}
 	}
 
@@ -437,7 +437,7 @@ public class MainThread implements Runnable {
 	private int potionsUsed = 0;
 
 	private boolean startTimeCheck = false;
-	private boolean oneTimeshrineCheck = false;
+	public boolean oneTimeshrineCheck = false;
 	private boolean autoShrined = false;
 	private long activityStartTime;
 	private long activityDuration;
@@ -518,7 +518,7 @@ public class MainThread implements Runnable {
 
 	/** global autorune vals */
 	private boolean autoBossRuned = false;
-	private boolean oneTimeRuneCheck = false;
+	public boolean oneTimeRuneCheck = false;
 
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
@@ -923,6 +923,7 @@ public class MainThread implements Runnable {
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
 		addCue("Fishing", loadImage("cues/cueFishing.png"), new Bounds(720, 200, 799, 519));
+		addCue("FishingClose", loadImage("cues/fishingClose.png"),  null);
 
 		//Familiar bribing cues
 		addCue("NotEnoughGems", loadImage("cues/cueNotEnoughGems.png"), null); // used when not enough gems are available
@@ -1228,7 +1229,7 @@ public class MainThread implements Runnable {
 //		BHBot.logger.info(Integer.toString(BHBot.settings.battleDelay));
 //		BHBot.logger.info(Integer.toString(BHBot.settings.shrineDelay));
 
-
+//		BHBot.logger.info(BHBot.settings.worldBossSettings);
 
 		//End debugging section
 
@@ -1465,6 +1466,7 @@ public class MainThread implements Runnable {
 					}
 					BHBot.logger.info("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
 					sleep(10*SECOND);
+					checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
 					continue;
 				}
 
@@ -1564,7 +1566,7 @@ public class MainThread implements Runnable {
                     // One time check for Autoshrine
                     if (!oneTimeshrineCheck) {
 
-                    	BHBot.logger.info("Startup check to make sure authoshrines is initially disabled");
+                    	BHBot.logger.info("Startup check to make sure autoShrine is initially disabled");
 						if (!checkShrineSettings(false, false)) {
 							BHBot.logger.error("It was not possible to perform the autoShrine start-up check!");
 						}
@@ -1577,8 +1579,15 @@ public class MainThread implements Runnable {
 
 						BHBot.logger.info("Startup check to determined configured minor runes");
 						if (!detectEquippedMinorRunes(true, true)) {
-							BHBot.logger.error("It was not possible to perform the equipped runes start-up check!");
+							BHBot.logger.error("It was not possible to perform the equipped runes start-up check! Disabling autoRune..");
+							BHBot.settings.autoRuneDefault.clear();
+							BHBot.settings.autoRune.clear();
+							BHBot.settings.autoBossRune.clear();
+							continue;
+							
 						}
+			        	BHBot.logger.info(getRuneName(leftMinorRune.getRuneCueName()) + " equipped in left slot.");
+			        	BHBot.logger.info(getRuneName(rightMinorRune.getRuneCueName()) + " equipped in right slot.");
 						oneTimeRuneCheck = true;
 						readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
 					}
@@ -1654,12 +1663,13 @@ public class MainThread implements Runnable {
 
 							//configure activity runes
 							if (handleMinorRunes("r")) {
-								seg = detectCue(cues.get("RaidButton"),SECOND);
-								if (seg == null) {
-									BHBot.logger.error("Can't find raid button after switching runes!");
-								}
-								clickOnSeg(seg);
-								sleep(SECOND);
+							readScreen(SECOND);
+							seg = detectCue(cues.get("RaidButton"),SECOND);
+							if (seg == null) {
+								BHBot.logger.error("Can't find raid button after switching runes!");
+							}
+							clickOnSeg(seg);
+							sleep(SECOND);
 							}
 
 							//configure boss runes if no autoshrine
@@ -1835,16 +1845,15 @@ public class MainThread implements Runnable {
 								sleep(SECOND); //wait for window animation
 							}
 
+							//configure activity runes
 							if(trials) {
-								if(handleMinorRunes("t")) {
-									readScreen(SECOND);
-									clickOnSeg(trialBTNSeg);
-								}
+								handleMinorRunes("t");
+								readScreen(SECOND);
+								clickOnSeg(trialBTNSeg);
 							} else {
-								if(handleMinorRunes("g")) {
-									readScreen(SECOND);
-									clickOnSeg(trialBTNSeg);
-								}
+								handleMinorRunes("g");
+								readScreen(SECOND);
+								clickOnSeg(trialBTNSeg);
 							}
 
 							BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + BHBot.settings.difficulty + "...");
@@ -1958,6 +1967,7 @@ public class MainThread implements Runnable {
 							if (BHBot.scheduler.doDungeonImmediately)
 								BHBot.scheduler.doDungeonImmediately = false; // reset it
 
+							//configure activity runes
 							handleMinorRunes("d");
 							
 							if (BHBot.settings.autoBossRune.containsKey("d") && !BHBot.settings.autoShrine.contains("d")) { //if autoshrine disabled but autorune enabled
@@ -2116,6 +2126,7 @@ public class MainThread implements Runnable {
 							if (BHBot.scheduler.doPVPImmediately)
 								BHBot.scheduler.doPVPImmediately = false; // reset it
 
+							//configure activity runes
 							handleMinorRunes("p");
 
 							BHBot.logger.info("Attempting PVP...");
@@ -2163,7 +2174,8 @@ public class MainThread implements Runnable {
 							detectCharacterDialogAndHandleIt();
 
 							Bounds pvpOpponentBounds = opponentSelector(BHBot.settings.pvpOpponent);
-							BHBot.logger.info("Selecting opponent " + BHBot.settings.pvpOpponent);
+							String opponentName = (BHBot.settings.pvpOpponent == 1 ? "1st" : BHBot.settings.pvpOpponent == 2 ? "2nd" : BHBot.settings.pvpOpponent == 3 ? "3rd" : "4th");
+							BHBot.logger.info("Selecting " + opponentName + " opponent");
 							seg = detectCue(cues.get("Fight"), 5*SECOND, pvpOpponentBounds);
 							if (seg == null) {
 								BHBot.logger.error("Imppossible to find the Fight button in the PVP screen, restarting!");
@@ -2254,11 +2266,10 @@ public class MainThread implements Runnable {
 								if (BHBot.scheduler.doGVGImmediately)
 									BHBot.scheduler.doGVGImmediately = false; // reset it
 
-
-								if(handleMinorRunes("v")) {
-									readScreen(SECOND);
-									clickOnSeg(badgeBtn);
-								}
+								//configure activity runes
+								handleMinorRunes("v");
+								readScreen(SECOND);
+								clickOnSeg(badgeBtn);
 
 								BHBot.logger.info("Attempting GVG...");
 
@@ -2321,7 +2332,8 @@ public class MainThread implements Runnable {
 
 								
 								Bounds gvgOpponentBounds = opponentSelector(BHBot.settings.gvgOpponent);
-								BHBot.logger.info("Selecting opponent " + BHBot.settings.gvgOpponent);
+								String opponentName = (BHBot.settings.gvgOpponent == 1 ? "1st" : BHBot.settings.gvgOpponent == 2 ? "2nd" : BHBot.settings.gvgOpponent == 3 ? "3rd" : "4th");
+								BHBot.logger.info("Selecting " + opponentName + " opponent");
 								seg = detectCue(cues.get("Fight"), 5*SECOND, gvgOpponentBounds);
 								if (seg == null) {
 									BHBot.logger.error("Imppossible to find the Fight button in the GvG screen, restarting!");
@@ -2366,10 +2378,10 @@ public class MainThread implements Runnable {
 								if (BHBot.scheduler.doInvasionImmediately)
 									BHBot.scheduler.doInvasionImmediately = false; // reset it
 
-								if(handleMinorRunes("i")) {
-									readScreen(SECOND);
-									clickOnSeg(badgeBtn);
-								}
+								//configure activity runes
+								handleMinorRunes("i");
+								readScreen(SECOND);
+								clickOnSeg(badgeBtn);
 
 								BHBot.logger.info("Attempting invasion...");
 
@@ -2450,10 +2462,10 @@ public class MainThread implements Runnable {
 									readScreen(SECOND * 2);
 								}
 
-								if(handleMinorRunes("e")) {
-									readScreen(SECOND);
-									clickOnSeg(badgeBtn);
-								}
+								//configure activity runes
+								handleMinorRunes("e");
+								readScreen(SECOND);
+								clickOnSeg(badgeBtn);
 								
 								//configure boss runes if no autoshrine
 								if (BHBot.settings.autoBossRune.containsKey("e") && !BHBot.settings.autoShrine.contains("e")) { //if autoshrine disabled but autorune enabled
@@ -2466,6 +2478,10 @@ public class MainThread implements Runnable {
 										BHBot.logger.error("Impossible to configure autoBossRune for Expedition!");
 									}
 								}
+								
+								readScreen(SECOND);
+								clickOnSeg(badgeBtn);
+								sleep(SECOND); //wait for window animation
 
 								BHBot.logger.info("Attempting expedition...");
 
@@ -2666,7 +2682,8 @@ public class MainThread implements Runnable {
 								continue;
 							}
 
-                            handleMinorRunes("w");
+							//configure activity runes
+							handleMinorRunes("w");
 
 							seg = detectCue(cues.get("WorldBoss"));
 							if (seg != null) {
@@ -2680,16 +2697,22 @@ public class MainThread implements Runnable {
 							detectCharacterDialogAndHandleIt(); //clear dialogue
 
 							//load settings
-							String worldBossType = BHBot.settings.worldBossType;
-							int worldBossTier = BHBot.settings.worldBossTier;
+
+							
+							String worldBossType = BHBot.settings.worldBossSettings.get(0);
+							int worldBossDifficulty = Integer.parseInt(BHBot.settings.worldBossSettings.get(1));
+							int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
 							int worldBossTimer = BHBot.settings.worldBossTimer;
-							int worldBossDifficulty = BHBot.settings.worldBossDifficulty;
+
+							
+							//new settings loading
 
 							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
+							String worldBossNameText = worldBossType == "o" ? "Orlag Clan" : worldBossType == "n" ? "Netherworld" : "Melvin Factory";
 							if (!BHBot.settings.worldBossSolo) {
-								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + ". Lobby timeout is " +  worldBossTimer + "s.");
+								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossNameText + ". Lobby timeout is " +  worldBossTimer + "s.");
 							} else {
-								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " Solo");
+								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossNameText + " Solo");
 							}
 
 							seg = detectCue(cues.get("BlueSummon"),SECOND);
@@ -2764,17 +2787,14 @@ public class MainThread implements Runnable {
 									readScreen();
 
 									switch (worldBossType) {
-										case "Orlag":  //shouldn't have this inside the loop but it doesn't work if its outside
+										case "o":  //shouldn't have this inside the loop but it doesn't work if its outside
 											seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
-
 											break;
-										case "Nether":
+										case "n":
 											seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether
-
 											break;
-										case "Melvin":
+										case "m":
 											seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
-
 											break;
 									}
 
@@ -2828,7 +2848,7 @@ public class MainThread implements Runnable {
 													sleep(2*SECOND); //wait for animation to finish
 													clickInGame(330,360); //yesgreen cue has issues so we use XY to click on Yes
 												}
-											BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " started!");
+											BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossNameText + " started!");
 											state = State.WorldBoss;
 											sleep(6*SECOND); //long wait to make sure we are in the world boss dungeon
 											readScreen();
@@ -3004,7 +3024,7 @@ public class MainThread implements Runnable {
 					}
 				}
 				ignoreBossSetting = false;
-				BHBot.logger.info("Ignore Boss Disabled");
+				BHBot.logger.debug("Ignore Boss Disabled");
 			}
 
 			if (ignoreShrines) {
@@ -3032,7 +3052,7 @@ public class MainThread implements Runnable {
 					}
 				}
 				ignoreShrinesSetting = false;
-				BHBot.logger.info("Ignore Shrine Disabled");
+				BHBot.logger.debug("Ignore Shrine Disabled");
 			}
 
 			readScreen(SECOND);
@@ -3057,6 +3077,7 @@ public class MainThread implements Runnable {
         }
 
         clickOnSeg(seg);
+        sleep(500); //sleep for window animation (15s below was crashing the bot, not sure why
 
         seg = detectCue(cues.get("RunesLayout"), 15*SECOND);
         if (seg == null) {
@@ -3091,25 +3112,25 @@ public class MainThread implements Runnable {
    
         }
 
+        if (exitRunesMenu) {
+        	sleep(500);
+			closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
+			sleep(500);
+			closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
+		}
+
         boolean success = true;
         if (leftMinorRune == null) {
             BHBot.logger.warn("Error: Unable to detect left minor rune!");
             success = false;
         } else{
-        	BHBot.logger.autorune("Equipped in left slot: " + leftMinorRune + " rune.");
+        	BHBot.logger.debug(leftMinorRune + " equipped in left slot.");
 		}
         if (rightMinorRune == null) {
             BHBot.logger.warn("Error: Unable to detect right minor rune!");
             success = false;
         } else{
-        	BHBot.logger.autorune("Equipped in right slot: " + rightMinorRune + " rune.");
-		}
-
-        if (exitRunesMenu) {
-        	sleep(500); //delay for window close animation
-        	closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
-        	sleep(SECOND); //delay for window close animation
-			closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
+        	BHBot.logger.debug(rightMinorRune + " equipped in right slot.");
 		}
 
 		return success;
@@ -4146,6 +4167,8 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 					if (!checkShrineSettings(false, false)) {
 						BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoBossRune!");
+						BHBot.logger.warn("Resetting encounter timer to try again in " + BHBot.settings.battleDelay + " seconds.");
+						inEncounterTimestamp = Misc.getTime() / 1000;
 						return;
 					}
 
@@ -4228,21 +4251,21 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         String activityName = state.getNameFromShortcut(activity);
         if (BHBot.settings.autoRuneDefault.isEmpty()) {
 			BHBot.logger.debug("autoRunesDefault not defined; aborting autoRunes");
-			return false;
 		}
 
-		BHBot.logger.info("Doing autoRunes for: " + activityName);
         if (!BHBot.settings.autoRune.containsKey(activity)) {
             BHBot.logger.debug("No autoRunes assigned for " + activityName + ", using defaults.");
 			desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
-        }
-        else {
+        } else {
+    		BHBot.logger.info("Configuring autoRunes for " + activityName);
 			desiredRunesAsStrs = BHBot.settings.autoRune.get(activity);
         }
 
 		List<MinorRuneEffect> desiredRunes = resolveDesiredRunes(desiredRunesAsStrs);
-		if (noRunesNeedSwitching(desiredRunes))
+		if (noRunesNeedSwitching(desiredRunes)) {
+			BHBot.logger.debug("log#3");
 			return false;
+			}
 
 		// Back out of any raid/gauntlet/trial/GvG/etc pre-menu
 		MarvinSegment seg = detectCue(cues.get("X"), 2*SECOND);
@@ -4252,7 +4275,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
         if (!switchMinorRunes(desiredRunes))
-            BHBot.logger.autorune("AutoRune failed!");
+            BHBot.logger.info("AutoRune failed!");
 
         return true;
 
@@ -4269,7 +4292,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		if (activity.equals("ud"))
 			activity = "d";
         if (!BHBot.settings.autoBossRune.containsKey(activity)) {
-			BHBot.logger.debug("No autoBossRunes assigned for " + state.getName() + ", skipping.");
+            BHBot.logger.info("No autoBossRunes assigned for " + state.getName() + ", skipping.");
             return;
         }
 
@@ -4343,7 +4366,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
 		if (desiredLeftRune != leftMinorRune.getRuneEffect()) {
-			BHBot.logger.autorune("Switching left minor rune.");
+			BHBot.logger.debug("Switching left minor rune.");
             clickInGame(280, 290); // Click on left rune
             if (!switchSingleMinorRune(desiredLeftRune)) {
                 BHBot.logger.error("Failed to switch left minor rune.");
@@ -4353,7 +4376,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		
 
         if (desiredRightRune != rightMinorRune.getRuneEffect()) {
-			BHBot.logger.autorune("Switching right minor rune.");
+			BHBot.logger.debug("Switching right minor rune.");
             clickInGame(520, 290); // Click on right rune
             if (!switchSingleMinorRune(desiredRightRune)) {
                 BHBot.logger.error("Failed to switch right minor rune.");
@@ -4406,15 +4429,15 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 			Cue runeCue = thisRune.getRuneSelectCue();
 			if (runeCue == null) {
-				BHBot.logger.error("Unable to find cue for rune " + thisRune);
+				BHBot.logger.error("Unable to find cue for rune " + getRuneName(thisRune.getRuneCueName()));
 				continue;
 			}
 			seg = detectCue(runeCue);
 			if (seg == null) {
-				BHBot.logger.debug("Unable to find " + thisRune + " in rune picker.");
+				BHBot.logger.debug("Unable to find " + getRuneName(thisRune.getRuneCueName()) + " in rune picker.");
 				continue;
 			}
-			BHBot.logger.autorune("Switched to " + thisRune);
+			BHBot.logger.autorune("Switched to " + getRuneName(thisRune.getRuneCueName()));
 			clickOnSeg(seg);
 			sleep(SECOND);
 			return true;
@@ -4425,6 +4448,49 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		return false;
     }
     
+	/**
+	 * Function to return the name of the runes for console output
+	 */
+	private String getRuneName(String runeName) {
+
+		switch (runeName) {
+				case "MinorRuneExperienceCommon":
+					return "Common Experience";
+				case "MinorRuneExperienceRare":
+					return "Rare Experience";
+				case "MinorRuneExperienceEpic":
+					return "Epic Experience";
+				case "MinorRuneExperienceLegendary":
+					return "Legendary Experience";
+				case "MinorRuneItem_FindCommon":
+					return "Common Item Find";
+				case "MinorRuneItem_FindRare":
+					return "Rare Item Find";
+				case "MinorRuneItem_FindEpic":
+					return "Epic Item Find";
+				case "MinorRuneItem_FindLegendary":
+					return "Legendary Item Find";
+				case "MinorRuneGoldCommon":
+					return "Common Gold";
+				case "MinorRuneGoldRare":
+					return "Rare Gold";
+				case "MinorRuneGoldEpic":
+					return "Epic Gold";
+				case "MinorRuneGoldLegendary":
+					return "Legendary Gold";
+				case "MinorRuneCaptureCommon":
+					return "Common Capture";
+				case "MinorRuneCaptureRare":
+					return "Rare Capture";
+				case "MinorRuneCaptureEpic":
+					return "Epic Capture";
+				case "MinorRuneCaptureLegendary":
+					return "Legendary Capture";
+				default:
+					return null;
+			}
+	}
+
 	private boolean handleSkeletonKey() {
 		//TODO Add no key "Uh Oh" failsafe
 		MarvinSegment seg;
@@ -4790,6 +4856,14 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			BHBot.logger.autorevive("Victory popup, skipping revive check");
 			seg = detectCue(cues.get("AutoOff"), SECOND);
 			if (seg != null) clickOnSeg(seg);
+			
+			seg = detectCue(cues.get("CloseGreen"), 2*SECOND); // after enabling auto again the bot would get stuck at the victory screen, this should close it
+			if (seg != null)
+				clickOnSeg(seg);
+			else {
+				BHBot.logger.warn("Problem: 'Victory' window has been detected, but no 'Close' button. Ignoring...");
+				return;
+			}
 			return;
 		}
 
@@ -5445,12 +5519,15 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	}
 
 	/** Check world boss inputs are valid **/
-	private boolean checkWorldBossInput() {
+	public boolean checkWorldBossInput() {
 		boolean failed = false;
 		int passed = 0;
+		
+		String worldBossType = BHBot.settings.worldBossSettings.get(0);
+		int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
 
 		//check name
-		if (BHBot.settings.worldBossType.equals("Orlag") || BHBot.settings.worldBossType.equals("Nether") || BHBot.settings.worldBossType.equals("Melvin")) {
+		if (worldBossType.equals("o") || worldBossType.equals("n") || worldBossType.equals("m")) {
 			passed++;
 		} else {
 			BHBot.logger.error("Invalid world boss name, check settings file");
@@ -5458,7 +5535,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
 		//check tier
-		if (BHBot.settings.worldBossTier <= 10 || BHBot.settings.worldBossTier >= 1) {
+		if (worldBossTier <= 10 || worldBossTier >= 1) {
 			passed++;
 		} else {
 			BHBot.logger.error("Invalid world boss tier, must between 1 and 10");
@@ -5584,11 +5661,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private String readSelectedWorldBoss() {
 		readScreen(SECOND);
 		if (detectCue(cues.get("OrlagWB")) != null)
-			return "Orlag";
+			return "o";
 		else if (detectCue(cues.get("NetherWB")) != null)
-			return "Nether";
+			return "n";
 		else if (detectCue(cues.get("MelvinWB")) != null)
-			return "Melvin";
+			return "m";
 		else return "Error";
 	}
 
@@ -6019,7 +6096,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private int detectWorldBossTier() {
 
 		//Melvins only available in T10 so we don't need to read the image
-		if (BHBot.settings.worldBossType.equals("Melvin")) return 10;
+		if (BHBot.settings.worldBossSettings.get(0).equals("m")) return 10;
 
 		readScreen();
 		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),SECOND);
@@ -7250,6 +7327,54 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 	void softReset() {
 		state = State.Main;
+	}
+	
+	void handleFishing() {
+		MarvinSegment seg;
+		int fishingTime = (BHBot.settings.baitAmount * 30)/60; //pause for around 30 seconds per bait used
+
+        seg = detectCue(cues.get("Fishing"), SECOND * 5);
+        if (seg != null) {
+            clickOnSeg(seg);
+            sleep(SECOND * 2);
+        }
+
+        detectCharacterDialogAndHandleIt();
+        
+        seg = detectCue(cues.get("Play"), SECOND * 5);
+        if (seg != null) {
+            clickOnSeg(seg);
+            sleep(SECOND * 12); // Long pause while we get in position to fish
+        }
+        
+        //TODO check if we have any bait before starting
+		//TODO create cue and check for start button before launching fishing bot
+        
+		try{
+			//we run an AutoIT script that launches the fishing bot, and inputs rod type and bait command based on launch parameters
+		    Process p = Runtime.getRuntime().exec("cmd /c \"cd DIRECTORY & fishing.exe\" " + BHBot.settings.rodType + " " + BHBot.settings.baitAmount);
+		    p.waitFor();
+		    
+		    BHBot.logger.info("Pausing for " + fishingTime + " minutes to fish");
+			BHBot.scheduler.pause(); // we need to pause as shutterbug causes the screen to move when it captures the screen, this can crash the fishing bot
+			sleep(fishingTime * MINUTE);
+			BHBot.scheduler.resume();
+			
+			p.destroy(); //close when we're done
+
+		}catch( IOException ex ){
+		    BHBot.logger.error("Can't start fisher.exe #1");
+
+		}catch( InterruptedException ex ){
+		    BHBot.logger.error("Can't start fisher.exe #2");
+		}
+		
+		
+        seg = detectCue(cues.get("FishingClose"), SECOND * 5);
+        if (seg != null) {
+            clickOnSeg(seg);
+            sleep(SECOND * 2);
+        }
 	}
 
 }

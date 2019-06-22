@@ -34,6 +34,7 @@ public class Settings {
 	boolean dungeonOnTimeout = true;
 	boolean countActivities = false;
 	
+	//activity settings
 	boolean doRaids = false;
 	boolean doDungeons = false;
 	boolean doTrials = false;
@@ -44,6 +45,9 @@ public class Settings {
 	boolean doInvasion = false;
 	boolean doExpedition = false;
 	boolean doWorldBoss = false;
+	
+	//activity settings alpha
+	List<String> activitysEnabled;
 
 	// Pushover settings
 	boolean enablePushover = false;
@@ -112,6 +116,7 @@ public class Settings {
 	RandomCollection<String> thursdayRaids;
 	
 	/** World Boss Settings **/
+	List<String> worldBossSettings;
     String worldBossType = "";
 	int worldBossTier  =  0;
 	int worldBossTimer = 0;
@@ -172,6 +177,10 @@ public class Settings {
 	String dungeonsRun = "dungeonsrun 0";
 	String worldBossRun = "worldbossrun 0";
 
+    boolean doFishing = false;
+    int rodType;
+    int baitAmount;
+
 	/** log4j settings */
 	// Where do we save the logs?
 	String logBaseDir = "logs";
@@ -183,6 +192,8 @@ public class Settings {
 	private Map<String, String> lastUsedMap = new HashMap<>();
 
 	public Settings() {
+		activitysEnabled = new ArrayList<>();
+		worldBossSettings = new ArrayList<>();
 		dungeons = new RandomCollection<>();
 		setDungeons("z1d4 3 100"); // some default value
 		thursdayDungeons = new RandomCollection<>();
@@ -246,6 +257,26 @@ public class Settings {
 	
 	/* Cleans the data from the input and saves it at a string */
 
+	private void setActivitysEnabled(String... types) {
+		this.activitysEnabled.clear();
+		for (String t : types) {
+			String add = t.trim();
+			if (add.equals(""))
+				continue;
+			this.activitysEnabled.add(add);
+		}
+	}
+	
+	private void setWorldBoss(String... types) {
+		this.worldBossSettings.clear();
+		for (String t : types) {
+			String add = t.trim();
+			if (add.equals(""))
+				continue;
+			this.worldBossSettings.add(add);
+		}
+	}
+    
 	private void setDungeons(String... dungeons) {
 		this.dungeons.clear();
 		double weight;
@@ -468,6 +499,24 @@ public class Settings {
 	}
 	
 	/* Gets the string from the previous method and creates a list if there are multiple items */
+	
+	private String getActivitysEnabledAsString() {
+		StringBuilder result = new StringBuilder();
+		for (String s : activitysEnabled)
+			result.append(s).append(" ");
+		if (result.length() > 0)
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+		return result.toString();
+	}
+	
+	private String getWorldBossAsString() {
+		StringBuilder result = new StringBuilder();
+		for (String s : worldBossSettings)
+			result.append(s).append(" ");
+		if (result.length() > 0)
+			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+		return result.toString();
+	}
 
 	private String getDungeonsAsString() {
 		return dungeons.toString();
@@ -589,6 +638,26 @@ public class Settings {
     }
 	
 	/* Cleans up the data in the list again */
+    
+	private void setActivitysEnabledFromString(String s) {
+		setActivitysEnabled(s.split(" "));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = activitysEnabled.size()-1; i >= 0; i--) {
+			activitysEnabled.set(i, activitysEnabled.get(i).trim());
+			if (activitysEnabled.get(i).equals(""))
+				activitysEnabled.remove(i);
+		}
+	}
+	
+	private void setWorldBossFromString(String s) {
+		setWorldBoss(s.split(" "));
+		// clean up (trailing spaces and remove if empty):
+		for (int i = worldBossSettings.size()-1; i >= 0; i--) {
+			worldBossSettings.set(i, worldBossSettings.get(i).trim());
+			if (worldBossSettings.get(i).equals(""))
+				worldBossSettings.remove(i);
+		}
+	}
 
 	private void setDungeonsFromString(String s) {
 		setDungeons(s.split(";"));
@@ -660,15 +729,15 @@ public class Settings {
 		}
 	}
 
-    private void setAutoRuneDefaultFromString(String s) {
+    public void setAutoRuneDefaultFromString(String s) {
         setAutoRuneDefault(s.trim().split(" +"));
     }
 
-    private void setAutoRuneFromString(String s) {
+    public void setAutoRuneFromString(String s) {
 		setAutoRune(s.trim().split(" *; *"));
     }
 
-	private void setAutoBossRuneFromString(String s) {
+	public void setAutoBossRuneFromString(String s) {
 		setAutoBossRune(s.trim().split(" *; *"));
 	}
 
@@ -751,6 +820,9 @@ public class Settings {
 		doInvasion = lastUsedMap.getOrDefault("doInvasion", doInvasion ? "1" : "0").equals("1");
 		doExpedition = lastUsedMap.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("1");
 		doWorldBoss = lastUsedMap.getOrDefault("doWorldBoss", doWorldBoss ? "1" : "0").equals("1");
+		
+		setActivitysEnabledFromString(lastUsedMap.getOrDefault("activitysEnabled", getActivitysEnabledAsString()));
+		
 		enablePushover = lastUsedMap.getOrDefault("enablePushover", enablePushover ? "1" : "0").equals("1");
 		poNotifyPM = lastUsedMap.getOrDefault("poNotifyPM", poNotifyPM ? "1" : "0").equals("1");
 		poNotifyCrash = lastUsedMap.getOrDefault("poNotifyCrash", poNotifyCrash ? "1" : "0").equals("1");
@@ -778,6 +850,7 @@ public class Settings {
 		costInvasion = Integer.parseInt(lastUsedMap.getOrDefault("costInvasion", ""+costInvasion));
 		costExpedition = Integer.parseInt(lastUsedMap.getOrDefault("costExpedition", ""+costExpedition));
 		
+		setWorldBossFromString(lastUsedMap.getOrDefault("worldBoss", getWorldBossAsString()));
 		worldBossType = lastUsedMap.getOrDefault("worldBossType", worldBossType);
 		worldBossDifficulty = Integer.parseInt(lastUsedMap.getOrDefault("worldBossDifficulty", ""+worldBossDifficulty));
 		worldBossTier = Integer.parseInt(lastUsedMap.getOrDefault("worldBossTier", ""+worldBossTier));
@@ -829,7 +902,11 @@ public class Settings {
         setAutoBossRuneFromString(lastUsedMap.getOrDefault("autoBossRune", getAutoBossRuneAsString()));
 
         persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", ""+persuasionLevel));
-        bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", ""+bribeLevel));
+        bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", ""+bribeLevel));  
+
+        doFishing = lastUsedMap.getOrDefault("doFishing", doFishing ? "1" : "0").equals("1");
+        rodType = Integer.parseInt(lastUsedMap.getOrDefault("rodType", ""+rodType));
+        baitAmount = Integer.parseInt(lastUsedMap.getOrDefault("baitAmount", ""+baitAmount));
 
         logMaxDays  = Integer.parseInt(lastUsedMap.getOrDefault("logMaxDays", ""+ logMaxDays));
         logBaseDir = lastUsedMap.getOrDefault("logBaseDir", logBaseDir);
@@ -866,6 +943,15 @@ public class Settings {
 		}
 		if (lastUsedMap.getOrDefault("experimentalAutoRevive", null) != null) {
 			BHBot.logger.warn("Deprecated setting detected: experimentalAutoRevive. Old revive system is no longer available.");
+		}
+		if (lastUsedMap.getOrDefault("worldBossType", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: worldBossType. Use the new World Boss format instead.");
+		}
+		if (lastUsedMap.getOrDefault("worldBossDifficulty", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: worldBossDifficulty. Use the new World Boss format instead.");
+		}
+		if (lastUsedMap.getOrDefault("worldBossTier", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: worldBossTier. Use the new World Boss format instead.");
 		}
 	}
 
@@ -925,7 +1011,7 @@ public class Settings {
 		}
 
 		// sanitize autorune-related settings
-		String runeTypes = "(capture|experience|gold|itemfind)";
+		String runeTypes = "(capture|experience|gold|item_find)";
 		String runeActions = "[degiprtw]";
 		// match one or two rune specs
 		String runeRegex = runeTypes + "(\\s+" + runeTypes + ")?";
