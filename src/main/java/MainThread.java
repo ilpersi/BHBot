@@ -3,12 +3,13 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -18,8 +19,15 @@ import java.util.logging.Logger;
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
 
+import com.evanlennick.retry4j.CallExecutor;
+import com.evanlennick.retry4j.CallExecutorBuilder;
+import com.evanlennick.retry4j.config.RetryConfig;
+import com.evanlennick.retry4j.config.RetryConfigBuilder;
 import com.google.common.base.Throwables;
-import io.appium.java_client.windows.WindowsDriver;
+import com.sun.jna.Memory;
+import com.sun.jna.platform.DesktopWindow;
+import com.sun.jna.platform.WindowUtils;
+import com.sun.jna.platform.win32.*;
 import net.pushover.client.MessagePriority;
 import net.pushover.client.PushoverException;
 import net.pushover.client.PushoverMessage;
@@ -30,21 +38,12 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Cookie;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.Point;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.RemoteWebDriver;
 
-import com.assertthat.selenium_shutterbug.core.Shutterbug;
+
+import static com.sun.jna.platform.win32.WinGDI.BI_RGB;
+import static com.sun.jna.platform.win32.WinGDI.DIB_RGB_COLORS;
+import static com.sun.jna.platform.win32.WinUser.SW_RESTORE;
+import static com.sun.jna.platform.win32.WinUser.WS_ICONIC;
 
 public class MainThread implements Runnable {
 	public enum State {
@@ -463,10 +462,10 @@ public class MainThread implements Runnable {
 	private final int MAX_NUM_FAILED_RESTARTS = 5;
 	@SuppressWarnings("FieldCanBeLocal")
 	private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
-	private static WindowsDriver DesktopSession = null;
-	private static WindowsDriver driver;
+	/*private static WindowsDriver<WebElement> DesktopSession = null;
+	private static WindowsDriver<WebElement> driver;
 	private static JavascriptExecutor jsExecutor;
-	private static WebElement game;
+	private static WebElement game;*/
 	private State state; // at which stage of the game/menu are we currently?
 	private BufferedImage img; // latest screen capture
 
@@ -502,7 +501,7 @@ public class MainThread implements Runnable {
 	private long timeLastFishingCheck = 0; // when did we check for fishing baits the last time?
 	private long timeLastPOAlive = Misc.getTime(); // when did we send the last PO Notification?
 
-	/** Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale. */
+	/** Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting Steam. Or else it could get into loop and stale. */
 	private int numConsecutiveException = 0;
 //	/** Amount of ads that were offered in main screen since last restart. We need it in order to do restart() after 2 ads, since sometimes ads won't get offered anymore after two restarts. */
 //	private int numAdOffers = 0;
@@ -522,6 +521,9 @@ public class MainThread implements Runnable {
 
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
+
+	static WinDef.HWND BHHwnd;
+	static DesktopWindow BHWindow;
 
 	private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
@@ -685,7 +687,7 @@ public class MainThread implements Runnable {
 		addCue("Bounties", loadImage("cues/cueBounties.png"), new Bounds(320, 63, 480, 103));
 		addCue("Loot", loadImage("cues/cueLoot.png"), null);
 
-		addCue("News", loadImage("cues/cueSteamNewsPopup.png"), new Bounds(345, 110, 455, 170)); // news popup
+		addCue("News", loadImage("cues/cueSteamNewsPopup.png"), new Bounds(350, 90, 445, 140)); // news popup
 		addCue("Close", loadImage("cues/cueSteamClose.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
 
 		addCue("Ad", loadImage("cues/cueAd.png"), new Bounds(720, 100, 750, 410)); // main screen ad button cue. Note that sometimes it is higher up on the screen than other times (during GvG week, it will be higher up, above GvG icon)
@@ -965,114 +967,50 @@ public class MainThread implements Runnable {
 			}
 		}
 
-		DesiredCapabilities desktopCapabilities = new DesiredCapabilities();
-		desktopCapabilities.setCapability("platformName", "Windows");
-		desktopCapabilities.setCapability("deviceName", "WindowsPC");
-		desktopCapabilities.setCapability("app", "Root");
-
-		DesktopSession = new WindowsDriver(new URL("http://127.0.0.1:4723/wd/hub"), desktopCapabilities);
-		DesktopSession.manage().timeouts().implicitlyWait(10, TimeUnit.MINUTES);
-
-		WebElement BHWebElement = DesktopSession.findElementByName("Bit Heroes");
-		String BHWinHandleStr = BHWebElement.getAttribute("NativeWindowHandle");
-		int BHWinHandleInt = Integer.parseInt(BHWinHandleStr);
-		String BHWinHandleHex = Integer.toHexString(BHWinHandleInt);
-
-		DesiredCapabilities BHCapabilities = new DesiredCapabilities();
-		BHCapabilities.setCapability("platformName", "Windows");
-		BHCapabilities.setCapability("deviceName", "WindowsPC");
-		BHCapabilities.setCapability("appTopLevelWindow", BHWinHandleHex);
-		System.out.println("BH Handle is: " + BHWinHandleHex);
-
-		driver = new WindowsDriver(new URL("http://127.0.0.1:4723/wd/hub"), BHCapabilities);
-		// The Bit Heros application only has one element
-		game = driver.findElementByXPath("*");
-
-//		jsExecutor = (JavascriptExecutor) driver;
-	}
-
-	// http://www.qaautomationsimplified.com/selenium/selenium-webdriver-get-cookies-from-an-existing-session-and-add-those-to-a-newly-instantiated-webdriver-browser-instance/
-	// http://www.guru99.com/handling-cookies-selenium-webdriver.html
-	static void saveCookies() {
-		// create file named Cookies to store Login Information
-		File file = new File("Cookies.data");
-		try
-		{
-			// Delete old file if exists
-			Files.deleteIfExists(file.toPath());
-			boolean isCookieFile = file.createNewFile();
-			if (!isCookieFile) throw new Exception("Impossible to create cookie file!");
-			FileWriter fileWrite = new FileWriter(file);
-			BufferedWriter Bwrite = new BufferedWriter(fileWrite);
-			// loop for getting the cookie information
-			for (Cookie ck : driver.manage().getCookies()) {
-				Bwrite.write((ck.getName() + ";" + ck.getValue() + ";" + ck.getDomain() + ";" + ck.getPath() + ";" + (ck.getExpiry() == null ? 0 : ck.getExpiry().getTime()) + ";" + ck.isSecure()));
-				Bwrite.newLine();
-			}
-			Bwrite.flush();
-			Bwrite.close();
-			fileWrite.close();
-		} catch(Exception ex) {
-			BHBot.logger.error("Impossible to save cookies in saveCookies.");
-			BHBot.logger.error(Throwables.getStackTraceAsString(ex));
-		}
-
-		BHBot.logger.info("Cookies saved to disk.");
-	}
-
-	static void loadCookies() {
-		try{
-			File file = new File("Cookies.data");
-			FileReader fileReader = new FileReader(file);
-			BufferedReader Buffreader = new BufferedReader(fileReader);
-			String strline;
-			while((strline=Buffreader.readLine())!=null){
-				StringTokenizer token = new StringTokenizer(strline,";");
-				while(token.hasMoreTokens()){
-					String name = token.nextToken();
-					String value = token.nextToken();
-					String domain = token.nextToken();
-					String path = token.nextToken();
-
-					String val;
-					if(!(val=token.nextToken()).equals("null"))
-					{
-						new Date(Long.parseLong(val));
-					}
-					boolean isSecure = Boolean.parseBoolean(token.nextToken());
-					Cookie ck = new Cookie(name,value,domain,path, null,isSecure);
-					try {
-						driver.manage().addCookie(ck); // This will add the stored cookie to your current session
-					} catch (Exception e) {
-						BHBot.logger.error("Error while adding cookie");
-						BHBot.logger.error(Throwables.getStackTraceAsString(e));
-					}
+		Callable<Boolean> callable = () -> {
+			AtomicReference<Boolean> result = new AtomicReference<>(false);
+			WindowUtils.getAllWindows(false).forEach(desktopWindow -> {
+				if (desktopWindow.getTitle().contains("Bit Heroes") && !desktopWindow.getTitle().contains("Steam") ) {
+					BHHwnd = desktopWindow.getHWND();
+					BHWindow = desktopWindow;
+					result.set(true);
 				}
-			}
-			Buffreader.close();
-			fileReader.close();
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
+			});
 
-		BHBot.logger.info("Cookies loaded.");
+			return result.get();
+		};
+
+		RetryConfig config = new RetryConfigBuilder()
+				.retryOnAnyException()
+				.retryOnReturnValue(false)
+				.withDelayBetweenTries(500, ChronoUnit.MILLIS)
+				.withMaxNumberOfTries(20)
+				.withExponentialBackoff()
+				.build();
+
+		CallExecutor executor = new CallExecutorBuilder<>()
+				.config(config)
+				.onSuccessListener(s -> {  })
+        		.onFailureListener(s -> {  })
+				.afterFailedTryListener(s -> {  })
+				.beforeNextTryListener(s -> {  })
+				.onCompletionListener(s -> {  })
+				.build();
+
+		 executor.execute(callable);
+
 	}
 
 	void hideBrowser() {
-		driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
-		BHBot.logger.info("Chrome window has been hidden.");
+		Rectangle BHLocAndSize = BHWindow.getLocAndSize();
+		User32.INSTANCE.MoveWindow(BHHwnd, -10000, 0, BHLocAndSize.width, BHLocAndSize.height, true);
+		BHBot.logger.info("Bit Heroes window has been hidden.");
 	}
 
-	/*public void hideBrowserStartup() {
-		sleep(10000);
-		driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
-		BHBot.logger.info("Chrome window has been hidden.");
-	}*/
-
-
 	void showBrowser() {
-		driver.manage().window().setPosition(new Point(0, 0));
-		BHBot.logger.info("Chrome window has been restored.");
+		Rectangle BHLocAndSize = BHWindow.getLocAndSize();
+		User32.INSTANCE.MoveWindow(BHHwnd, 0, 0, BHLocAndSize.width, BHLocAndSize.height, true);
+		BHBot.logger.info("Bit Heroes window has been restored.");
 	}
 
 	private void dumpCrashLog() {
@@ -1097,6 +1035,14 @@ public class MainThread implements Runnable {
 		oneTimeshrineCheck = false; //reset first run shrine check in case its enabled after restarting
 	}
 
+	private void closeBHWindow() {
+		if (BHHwnd != null) {
+			User32.INSTANCE.SendMessage(BHHwnd, WinUser.WM_CLOSE, null, null);
+			BHHwnd = null;
+			BHWindow = null;
+		}
+	}
+
 	/**
 	 *
 	 * @param emergency true in case something bad happened (some kind of an error for which we had to do a restart)
@@ -1109,9 +1055,9 @@ public class MainThread implements Runnable {
 		}
 
 		try {
-			if (driver != null) driver.quit();
+			closeBHWindow();
 		} catch (Exception e) {
-			BHBot.logger.error("Error while quitting from Chromium");
+			BHBot.logger.error("Error while quitting from Bit Heroes");
 			BHBot.logger.error(Throwables.getStackTraceAsString(e));
 		}
 
@@ -1125,16 +1071,8 @@ public class MainThread implements Runnable {
 
 		} catch (Exception e) {
 
-			if (e instanceof org.openqa.selenium.NoSuchElementException)
-				BHBot.logger.warn("Problem: web element with id 'game' not found!");
 			if (e instanceof MalformedURLException)
 				BHBot.logger.warn("Problem: malformed url detected!");
-			if (e instanceof org.openqa.selenium.remote.UnreachableBrowserException) {
-				BHBot.logger.error("Impossible to connect to the browser. Make sure chromedirver is started. Will retry in a few minutes... (sleeping)");
-				sleep(5*MINUTE);
-				restart();
-				return;
-			}
 
 			numFailedRestarts++;
 			if (QUIT_AFTER_MAX_FAILED_RESTARTS && numFailedRestarts > MAX_NUM_FAILED_RESTARTS) {
@@ -1150,88 +1088,7 @@ public class MainThread implements Runnable {
 			}
 		}
 
-		/*detectSignInFormAndHandleIt(); // just in case (happens seldom though)
-
-		int vw = Math.toIntExact ((Long) jsExecutor.executeScript("return window.outerWidth - window.innerWidth + arguments[0];", game.getSize().width));
-		int vh = Math.toIntExact ((Long) jsExecutor.executeScript("return window.outerHeight - window.innerHeight + arguments[0];", game.getSize().height));
-		vw += 50; // compensate for scrollbars 70
-		vh += 30; // compensate for scrollbars 50
-		driver.manage().window().setSize(new Dimension(vw, vh));
-		scrollGameIntoView();*/
-
-		/*int counter = 0;
-		boolean restart = false;
-		while (true) {
-			try {
-				detectLoginFormAndHandleIt();
-			} catch (Exception e) {
-				counter++;
-				if (counter > 20) {
-					BHBot.logger.error("Error: <" + e.getMessage() + "> while trying to detect and handle login form. Restarting...");
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
-					restart = true;
-					break;
-				}
-
-				sleep(10*SECOND);
-				continue;
-			}
-			break;
-		}
-		if (restart) {
-			restart();
-			return;
-		}*/
-
-//		BHBot.logger.info("Window handle is: " + driver.getWindowHandle());
 		BHBot.logger.info("Game element found. Starting to run bot..");
-
-		//Code under is all debugging
-
-//		BHBot.logger.info("Current Raid tier unlocked set to R" + BHBot.settings.currentRaidTier + " in settings. Make sure this is correct!");
-//		String invasionSetting = Boolean.toString(collectedFishingRewards);
-//		BHBot.logger.info("doInvasions set to " + invasionSetting);
-//		BHBot.logger.info("Session id is: " + driver.getSessionId());
-
-//		for (String e : BHBot.settings.expeditions) { //cycle through array
-//			BHBot.logger.info(e);
-//		}
-//			BHBot.logger.info(Integer.toString(checkFamiliarCounter(fUpper)));
-//			int testCount = checkFamiliarCounter(f);
-//			String fam = f.toUpperCase().split(" ")[0];
-//			BHBot.logger.info(Integer.toString(checkFamiliarCounter(fam)));
-//			BHBot.logger.info(f);
-//			BHBot.logger.info(f.toUpperCase().split(" ")[0]);
-//			int catchCount = Integer.parseInt(f.split(" ")[1]);
-//			BHBot.logger.info(Integer.toString(catchCount));
-//		}
-
-//		for (String f : BHBot.settings.familiars) { //cycle through array
-//			String fUpper = f.toUpperCase().split(" ")[0];
-//			int catchCount = Integer.parseInt(f.split(" ")[1]);
-//			updateFamiliarCounter(fUpper, catchCount);
-//		}
-
-//		BHBot.logger.info(Integer.toString(BHBot.settings.minSolo));
-
-//		BHBot.logger.info("collectBounties = " + Boolean.toString(BHBot.settings.collectBounties));
-
-//		BHBot.logger.info("Dungeons run:");
-//		BHBot.logger.info(BHBot.settings.dungeonsRun);
-
-//		if (new SimpleDateFormat("EEE").format(new Date()).equals("Tue")) {
-//			BHBot.logger.info("Tuesday");
-//		} else BHBot.logger.info("Not Tuesday");
-
-//		BHBot.logger.info(Integer.toString(BHBot.settings.openSkeleton));
-
-//		BHBot.logger.info(Boolean.toString(BHBot.settings.worldBossSolo));
-//		BHBot.logger.info(Integer.toString(BHBot.settings.battleDelay));
-//		BHBot.logger.info(Integer.toString(BHBot.settings.shrineDelay));
-
-//		BHBot.logger.info(BHBot.settings.worldBossSettings);
-
-		//End debugging section
 
 		if ((BHBot.settings.doDungeons) && (BHBot.settings.doWorldBoss)) {
 			BHBot.logger.info("Both Dungeons and World Boss selected, disabling World Boss.");
@@ -1245,26 +1102,6 @@ public class MainThread implements Runnable {
 		BHBot.scheduler.resume(); // in case it was paused
 
 		numFailedRestarts = 0; // must be last line in this method!
-	}
-
-	private void scrollGameIntoView() {
-		WebElement element = driver.findElement(By.id("game"));
-
-		String scrollElementIntoMiddle = "var viewPortHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);"
-		                                            + "var elementTop = arguments[0].getBoundingClientRect().top;"
-		                                            + "window.scrollBy(0, elementTop-(viewPortHeight/2));";
-
-		((JavascriptExecutor) driver).executeScript(scrollElementIntoMiddle, element);
-		sleep(3000);
-		/*
-		 * Bellow code doesn't work well (it does not scroll horizontally):
-		 *
-		 * ((JavascriptExecutor)driver).executeScript("arguments[0].scrollIntoView(true);", game);
-		 */
-//		Actions actions = new Actions(driver);
-//		actions.moveToElement(game);
-//		sleep(5000);
-//		actions.perform();
 	}
 
 	public void run() {
@@ -1510,7 +1347,6 @@ public class MainThread implements Runnable {
 
 							sleep(5 * SECOND);
 
-							trySkippingAd();
 
 							//ReturnResult result = waitForAdAndCloseIt(true);
 
@@ -2904,18 +2740,11 @@ public class MainThread implements Runnable {
 
 				} // main screen processing
 			} catch (Exception e) {
-				if (e instanceof org.openqa.selenium.WebDriverException && e.getMessage().startsWith("chrome not reachable")) {
-					// this happens when user manually closes the Chrome window, for example
-					BHBot.logger.error("Error: chrome is not reachable! Restarting...");
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
-					restart();
-					continue;
-				} else if (e instanceof java.awt.image.RasterFormatException) {
+				if (e instanceof java.awt.image.RasterFormatException) {
 					// not sure in what cases this happen, but it happens
 					BHBot.logger.error("Error: RasterFormatException. Attempting to re-align the window...");
 					BHBot.logger.error(Throwables.getStackTraceAsString(e));
 					sleep(500);
-					scrollGameIntoView();
 					sleep(500);
 					try {
 						readScreen();
@@ -2926,19 +2755,6 @@ public class MainThread implements Runnable {
 					}
 					BHBot.logger.info("Realignment seems to have worked.");
 					continue;
-				} else if (e instanceof org.openqa.selenium.StaleElementReferenceException) {
-					// this is a rare error, however it happens. See this for more info:
-					// http://www.seleniumhq.org/exceptions/stale_element_reference.jsp
-					BHBot.logger.error("Error: StaleElementReferenceException. Restarting...");
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
-					restart();
-					continue;
-				} else if (e instanceof com.assertthat.selenium_shutterbug.utils.web.ElementOutsideViewportException) {
-					BHBot.logger.info("Error: ElementOutsideViewportException. Ignoring...");
-					//added this 1 second delay as attempting ads often triggers this
-					//will trigger the restart in the if statement below after 30 seconds
-					sleep(SECOND);
-					// we must not call 'continue' here, because this error could be a loop error, this is why we need to increase numConsecutiveException bellow in the code!
 				} else {
 					// unknown error!
 					BHBot.logger.error("Unmanaged exception in main run loop");
@@ -2966,8 +2782,7 @@ public class MainThread implements Runnable {
 		} // main while loop
 
 		BHBot.logger.info("Stopping main thread...");
-		driver.close();
-		driver.quit();
+
 		BHBot.logger.info("Main thread stopped.");
 	}
 
@@ -3137,101 +2952,6 @@ public class MainThread implements Runnable {
 	}
 
 	/**
-	 * This form opens only seldom (haven't figured out what triggers it exactly - perhaps some cookie expired?). We need to handle it!
-	 */
-	private void detectSignInFormAndHandleIt() {
-		// close the popup "create new account" form (that hides background):
-		WebElement btnClose;
-		try {
-			btnClose = driver.findElement(By.cssSelector("#kongregate_lightbox_wrapper > div.header_bar > a"));
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		btnClose.click();
-
-		// fill in username and password:
-		WebElement weUsername;
-		try {
-			weUsername = driver.findElement(By.xpath("//*[@id='username']"));
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		weUsername.clear();
-		weUsername.sendKeys(BHBot.settings.username);
-
-		WebElement wePassword;
-		try {
-			wePassword = driver.findElement(By.xpath("//*[@id='password']"));
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		wePassword.clear();
-		wePassword.sendKeys(BHBot.settings.password);
-
-		// press the "sign-in" button:
-		WebElement btnSignIn;
-		try {
-			btnSignIn = driver.findElement(By.id("sessions_new_form_spinner"));
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		btnSignIn.click();
-
-		BHBot.logger.info("Signed-in manually (sign-in prompt was open).");
-	}
-
-	/** Handles login screen (it shows seldom though. Perhaps because some cookie expired or something... anyway, we must handle it or else bot can't play the game anymore). */
-	private void detectLoginFormAndHandleIt() {
-		readScreen();
-
-		MarvinSegment seg = detectCue(cues.get("Login"));
-
-		if (seg == null)
-			return;
-
-		// open login popup window:
-		jsExecutor.executeScript("active_user.activateInlineLogin(); return false;"); // I found this code within page source itself (it gets triggered upon clicking on some button)
-
-		sleep(5000); // if we don't sleep enough, login form may still be loading and code bellow will not get executed!
-
-		// fill in username:
-		WebElement weUsername;
-		try {
-			weUsername = driver.findElement(By.cssSelector("body#play > div#lightbox > div#lbContent > div#kongregate_lightbox_wrapper > div#lightbox_form > div#lightboxlogin > div#new_session_shared_form > form > dl > dd > input#username"));
-		} catch (NoSuchElementException e) {
-			BHBot.logger.warn("Problem: username field not found in the login form (perhaps it was not loaded yet?)!");
-			return;
-		}
-		weUsername.clear();
-		weUsername.sendKeys(BHBot.settings.username);
-		BHBot.logger.info("Username entered into the login form.");
-
-		WebElement wePassword;
-		try {
-			wePassword = driver.findElement(By.cssSelector("body#play > div#lightbox > div#lbContent > div#kongregate_lightbox_wrapper > div#lightbox_form > div#lightboxlogin > div#new_session_shared_form > form > dl > dd > input#password"));
-		} catch (NoSuchElementException e) {
-			BHBot.logger.warn("Problem: password field not found in the login form (perhaps it was not loaded yet?)!");
-			return;
-		}
-		wePassword.clear();
-		wePassword.sendKeys(BHBot.settings.password);
-		BHBot.logger.info("Password entered into the login form.");
-
-		// press the "sign-in" button:
-		WebElement btnSignIn;
-		try {
-			btnSignIn = driver.findElement(By.cssSelector("body#play > div#lightbox > div#lbContent > div#kongregate_lightbox_wrapper > div#lightbox_form > div#lightboxlogin > div#new_session_shared_form > form > dl > dt#signin > input"));
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		btnSignIn.click();
-
-		BHBot.logger.info("Signed-in manually (we were signed-out).");
-
-		scrollGameIntoView();
-	}
-
-	/**
 	 * This will handle dialog that open up when you encounter a boss for the first time, for example, or open a raid window or trials window for the first time, etc.
 	 */
 	private void detectCharacterDialogAndHandleIt() {
@@ -3283,13 +3003,6 @@ public class MainThread implements Runnable {
 			BHBot.logger.info("Character dialog dismissed.");
 	}
 
-	private BufferedImage takeScreenshot(boolean ofGame) {
-		if (ofGame)
-			return Shutterbug.shootElement(driver, game).getImage();
-		else
-			return Shutterbug.shootPage(driver).getImage();
-	}
-
 	void readScreen() {
 		readScreen(false);
 	}
@@ -3313,7 +3026,54 @@ public class MainThread implements Runnable {
 	private void readScreen(int wait, boolean game) {
 		if (wait != 0)
 			sleep(wait);
-		img = takeScreenshot(game);
+
+		WinUser.WINDOWINFO info = new WinUser.WINDOWINFO();
+		User32.INSTANCE.GetWindowInfo(BHHwnd, info);
+
+		// we make sure the window is not minimized
+		if ((info.dwStyle & WS_ICONIC) == WS_ICONIC) {
+			User32.INSTANCE.ShowWindow(BHHwnd, SW_RESTORE);
+		}
+
+		WinDef.HDC hdcWindow = User32.INSTANCE.GetDC(BHHwnd);
+		WinDef.HDC hdcMemDC = GDI32.INSTANCE.CreateCompatibleDC(hdcWindow);
+
+		WinDef.RECT bounds = new WinDef.RECT();
+		User32.INSTANCE.GetClientRect(BHHwnd, bounds);
+
+		int width = bounds.right - bounds.left;
+		int height = bounds.bottom - bounds.top;
+
+		WinDef.HBITMAP hBitmap = GDI32.INSTANCE.CreateCompatibleBitmap(hdcWindow, width, height);
+
+		WinNT.HANDLE hOld = GDI32.INSTANCE.SelectObject(hdcMemDC, hBitmap);
+		GDI32.INSTANCE.BitBlt(hdcMemDC, 0, 0, width, height, hdcWindow, 0, 0, GDI32.SRCCOPY);
+
+		GDI32.INSTANCE.SelectObject(hdcMemDC, hOld);
+		GDI32.INSTANCE.DeleteDC(hdcMemDC);
+
+		WinGDI.BITMAPINFO bmi = new WinGDI.BITMAPINFO();
+		bmi.bmiHeader.biWidth = width;
+		bmi.bmiHeader.biHeight = -height;
+		bmi.bmiHeader.biPlanes = 1;
+		bmi.bmiHeader.biBitCount = 32;
+		bmi.bmiHeader.biCompression = BI_RGB;
+
+		int memorySize = width * height * 4;
+
+		if (memorySize > 0) {
+			Memory buffer = new Memory(width * height * 4);
+			GDI32.INSTANCE.GetDIBits(hdcWindow, hBitmap, 0, height, buffer, bmi, DIB_RGB_COLORS);
+
+			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			img.setRGB(0, 0, width, height, buffer.getIntArray(0, width * height), 0, width);
+		}
+
+		GDI32.INSTANCE.DeleteObject(hBitmap);
+		User32.INSTANCE.ReleaseDC(BHHwnd, hdcWindow);
+
+
+//		img = takeScreenshot(game);
 
 //		// detect and handle "Loading" message (this is optional operation though):
 //		Cue cue = cues.get("Loading");
@@ -3411,40 +3171,74 @@ public class MainThread implements Runnable {
 		return seg;
 	}
 
-	private int getSegCenterX(MarvinSegment seg) {
+	private long getSegCenterX(MarvinSegment seg) {
 		return (seg.x1 + seg.x2) / 2;
 	}
 
-	private int getSegCenterY(MarvinSegment seg) {
+	private long getSegCenterY(MarvinSegment seg) {
 		return (seg.y1 + seg.y2) / 2;
 	}
 
 	/** Moves mouse to position (0,0) in the 'game' element (so that it doesn't trigger any highlight popups or similar */
 	private void moveMouseAway() {
-		try {
-			Actions act = new Actions(driver);
-			act.moveToElement(game, 0, 0);
-			act.perform();
-		} catch(Exception e) {
-			// do nothing
+
+		WinDef.HWND focusHwnd = User32.INSTANCE.GetForegroundWindow();
+
+		if ( BHHwnd!= null && BHHwnd.equals(focusHwnd)) {
+			try {
+				User32.INSTANCE.SetCursorPos(0, 0);
+			} catch(Exception e) {
+				// do nothing
+			}
+		} else {
+			final int WM_LBUTTONDOWN = 513;
+
+			WinDef.LPARAM l = new WinDef.LPARAM(0);
+			WinDef.WPARAM w = new WinDef.WPARAM(0);
+
+			User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN, w, l);
+			User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN+1, w, l);
 		}
 	}
 
 	/** Performs a mouse click on the center of the given segment */
 	private void clickOnSeg(MarvinSegment seg) {
-		Actions act = new Actions(driver);
-		act.moveToElement(game, getSegCenterX(seg), getSegCenterY(seg));
-		act.click();
-		act.moveToElement(game, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
-		act.perform();
+
+		final int WM_LBUTTONDOWN = 513;
+
+		WinUser.WINDOWINFO info = new WinUser.WINDOWINFO();
+		User32.INSTANCE.GetWindowInfo(BHHwnd, info);
+
+		// we make sure the window is not minimized
+		if ((info.dwStyle & WS_ICONIC) == WS_ICONIC) {
+			User32.INSTANCE.ShowWindow(BHHwnd, SW_RESTORE);
+		}
+
+		long mousePos = getSegCenterX(seg) + ( getSegCenterY(seg) << 16); //x + (y << 16)
+		WinDef.LPARAM l = new WinDef.LPARAM(mousePos);
+		WinDef.WPARAM w = new WinDef.WPARAM(0);
+
+		User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN, w, l);
+		User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN+1, w, l);
+
+		moveMouseAway();
 	}
 
 	private void clickInGame(int x, int y) {
-		Actions act = new Actions(driver);
-		act.moveToElement(game, x, y);
-		act.click();
-		act.moveToElement(game, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
-		act.perform();
+		clickInGame((long) x, (long) y);
+	}
+
+	private void clickInGame(long x, long y) {
+		final int WM_LBUTTONDOWN = 513;
+
+		long mousePos = x + ( y << 16); //x + (y << 16)
+		WinDef.LPARAM l = new WinDef.LPARAM(mousePos);
+		WinDef.WPARAM w = new WinDef.WPARAM(0);
+
+		User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN, w, l);
+		User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN+1, w, l);
+
+		moveMouseAway();
 	}
 
 	private void sleep(int milliseconds) {
@@ -3607,183 +3401,6 @@ public class MainThread implements Runnable {
 		value = value + 2; //add the last 2 pixels to get an accurate count
 //		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxBadges / 77.0f)));
 		return Math.round(value * (maxBadges / 75.0f)); // scale it to interval [0..10]
-	}
-
-	/**
-	 * Ad window must be open in order for this to work. Either dungeon video ad popup or main screen video pop up (works with both,
-	 * though they are different windows).
-	 *
-	 * @return true in case it successfully skipped an ad
-	 */
-
-	//TODO Farm ads again
-
-	ReturnResult trySkippingAd() {
-
-//			Actions act = new Actions(driver);
-//			act.moveToElement(adWindow, 1, 1);
-//			act.click();
-//			act.moveToElement(adWindow, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
-//			act.perform();
-
-			//save current tab to variable
-//			String oldTab = driver.getWindowHandle();
-			BHBot.logger.info(driver.getWindowHandle());
-
-			//set Read Article xpath to variable and click using selenium
-			WebElement openWindow;
-			try {
-				openWindow = driver.findElement(By.xpath("//*[@id=\"play\"]/div[20]/div[1]/div[3]"));
-			} catch (NoSuchElementException e) {
-				return ReturnResult.error("Cannot find the close button on 'out of offers' ad window!");
-			}
-			openWindow.click();
-			BHBot.logger.info("Attempted to click button");
-
-			sleep(2000);
-
-//			Actions act = new Actions(driver);
-//			act.sendKeys(Keys.chord(Keys.CONTROL, "a"));
-
-			driver.switchTo().window("Bit Heroes");
-
-//			driver.close();
-
-			//*[@id="play"]/div[20]/div[1]/div[3]
-
-//			ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
-//			BHBot.logger.info(tabs);
-//
-//			sleep(1000);
-//
-//			driver.switchTo().window(oldTab);
-//
-//			sleep(1000);
-//
-//		    for(String handle : driver.getWindowHandles()) {
-//		        if (!handle.equals(oldTab)) {
-//		            driver.switchTo().window(oldTab);
-//		            driver.close();
-//		        }
-//		    }
-
-
-//			//wait for ad to load, and change back to original tab
-//			sleep(10*SECOND);
-//		    driver.switchTo().window(oldTab);
-//		    //pause just in case
-//		    sleep(5*SECOND);
-//		    //set 'X' close button xpath to variable and click using selenium
-
-//			WebElement closeAdButton;
-//			try {
-//				closeAdButton = driver.findElement(By.xpath("//*[@id=\"play\"]/div[20]/div[1]/div[3]"));
-//			} catch (NoSuchElementException e) {
-//				return ReturnResult.error("Cannot find the close");
-//			}
-//			closeAdButton.click();
-//			//pause just in case
-//			sleep(5*SECOND);
-
-//			WebElement btnSignIn;
-//			try {
-//				btnSignIn = driver.findElement(By.id("sessions_new_form_spinner"));
-//			} catch (NoSuchElementException e) {
-//				return;
-//			}
-//			btnSignIn.click();
-			return ReturnResult.ok();
-	}
-
-	/**
-	 *
-	 * @param closeItemsPopup if true, then this method will attempt to close the items popup window at the end of the process of claiming ad.
-	 * We get that window when in the main screen of the game
-	 *
-	 * @return false means that the caller must restart bot (due to an error).
-	 */
-	public ReturnResult waitForAdAndCloseIt(boolean closeItemsPopup) {
-		boolean done = false;
-		long timer = Misc.getTime();
-		do {
-			if (Misc.getTime() - timer > 60*SECOND) break;
-
-			sleep(500);
-			try {
-				// see if we're out of offers:
-				try {
-					boolean outOfOffers = driver.findElement(By.cssSelector("#epom-tag-container-overlay > div > span")).getText().equalsIgnoreCase(":("); // "We're out of offers to show in your region" message
-					if (outOfOffers) {
-						BHBot.logger.info("Seems there are no ad offers available anymore in our region. Skipping ad offer...");
-
-						// click the close button:
-						WebElement btnClose;
-						try {
-							btnClose = driver.findElement(By.xpath("//*[@id=\"play\"]/div[20]/div[1]/div[3]"));
-						} catch (NoSuchElementException e) {
-							return ReturnResult.error("Cannot find the close button on 'out of offers' ad window!");
-						}
-						btnClose.click();
-
-						sleep(2000); // wait for ad window to fade out (it slowly fades out)
-
-//						boolean skipped = trySkippingAd();
-
-//						BHBot.logger.info("Ad " + (skipped ? "successfully" : "unsuccessfully") +  " skipped! (location: " + state.getName() + ")");
-
-						return ReturnResult.ok();
-					}
-				} catch (Exception e) {
-					BHBot.logger.error("Error #1 in Ad management");
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
-				}
-
-				done = driver.findElement(By.cssSelector("#play > div.ironrv-container.open > div.ironrv-container-header.complete > div.ironrv-title > span")).getText().equalsIgnoreCase("You can now claim your reward!");
-				if (done) {
-					// click the close button:
-					WebElement btnClose;
-					try {
-						/*
-						 		Close button:
-								//*[@id="play"]/div[14]/div[1]/div[3]
-								#play > div.ironrv-container.open > div.ironrv-container-header.complete > div.ironrv-close
-								<div class="ironrv-close " style="">X</div>
-						 */
-						btnClose = driver.findElement(By.cssSelector("#play > div.ironrv-container.open > div.ironrv-container-header.complete > div.ironrv-close"));
-					} catch (NoSuchElementException e) {
-						return ReturnResult.error("Cannot find the close button on finished ad window!");
-					}
-					btnClose.click();
-
-					break;
-				}
-			} catch (Exception e) {
-				BHBot.logger.error("Error #2 in Ad management");
-				BHBot.logger.error(Throwables.getStackTraceAsString(e));
-			}
-		} while (!done);
-
-		if (!done) {
-			return ReturnResult.error("Could not claim ad reward... timeout!");
-		} else {
-			if (closeItemsPopup) {
-				sleep(5*SECOND);
-				//scrollGameIntoView();
-				readScreen();
-
-				MarvinSegment seg = detectCue(cues.get("Items"), 5*SECOND);
-				if (seg == null) {
-					return ReturnResult.error("There is no 'Items' button after watching the ad.");
-				}
-
-				seg = detectCue(cues.get("X"));
-				clickOnSeg(seg);
-
-				sleep(2 * SECOND);
-			}
-			BHBot.logger.info("Ad reward successfully claimed! (location: " + state.getName() + ")");
-			return ReturnResult.ok();
-		}
 	}
 
 	/**
@@ -5696,9 +5313,10 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
 		int move = newType - currentType;
 
-		Point pos = center.moveBy(move*26, 0);
+		// TODO Fix moveBy
+//		Point pos = center.moveBy(move*26, 0);
 
-		clickInGame(pos.x, pos.y);
+//		clickInGame(pos.x, pos.y);
 
 		return true;
 	}
@@ -5710,25 +5328,9 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	 * @return name of the path in which the screenshot has been saved (successfully or not)
 	 */
 	String saveGameScreen(String prefix) {
-		Date date = new Date();
-		String name = prefix + "_" + dateFormat.format(date) + ".png";
-		int num = 0;
-		File f = new File(BHBot.screenshotPath + name);
-		while (f.exists()) {
-			num++;
-			name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
-			f = new File(BHBot.screenshotPath + name);
-		}
 
-		// save screen shot:
-		try {
-			Shutterbug.shootPage(driver, false).withName(name.substring(0, name.length()-4)).save();
-		} catch (Exception e) {
-			BHBot.logger.error("Error while saving game screenshot");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
-		}
-
-		return BHBot.screenshotPath + name;
+		readScreen();
+		return saveGameScreen(prefix, img);
 	}
 
 	private String saveGameScreen(String prefix, BufferedImage img) {

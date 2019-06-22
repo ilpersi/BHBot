@@ -112,17 +112,17 @@
 
 
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
         <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-            <version>3.141.59</version>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>28.0-jre</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.assertthat/selenium-shutterbug -->
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
-            <groupId>com.assertthat</groupId>
-            <artifactId>selenium-shutterbug</artifactId>
-            <version>0.9</version>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.github.ilpersi/pushover-client -->
         <dependency>
@@ -143,9 +143,21 @@
             <version>1.18</version>
         </dependency>
         <dependency>
-            <groupId>io.appium</groupId>
-            <artifactId>java-client</artifactId>
-            <version>6.1.0</version>
+            <groupId>com.evanlennick</groupId>
+            <artifactId>retry4j</artifactId>
+            <version>0.15.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna -->
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.3.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform -->
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-platform</artifactId>
+            <version>5.3.1</version>
         </dependency>
     </dependencies>
 
