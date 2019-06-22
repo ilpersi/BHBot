@@ -14,6 +14,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.TimeUnit ;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
@@ -1631,12 +1632,9 @@ public class MainThread implements Runnable {
 					if (BHBot.settings.collectFishingBaits && ((Misc.getTime() - timeLastFishingCheck > FISHING_CHECK_INTERVAL) || timeLastFishingCheck == 0)) {
 						timeLastFishingCheck = Misc.getTime();
 						handleFishingBaits();
+						continue;
 					}
 					
-					if (BHBot.settings.doFishing && !fished) {
-						handleFishing();
-						fished = true;
-					}
 					
 					//faster testing
 //					oneTimeshrineCheck = true;
@@ -6937,7 +6935,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         seg = detectCue(cues.get("Fishing"), SECOND * 5);
         if (seg != null) {
             clickOnSeg(seg);
-            sleep(SECOND * 2); // we allow some seconds as maybe the reward popup is sliding down
+            sleep(SECOND * 1); // we allow some seconds as maybe the reward popup is sliding down
 
             detectCharacterDialogAndHandleIt();
 
@@ -6948,7 +6946,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     saveGameScreen("fishing-baits");
                     clickOnSeg(seg);
                     BHBot.logger.info("Correctly collected fishing baits");
-                    sleep(SECOND * 2);
+                    sleep(SECOND * 1);
                     readScreen();
                 } else {
                     BHBot.logger.error("Something weng wrong while collecting fishing baits, restarting...");
@@ -6956,16 +6954,30 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     restart();
                 }
             }
+            
+			if (BHBot.settings.doFishing && !fished) {
+				handleFishing();
+				fished = true;
+			}
 
             seg = detectCue(cues.get("X"), 5 * SECOND);
             if (seg != null) {
                 clickOnSeg(seg);
-                sleep(SECOND * 2);
+                sleep(SECOND * 1);
                 readScreen();
             } else {
+            	if (!BHBot.settings.doFishing) {
                 BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
                 saveGameScreen("fishing-error-closing");
                 restart();
+            	}
+            }
+            
+            if (BHBot.settings.doFishing) {
+            seg = detectCue(cues.get("FishingClose"), 5 * SECOND);
+	            if (seg != null) {
+	                clickOnSeg(seg);
+	            }
             }
 
         } else {
@@ -7481,7 +7493,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	
 	void handleFishing() {
 		MarvinSegment seg;
-		int fishingTime = (BHBot.settings.baitAmount * 30)/60; //pause for around 30 sconds per bait used
+		int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 sconds per bait used, plus 10 seconds buffer
 
         seg = detectCue(cues.get("Fishing"), SECOND * 5);
         if (seg != null) {
@@ -7494,34 +7506,37 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         seg = detectCue(cues.get("Play"), SECOND * 5);
         if (seg != null) {
             clickOnSeg(seg);
-            sleep(SECOND * 12); // Long pause while we get in position to fish
+//            sleep(SECOND * 12); // Long pause while we get in position to fish
         }
         
-		
-		try{    
-		    Process p = Runtime.getRuntime().exec("cmd /c \"cd DIRECTORY & fishing.exe\" " + BHBot.settings.rodType + " " + BHBot.settings.baitAmount);
-		    p.waitFor();
-		    
-		    BHBot.logger.info("Pausing for " + fishingTime + " minutes to fish");
-			BHBot.scheduler.pause();
-			sleep(fishingTime * MINUTE);
-			BHBot.scheduler.resume();
-			
-			p.destroy();
-
-		}catch( IOException ex ){
-		    BHBot.logger.error("Can't start fisher.exe");
-
-		}catch( InterruptedException ex ){
-		    BHBot.logger.error("Can't start fisher.exe");
-		}
-		
-		
-        seg = detectCue(cues.get("FishingClose"), SECOND * 5);
+        seg = detectCue(cues.get("Start"), SECOND * 20);
         if (seg != null) {
-            clickOnSeg(seg);
-            sleep(SECOND * 2); // Long pause while we get in position to fish
-        }
+			try{    
+				BHBot.scheduler.pause();
+			    BHBot.logger.info("Pausing for " + fishingTime + " seconds to fish");
+				
+				Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fishing.exe\" " + BHBot.settings.rodType + " " + BHBot.settings.baitAmount);
+				if (!fisher.waitFor(fishingTime, TimeUnit.SECONDS)) { //run and wait for fishingTime seconds
+					BHBot.scheduler.resume();
+	//			    fisher.destroyForcibly(); // consider using destroyForcibly instead
+				}
+				
+				Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisher-v1.2.4.exe\"\"");
+				if (!fisherClose.waitFor(1, TimeUnit.SECONDS)) { //run and wait for one second
+				}
+	
+			}catch( IOException ex ){
+			    BHBot.logger.error("Can't start fisher.exe");
+			}catch( InterruptedException ex ){
+			    BHBot.logger.error("Can't start fisher.exe");
+			}
+		} else BHBot.logger.info("start not found");
+		
+//        seg = detectCue(cues.get("FishingClose"), SECOND * 5);
+//        if (seg != null) {
+//            clickOnSeg(seg);
+//            sleep(SECOND * 2); // Long pause while we get in position to fish
+//        }
 	}
 
 }
