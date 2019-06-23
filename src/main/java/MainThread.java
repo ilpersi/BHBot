@@ -534,7 +534,7 @@ public class MainThread implements Runnable {
 			try {
 				img = ImageIO.read(resourceURL);
 			} catch (IOException e) {
-				BHBot.logger.error(Throwables.getStackTraceAsString(e));
+				BHBot.logger.error("Error while loading Image", e);
 			}
 		} else {
 			BHBot.logger.error("Error with resource: " + f);
@@ -542,7 +542,7 @@ public class MainThread implements Runnable {
 //			img = ImageIO.read(new File(f));
 //		} catch (IOException e) {
 //			BHBot.logger.error("Error while loading image");
-//			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+//			BHBot.logger.error("Error while loading image", e);
 		}
 
 		return img;
@@ -579,8 +579,7 @@ public class MainThread implements Runnable {
 						resource = br.readLine();
 						if (resource == null) break;
 					} catch (IOException e) {
-						BHBot.logger.error("Error while reading resources in loadCueFoler");
-						BHBot.logger.error(Throwables.getStackTraceAsString(e));
+						BHBot.logger.error("Error while reading resources in loadCueFoler", e);
 						continue;
 					}
 					int dotPosition = resource.lastIndexOf('.');
@@ -604,8 +603,7 @@ public class MainThread implements Runnable {
 				try {
 					decodedURL = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
 				} catch (UnsupportedEncodingException e) {
-					BHBot.logger.error("Impossible to decode pat for jar: " + jarPath);
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					BHBot.logger.error("Impossible to decode pat for jar: " + jarPath, e);
 					return totalLoaded;
 				}
 
@@ -613,8 +611,7 @@ public class MainThread implements Runnable {
 				try {
 					jar = new JarFile(decodedURL);
 				} catch (IOException e) {
-					BHBot.logger.error("Impossible to open JAR file : " + decodedURL);
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					BHBot.logger.error("Impossible to open JAR file : " + decodedURL, e);
 					return totalLoaded;
 				}
 
@@ -1058,8 +1055,7 @@ public class MainThread implements Runnable {
 		try {
 			closeBHWindow();
 		} catch (Exception e) {
-			BHBot.logger.error("Error while quitting from Bit Heroes");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error while quitting from Chromium", e);
 		}
 
 		// disable some annoying INFO messages:
@@ -1081,8 +1077,7 @@ public class MainThread implements Runnable {
 				finished = true;
 				return;
 			} else {
-				BHBot.logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)");
-				BHBot.logger.error(Throwables.getStackTraceAsString(e));
+				BHBot.logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)", e);
 				sleep(5*MINUTE);
 				restart();
 				return;
@@ -2743,8 +2738,7 @@ public class MainThread implements Runnable {
 			} catch (Exception e) {
 				if (e instanceof java.awt.image.RasterFormatException) {
 					// not sure in what cases this happen, but it happens
-					BHBot.logger.error("Error: RasterFormatException. Attempting to re-align the window...");
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					BHBot.logger.error("Error: RasterFormatException. Attempting to re-align the window...", e);
 					sleep(500);
 					sleep(500);
 					try {
@@ -2758,8 +2752,7 @@ public class MainThread implements Runnable {
 					continue;
 				} else {
 					// unknown error!
-					BHBot.logger.error("Unmanaged exception in main run loop");
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					BHBot.logger.error("Unmanaged exception in main run loop", e);
 				}
 
 				numConsecutiveException++;
@@ -3246,8 +3239,7 @@ public class MainThread implements Runnable {
 		try {
 			Thread.sleep(milliseconds);
 		} catch (InterruptedException e) {
-			BHBot.logger.error("Error while attempting to sleep");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error while attempting to sleep", e);
 		}
 	}
 
@@ -5391,7 +5383,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		try {
 			ImageIO.write(zoneImg, "png", zoneImgTmp);
 		} catch (IOException e) {
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("", e);
 		}*/
 
 		int minX = zoneImg.getWidth();
@@ -5421,8 +5413,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		try {
 			ImageIO.write(nameImg, "png", nameImgFile);
 		} catch (IOException e) {
-			BHBot.logger.error("Error while creating contribution file");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error while creating contribution file", e);
 		}
 
 		MimetypesFileTypeMap ftm = new MimetypesFileTypeMap();
@@ -5436,15 +5427,13 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		try {
 			post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
-			BHBot.logger.error("Error while encoding POST request in contribution");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error while encoding POST request in contribution", e);
 		}
 
 		try {
 			httpClient.execute(post);
 		} catch (IOException e) {
-			BHBot.logger.error("Error while executing HTTP request in contribution");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error while executing HTTP request in contribution", e);
 		}
 
 		if (!nameImgFile.delete()) {
@@ -6188,8 +6177,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			if (seg != null)
 				clickOnSeg(seg);
 		} catch (Exception e) {
-			BHBot.logger.error("Error in tryClosingWindow");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error in tryClosingWindow", e);
 		}
 	}
 
@@ -6777,8 +6765,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 								.setAttachment(attachment)
 								.build());
 			} catch (PushoverException e) {
-				BHBot.logger.error("Error while sending Pushover message");
-				BHBot.logger.error(Throwables.getStackTraceAsString(e));
+				BHBot.logger.error("Error while sending Pushover message", e);
 			}
 		}
 	}
@@ -6815,8 +6802,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                             resource = br.readLine();
                             if (resource == null) break;
                         } catch (IOException e) {
-                            BHBot.logger.error("Error while reading resources in printFamiliars");
-                            BHBot.logger.error(Throwables.getStackTraceAsString(e));
+                            BHBot.logger.error("Error while reading resources in printFamiliars", e);
                             continue;
                         }
                         int dotPosition = resource.lastIndexOf('.');
@@ -6837,8 +6823,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     try {
                         decodedURL = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
                     } catch (UnsupportedEncodingException e) {
-                        BHBot.logger.error("Impossible to decode path for jar in printFamiliars: " + jarPath);
-                        BHBot.logger.error(Throwables.getStackTraceAsString(e));
+                        BHBot.logger.error("Impossible to decode path for jar in printFamiliars: " + jarPath, e);
                         return;
                     }
 
@@ -6846,8 +6831,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     try {
                         jar = new JarFile(decodedURL);
                     } catch (IOException e) {
-                        BHBot.logger.error("Impossible to open JAR file in printFamiliars: " + decodedURL);
-                        BHBot.logger.error(Throwables.getStackTraceAsString(e));
+                        BHBot.logger.error("Impossible to open JAR file in printFamiliars: " + decodedURL, e);
                         return;
                     }
 
