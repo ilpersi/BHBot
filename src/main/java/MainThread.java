@@ -2811,7 +2811,7 @@ public class MainThread implements Runnable {
 							//new settings loading
 
 							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
-							String worldBossNameText = worldBossType == "o" ? "Orlag Clan" : worldBossType == "n" ? "Netherworld" : "Melvin Factory";
+							String worldBossNameText =  "o".equals(worldBossType) ? "Orlag Clan" :  "n".equals(worldBossType) ? "Netherworld" : "Melvin Factory";
 							if (!BHBot.settings.worldBossSolo) {
 								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossNameText + ". Lobby timeout is " +  worldBossTimer + "s.");
 							} else {
@@ -5814,11 +5814,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	}
 
 	private void changeSelectedWorldBoss(String bossname) {
-		if (bossname.contentEquals("Orlag"))
+		if (bossname.contentEquals("o"))
 			clickInGame(376, 445);
-		else if (bossname.contentEquals("Nether"))
+		else if (bossname.contentEquals("n"))
 			clickInGame(401, 445);
-		else if (bossname.contentEquals("Melvin"))
+		else if (bossname.contentEquals("m"))
 			clickInGame(426, 445);
 	}
 
