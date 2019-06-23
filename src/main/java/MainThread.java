@@ -1306,7 +1306,7 @@ public class MainThread implements Runnable {
 			oneTimeRuneCheck = true;
 		}
 
-		if ((BHBot.settings.doDungeons) && (BHBot.settings.doWorldBoss)) {
+		if ((BHBot.settings.activitysEnabled.contains("d")) && (BHBot.settings.activitysEnabled.contains("w"))) {
 			BHBot.logger.info("Both Dungeons and World Boss selected, disabling World Boss.");
 			BHBot.logger.info("To run a mixture of both use a low lobby timer and enable dungeonOnTimeout");
 			BHBot.settings.doWorldBoss = false;
