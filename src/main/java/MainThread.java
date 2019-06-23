@@ -911,7 +911,8 @@ public class MainThread implements Runnable {
 		addCue("NetherSelected", loadImage("cues/cueNetherSelected.png"), null);
 		addCue("Private", loadImage("cues/cuePrivate.png"), new Bounds(310, 320, 370, 380));
 		addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
-		addCue("WorldBossTier", loadImage("cues/cueWorldBossTier.png"), new Bounds(300, 180, 500, 250));
+		addCue("WorldBossTier1", loadImage("cues/cueWorldBossTier1.png"), new Bounds(300, 180, 500, 250));
+		addCue("WorldBossTier2", loadImage("cues/cueWorldBossTier2.png"), new Bounds(300, 180, 500, 250));
 		addCue("WorldBossDifficultyNormal", loadImage("cues/cueWorldBossDifficultyNormal.png"), new Bounds(325, 277, 444, 320));
 		addCue("WorldBossDifficultyHard", loadImage("cues/cueWorldBossDifficultyHard.png"), new Bounds(325, 277, 444, 320));
 		addCue("WorldBossDifficultyHeroic", loadImage("cues/cueWorldBossDifficultyHeroic.png"), new Bounds(325, 277, 444, 320));
@@ -2544,7 +2545,7 @@ public class MainThread implements Runnable {
 							//new settings loading
 
 							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
-							String worldBossNameText = worldBossType == "o" ? "Orlag Clan" : worldBossType == "n" ? "Netherworld" : "Melvin Factory";
+							String worldBossNameText =  "o".equals(worldBossType) ? "Orlag Clan" :  "n".equals(worldBossType) ? "Netherworld" : "Melvin Factory";
 							if (!BHBot.settings.worldBossSolo) {
 								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossNameText + ". Lobby timeout is " +  worldBossTimer + "s.");
 							} else {
@@ -2589,19 +2590,19 @@ public class MainThread implements Runnable {
 							//world boss tier selection
 
 							int currentTier = detectWorldBossTier();
-							if (currentTier != BHBot.settings.worldBossTier) {
-								BHBot.logger.info("T" + currentTier + " detected, changing to T" + BHBot.settings.worldBossTier);
-								changeWorldBossTier(BHBot.settings.worldBossTier);
+							if (currentTier != worldBossTier) {
+								BHBot.logger.info("T" + currentTier + " detected, changing to T" + worldBossTier);
+								changeWorldBossTier(worldBossTier);
 							}
 
 							//world boss difficulty selection
 
 							int currentDifficulty = detectWorldBossDifficulty();
 							String currentDifficultyName = (currentDifficulty == 1 ? "Normal" : currentDifficulty == 2 ? "Hard" : "Heroic");
-							String settingsDifficultyName = (BHBot.settings.worldBossDifficulty == 1 ? "Normal" : BHBot.settings.worldBossDifficulty == 2 ? "Hard" : "Heroic");
-							if (currentDifficulty != BHBot.settings.worldBossDifficulty) {
+							String settingsDifficultyName = (worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic");
+							if (currentDifficulty != worldBossDifficulty) {
 								BHBot.logger.info(currentDifficultyName + " detected, changing to " + settingsDifficultyName);
-								changeWorldBossDifficulty(BHBot.settings.worldBossDifficulty);
+								changeWorldBossDifficulty(worldBossDifficulty);
 							}
 
 							sleep(SECOND); //wait for screen to stablise
@@ -5287,11 +5288,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	}
 
 	private void changeSelectedWorldBoss(String bossname) {
-		if (bossname.contentEquals("Orlag"))
+		if (bossname.contentEquals("o"))
 			clickInGame(376, 445);
-		else if (bossname.contentEquals("Nether"))
+		else if (bossname.contentEquals("n"))
 			clickInGame(401, 445);
-		else if (bossname.contentEquals("Melvin"))
+		else if (bossname.contentEquals("m"))
 			clickInGame(426, 445);
 	}
 
@@ -5701,9 +5702,12 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		if (BHBot.settings.worldBossSettings.get(0).equals("m")) return 10;
 
 		readScreen();
-		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),SECOND);
+		MarvinSegment seg;
+		seg = detectCue(cues.get("WorldBossTier1"),SECOND);
+		if (seg == null) seg = detectCue(cues.get("WorldBossTier2"),SECOND);
+
 		if (seg == null) {
-			BHBot.logger.error("Error: unable to detect world boss difficulty selection box!");
+			BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
 			saveGameScreen("early_error");
 			return 0; // error
 		}
@@ -5725,9 +5729,12 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	}
 
 	private void changeWorldBossTier(int target) {
-		MarvinSegment seg = detectCue(cues.get("WorldBossTier"),SECOND);
+		MarvinSegment seg;
+		seg = detectCue(cues.get("WorldBossTier1"),SECOND);
+		if (seg == null) seg = detectCue(cues.get("WorldBossTier2"),SECOND);
+
 		if (seg == null) {
-			BHBot.logger.error("Error: unable to detect world boss difficulty selection box!");
+			BHBot.logger.error("Error: unable to detect world boss difficulty selection box in changeWorldBossTier!");
 			saveGameScreen("early_error");
 			restart();
 		}
