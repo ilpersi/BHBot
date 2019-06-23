@@ -1671,7 +1671,7 @@ public class MainThread implements Runnable {
 //					}
 					
 					currentActivity = activitySelector(); //else select the activity to attempt
-					BHBot.logger.debug("Checking activity: " + currentActivity);
+					if (currentActivity != null) BHBot.logger.debug("Checking activity: " + currentActivity);
 					
 
 					// check for shards:
