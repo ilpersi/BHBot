@@ -94,8 +94,7 @@ public class BHBot {
 			properties.load(BHBot.class.getResourceAsStream("/pom.properties"));
 			BHBotVersion = properties.getProperty("version");
 		} catch (IOException e) {
-			logger.error("Impossible to get pom.properties from jar");
-			logger.error(Throwables.getStackTraceAsString(e));
+			logger.error("Impossible to get pom.properties from jar", e);
 			BHBotVersion = "UNKNOWN";
 		}
 
@@ -136,16 +135,14 @@ public class BHBot {
 				//System.out.print("> ");
 				s = br.readLine();
 			} catch (IOException e) {
-				logger.error("Impossible to read user input");
-				logger.error(Throwables.getStackTraceAsString(e));
+				logger.error("Impossible to read user input", e);
 				return;
 			}
 			try {
 				logger.info("User command: <" + s + ">");
 				processCommand(s);
 			} catch (Exception e) {
-				logger.error("Impossile to process user command: " + s);
-				logger.error(Throwables.getStackTraceAsString(e));
+				logger.error("Impossile to process user command: " + s, e);
 			}
 		}
 
@@ -155,7 +152,7 @@ public class BHBot {
 				logger.info("Waiting for main thread to finish... (timeout=10s)");
 				mainThread.join(10*MainThread.SECOND);
 			} catch (InterruptedException e) {
-				logger.error(Throwables.getStackTraceAsString(e));
+				logger.error("Error when joining Main Thread", e);
 			}
 			if (mainThread.isAlive()) {
 				logger.warn("Main thread is still alive. Force stopping it now...");
@@ -163,7 +160,7 @@ public class BHBot {
 				try {
 					mainThread.join(); // until thread stops
 				} catch (InterruptedException e) {
-					logger.error(Throwables.getStackTraceAsString(e));
+					logger.error("Error while force stopping", e);
 				}
 			}
 		}
@@ -476,8 +473,7 @@ public class BHBot {
 			try {
 				logger.debug("Found Chromium in " + chromiumExe.getCanonicalPath());
 			} catch (IOException e) {
-				logger.error("Error while getting Canonical Path for Chromium");
-				logger.error(Throwables.getStackTraceAsString(e));
+				logger.error("Error while getting Canonical Path for Chromium", e);
 			}
 		}
 
@@ -488,8 +484,7 @@ public class BHBot {
 			try {
 				logger.debug("Found chromedriver in " + chromeDriverExe.getCanonicalPath());
 			} catch (IOException e) {
-				logger.error("Error while getting Canonical Path for chromedriver");
-				logger.error(Throwables.getStackTraceAsString(e));
+				logger.error("Error while getting Canonical Path for chromedriver", e);
 			}
 		}
 
@@ -501,16 +496,14 @@ public class BHBot {
 				try {
 					logger.info("Created screenshot folder in " + screenPath.getCanonicalPath());
 				} catch (IOException e) {
-					logger.error("Error while getting Canonical Path for newly created screenshots");
-					logger.error(Throwables.getStackTraceAsString(e));
+					logger.error("Error while getting Canonical Path for newly created screenshots", e);
 				}
 			}
 		} else {
 			try {
 				logger.debug("Found screenshots in " + screenPath.getCanonicalPath());
 			} catch (IOException e) {
-				logger.error("Error while getting Canonical Path for screenshots");
-				logger.error(Throwables.getStackTraceAsString(e));
+				logger.error("Error while getting Canonical Path for screenshots", e);
 			}
 		}
 
@@ -519,8 +512,7 @@ public class BHBot {
 				logger.warn("Found cues in '" + cuePath.getCanonicalPath() +
 						"'. This folder is no longer required as all the cues are now part of the jar file.");
 			} catch (IOException e) {
-				logger.error("Error while checking cues folder");
-				logger.error(Throwables.getStackTraceAsString(e));
+				logger.error("Error while checking cues folder", e);
 			}
 		}
 
@@ -546,8 +538,7 @@ public class BHBot {
 		try {
 			response = httpClient.execute(getReq);
 		} catch (IOException e) {
-			logger.error("Impossible to reach GitHub latest release endpoing");
-			logger.error(Throwables.getStackTraceAsString(e));
+			logger.error("Impossible to reach GitHub latest release endpoing", e);
 			return;
 		}
 
@@ -564,8 +555,7 @@ public class BHBot {
 				lastReleaseInfo = gson.fromJson(EntityUtils.toString(response.getEntity()), GitHubRelease.class);
 
 			} catch (IOException e) {
-				logger.error("Error while parsing GitHub latest release JSON.");
-				logger.error(Throwables.getStackTraceAsString(e));
+				logger.error("Error while parsing GitHub latest release JSON.", e);
 				return;
 			}
 

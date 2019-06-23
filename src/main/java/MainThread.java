@@ -536,7 +536,7 @@ public class MainThread implements Runnable {
 			try {
 				img = ImageIO.read(resourceURL);
 			} catch (IOException e) {
-				BHBot.logger.error(Throwables.getStackTraceAsString(e));
+				BHBot.logger.error("Error while loading Image", e);
 			}
 		} else {
 			BHBot.logger.error("Error with resource: " + f);
@@ -544,7 +544,7 @@ public class MainThread implements Runnable {
 //			img = ImageIO.read(new File(f));
 //		} catch (IOException e) {
 //			BHBot.logger.error("Error while loading image");
-//			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+//			BHBot.logger.error("Error while loading image", e);
 		}
 
 		return img;
@@ -581,8 +581,7 @@ public class MainThread implements Runnable {
 						resource = br.readLine();
 						if (resource == null) break;
 					} catch (IOException e) {
-						BHBot.logger.error("Error while reading resources in loadCueFoler");
-						BHBot.logger.error(Throwables.getStackTraceAsString(e));
+						BHBot.logger.error("Error while reading resources in loadCueFoler", e);
 						continue;
 					}
 					int dotPosition = resource.lastIndexOf('.');
@@ -606,8 +605,7 @@ public class MainThread implements Runnable {
 				try {
 					decodedURL = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
 				} catch (UnsupportedEncodingException e) {
-					BHBot.logger.error("Impossible to decode pat for jar: " + jarPath);
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					BHBot.logger.error("Impossible to decode pat for jar: " + jarPath, e);
 					return totalLoaded;
 				}
 
@@ -615,8 +613,7 @@ public class MainThread implements Runnable {
 				try {
 					jar = new JarFile(decodedURL);
 				} catch (IOException e) {
-					BHBot.logger.error("Impossible to open JAR file : " + decodedURL);
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					BHBot.logger.error("Impossible to open JAR file : " + decodedURL, e);
 					return totalLoaded;
 				}
 
@@ -1075,8 +1072,7 @@ public class MainThread implements Runnable {
 			Bwrite.close();
 			fileWrite.close();
 		} catch(Exception ex) {
-			BHBot.logger.error("Impossible to save cookies in saveCookies.");
-			BHBot.logger.error(Throwables.getStackTraceAsString(ex));
+			BHBot.logger.error("Impossible to save cookies in saveCookies.", ex);
 		}
 
 		BHBot.logger.info("Cookies saved to disk.");
@@ -1106,8 +1102,7 @@ public class MainThread implements Runnable {
 					try {
 						driver.manage().addCookie(ck); // This will add the stored cookie to your current session
 					} catch (Exception e) {
-						BHBot.logger.error("Error while adding cookie");
-						BHBot.logger.error(Throwables.getStackTraceAsString(e));
+						BHBot.logger.error("Error while adding cookie", e);
 					}
 				}
 			}
@@ -1173,8 +1168,7 @@ public class MainThread implements Runnable {
 		try {
 			if (driver != null) driver.quit();
 		} catch (Exception e) {
-			BHBot.logger.error("Error while quitting from Chromium");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error while quitting from Chromium", e);
 		}
 
 		// disable some annoying INFO messages:
@@ -1209,8 +1203,7 @@ public class MainThread implements Runnable {
 				finished = true;
 				return;
 			} else {
-				BHBot.logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)");
-				BHBot.logger.error(Throwables.getStackTraceAsString(e));
+				BHBot.logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)", e);
 				sleep(5*MINUTE);
 				restart();
 				return;
@@ -1234,8 +1227,7 @@ public class MainThread implements Runnable {
 			} catch (Exception e) {
 				counter++;
 				if (counter > 20) {
-					BHBot.logger.error("Error: <" + e.getMessage() + "> while trying to detect and handle login form. Restarting...");
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					BHBot.logger.error("Error: <" + e.getMessage() + "> while trying to detect and handle login form. Restarting...", e);
 					restart = true;
 					break;
 				}
@@ -3010,14 +3002,12 @@ public class MainThread implements Runnable {
 			} catch (Exception e) {
 				if (e instanceof org.openqa.selenium.WebDriverException && e.getMessage().startsWith("chrome not reachable")) {
 					// this happens when user manually closes the Chrome window, for example
-					BHBot.logger.error("Error: chrome is not reachable! Restarting...");
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					BHBot.logger.error("Error: chrome is not reachable! Restarting...", e);
 					restart();
 					continue;
 				} else if (e instanceof java.awt.image.RasterFormatException) {
 					// not sure in what cases this happen, but it happens
-					BHBot.logger.error("Error: RasterFormatException. Attempting to re-align the window...");
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					BHBot.logger.error("Error: RasterFormatException. Attempting to re-align the window...", e);
 					sleep(500);
 					scrollGameIntoView();
 					sleep(500);
@@ -3033,8 +3023,7 @@ public class MainThread implements Runnable {
 				} else if (e instanceof org.openqa.selenium.StaleElementReferenceException) {
 					// this is a rare error, however it happens. See this for more info:
 					// http://www.seleniumhq.org/exceptions/stale_element_reference.jsp
-					BHBot.logger.error("Error: StaleElementReferenceException. Restarting...");
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					BHBot.logger.error("Error: StaleElementReferenceException. Restarting...", e);
 					restart();
 					continue;
 				} else if (e instanceof com.assertthat.selenium_shutterbug.utils.web.ElementOutsideViewportException) {
@@ -3045,8 +3034,7 @@ public class MainThread implements Runnable {
 					// we must not call 'continue' here, because this error could be a loop error, this is why we need to increase numConsecutiveException bellow in the code!
 				} else {
 					// unknown error!
-					BHBot.logger.error("Unmanaged exception in main run loop");
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					BHBot.logger.error("Unmanaged exception in main run loop", e);
 				}
 
 				numConsecutiveException++;
@@ -3594,8 +3582,7 @@ public class MainThread implements Runnable {
 		try {
 			Thread.sleep(milliseconds);
 		} catch (InterruptedException e) {
-			BHBot.logger.error("Error while attempting to sleep");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error while attempting to sleep", e);
 		}
 	}
 
@@ -3877,8 +3864,7 @@ public class MainThread implements Runnable {
 						return ReturnResult.ok();
 					}
 				} catch (Exception e) {
-					BHBot.logger.error("Error #1 in Ad management");
-					BHBot.logger.error(Throwables.getStackTraceAsString(e));
+					BHBot.logger.error("Error #1 in Ad management", e);
 				}
 
 				done = driver.findElement(By.cssSelector("#play > div.ironrv-container.open > div.ironrv-container-header.complete > div.ironrv-title > span")).getText().equalsIgnoreCase("You can now claim your reward!");
@@ -3901,8 +3887,7 @@ public class MainThread implements Runnable {
 					break;
 				}
 			} catch (Exception e) {
-				BHBot.logger.error("Error #2 in Ad management");
-				BHBot.logger.error(Throwables.getStackTraceAsString(e));
+				BHBot.logger.error("Error #2 in Ad management", e);
 			}
 		} while (!done);
 
@@ -5868,8 +5853,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		try {
 			Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length()-4)).save();
 		} catch (Exception e) {
-			BHBot.logger.error("Error while saving game screenshot");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error while saving game screenshot", e);
 		}
 
 		return BHBot.screenshotPath + name;
@@ -5932,7 +5916,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		try {
 			ImageIO.write(zoneImg, "png", zoneImgTmp);
 		} catch (IOException e) {
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("", e);
 		}*/
 
 		int minX = zoneImg.getWidth();
@@ -5962,8 +5946,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		try {
 			ImageIO.write(nameImg, "png", nameImgFile);
 		} catch (IOException e) {
-			BHBot.logger.error("Error while creating contribution file");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error while creating contribution file", e);
 		}
 
 		MimetypesFileTypeMap ftm = new MimetypesFileTypeMap();
@@ -5977,15 +5960,13 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		try {
 			post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
-			BHBot.logger.error("Error while encoding POST request in contribution");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error while encoding POST request in contribution", e);
 		}
 
 		try {
 			httpClient.execute(post);
 		} catch (IOException e) {
-			BHBot.logger.error("Error while executing HTTP request in contribution");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error while executing HTTP request in contribution", e);
 		}
 
 		if (!nameImgFile.delete()) {
@@ -6729,8 +6710,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			if (seg != null)
 				clickOnSeg(seg);
 		} catch (Exception e) {
-			BHBot.logger.error("Error in tryClosingWindow");
-			BHBot.logger.error(Throwables.getStackTraceAsString(e));
+			BHBot.logger.error("Error in tryClosingWindow", e);
 		}
 	}
 
@@ -7334,8 +7314,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 								.setAttachment(attachment)
 								.build());
 			} catch (PushoverException e) {
-				BHBot.logger.error("Error while sending Pushover message");
-				BHBot.logger.error(Throwables.getStackTraceAsString(e));
+				BHBot.logger.error("Error while sending Pushover message", e);
 			}
 		}
 	}
@@ -7372,8 +7351,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                             resource = br.readLine();
                             if (resource == null) break;
                         } catch (IOException e) {
-                            BHBot.logger.error("Error while reading resources in printFamiliars");
-                            BHBot.logger.error(Throwables.getStackTraceAsString(e));
+                            BHBot.logger.error("Error while reading resources in printFamiliars", e);
                             continue;
                         }
                         int dotPosition = resource.lastIndexOf('.');
@@ -7394,8 +7372,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     try {
                         decodedURL = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
                     } catch (UnsupportedEncodingException e) {
-                        BHBot.logger.error("Impossible to decode path for jar in printFamiliars: " + jarPath);
-                        BHBot.logger.error(Throwables.getStackTraceAsString(e));
+                        BHBot.logger.error("Impossible to decode path for jar in printFamiliars: " + jarPath, e);
                         return;
                     }
 
@@ -7403,8 +7380,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     try {
                         jar = new JarFile(decodedURL);
                     } catch (IOException e) {
-                        BHBot.logger.error("Impossible to open JAR file in printFamiliars: " + decodedURL);
-                        BHBot.logger.error(Throwables.getStackTraceAsString(e));
+                        BHBot.logger.error("Impossible to open JAR file in printFamiliars: " + decodedURL, e);
                         return;
                     }
 
