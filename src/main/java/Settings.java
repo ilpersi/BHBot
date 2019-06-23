@@ -856,9 +856,6 @@ public class Settings {
 		costExpedition = Integer.parseInt(lastUsedMap.getOrDefault("costExpedition", ""+costExpedition));
 		
 		setWorldBossFromString(lastUsedMap.getOrDefault("worldBoss", getWorldBossAsString()));
-		worldBossType = lastUsedMap.getOrDefault("worldBossType", worldBossType);
-		worldBossDifficulty = Integer.parseInt(lastUsedMap.getOrDefault("worldBossDifficulty", ""+worldBossDifficulty));
-		worldBossTier = Integer.parseInt(lastUsedMap.getOrDefault("worldBossTier", ""+worldBossTier));
 		worldBossTimer = Integer.parseInt(lastUsedMap.getOrDefault("worldBossTimer", ""+worldBossTimer));
 		dungeonOnTimeout = lastUsedMap.getOrDefault("dungeonOnTimeout", dungeonOnTimeout ? "1" : "0").equals("1");
 		worldBossSolo = lastUsedMap.getOrDefault("worldBossSolo", worldBossSolo ? "1" : "0").equals("1");

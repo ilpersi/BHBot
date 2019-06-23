@@ -2856,19 +2856,19 @@ public class MainThread implements Runnable {
 							//world boss tier selection
 
 							int currentTier = detectWorldBossTier();
-							if (currentTier != BHBot.settings.worldBossTier) {
-								BHBot.logger.info("T" + currentTier + " detected, changing to T" + BHBot.settings.worldBossTier);
-								changeWorldBossTier(BHBot.settings.worldBossTier);
+							if (currentTier != worldBossTier) {
+								BHBot.logger.info("T" + currentTier + " detected, changing to T" + worldBossTier);
+								changeWorldBossTier(worldBossTier);
 							}
 
 							//world boss difficulty selection
 
 							int currentDifficulty = detectWorldBossDifficulty();
 							String currentDifficultyName = (currentDifficulty == 1 ? "Normal" : currentDifficulty == 2 ? "Hard" : "Heroic");
-							String settingsDifficultyName = (BHBot.settings.worldBossDifficulty == 1 ? "Normal" : BHBot.settings.worldBossDifficulty == 2 ? "Hard" : "Heroic");
-							if (currentDifficulty != BHBot.settings.worldBossDifficulty) {
+							String settingsDifficultyName = (worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic");
+							if (currentDifficulty != worldBossDifficulty) {
 								BHBot.logger.info(currentDifficultyName + " detected, changing to " + settingsDifficultyName);
-								changeWorldBossDifficulty(BHBot.settings.worldBossDifficulty);
+								changeWorldBossDifficulty(worldBossDifficulty);
 							}
 
 							sleep(SECOND); //wait for screen to stablise
