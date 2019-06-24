@@ -2819,7 +2819,7 @@ public class MainThread implements Runnable {
 							if (selectedWB == null) {
 								BHBot.logger.error("Impossible to read current selected world boss. Dungeons will be activated instead of World Boss! Restarting...");
 								BHBot.settings.activitiesEnabled.remove("w");
-								if (! BHBot.settings.activitiesEnabled.contains("d")) BHBot.settings.activitiesEnabled.add("d");
+								BHBot.settings.activitiesEnabled.add("d");
 								restart();
 								continue;
 							}

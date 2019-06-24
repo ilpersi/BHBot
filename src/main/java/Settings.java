@@ -1,9 +1,6 @@
 import org.apache.logging.log4j.Level;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Settings {
 	static final String DEFAULT_SETTINGS_FILE = "settings.ini";
@@ -39,7 +36,7 @@ public class Settings {
 	boolean doAds = false;
 	
 	//activity settings alpha
-	List<String> activitiesEnabled;
+	LinkedHashSet<String> activitiesEnabled;
 
 	// Pushover settings
 	boolean enablePushover = false;
@@ -185,7 +182,7 @@ public class Settings {
 	private Map<String, String> lastUsedMap = new HashMap<>();
 
 	public Settings() {
-		activitiesEnabled = new ArrayList<>();
+		activitiesEnabled = new LinkedHashSet<>();
 		setactivitiesEnabledFromString("r d t g p e i v"); // some default values
 		worldBossSettings = new ArrayList<>();
 		dungeons = new RandomCollection<>();
@@ -250,7 +247,7 @@ public class Settings {
 		this.activitiesEnabled.clear();
 		for (String t : types) {
 			String add = t.trim();
-			if (add.equals(""))
+			if ("".equals(add))
 				continue;
 			this.activitiesEnabled.add(add);
 		}
@@ -630,12 +627,6 @@ public class Settings {
     
 	private void setactivitiesEnabledFromString(String s) {
 		setactivitiesEnabled(s.split(" "));
-		// clean up (trailing spaces and remove if empty):
-		for (int i = activitiesEnabled.size()-1; i >= 0; i--) {
-			activitiesEnabled.set(i, activitiesEnabled.get(i).trim());
-			if (activitiesEnabled.get(i).equals(""))
-				activitiesEnabled.remove(i);
-		}
 	}
 	
 	private void setWorldBossFromString(String s) {
