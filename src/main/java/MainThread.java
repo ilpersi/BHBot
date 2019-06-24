@@ -910,9 +910,9 @@ public class MainThread implements Runnable {
 		addCue("WorldBossDifficultyHard", loadImage("cues/cueWorldBossDifficultyHard.png"), new Bounds(300, 275, 500, 325));
 		addCue("WorldBossDifficultyHeroic", loadImage("cues/cueWorldBossDifficultyHeroic.png"), new Bounds(300, 275, 500, 325));
 
-		addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(185, 340, 485, 395));
-		addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(185, 340, 485, 395));
-		addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(185, 340, 485, 395));
+		addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(190, 355, 400, 390));
+		addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(190, 355, 400, 390));
+		addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(190, 355, 400, 390));
 
 
 		//fishing related
