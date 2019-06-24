@@ -5572,7 +5572,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	}
 
 	/** Check world boss inputs are valid **/
-	public boolean checkWorldBossInput() {
+    private boolean checkWorldBossInput() {
 		boolean failed = false;
 		int passed = 0;
 		
@@ -5580,7 +5580,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
 
 		//check name
-		if (worldBossType.equals("o") || worldBossType.equals("n") || worldBossType.equals("m")) {
+		if ("o".equals(worldBossType) || "n".equals(worldBossType) || "m".equals(worldBossType)) {
 			passed++;
 		} else {
 			BHBot.logger.error("Invalid world boss name, check settings file");
@@ -5588,12 +5588,21 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
 		//check tier
-		if (worldBossTier <= 10 || worldBossTier >= 1) {
-			passed++;
-		} else {
-			BHBot.logger.error("Invalid world boss tier, must between 1 and 10");
-			failed = true;
-		}
+        if ("o".equals(worldBossType) || "n".equals(worldBossType)) {
+            if (worldBossTier >=1 || worldBossTier <=9) {
+                passed++;
+            } else {
+                BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 1 and 9");
+                failed = true;
+            }
+        } else if ("m".equals(worldBossType)) {
+            if (worldBossTier == 10) {
+                passed++;
+            } else {
+                BHBot.logger.error("Invalid world boss tier for Melvin, must be equal to 10");
+                failed = true;
+            }
+        }
 
 		//warn user if timer is over 5 minutes
 		if (BHBot.settings.worldBossTimer <= 300) {
