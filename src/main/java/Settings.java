@@ -36,19 +36,10 @@ public class Settings {
 	boolean countActivities = false;
 	
 	//activity settings
-	boolean doRaids = false;
-	boolean doDungeons = false;
-	boolean doTrials = false;
-	boolean doGauntlet = false;
-	boolean doPVP = false;
-	boolean doGVG = false;
 	boolean doAds = false;
-	boolean doInvasion = false;
-	boolean doExpedition = false;
-	boolean doWorldBoss = false;
 	
 	//activity settings alpha
-	List<String> activitysEnabled;
+	List<String> activitiesEnabled;
 
 	// Pushover settings
 	boolean enablePushover = false;
@@ -194,16 +185,17 @@ public class Settings {
 	private Map<String, String> lastUsedMap = new HashMap<>();
 
 	public Settings() {
-		activitysEnabled = new ArrayList<>();
+		activitiesEnabled = new ArrayList<>();
+		setactivitiesEnabledFromString("r d t g p e i v"); // some default values
 		worldBossSettings = new ArrayList<>();
 		dungeons = new RandomCollection<>();
 		setDungeons("z1d4 3 100"); // some default value
 		thursdayDungeons = new RandomCollection<>();
-		setThursdayDungeons(""); // default is empty, else if people delete the line it will load this value 
+		setThursdayDungeons(""); // default is empty, else if people delete the line it will load this value
 		raids = new RandomCollection<>();
 		setRaids("1 3 100"); // some default value
 		thursdayRaids = new RandomCollection<>();
-		setThursdayRaids(""); // default is empty, else if people delete the line it will load this value 
+		setThursdayRaids(""); // default is empty, else if people delete the line it will load this value
 		expeditions = new RandomCollection<>();
 		setExpeditions("p1 100 100"); // some default value
 		pvpstrip = new ArrayList<>();
@@ -219,13 +211,14 @@ public class Settings {
 	
 	// a handy shortcut for some debug settings:
     Settings setDebug() {
-		doRaids = true;
-		doDungeons = true;
-		doGauntlet = true;
-		doTrials = true;
-		doPVP = true;
-		doGVG = true;
-		doInvasion = true;
+		if (!activitiesEnabled.contains("r")) activitiesEnabled.add("r"); // Raid
+		if (!activitiesEnabled.contains("d")) activitiesEnabled.add("d"); // Dungeon
+		if (!activitiesEnabled.contains("g")) activitiesEnabled.add("g"); // Gauntlet
+		if (!activitiesEnabled.contains("t")) activitiesEnabled.add("t"); // Trials
+		if (!activitiesEnabled.contains("p")) activitiesEnabled.add("p"); // PVP
+		if (!activitiesEnabled.contains("v")) activitiesEnabled.add("v"); // GVG
+		if (!activitiesEnabled.contains("i")) activitiesEnabled.add("i"); // Invasion
+
 		doAds = true;
 		
 		difficulty = 60;
@@ -237,16 +230,7 @@ public class Settings {
 	
 	/** Does nothing except collect ads */
     void setIdle() {
-		doRaids = false;
-		doDungeons = false;
-		doTrials = false;
-		doGauntlet = false;
-		doPVP = false;
-		doGVG = false;
-		doInvasion = false;
 		doAds = false;
-		doExpedition = false;
-		doWorldBoss = false;
 		enablePushover = false;
 		poNotifyPM = false;
 		poNotifyCrash = false;
@@ -254,7 +238,7 @@ public class Settings {
 		poNotifyBribe = false;
 		autoConsume = false;
 		setAutoRuneDefaultFromString("");
-		setActivitysEnabledFromString("");
+		setactivitiesEnabledFromString("");
 		collectBounties = false;
 		collectFishingBaits = false;
 		idleMode = true;
@@ -262,13 +246,13 @@ public class Settings {
 	
 	/* Cleans the data from the input and saves it at a string */
 
-	private void setActivitysEnabled(String... types) {
-		this.activitysEnabled.clear();
+	private void setactivitiesEnabled(String... types) {
+		this.activitiesEnabled.clear();
 		for (String t : types) {
 			String add = t.trim();
 			if (add.equals(""))
 				continue;
-			this.activitysEnabled.add(add);
+			this.activitiesEnabled.add(add);
 		}
 	}
 	
@@ -505,9 +489,9 @@ public class Settings {
 	
 	/* Gets the string from the previous method and creates a list if there are multiple items */
 	
-	private String getActivitysEnabledAsString() {
+	private String getactivitiesEnabledAsString() {
 		StringBuilder result = new StringBuilder();
-		for (String s : activitysEnabled)
+		for (String s : activitiesEnabled)
 			result.append(s).append(" ");
 		if (result.length() > 0)
 			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
@@ -644,13 +628,13 @@ public class Settings {
 	
 	/* Cleans up the data in the list again */
     
-	private void setActivitysEnabledFromString(String s) {
-		setActivitysEnabled(s.split(" "));
+	private void setactivitiesEnabledFromString(String s) {
+		setactivitiesEnabled(s.split(" "));
 		// clean up (trailing spaces and remove if empty):
-		for (int i = activitysEnabled.size()-1; i >= 0; i--) {
-			activitysEnabled.set(i, activitysEnabled.get(i).trim());
-			if (activitysEnabled.get(i).equals(""))
-				activitysEnabled.remove(i);
+		for (int i = activitiesEnabled.size()-1; i >= 0; i--) {
+			activitiesEnabled.set(i, activitiesEnabled.get(i).trim());
+			if (activitiesEnabled.get(i).equals(""))
+				activitiesEnabled.remove(i);
 		}
 	}
 	
@@ -816,17 +800,7 @@ public class Settings {
 		autoStartChromeDriver = lastUsedMap.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
 		reconnectTimer = Integer.parseInt(lastUsedMap.getOrDefault("reconnectTimer", ""+reconnectTimer));
 		
-		doRaids = lastUsedMap.getOrDefault("doRaids", doRaids ? "1" : "0").equals("1");
-		doDungeons = lastUsedMap.getOrDefault("doDungeons", doDungeons ? "1" : "0").equals("1");
-		doTrials = lastUsedMap.getOrDefault("doTrials", doTrials ? "1" : "0").equals("1");
-		doGauntlet = lastUsedMap.getOrDefault("doGauntlet", doGauntlet ? "1" : "0").equals("1");
-		doPVP = lastUsedMap.getOrDefault("doPVP", doPVP ? "1" : "0").equals("1");
-		doGVG = lastUsedMap.getOrDefault("doGVG", doGVG ? "1" : "0").equals("1");
-		doInvasion = lastUsedMap.getOrDefault("doInvasion", doInvasion ? "1" : "0").equals("1");
-		doExpedition = lastUsedMap.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("1");
-		doWorldBoss = lastUsedMap.getOrDefault("doWorldBoss", doWorldBoss ? "1" : "0").equals("1");
-		
-		setActivitysEnabledFromString(lastUsedMap.getOrDefault("activitysEnabled", getActivitysEnabledAsString()) + " z"); //we add a z to the end else hasNext() skips the last activity in activitySelector()
+		setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()) + " z"); //we add a z to the end else hasNext() skips the last activity in activitySelector()
 		
 		enablePushover = lastUsedMap.getOrDefault("enablePushover", enablePushover ? "1" : "0").equals("1");
 		poNotifyPM = lastUsedMap.getOrDefault("poNotifyPM", poNotifyPM ? "1" : "0").equals("1");
@@ -958,6 +932,33 @@ public class Settings {
 		}
 		if (lastUsedMap.getOrDefault("worldBossTier", null) != null) {
 			BHBot.logger.warn("Deprecated setting detected: worldBossTier. Use the new World Boss format instead.");
+		}
+		if (lastUsedMap.getOrDefault("doRaids", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doRaids. Use the new activitiesEnabled with 'r' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doDungeons", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doDungeons. Use the new activitiesEnabled with 'd' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doWorldBoss", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doWorldBoss. Use the new activitiesEnabled with 'w' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doTrials", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doTrials. Use the new activitiesEnabled with 't' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doGauntlet", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doGauntlet. Use the new activitiesEnabled with 'g' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doPVP", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doPVP. Use the new activitiesEnabled with 'p' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doExpedition", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doExpedition. Use the new activitiesEnabled with 'e' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doInvasion", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doInvasion. Use the new activitiesEnabled with 'i' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doGVG", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doGVG. Use the new activitiesEnabled with 'v' letter instead.");
 		}
 	}
 

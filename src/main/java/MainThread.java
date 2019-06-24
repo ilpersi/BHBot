@@ -1289,7 +1289,7 @@ public class MainThread implements Runnable {
 //		BHBot.logger.info(Integer.toString(BHBot.settings.shrineDelay));
 		
 
-//		BHBot.logger.info(BHBot.settings.activitysEnabled);
+//		BHBot.logger.info(BHBot.settings.activitiesEnabled);
 
 		//End debugging section
 		
@@ -1298,10 +1298,10 @@ public class MainThread implements Runnable {
 			oneTimeRuneCheck = true;
 		}
 
-		if ((BHBot.settings.activitysEnabled.contains("d")) && (BHBot.settings.activitysEnabled.contains("w"))) {
+		if ((BHBot.settings.activitiesEnabled.contains("d")) && (BHBot.settings.activitiesEnabled.contains("w"))) {
 			BHBot.logger.info("Both Dungeons and World Boss selected, disabling World Boss.");
 			BHBot.logger.info("To run a mixture of both use a low lobby timer and enable dungeonOnTimeout");
-			BHBot.settings.doWorldBoss = false;
+			BHBot.settings.activitiesEnabled.remove("w");
 		}
 		state = State.Loading;
 		BHBot.scheduler.resetIdleTime();
@@ -1667,7 +1667,7 @@ public class MainThread implements Runnable {
 //							!BHBot.scheduler.doGVGImmediately && !BHBot.scheduler.doInvasionImmediately &&
 //							!BHBot.scheduler.doExpeditionImmediately && !BHBot.scheduler.doWorldBossImmediately) {
 //
-//						if (!activitysIterator.hasNext()) activitysIterator = BHBot.settings.activitysEnabled.iterator();
+//						if (!activitysIterator.hasNext()) activitysIterator = BHBot.settings.activitiesEnabled.iterator();
 //					}
 					
 					currentActivity = activitySelector(); //else select the activity to attempt
@@ -1767,7 +1767,7 @@ public class MainThread implements Runnable {
 
 							String raid = decideRaidRandomly();
 							if (raid == null) {
-								BHBot.settings.doRaids = false;
+								BHBot.settings.activitiesEnabled.remove("r");
 								BHBot.logger.error("It was impossible to choose a raid randomly, raids are disabled!");
 								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 									sendPushOverMessage("Raid Error", "It was impossible to choose a raid randomly, raids are disabled!", "siren");
@@ -2066,7 +2066,7 @@ public class MainThread implements Runnable {
 
 							String dungeon = decideDungeonRandomly();
 							if (dungeon == null) {
-								BHBot.settings.doDungeons = false;
+								BHBot.settings.activitiesEnabled.remove("d");
 								BHBot.logger.error("It was impossible to choose a dungeon randomly, dungeons are disabled!");
 								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 									sendPushOverMessage("Dungeon error", "It was impossible to choose a dungeon randomly, dungeons are disabled!", "siren");
@@ -2109,7 +2109,7 @@ public class MainThread implements Runnable {
 							// click on the dungeon:
 							Point p = getDungeonIconPos(dungeon);
 							if (p == null) {
-								BHBot.settings.doDungeons = false;
+								BHBot.settings.activitiesEnabled.remove("d");
 								BHBot.logger.error("It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!");
 								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 									sendPushOverMessage("Dungeon error", "It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!", "siren");
@@ -2618,7 +2618,7 @@ public class MainThread implements Runnable {
 								//Select Expedition and write portal to a variable
 								String randomExpedition = BHBot.settings.expeditions.next();
 								if (randomExpedition == null) {
-									BHBot.settings.doExpedition = false;
+									BHBot.settings.activitiesEnabled.remove("e");
 									BHBot.logger.error("It was impossible to randomly choose an expedtion. Expeditions are disabled.");
 									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 										sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedtion. Expeditions are disabled.", "siren");
@@ -2639,7 +2639,7 @@ public class MainThread implements Runnable {
 								} else if (detectCue(cues.get("Expedition3")) != null) {
 									currentExpedition = 3;
 								} else {
-									BHBot.settings.doExpedition = false;
+									BHBot.settings.activitiesEnabled.remove("e");
 									BHBot.logger.error("It was impossible to get the current expedition type!");
 									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 										sendPushOverMessage("Expedition error", "It was impossible to get the current expedition type. Expeditions are now disabled!", "siren");
@@ -2657,7 +2657,7 @@ public class MainThread implements Runnable {
 								// click on the chosen portal:
 								Point p = getExpeditionIconPos(currentExpedition, targetPortal);
 								if (p == null) {
-									BHBot.settings.doExpedition = false;
+									BHBot.settings.activitiesEnabled.remove("e");
 									BHBot.logger.error("It was impossible to get portal position for " + expedName + ". Expeditions are now disabled!");
 									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
 										sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + expedName + ". Expeditions are now disabled!", "siren");
@@ -3071,32 +3071,32 @@ public class MainThread implements Runnable {
 	
 	private String activitySelector() {
 			
-		if (BHBot.settings.activitysEnabled.isEmpty()) {
+		if (BHBot.settings.activitiesEnabled.isEmpty()) {
 			return null;
 		} else {
 			
-			Iterator<String> activitysIterator = BHBot.settings.activitysEnabled.iterator(); //load list as iterator
+			Iterator<String> activitysIterator = BHBot.settings.activitiesEnabled.iterator(); //load list as iterator
 			String activity = activitysIterator.next(); //set iterator to string for .equals()
 			
 			//loop through in defined order, if we match activity and timer we select the activity
 			while (activitysIterator.hasNext()) {
 				if ( activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL) ) {
 					return "r";
-				} else if ( activity.equals("d") && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
+				} else if ( "d".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
 					return "d";
-				} else if ( activity.equals("w") && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
+				} else if ( "w".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
 					return "w";
-				} else if ( activity.equals("t") && ((Misc.getTime() - timeLastTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
+				} else if ( "t".equals(activity) && ((Misc.getTime() - timeLastTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
 					return "t";
-				} else if ( activity.equals("g") && ((Misc.getTime() - timeLastTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
+				} else if ( "g".equals(activity) && ((Misc.getTime() - timeLastTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
 					return "g";
-				} else if ( activity.equals("p") && ((Misc.getTime() - timeLastTicketsCheck) > TICKETS_CHECK_INTERVAL) ) {
+				} else if ( "p".equals(activity) && ((Misc.getTime() - timeLastTicketsCheck) > TICKETS_CHECK_INTERVAL) ) {
 					return "p";
-				} else if ( activity.equals("i") && ((Misc.getTime() - timeLastInvBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
+				} else if ( "i".equals(activity) && ((Misc.getTime() - timeLastInvBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
 					return "i";
-				} else if ( activity.equals("v") && ((Misc.getTime() - timeLastGVGBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
+				} else if ( "v".equals(activity) && ((Misc.getTime() - timeLastGVGBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
 					return "v";
-				} else if ( activity.equals("e") && ((Misc.getTime() - timeLastExpBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
+				} else if ( "e".equals(activity) && ((Misc.getTime() - timeLastExpBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
 					return "e";
 				} else activity = activitysIterator.next(); //if we get to the end of the loop and nothing has been selected we move to the next activity and check again
 			}
