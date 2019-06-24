@@ -916,9 +916,9 @@ public class MainThread implements Runnable {
 		addCue("WorldBossDifficultyHard", loadImage("cues/cueWorldBossDifficultyHard.png"), new Bounds(300, 275, 500, 325));
 		addCue("WorldBossDifficultyHeroic", loadImage("cues/cueWorldBossDifficultyHeroic.png"), new Bounds(300, 275, 500, 325));
 
-		addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(185, 340, 485, 395));
-		addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(185, 340, 485, 395));
-		addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(185, 340, 485, 395));
+		addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(190, 355, 400, 390));
+		addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(190, 355, 400, 390));
+		addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(190, 355, 400, 390));
 
 
 		//fishing related
@@ -2816,6 +2816,14 @@ public class MainThread implements Runnable {
 
 							//world boss type selection
 							String selectedWB = readSelectedWorldBoss();
+							if (selectedWB == null) {
+								BHBot.logger.error("Impossible to read current selected world boss. Dungeons will be activated instead of World Boss! Restarting...");
+								BHBot.settings.doWorldBoss = false;
+								BHBot.settings.doDungeons = false;
+								restart();
+								continue;
+							}
+
 							if (!worldBossType.equals(selectedWB)) {
 								BHBot.logger.info(selectedWB + " selected, changing..");
 								changeSelectedWorldBoss(worldBossType);
@@ -5648,7 +5656,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	}
 
 	/** Check world boss inputs are valid **/
-	public boolean checkWorldBossInput() {
+    private boolean checkWorldBossInput() {
 		boolean failed = false;
 		int passed = 0;
 		
@@ -5656,7 +5664,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
 
 		//check name
-		if (worldBossType.equals("o") || worldBossType.equals("n") || worldBossType.equals("m")) {
+		if ("o".equals(worldBossType) || "n".equals(worldBossType) || "m".equals(worldBossType)) {
 			passed++;
 		} else {
 			BHBot.logger.error("Invalid world boss name, check settings file");
@@ -5664,12 +5672,21 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
 		//check tier
-		if (worldBossTier <= 10 || worldBossTier >= 1) {
-			passed++;
-		} else {
-			BHBot.logger.error("Invalid world boss tier, must between 1 and 10");
-			failed = true;
-		}
+        if ("o".equals(worldBossType) || "n".equals(worldBossType)) {
+            if (worldBossTier >=1 || worldBossTier <=9) {
+                passed++;
+            } else {
+                BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 1 and 9");
+                failed = true;
+            }
+        } else if ("m".equals(worldBossType)) {
+            if (worldBossTier == 10) {
+                passed++;
+            } else {
+                BHBot.logger.error("Invalid world boss tier for Melvin, must be equal to 10");
+                failed = true;
+            }
+        }
 
 		//warn user if timer is over 5 minutes
 		if (BHBot.settings.worldBossTimer <= 300) {
@@ -5795,7 +5812,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			return "n";
 		else if (detectCue(cues.get("MelvinWB")) != null)
 			return "m";
-		else return "Error";
+		else return null;
 	}
 
 	private void changeSelectedWorldBoss(String bossname) {
