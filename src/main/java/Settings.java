@@ -208,13 +208,13 @@ public class Settings {
 	
 	// a handy shortcut for some debug settings:
     Settings setDebug() {
-		if (!activitiesEnabled.contains("r")) activitiesEnabled.add("r"); // Raid
-		if (!activitiesEnabled.contains("d")) activitiesEnabled.add("d"); // Dungeon
-		if (!activitiesEnabled.contains("g")) activitiesEnabled.add("g"); // Gauntlet
-		if (!activitiesEnabled.contains("t")) activitiesEnabled.add("t"); // Trials
-		if (!activitiesEnabled.contains("p")) activitiesEnabled.add("p"); // PVP
-		if (!activitiesEnabled.contains("v")) activitiesEnabled.add("v"); // GVG
-		if (!activitiesEnabled.contains("i")) activitiesEnabled.add("i"); // Invasion
+		activitiesEnabled.add("r"); // Raid
+		activitiesEnabled.add("d"); // Dungeon
+		activitiesEnabled.add("g"); // Gauntlet
+		activitiesEnabled.add("t"); // Trials
+		activitiesEnabled.add("p"); // PVP
+		activitiesEnabled.add("v"); // GVG
+		activitiesEnabled.add("i"); // Invasion
 
 		doAds = true;
 		
