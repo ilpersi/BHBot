@@ -2774,6 +2774,13 @@ public class MainThread implements Runnable {
 
 							//world boss type selection
 							String selectedWB = readSelectedWorldBoss();
+							if (selectedWB == null) {
+								BHBot.logger.error("Impossible to read current selected world boss. Dungeons will be activated insted of World Boss!");
+								BHBot.settings.doWorldBoss = false;
+								BHBot.settings.doDungeons = false;
+								continue;
+							}
+
 							if (!worldBossType.equals(selectedWB)) {
 								BHBot.logger.info(selectedWB + " selected, changing..");
 								changeSelectedWorldBoss(worldBossType);
@@ -5712,7 +5719,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			return "n";
 		else if (detectCue(cues.get("MelvinWB")) != null)
 			return "m";
-		else return "Error";
+		else return null;
 	}
 
 	private void changeSelectedWorldBoss(String bossname) {
