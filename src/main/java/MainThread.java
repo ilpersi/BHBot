@@ -916,9 +916,14 @@ public class MainThread implements Runnable {
 		addCue("WorldBossDifficultyHard", loadImage("cues/cueWorldBossDifficultyHard.png"), new Bounds(300, 275, 500, 325));
 		addCue("WorldBossDifficultyHeroic", loadImage("cues/cueWorldBossDifficultyHeroic.png"), new Bounds(300, 275, 500, 325));
 
+		addCue("cueWBSelectNormal", loadImage("cues/worldboss/cueWBSelectNormal.png"), new Bounds(260, 140, 510, 320));
+		addCue("cueWBSelectHard", loadImage("cues/worldboss/cueWBSelectHard.png"), new Bounds(260, 140, 510, 320));
+		addCue("cueWBSelectHeroic", loadImage("cues/worldboss/cueWBSelectHeroic.png"), new Bounds(260, 140, 510, 320));
+
 		addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(190, 355, 400, 390));
 		addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(190, 355, 400, 390));
 		addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(190, 355, 400, 390));
+		addCue("cueWorldBossTitle", loadImage("cues/worldboss/cueWorldBossTitle.png"), new Bounds(280, 90, 515, 140));
 
 
 		//fishing related
@@ -2812,7 +2817,7 @@ public class MainThread implements Runnable {
 
 							seg = detectCue(cues.get("BlueSummon"),SECOND);
 							clickOnSeg(seg);
-							sleep(2*SECOND); //wait for screen to stablise
+							readScreen(2*SECOND); //wait for screen to stablise
 
 							//world boss type selection
 							String selectedWB = readSelectedWorldBoss();
@@ -2820,7 +2825,7 @@ public class MainThread implements Runnable {
 								BHBot.logger.error("Impossible to read current selected world boss. Dungeons will be activated instead of World Boss! Restarting...");
 								BHBot.settings.activitiesEnabled.remove("w");
 								BHBot.settings.activitiesEnabled.add("d");
-								restart();
+								closePopupSecurely(cues.get("cueWorldBossTitle"), cues.get("X"));
 								continue;
 							}
 
@@ -2829,27 +2834,24 @@ public class MainThread implements Runnable {
 								changeSelectedWorldBoss(worldBossType);
 							}
 
-							sleep(SECOND); //more stabilising if we changed world boss type
-							readScreen();
+//							sleep(SECOND); //more stabilising if we changed world boss type
+							readScreen(SECOND);
 							seg = detectCue(cues.get("LargeGreenSummon"),2*SECOND);
 							clickOnSeg(seg); //selected world boss
 
-							readScreen();
+							readScreen(SECOND);
+							seg = detectCue(cues.get("Private"),SECOND);
 							if (!BHBot.settings.worldBossSolo) {
-								seg = detectCue(cues.get("Private"),SECOND);
 								if (seg != null) {
 									BHBot.logger.info("Unchecking private lobby");
 									clickOnSeg(seg);
 								}
-							}
-
-							if (BHBot.settings.worldBossSolo) {
-								seg = detectCue(cues.get("Private"),SECOND);
+							} else {
 								if (seg == null) {
 									BHBot.logger.info("Enabling private lobby for solo World Boss");
 									sleep(500);
 									clickInGame(340,350);
-									sleep(500);
+									readScreen(500);
 								}
 							}
 
@@ -2871,8 +2873,8 @@ public class MainThread implements Runnable {
 								changeWorldBossDifficulty(worldBossDifficulty);
 							}
 
-							sleep(SECOND); //wait for screen to stablise
-							seg = detectCue(cues.get("SmallGreenSummon"),SECOND);
+							readScreen(SECOND);
+							seg = detectCue(cues.get("SmallGreenSummon"),SECOND * 2);
 							clickOnSeg(seg); //accept current settings
 							BHBot.logger.info("Starting lobby");
 
@@ -6238,31 +6240,34 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private int detectWorldBossTier() {
 
 		//Melvins only available in T10 so we don't need to read the image
-		if (BHBot.settings.worldBossSettings.get(0).equals("m")) return 10;
+		if ("m".equals(BHBot.settings.worldBossSettings.get(0))) return 10;
 
-		readScreen();
+		readScreen(SECOND);
 		MarvinSegment seg;
-		seg = detectCue(cues.get("WorldBossTier1"),SECOND);
-		if (seg == null) seg = detectCue(cues.get("WorldBossTier2"),SECOND);
+		int xOffset = 99, yOffset = 11, w = 17, h = 19;
 
+		seg = detectCue(cues.get("WorldBossTier1"),SECOND); // For tier 1 to 9
 		if (seg == null) {
-			BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
-			saveGameScreen("early_error");
-			return 0; // error
+			seg = detectCue(cues.get("WorldBossTier2"),SECOND);
+			if (seg == null) {
+				BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
+				saveGameScreen("early_error");
+				return 0; // error
+			}
+
+			xOffset = 97;
+			yOffset = 11;
+			w = 21;
+			h = 19;
 		}
 
-
-		MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 98, seg.y1 + 9, 134, 31));
+		MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + xOffset, seg.y1 + yOffset, w, h));
 
 		// make it white-gray (to facilitate cue recognition):
 		makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
 
 		BufferedImage imb = im.getBufferedImage();
 		int d = readNumFromImg(imb);
-
-		if (d < 100) {
-		d = ( d - 1 ) / 10; //because I left room for tier 10 it returns 91, 81, 71 etc, this is a quick fix
-		}
 
 		return d;
 	}
@@ -6278,20 +6283,24 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			restart();
 		}
 		clickOnSeg(seg);
-		sleep(2*SECOND); //wait for screen to stabilize
+		readScreen(2*SECOND); //wait for screen to stabilize
 		//get known screen position for difficulty screen selection
 		if (target >= 5) { //top most
 			readScreen();
 			MarvinSegment up = detectCue(cues.get("DropDownUp"),SECOND);
-			clickOnSeg(up);
-			clickOnSeg(up);
+			if (seg != null) {
+				clickOnSeg(up);
+				clickOnSeg(up);
+			}
 		} else { //bottom most
 			readScreen();
 			MarvinSegment down = detectCue(cues.get("DropDownDown"),SECOND);
-			clickOnSeg(down);
-			clickOnSeg(down);
+			if (seg != null) {
+				clickOnSeg(down);
+				clickOnSeg(down);
 			}
-		sleep(SECOND); //wait for screen to stabilize
+		}
+		readScreen(SECOND); //wait for screen to stabilize
 		Point diff = getDifficultyButtonXY(target);
 		if (diff != null) {
 			clickInGame(diff.y, diff.x);
@@ -6301,11 +6310,9 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private Point getDifficultyButtonXY(int target) {
 		switch (target) {
 		case 3:
+		case 5: // top 5 buttons after we scroll to the top
 			return new Point(410, 390);
-		case 4:
-			return new Point(350, 390); //bottom 2 buttons after we scroll to the bottom
-		case 5:
-			return new Point(410, 390); //top 5 buttons after we scroll to the top
+		case 4: // bottom 2 buttons after we scroll to the bottom
 		case 6:
 			return new Point(350, 390);
 		case 7:
@@ -6320,14 +6327,12 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 	private int detectWorldBossDifficulty() {
 		readScreen();
-		MarvinSegment normal = detectCue(cues.get("WorldBossDifficultyNormal"),SECOND);
-		MarvinSegment hard = detectCue(cues.get("WorldBossDifficultyHard"),SECOND);
-		MarvinSegment heroic = detectCue(cues.get("WorldBossDifficultyHeroic"),SECOND);
-		if (normal != null) {
+
+		if (detectCue(cues.get("WorldBossDifficultyNormal"),SECOND) != null) {
 			return 1;
-		} else if (hard != null) {
+		} else if (detectCue(cues.get("WorldBossDifficultyHard"),SECOND) != null) {
 			return 2;
-		} else if (heroic != null) {
+		} else if (detectCue(cues.get("WorldBossDifficultyHeroic"),SECOND) != null) {
 			return 3;
 		}
 		else return 0;
@@ -6335,22 +6340,29 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 	private void changeWorldBossDifficulty(int target) {
 
-		/* Cant get dynamic cue name working below so this is a quick fix */
-		sleep(SECOND); //screen stabilising
+		readScreen(SECOND); //screen stabilising
 		clickInGame(480,300); //difficulty button
-		sleep(SECOND); //screen stabilising
+		readScreen(SECOND); //screen stabilising
 
-//		String targetName = (target == 1 ? "Normal" : target == 2 ? "Hard" : "Heroic"); //get current difficulty name so we can load the right cue
-//		String cueName = "WorldBossDifficulty" + targetName;
-//		MarvinSegment button = detectCue(cues.get(cueName),SECOND);
-//		clickOnSeg(button);
+		Cue difficultySelection;
 
 		if (target == 1) {
-			clickInGame(390, 170); //top button
+			difficultySelection = cues.get("cueWBSelectNormal");
 		} else if (target == 2) {
-			clickInGame(390, 230); // middle button
+			difficultySelection = cues.get("cueWBSelectHard");
 		} else if (target == 3) {
-			clickInGame(390, 290); //bottom button
+			difficultySelection = cues.get("cueWBSelectHeroic");
+		} else {
+			BHBot.logger.error("Wrong target value in changeWorldBossDifficulty, defult to normal!");
+			difficultySelection = cues.get("cueWBSelectNormal");
+		}
+
+		MarvinSegment seg = detectCue(difficultySelection, SECOND * 2);
+		if (seg != null) {
+			clickOnSeg(seg);
+		} else {
+			BHBot.logger.error("Impossible to detect desired difficulty in changeWorldBossDifficulty!");
+			restart();
 		}
 	}
 
