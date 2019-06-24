@@ -2775,9 +2775,10 @@ public class MainThread implements Runnable {
 							//world boss type selection
 							String selectedWB = readSelectedWorldBoss();
 							if (selectedWB == null) {
-								BHBot.logger.error("Impossible to read current selected world boss. Dungeons will be activated insted of World Boss!");
+								BHBot.logger.error("Impossible to read current selected world boss. Dungeons will be activated instead of World Boss! Restarting...");
 								BHBot.settings.doWorldBoss = false;
 								BHBot.settings.doDungeons = false;
+								restart();
 								continue;
 							}
 
