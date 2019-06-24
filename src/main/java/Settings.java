@@ -1,9 +1,6 @@
 import org.apache.logging.log4j.Level;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Settings {
 	static final String DEFAULT_SETTINGS_FILE = "settings.ini";
@@ -22,6 +19,7 @@ public class Settings {
 	boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
 	private boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
 	int reconnectTimer = 60;
+	boolean idleMode = false;
 
 	// chromedriver autostart
 	boolean autoStartChromeDriver = true; // if true, BHBot will automatically run chromedriver at startup
@@ -35,19 +33,10 @@ public class Settings {
 	boolean countActivities = false;
 	
 	//activity settings
-	boolean doRaids = false;
-	boolean doDungeons = false;
-	boolean doTrials = false;
-	boolean doGauntlet = false;
-	boolean doPVP = false;
-	boolean doGVG = false;
 	boolean doAds = false;
-	boolean doInvasion = false;
-	boolean doExpedition = false;
-	boolean doWorldBoss = false;
 	
 	//activity settings alpha
-	List<String> activitysEnabled;
+	LinkedHashSet<String> activitiesEnabled;
 
 	// Pushover settings
 	boolean enablePushover = false;
@@ -176,10 +165,11 @@ public class Settings {
 	int minSolo = 2;
 	String dungeonsRun = "dungeonsrun 0";
 	String worldBossRun = "worldbossrun 0";
-
-    boolean doFishing = false;
-    int rodType;
-    int baitAmount;
+	
+	/** Fishing Settings **/
+	boolean doFishing = false;
+	int rodType = 4;
+	int baitAmount = 5;
 
 	/** log4j settings */
 	// Where do we save the logs?
@@ -192,16 +182,17 @@ public class Settings {
 	private Map<String, String> lastUsedMap = new HashMap<>();
 
 	public Settings() {
-		activitysEnabled = new ArrayList<>();
+		activitiesEnabled = new LinkedHashSet<>();
+		setactivitiesEnabledFromString("r d t g p e i v"); // some default values
 		worldBossSettings = new ArrayList<>();
 		dungeons = new RandomCollection<>();
 		setDungeons("z1d4 3 100"); // some default value
 		thursdayDungeons = new RandomCollection<>();
-		setThursdayDungeons(""); // default is empty, else if people delete the line it will load this value 
+		setThursdayDungeons(""); // default is empty, else if people delete the line it will load this value
 		raids = new RandomCollection<>();
 		setRaids("1 3 100"); // some default value
 		thursdayRaids = new RandomCollection<>();
-		setThursdayRaids(""); // default is empty, else if people delete the line it will load this value 
+		setThursdayRaids(""); // default is empty, else if people delete the line it will load this value
 		expeditions = new RandomCollection<>();
 		setExpeditions("p1 100 100"); // some default value
 		pvpstrip = new ArrayList<>();
@@ -217,13 +208,14 @@ public class Settings {
 	
 	// a handy shortcut for some debug settings:
     Settings setDebug() {
-		doRaids = true;
-		doDungeons = true;
-		doGauntlet = true;
-		doTrials = true;
-		doPVP = true;
-		doGVG = true;
-		doInvasion = true;
+		activitiesEnabled.add("r"); // Raid
+		activitiesEnabled.add("d"); // Dungeon
+		activitiesEnabled.add("g"); // Gauntlet
+		activitiesEnabled.add("t"); // Trials
+		activitiesEnabled.add("p"); // PVP
+		activitiesEnabled.add("v"); // GVG
+		activitiesEnabled.add("i"); // Invasion
+
 		doAds = true;
 		
 		difficulty = 60;
@@ -235,35 +227,29 @@ public class Settings {
 	
 	/** Does nothing except collect ads */
     void setIdle() {
-		doRaids = false;
-		doDungeons = false;
-		doTrials = false;
-		doGauntlet = false;
-		doPVP = false;
-		doGVG = false;
-		doInvasion = false;
 		doAds = false;
-		doExpedition = false;
-		doWorldBoss = false;
 		enablePushover = false;
 		poNotifyPM = false;
 		poNotifyCrash = false;
 		poNotifyErrors = false;
 		poNotifyBribe = false;
 		autoConsume = false;
+		setAutoRuneDefaultFromString("");
+		setactivitiesEnabledFromString("");
 		collectBounties = false;
 		collectFishingBaits = false;
+		idleMode = true;
 	}
 	
 	/* Cleans the data from the input and saves it at a string */
 
-	private void setActivitysEnabled(String... types) {
-		this.activitysEnabled.clear();
+	private void setactivitiesEnabled(String... types) {
+		this.activitiesEnabled.clear();
 		for (String t : types) {
 			String add = t.trim();
-			if (add.equals(""))
+			if ("".equals(add))
 				continue;
-			this.activitysEnabled.add(add);
+			this.activitiesEnabled.add(add);
 		}
 	}
 	
@@ -500,9 +486,9 @@ public class Settings {
 	
 	/* Gets the string from the previous method and creates a list if there are multiple items */
 	
-	private String getActivitysEnabledAsString() {
+	private String getactivitiesEnabledAsString() {
 		StringBuilder result = new StringBuilder();
-		for (String s : activitysEnabled)
+		for (String s : activitiesEnabled)
 			result.append(s).append(" ");
 		if (result.length() > 0)
 			result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
@@ -639,14 +625,8 @@ public class Settings {
 	
 	/* Cleans up the data in the list again */
     
-	private void setActivitysEnabledFromString(String s) {
-		setActivitysEnabled(s.split(" "));
-		// clean up (trailing spaces and remove if empty):
-		for (int i = activitysEnabled.size()-1; i >= 0; i--) {
-			activitysEnabled.set(i, activitysEnabled.get(i).trim());
-			if (activitysEnabled.get(i).equals(""))
-				activitysEnabled.remove(i);
-		}
+	private void setactivitiesEnabledFromString(String s) {
+		setactivitiesEnabled(s.split(" "));
 	}
 	
 	private void setWorldBossFromString(String s) {
@@ -811,17 +791,7 @@ public class Settings {
 		autoStartChromeDriver = lastUsedMap.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
 		reconnectTimer = Integer.parseInt(lastUsedMap.getOrDefault("reconnectTimer", ""+reconnectTimer));
 		
-		doRaids = lastUsedMap.getOrDefault("doRaids", doRaids ? "1" : "0").equals("1");
-		doDungeons = lastUsedMap.getOrDefault("doDungeons", doDungeons ? "1" : "0").equals("1");
-		doTrials = lastUsedMap.getOrDefault("doTrials", doTrials ? "1" : "0").equals("1");
-		doGauntlet = lastUsedMap.getOrDefault("doGauntlet", doGauntlet ? "1" : "0").equals("1");
-		doPVP = lastUsedMap.getOrDefault("doPVP", doPVP ? "1" : "0").equals("1");
-		doGVG = lastUsedMap.getOrDefault("doGVG", doGVG ? "1" : "0").equals("1");
-		doInvasion = lastUsedMap.getOrDefault("doInvasion", doInvasion ? "1" : "0").equals("1");
-		doExpedition = lastUsedMap.getOrDefault("doExpedition", doExpedition ? "1" : "0").equals("1");
-		doWorldBoss = lastUsedMap.getOrDefault("doWorldBoss", doWorldBoss ? "1" : "0").equals("1");
-		
-		setActivitysEnabledFromString(lastUsedMap.getOrDefault("activitysEnabled", getActivitysEnabledAsString()));
+		setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()) + " z"); //we add a z to the end else hasNext() skips the last activity in activitySelector()
 		
 		enablePushover = lastUsedMap.getOrDefault("enablePushover", enablePushover ? "1" : "0").equals("1");
 		poNotifyPM = lastUsedMap.getOrDefault("poNotifyPM", poNotifyPM ? "1" : "0").equals("1");
@@ -899,7 +869,11 @@ public class Settings {
         setAutoBossRuneFromString(lastUsedMap.getOrDefault("autoBossRune", getAutoBossRuneAsString()));
 
         persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", ""+persuasionLevel));
-        bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", ""+bribeLevel));  
+        bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", ""+bribeLevel));
+        
+        doFishing = lastUsedMap.getOrDefault("doFishing", doFishing ? "1" : "0").equals("1");
+        rodType = Integer.parseInt(lastUsedMap.getOrDefault("rodType", ""+rodType));
+        baitAmount = Integer.parseInt(lastUsedMap.getOrDefault("baitAmount", ""+baitAmount));
 
         doFishing = lastUsedMap.getOrDefault("doFishing", doFishing ? "1" : "0").equals("1");
         rodType = Integer.parseInt(lastUsedMap.getOrDefault("rodType", ""+rodType));
@@ -949,6 +923,33 @@ public class Settings {
 		}
 		if (lastUsedMap.getOrDefault("worldBossTier", null) != null) {
 			BHBot.logger.warn("Deprecated setting detected: worldBossTier. Use the new World Boss format instead.");
+		}
+		if (lastUsedMap.getOrDefault("doRaids", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doRaids. Use the new activitiesEnabled with 'r' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doDungeons", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doDungeons. Use the new activitiesEnabled with 'd' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doWorldBoss", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doWorldBoss. Use the new activitiesEnabled with 'w' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doTrials", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doTrials. Use the new activitiesEnabled with 't' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doGauntlet", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doGauntlet. Use the new activitiesEnabled with 'g' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doPVP", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doPVP. Use the new activitiesEnabled with 'p' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doExpedition", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doExpedition. Use the new activitiesEnabled with 'e' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doInvasion", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doInvasion. Use the new activitiesEnabled with 'i' letter instead.");
+		}
+		if (lastUsedMap.getOrDefault("doGVG", null) != null) {
+			BHBot.logger.warn("Deprecated setting detected: doGVG. Use the new activitiesEnabled with 'v' letter instead.");
 		}
 	}
 
