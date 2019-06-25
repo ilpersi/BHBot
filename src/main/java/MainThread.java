@@ -2822,9 +2822,15 @@ public class MainThread implements Runnable {
 							//world boss type selection
 							String selectedWB = readSelectedWorldBoss();
 							if (selectedWB == null) {
-								BHBot.logger.error("Impossible to read current selected world boss. Dungeons will be activated instead of World Boss! Restarting...");
+								BHBot.logger.error("Impossible to read current selected world boss. Dungeons will be activated instead of World Boss!");
 								BHBot.settings.activitiesEnabled.remove("w");
 								BHBot.settings.activitiesEnabled.add("d");
+
+								String WBErrorScreen = saveGameScreen("skeleton-treasure-no-open");
+								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+									sendPushOverMessage("World Boss error", "Impossible to read current selected world boss.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
+								}
+
 								closePopupSecurely(cues.get("cueWorldBossTitle"), cues.get("X"));
 								continue;
 							}
@@ -5807,12 +5813,12 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	/** Read Selected World Boss **/
 
 	private String readSelectedWorldBoss() {
-		readScreen(SECOND);
-		if (detectCue(cues.get("OrlagWB")) != null)
+		readScreen(SECOND * 2);
+		if (detectCue(cues.get("OrlagWB"), SECOND ) != null)
 			return "o";
-		else if (detectCue(cues.get("NetherWB")) != null)
+		else if (detectCue(cues.get("NetherWB"), SECOND) != null)
 			return "n";
-		else if (detectCue(cues.get("MelvinWB")) != null)
+		else if (detectCue(cues.get("MelvinWB"), SECOND) != null)
 			return "m";
 		else return null;
 	}
