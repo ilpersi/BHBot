@@ -1,5 +1,6 @@
 # BHBot
 
+[![Gitter chat](https://img.shields.io/gitter/room/Betalord/BHBot.svg?color=red&style=popout)](https://gitter.im/BHBot/community)
 [![GitHub release](https://img.shields.io/github/release/Betalord/BHBot.svg?label=last%20release&style=popout) ![GitHub Release Date](https://img.shields.io/github/release-date/Betalord/BHBot.svg?label=released&style=popout)](https://github.com/Betalord/BHBot/releases/latest)
 [![GitHub issues by-label](https://img.shields.io/github/issues/Betalord/BHBot/bug.svg?label=bug%28s%29&style=popout)](https://github.com/Betalord/BHBot/labels/bug)
 [![GitHub last commit](https://img.shields.io/github/last-commit/Betalord/BHBot.svg?style=popout)](https://github.com/Betalord/BHBot/commits)
