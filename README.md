@@ -1,11 +1,11 @@
 # BHBot
 
-[![Gitter chat](https://img.shields.io/gitter/room/Betalord/BHBot.svg?color=red&style=popout)](https://gitter.im/BHBot/community)
-[![GitHub release](https://img.shields.io/github/release/Betalord/BHBot.svg?label=last%20release&style=popout) ![GitHub Release Date](https://img.shields.io/github/release-date/Betalord/BHBot.svg?label=released&style=popout)](https://github.com/Betalord/BHBot/releases/latest)
-[![GitHub issues by-label](https://img.shields.io/github/issues/Betalord/BHBot/bug.svg?label=bug%28s%29&style=popout)](https://github.com/Betalord/BHBot/labels/bug)
-[![GitHub last commit](https://img.shields.io/github/last-commit/Betalord/BHBot.svg?style=popout)](https://github.com/Betalord/BHBot/commits)
-![GitHub All Releases](https://img.shields.io/github/downloads/Betalord/BHBot/total.svg?label=total%20downloads&style=popout)
-![GitHub top language](https://img.shields.io/github/languages/top/Betalord/BHBot.svg?style=popout)
+[![Gitter chat](https://img.shields.io/gitter/room/ilpersi/BHBot.svg?color=red&style=popout)](https://gitter.im/BHBot/community)
+[![GitHub release](https://img.shields.io/github/release/ilpersi/BHBot.svg?label=last%20release&style=popout) ![GitHub Release Date](https://img.shields.io/github/release-date/ilpersi/BHBot.svg?label=released&style=popout)](https://github.com/ilpersi/BHBot/releases/latest)
+[![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=popout)](https://github.com/ilpersi/BHBot/labels/bug)
+[![GitHub last commit](https://img.shields.io/github/last-commit/ilpersi/BHBot.svg?style=popout)](https://github.com/ilpersi/BHBot/commits)
+![GitHub All Releases](https://img.shields.io/github/downloads/ilpersi/BHBot/total.svg?label=total%20downloads&style=popout)
+![GitHub top language](https://img.shields.io/github/languages/top/ilpersi/BHBot.svg?style=popout)
 
 ## What is BHBot?
 BHBot is a program that automates different aspects of the [Bit Heroes](http://www.kongregate.com/games/juppiomenz/bit-heroes) game.
@@ -38,20 +38,20 @@ The level/difficulty for each activity can be defined in the settings file. The 
 * Screenshot and close PMs
 * Open skeleton chests
 * Handle incomplete teams
-* Notify you on your mobile devices through [Pushover](https://github.com/Betalord/BHBot/wiki/Pushover-integration-Documentation) on how it is doing and if any issue is present
+* Notify you on your mobile devices through [Pushover](https://github.com/ilpersi/BHBot/wiki/Pushover-integration-Documentation) on how it is doing and if any issue is present
 * Switch runes based on your preferences
 
 If the bot detects a "Disconnected" dialog, it will pause its execution for an hour giving the user a chance to play manually.
 Disconnects are usually result of another instance logging into the game. This is why bot pauses in case it detects it.
 
 ## Download
-You can download a release ready BHBot.jar from the [releases](https://github.com/Betalord/BHBot/releases) page.
+You can download a release ready BHBot.jar from the [releases](https://github.com/ilpersi/BHBot/releases) page.
 
 For the latest functionality it is recommended to compile your own version as there are frequent commits with bug-fixes and new functionality between major releases.
 
 ## First time setup
 
-See [the wiki](https://github.com/Betalord/BHBot/wiki) for the first time setup guide.
+See [the wiki](https://github.com/ilpersi/BHBot/wiki) for the first time setup guide.
 
 ## Important
 
