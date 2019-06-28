@@ -438,9 +438,6 @@ public class BHBot {
                     case "d":
                         main.updateActivityCounter("World Boss");
                         break;
-                    case "ad":
-                        main.trySkippingAd();
-                        break;
                     case "softreset":
                     	main.softReset();
                     	break;

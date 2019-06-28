@@ -32,9 +32,6 @@ public class Settings {
 	boolean dungeonOnTimeout = true;
 	boolean countActivities = false;
 	
-	//activity settings
-	boolean doAds = false;
-	
 	//activity settings alpha
 	LinkedHashSet<String> activitiesEnabled;
 
@@ -219,8 +216,6 @@ public class Settings {
 		activitiesEnabled.add("p"); // PVP
 		activitiesEnabled.add("v"); // GVG
 		activitiesEnabled.add("i"); // Invasion
-
-		doAds = true;
 		
 		difficulty = 60;
 		setDungeons("z2d1 3 50", "z2d2 3 50");
@@ -231,7 +226,6 @@ public class Settings {
 	
 	/** Does nothing except collect ads */
     void setIdle() {
-		doAds = false;
 		enablePushover = false;
 		poNotifyPM = false;
 		poNotifyCrash = false;
@@ -802,7 +796,6 @@ public class Settings {
 		poNotifyCrash = lastUsedMap.getOrDefault("poNotifyCrash", poNotifyCrash ? "1" : "0").equals("1");
 		poNotifyErrors = lastUsedMap.getOrDefault("poNotifyErrors", poNotifyErrors ? "1" : "0").equals("1");
 		poNotifyBribe = lastUsedMap.getOrDefault("poNotifyBribe", poNotifyBribe ? "1" : "0").equals("1");
-		doAds = lastUsedMap.getOrDefault("doAds", doAds ? "1" : "0").equals("1");
 		
 		maxShards = Integer.parseInt(lastUsedMap.getOrDefault("maxShards", ""+maxShards));
 		maxTokens = Integer.parseInt(lastUsedMap.getOrDefault("maxTokens", ""+maxTokens));
