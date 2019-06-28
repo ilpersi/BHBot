@@ -5,7 +5,6 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.*;
 
-import com.google.common.base.Throwables;
 import com.google.gson.Gson;
 
 import net.pushover.client.*;
@@ -15,7 +14,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
