@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit ;
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
 
-import com.google.common.base.Throwables;
 import net.pushover.client.MessagePriority;
 import net.pushover.client.PushoverException;
 import net.pushover.client.PushoverMessage;
@@ -129,29 +128,6 @@ public class MainThread implements Runnable {
         }
 
     }
-
-	public static class ReturnResult {
-		String msg;
-		boolean needsRestart;
-
-//		public ReturnResult() { }
-
-		ReturnResult(String msg, boolean needsRestart) {
-			this.msg = msg;
-			this.needsRestart = needsRestart;
-		}
-
-		/**
-		 * Returns error with need to restart.
-		 */
-		static ReturnResult error(String msg) {
-			return new ReturnResult(msg, true);
-		}
-
-		static ReturnResult ok() {
-			return new ReturnResult(null, false);
-		}
-	}
 
 	/** Events that use badges as "fuel". */
 	public enum BadgeEvent {
@@ -290,10 +266,10 @@ public class MainThread implements Runnable {
 		COMMON("Common", 1),
 		RARE("Rare", 2),
 		EPIC("Epic", 3),
-		LEGENDARY("Legendary",4),
-		SET("Set", 5),
+		LEGENDARY("Legendary",4);
+		/*SET("Set", 5),
 		MYTHIC("Mythic", 6),
-		ANCIENT("Ancient", 6);
+		ANCIENT("Ancient", 6);*/
 
 		private final String name;
 		private final int value;
@@ -345,6 +321,7 @@ public class MainThread implements Runnable {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private enum MinorRune {
 		EXP_COMMON(MinorRuneEffect.EXPERIENCE, ItemGrade.COMMON),
 		EXP_RARE(MinorRuneEffect.EXPERIENCE, ItemGrade.RARE),
@@ -437,7 +414,7 @@ public class MainThread implements Runnable {
 	private int potionsUsed = 0;
 
 	private boolean startTimeCheck = false;
-	public boolean oneTimeshrineCheck = false;
+	private boolean oneTimeshrineCheck = false;
 	private boolean autoShrined = false;
 	private long activityStartTime;
 	private long activityDuration;
@@ -450,7 +427,6 @@ public class MainThread implements Runnable {
 	private int raidVictoryCounter = 0;
 	private int raidDefeatCounter = 0;
 
-	private static final int MAX_LAST_AD_OFFER_TIME = 17*MINUTE; // after this time, restart() will get called since ads are not coming through anymore
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
 	private static Map<String, Cue> cues = new HashMap<>();
@@ -509,7 +485,6 @@ public class MainThread implements Runnable {
 //	private int numAdOffers = 0;
 	/** Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through! */
 	long timeLastAdOffer;
-	private boolean fished = false;
 
 	/** Used to format double numbers in a human readable way*/
 	private DecimalFormat df = new DecimalFormat("#.00");
@@ -520,12 +495,10 @@ public class MainThread implements Runnable {
 
 	/** global autorune vals */
 	private boolean autoBossRuned = false;
-	public boolean oneTimeRuneCheck = false;
+	private boolean oneTimeRuneCheck = false;
 
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
-
-	public String currentActivity;
 
 	private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
@@ -1551,7 +1524,7 @@ public class MainThread implements Runnable {
 					state = State.Main;
 
 					//Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
-					if (state == State.Main && !idleMode) {
+					if (!idleMode) {
 						seg = detectCue(cues.get("AutoOn")); //if we're in Main state, with auto button visible, then we need to change state
 							if (seg != null) {
 							state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
@@ -1617,15 +1590,7 @@ public class MainThread implements Runnable {
 						readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
 					}
 
-//					if (!BHBot.scheduler.doRaidImmediately && !BHBot.scheduler.doDungeonImmediately &&
-//							!BHBot.scheduler.doTrialsOrGauntletImmediately && !BHBot.scheduler.doPVPImmediately &&
-//							!BHBot.scheduler.doGVGImmediately && !BHBot.scheduler.doInvasionImmediately &&
-//							!BHBot.scheduler.doExpeditionImmediately && !BHBot.scheduler.doWorldBossImmediately) {
-//
-//						if (!activitysIterator.hasNext()) activitysIterator = BHBot.settings.activitiesEnabled.iterator();
-//					}
-
-					currentActivity = activitySelector(); //else select the activity to attempt
+					String currentActivity = activitySelector(); //else select the activity to attempt
 					if (currentActivity != null) BHBot.logger.debug("Checking activity: " + currentActivity);
 
 
@@ -1801,9 +1766,11 @@ public class MainThread implements Runnable {
 
 						readScreen();
 
+						boolean trials;
 						seg = detectCue(cues.get("Trials"));
 						if (seg==null) seg = detectCue(cues.get("Trials2"));
-						boolean trials = seg != null; // if false, then we will do gauntlet instead of trials
+						trials = seg != null; // if false, then we will do gauntlet instead of trials
+
 						if (seg == null)
 							seg = detectCue(cues.get("Gauntlet"));
 						if (seg == null) {
@@ -1850,43 +1817,44 @@ public class MainThread implements Runnable {
 								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // reset it
 
 							// One time check for Autoshrine
-							if (trials && BHBot.settings.autoShrine.contains("t")) {
-								readScreen();
-								seg = detectCue(cues.get("X"),SECOND);
-								clickOnSeg(seg);
-								readScreen(SECOND);
+							if (trials) {
 
-								BHBot.logger.info("Configuring autoShrine for Trial");
-								if(!checkShrineSettings(true, true)) {
-									BHBot.logger.error("Impossible to configure autoShrine for Trial");
+								if (BHBot.settings.autoShrine.contains("t") || BHBot.settings.autoRune.containsKey("t")) {
+									readScreen();
+									seg = detectCue(cues.get("X"),SECOND);
+									clickOnSeg(seg);
+									readScreen(SECOND);
+
+									if (BHBot.settings.autoShrine.contains("t")) {
+										BHBot.logger.info("Configuring autoShrine for Trial");
+										if(!checkShrineSettings(true, true)) {
+											BHBot.logger.error("Impossible to configure autoShrine for Trial");
+										}
+										readScreen(SECOND);
+									}
+
+									if (BHBot.settings.autoRune.containsKey("t")) {
+										BHBot.logger.info("Configuring autoRune for Trial");
+										handleMinorRunes("t");
+										readScreen(SECOND);
+									}
+
+									readScreen(SECOND);
+									clickOnSeg(trialBTNSeg);
+									readScreen(SECOND); //wait for window animation
 								}
-								
-							//configure boss runes if no autoshrine
-							if (trials && BHBot.settings.autoBossRune.containsKey("t") && !BHBot.settings.autoShrine.contains("t")) { //if autoshrine disabled but autorune enabled
-								seg = detectCue(cues.get("X"),SECOND);
-								clickOnSeg(seg);
-								readScreen(SECOND);
 
-								BHBot.logger.info("Configuring autoBossRune for Trials");
-								if (!checkShrineSettings(true, false)) {
-									BHBot.logger.error("Impossible to configure autoBossRune for Trials!");
-								}
-							}
-
-								readScreen(SECOND);
-								clickOnSeg(trialBTNSeg);
-								sleep(SECOND); //wait for window animation
-							}
-
-							//configure activity runes
-							if(trials) {
-								handleMinorRunes("t");
-								readScreen(SECOND);
-								clickOnSeg(trialBTNSeg);
 							} else {
-								handleMinorRunes("g");
+
+								if (BHBot.settings.autoRune.containsKey("g")) {
+									BHBot.logger.info("Configuring autoRune for Gauntlet");
+									handleMinorRunes("g");
+									readScreen(SECOND);
+								}
+
 								readScreen(SECOND);
 								clickOnSeg(trialBTNSeg);
+								readScreen(SECOND); //wait for window animation
 							}
 
 							BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + BHBot.settings.difficulty + "...");
@@ -2281,7 +2249,7 @@ public class MainThread implements Runnable {
 						if (badgeEvent == BadgeEvent.Invasion) currentActivity = "i";
 						if (badgeEvent == BadgeEvent.GVG) currentActivity = "v";
 
-						if (!checkedActivity.equals(currentActivity)) { //if checked activity and chosen activity don't match we skip
+						if (currentActivity == null || !currentActivity.equals(checkedActivity)) { //if checked activity and chosen activity don't match we skip
 							continue;
 						}
 
@@ -2302,7 +2270,7 @@ public class MainThread implements Runnable {
 						}
 
 						// check GVG:
-						if (badgeEvent == BadgeEvent.GVG && "v".equals(currentActivity)) {
+						if (badgeEvent == BadgeEvent.GVG) {
 							if ((!BHBot.scheduler.doGVGImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costGVG)) {
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
@@ -2414,7 +2382,7 @@ public class MainThread implements Runnable {
 							continue;
 						} // GvG
 						// check invasion:
-						else if (badgeEvent == BadgeEvent.Invasion && "i".equals(currentActivity)) {
+						else if (badgeEvent == BadgeEvent.Invasion) {
 							if ((!BHBot.scheduler.doInvasionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costInvasion)) {
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
@@ -2481,7 +2449,7 @@ public class MainThread implements Runnable {
 						} // invasion
 
 						// check Expedition
-						else if (badgeEvent == BadgeEvent.Expedition && "e".equals(currentActivity)) {
+						else if (badgeEvent == BadgeEvent.Expedition) {
 
 							if ((!BHBot.scheduler.doExpeditionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costExpedition)) {
 								seg = detectCue(cues.get("X"));
@@ -3176,7 +3144,7 @@ public class MainThread implements Runnable {
         if (seg == null) {
             BHBot.logger.warn("Error: unable to detect rune layout! Skipping...");
             seg = detectCue(cues.get("X"), 5*SECOND);
-            if (seg == null) {
+            if (seg != null) {
             	clickOnSeg(seg);
             }
             return true;
@@ -3706,95 +3674,6 @@ public class MainThread implements Runnable {
 	}
 
 	/**
-	 *
-	 * @param closeItemsPopup if true, then this method will attempt to close the items popup window at the end of the process of claiming ad.
-	 * We get that window when in the main screen of the game
-	 *
-	 * @return false means that the caller must restart bot (due to an error).
-	 */
-	public ReturnResult waitForAdAndCloseIt(boolean closeItemsPopup) {
-		boolean done = false;
-		long timer = Misc.getTime();
-		do {
-			if (Misc.getTime() - timer > 60*SECOND) break;
-
-			sleep(500);
-			try {
-				// see if we're out of offers:
-				try {
-					boolean outOfOffers = driver.findElement(By.cssSelector("#epom-tag-container-overlay > div > span")).getText().equalsIgnoreCase(":("); // "We're out of offers to show in your region" message
-					if (outOfOffers) {
-						BHBot.logger.info("Seems there are no ad offers available anymore in our region. Skipping ad offer...");
-
-						// click the close button:
-						WebElement btnClose;
-						try {
-							btnClose = driver.findElement(By.xpath("//*[@id=\"play\"]/div[20]/div[1]/div[3]"));
-						} catch (NoSuchElementException e) {
-							return ReturnResult.error("Cannot find the close button on 'out of offers' ad window!");
-						}
-						btnClose.click();
-
-						sleep(2000); // wait for ad window to fade out (it slowly fades out)
-
-//						boolean skipped = trySkippingAd();
-
-//						BHBot.logger.info("Ad " + (skipped ? "successfully" : "unsuccessfully") +  " skipped! (location: " + state.getName() + ")");
-
-						return ReturnResult.ok();
-					}
-				} catch (Exception e) {
-					BHBot.logger.error("Error #1 in Ad management", e);
-				}
-
-				done = driver.findElement(By.cssSelector("#play > div.ironrv-container.open > div.ironrv-container-header.complete > div.ironrv-title > span")).getText().equalsIgnoreCase("You can now claim your reward!");
-				if (done) {
-					// click the close button:
-					WebElement btnClose;
-					try {
-						/*
-						 		Close button:
-								//*[@id="play"]/div[14]/div[1]/div[3]
-								#play > div.ironrv-container.open > div.ironrv-container-header.complete > div.ironrv-close
-								<div class="ironrv-close " style="">X</div>
-						 */
-						btnClose = driver.findElement(By.cssSelector("#play > div.ironrv-container.open > div.ironrv-container-header.complete > div.ironrv-close"));
-					} catch (NoSuchElementException e) {
-						return ReturnResult.error("Cannot find the close button on finished ad window!");
-					}
-					btnClose.click();
-
-					break;
-				}
-			} catch (Exception e) {
-				BHBot.logger.error("Error #2 in Ad management", e);
-			}
-		} while (!done);
-
-		if (!done) {
-			return ReturnResult.error("Could not claim ad reward... timeout!");
-		} else {
-			if (closeItemsPopup) {
-				sleep(5*SECOND);
-				//scrollGameIntoView();
-				readScreen();
-
-				MarvinSegment seg = detectCue(cues.get("Items"), 5*SECOND);
-				if (seg == null) {
-					return ReturnResult.error("There is no 'Items' button after watching the ad.");
-				}
-
-				seg = detectCue(cues.get("X"));
-				clickOnSeg(seg);
-
-				sleep(2 * SECOND);
-			}
-			BHBot.logger.info("Ad reward successfully claimed! (location: " + state.getName() + ")");
-			return ReturnResult.ok();
-		}
-	}
-
-	/**
 	 * Processes any kind of dungeon: <br>
 	 * - normal dungeon <br>
 	 * - raid <br>
@@ -3807,7 +3686,7 @@ public class MainThread implements Runnable {
 
 		if (!startTimeCheck) {
 			activityStartTime = (System.currentTimeMillis() / 1000L);
-			BHBot.logger.debug("Start time: " + Long.toString(activityStartTime));
+			BHBot.logger.debug("Start time: " + activityStartTime);
 			outOfEncounterTimestamp = Misc.getTime() / 1000;
 			inEncounterTimestamp = Misc.getTime() / 1000;
 			startTimeCheck = true;
@@ -4266,7 +4145,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private boolean handleMinorRunes(String activity) {
         List<String> desiredRunesAsStrs;
         String activityName = state.getNameFromShortcut(activity);
-        if (BHBot.settings.autoRuneDefault.isEmpty() || BHBot.settings.autoRuneDefault.equals("")) {
+        if (BHBot.settings.autoRuneDefault.isEmpty()) {
 			BHBot.logger.debug("autoRunesDefault not defined; aborting autoRunes");
 		}
 
@@ -4400,7 +4279,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             }
         }
         
-   		sleep(1*SECOND); //sleep while we wait for window animation
+   		sleep(SECOND); //sleep while we wait for window animation
 
         if (!detectEquippedMinorRunes(false, true)) {
             BHBot.logger.error("Unable to detect runes, post-equip.");
@@ -4436,12 +4315,15 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			return false;
 		}
 
-		seg = null;
 		ItemGrade maxRuneGrade = MinorRune.maxGrade;
 		for (int runeGradeVal = maxRuneGrade.getValue(); runeGradeVal > 0; runeGradeVal--) {
 			ItemGrade runeGrade = ItemGrade.getGradeFromValue(runeGradeVal);
 			MinorRune thisRune = MinorRune.getRune(desiredRune, runeGrade);
 
+			if (thisRune == null) {
+				BHBot.logger.error("Unable to getRune in switchSingleMinorRune");
+				continue;
+			}
 
 			Cue runeCue = thisRune.getRuneSelectCue();
 			if (runeCue == null) {
@@ -5553,15 +5435,15 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
 		//check tier
-        if ("o".equals(worldBossType) || "n".equals(worldBossType)) {
-            if (worldBossTier >=1 || worldBossTier <=9) {
+		if ("o".equals(worldBossType) || "n".equals(worldBossType)) {
+			if (worldBossTier >=1 && worldBossTier <=9) {
                 passed++;
             } else {
                 BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 1 and 9");
                 failed = true;
             }
         } else if ("m".equals(worldBossType)) {
-            if (worldBossTier == 10) {
+			if (worldBossTier == 10) {
                 passed++;
             } else {
                 BHBot.logger.error("Invalid world boss tier for Melvin, must be equal to 10");
@@ -6146,9 +6028,8 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
 
 		BufferedImage imb = im.getBufferedImage();
-		int d = readNumFromImg(imb);
 
-		return d;
+		return readNumFromImg(imb);
 	}
 
 	private void changeWorldBossTier(int target) {
@@ -6182,6 +6063,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		readScreen(SECOND); //wait for screen to stabilize
 		Point diff = getDifficultyButtonXY(target);
 		if (diff != null) {
+			//noinspection SuspiciousNameCombination
 			clickInGame(diff.y, diff.x);
 		}
 	}
@@ -6297,7 +6179,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 		readScreen(5*SECOND);
 
-		return selectDifficultyFromDropDown(oldDifficulty, newDifficulty);
+		return selectDifficultyFromDropDown(newDifficulty);
 	}
 
 	private boolean selectDifficultyExpedition(int oldDifficulty, int newDifficulty) {
@@ -6314,7 +6196,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 		readScreen(5*SECOND);
 
-		return selectDifficultyFromDropDownExpedition(oldDifficulty, newDifficulty);
+		return selectDifficultyFromDropDownExpedition(newDifficulty);
 	}
 
 	/**
@@ -6323,15 +6205,15 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	 * animation and the caller must wait for it to finish.
 	 * @return false in case of an error.
 	 */
-	private boolean selectDifficultyFromDropDown(int oldDifficulty, int newDifficulty) {
-		return selectDifficultyFromDropDown(oldDifficulty, newDifficulty, 0);
+	private boolean selectDifficultyFromDropDown(int newDifficulty) {
+		return selectDifficultyFromDropDown(newDifficulty, 0);
 	}
 
 	/**
 	 * Internal routine - do not use it manually! <br>
 	 * @return false on error (caller must do restart() if he gets false as a result from this method)
 	 */
-	private boolean selectDifficultyFromDropDown(int oldDifficulty, int newDifficulty, int recursionDepth) {
+	private boolean selectDifficultyFromDropDown(int newDifficulty, int recursionDepth) {
 		// horizontal position of the 5 buttons:
 		final int posx = 390;
 		// vertical positions of the 5 buttons:
@@ -6382,7 +6264,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			}
 			// OK, we should have a target value on screen now, in the first spot. Let's click it!
 			readScreen(5*SECOND); //*** should we increase this time?
-			return selectDifficultyFromDropDown(oldDifficulty, newDifficulty, recursionDepth+1); // recursively select new difficulty
+			return selectDifficultyFromDropDown(newDifficulty, recursionDepth+1); // recursively select new difficulty
 		} else {
 			// move down
 			seg = detectCue(cues.get("DropDownDown"));
@@ -6399,15 +6281,15 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			}
 			// OK, we should have a target value on screen now, in the first spot. Let's click it!
 			readScreen(5*SECOND); //*** should we increase this time?
-			return selectDifficultyFromDropDown(oldDifficulty, newDifficulty, recursionDepth+1); // recursively select new difficulty
+			return selectDifficultyFromDropDown(newDifficulty, recursionDepth+1); // recursively select new difficulty
 		}
 	}
 
 	/**
 	 * Quickfix Copy for Expedition as it moves 5 at a time not 1
 	 */
-	private boolean selectDifficultyFromDropDownExpedition(int oldDifficulty, int newDifficulty) {
-		return selectDifficultyFromDropDownExpedition(oldDifficulty, newDifficulty, 0);
+	private boolean selectDifficultyFromDropDownExpedition(int newDifficulty) {
+		return selectDifficultyFromDropDownExpedition(newDifficulty, 0);
 	}
 
 	/**
@@ -6415,7 +6297,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	 * Internal routine - do not use it manually! <br>
 	 * @return false on error (caller must do restart() if he gets false as a result from this method)
 	 */
-	private boolean selectDifficultyFromDropDownExpedition(int oldDifficulty, int newDifficulty,
+	private boolean selectDifficultyFromDropDownExpedition(int newDifficulty,
 														   @SuppressWarnings("SameParameterValue") int recursionDepth) {
 		// horizontal position of the 5 buttons:
 		final int posx = 390;
@@ -6468,7 +6350,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			}
 			// OK, we should have a target value on screen now, in the first spot. Let's click it!
 			readScreen(5*SECOND); //*** should we increase this time?
-			return selectDifficultyFromDropDown(oldDifficulty, newDifficulty, recursionDepth+1); // recursively select new difficulty
+			return selectDifficultyFromDropDown(newDifficulty, recursionDepth+1); // recursively select new difficulty
 		} else {
 			// move down
 			seg = detectCue(cues.get("DropDownDown"));
@@ -6485,7 +6367,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			}
 			// OK, we should have a target value on screen now, in the first spot. Let's click it!
 			readScreen(5*SECOND); //*** should we increase this time?
-			return selectDifficultyFromDropDown(oldDifficulty, newDifficulty, recursionDepth+1); // recursively select new difficulty
+			return selectDifficultyFromDropDown(newDifficulty, recursionDepth+1); // recursively select new difficulty
 		}
 	}
 
@@ -6821,13 +6703,13 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
     /**
      * Daily collection of fishing baits!
      */
-    public void handleFishingBaits() {
+	void handleFishingBaits() {
         MarvinSegment seg;
 
         seg = detectCue(cues.get("Fishing"), SECOND * 5);
         if (seg != null) {
             clickOnSeg(seg);
-            sleep(SECOND * 1); // we allow some seconds as maybe the reward popup is sliding down
+            sleep(SECOND); // we allow some seconds as maybe the reward popup is sliding down
 
             detectCharacterDialogAndHandleIt();
 
@@ -6853,7 +6735,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             seg = detectCue(cues.get("X"), 5 * SECOND);
             if (seg != null) {
                 clickOnSeg(seg);
-                sleep(SECOND * 1);
+                sleep(SECOND);
                 readScreen();
             } else {
             	if (!BHBot.settings.doFishing) {
@@ -7398,15 +7280,12 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 					BHBot.scheduler.resume();
 				}
 				Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisher-v1.2.4.exe\"\"");
-				if (!fisherClose.waitFor(1, TimeUnit.SECONDS)) { //run and wait for one second
-				}
+				fisherClose.waitFor(1, TimeUnit.SECONDS);
 
-			}catch( IOException ex ){
-			    BHBot.logger.error("Can't start fisher.exe");
-			}catch( InterruptedException ex ){
+			}catch( IOException | InterruptedException ex ){
 			    BHBot.logger.error("Can't start fisher.exe");
 			}
-			
+
 //			try{
 //				Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisher-v1.2.4.exe\"\"");
 //				if (!fisherClose.waitFor(1, TimeUnit.SECONDS)) { //run and wait for one second
