@@ -147,6 +147,10 @@ public class Settings {
 	
 	/** If true, then bot will try to auto consume consumables as specified by the 'consumables' list. */
     boolean autoConsume = false;
+
+    /** if true, the bot will save a screenshot of the victory popup */
+    boolean victoryScreenshot = false;
+
 	/** List of consumables that we want activate at all times. */
     List<String> consumables;
 
@@ -849,6 +853,7 @@ public class Settings {
         setConsumablesFromString(lastUsedMap.getOrDefault("consumables", getConsumablesAsString()));
 
         contributeFamiliars = lastUsedMap.getOrDefault("contributeFamiliars", contributeFamiliars ? "1" : "0").equals("1");
+        victoryScreenshot = lastUsedMap.getOrDefault("victoryScreenshot", victoryScreenshot ? "1" : "0").equals("1");
         setFamiliarsFromString(lastUsedMap.getOrDefault("familiars", getFamiliarsAsString()));
         familiarScreenshot  = Integer.parseInt(lastUsedMap.getOrDefault("familiarScreenshot", ""+familiarScreenshot));
 

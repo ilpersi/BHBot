@@ -4238,12 +4238,21 @@ public class MainThread implements Runnable {
 		seg = detectCue(cues.get("VictoryPopup"));
 		if (seg != null) {
 
+			BufferedImage victoryPopUpImg = img;
+
+			if (BHBot.settings.victoryScreenshot) {
+				saveGameScreen("victory", img);
+			}
+
 			if (BHBot.settings.enablePushover) {
 				readScreen();
 
 				String DroppedItem = "";
 				Bounds victoryDropArea = new Bounds(175, 340, 625, 425);
-				BufferedImage victoryPopUpImg = img;
+
+				if (BHBot.settings.victoryScreenshot) {
+					saveGameScreen("victory-pushover", img);
+				}
 
 				if (BHBot.settings.poNotifyDrop.contains("l") &&
 						detectCue(cues.get("ItemLeg"), 0, victoryDropArea) != null ) {
