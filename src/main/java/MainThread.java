@@ -2714,15 +2714,12 @@ public class MainThread implements Runnable {
 							readScreen();
 							detectCharacterDialogAndHandleIt(); //clear dialogue
 
-							//load settings
 
-							
 							String worldBossType = BHBot.settings.worldBossSettings.get(0);
 							int worldBossDifficulty = Integer.parseInt(BHBot.settings.worldBossSettings.get(1));
 							int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
 							int worldBossTimer = BHBot.settings.worldBossTimer;
 
-							
 							//new settings loading
 
 							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
@@ -2733,18 +2730,32 @@ public class MainThread implements Runnable {
 								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossNameText + " Solo");
 							}
 
+							readScreen();
 							seg = detectCue(cues.get("BlueSummon"),SECOND);
-							clickOnSeg(seg);
-							readScreen(2*SECOND); //wait for screen to stablise
+                            if (seg != null) {
+                                clickOnSeg(seg);
+                            } else {
+                                BHBot.logger.error("Impossible to find blue summon in world boss.");
+
+                                String WBErrorScreen = saveGameScreen("wb-no-blue-summon", img);
+                                if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                                    sendPushOverMessage("World Boss error", "Impossible to find blue summon.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
+                                }
+
+                                closePopupSecurely(cues.get("cueWorldBossTitle"), cues.get("X"));
+                                continue;
+                            }
+                            readScreen(2*SECOND); //wait for screen to stablise
 
 							//world boss type selection
 							String selectedWB = readSelectedWorldBoss();
 							if (selectedWB == null) {
-								BHBot.logger.error("Impossible to read current selected world boss. Dungeons will be activated instead of World Boss!");
+								BHBot.logger.error("Impossible to read current selected world boss.");
+								/*BHBot.logger.error("Impossible to read current selected world boss. Dungeons will be activated instead of World Boss!");
 								BHBot.settings.activitiesEnabled.remove("w");
-								BHBot.settings.activitiesEnabled.add("d");
+								BHBot.settings.activitiesEnabled.add("d");*/
 
-								String WBErrorScreen = saveGameScreen("skeleton-treasure-no-open");
+								String WBErrorScreen = saveGameScreen("wb-no-read-selected", img);
 								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
 									sendPushOverMessage("World Boss error", "Impossible to read current selected world boss.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
 								}
