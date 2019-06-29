@@ -14,7 +14,7 @@ public class Settings {
 
 	/** Experimental feature. Better use 'false' for now. */
     private boolean useHeadlessMode = false; // run Chrome with --headless switch?
-	boolean restartAfterAdOfferTimeout = true; // if true, then bot will automatically restart itself if it hasn't claimed any ad offer in a time longer than defined. This is needed because ads don't appear anymore if Chrome doesn't get restarted.
+	private boolean restartAfterAdOfferTimeout = true; // if true, then bot will automatically restart itself if it hasn't claimed any ad offer in a time longer than defined. This is needed because ads don't appear anymore if Chrome doesn't get restarted.
 	boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
 	boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
 	private boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
@@ -31,9 +31,6 @@ public class Settings {
 	boolean collectFishingBaits  = false;
 	boolean dungeonOnTimeout = true;
 	boolean countActivities = false;
-	
-	//activity settings
-	boolean doAds = false;
 	
 	//activity settings alpha
 	LinkedHashSet<String> activitiesEnabled;
@@ -106,10 +103,7 @@ public class Settings {
 	
 	/** World Boss Settings **/
 	List<String> worldBossSettings;
-    String worldBossType = "";
-	int worldBossTier  =  0;
 	int worldBossTimer = 0;
-	int worldBossDifficulty = 0;
 	boolean worldBossSolo = false;
 	
 	/** Autorevive Settings **/
@@ -147,6 +141,10 @@ public class Settings {
 	
 	/** If true, then bot will try to auto consume consumables as specified by the 'consumables' list. */
     boolean autoConsume = false;
+
+    /** if true, the bot will save a screenshot of the victory popup */
+    boolean victoryScreenshot = false;
+
 	/** List of consumables that we want activate at all times. */
     List<String> consumables;
 
@@ -215,8 +213,6 @@ public class Settings {
 		activitiesEnabled.add("p"); // PVP
 		activitiesEnabled.add("v"); // GVG
 		activitiesEnabled.add("i"); // Invasion
-
-		doAds = true;
 		
 		difficulty = 60;
 		setDungeons("z2d1 3 50", "z2d2 3 50");
@@ -227,7 +223,6 @@ public class Settings {
 	
 	/** Does nothing except collect ads */
     void setIdle() {
-		doAds = false;
 		enablePushover = false;
 		poNotifyPM = false;
 		poNotifyCrash = false;
@@ -709,15 +704,15 @@ public class Settings {
 		}
 	}
 
-    public void setAutoRuneDefaultFromString(String s) {
+    private void setAutoRuneDefaultFromString(String s) {
         setAutoRuneDefault(s.trim().split(" +"));
     }
 
-    public void setAutoRuneFromString(String s) {
+    private void setAutoRuneFromString(String s) {
 		setAutoRune(s.trim().split(" *; *"));
     }
 
-	public void setAutoBossRuneFromString(String s) {
+	private void setAutoBossRuneFromString(String s) {
 		setAutoBossRune(s.trim().split(" *; *"));
 	}
 
@@ -798,7 +793,6 @@ public class Settings {
 		poNotifyCrash = lastUsedMap.getOrDefault("poNotifyCrash", poNotifyCrash ? "1" : "0").equals("1");
 		poNotifyErrors = lastUsedMap.getOrDefault("poNotifyErrors", poNotifyErrors ? "1" : "0").equals("1");
 		poNotifyBribe = lastUsedMap.getOrDefault("poNotifyBribe", poNotifyBribe ? "1" : "0").equals("1");
-		doAds = lastUsedMap.getOrDefault("doAds", doAds ? "1" : "0").equals("1");
 		
 		maxShards = Integer.parseInt(lastUsedMap.getOrDefault("maxShards", ""+maxShards));
 		maxTokens = Integer.parseInt(lastUsedMap.getOrDefault("maxTokens", ""+maxTokens));
@@ -849,6 +843,7 @@ public class Settings {
         setConsumablesFromString(lastUsedMap.getOrDefault("consumables", getConsumablesAsString()));
 
         contributeFamiliars = lastUsedMap.getOrDefault("contributeFamiliars", contributeFamiliars ? "1" : "0").equals("1");
+        victoryScreenshot = lastUsedMap.getOrDefault("victoryScreenshot", victoryScreenshot ? "1" : "0").equals("1");
         setFamiliarsFromString(lastUsedMap.getOrDefault("familiars", getFamiliarsAsString()));
         familiarScreenshot  = Integer.parseInt(lastUsedMap.getOrDefault("familiarScreenshot", ""+familiarScreenshot));
 

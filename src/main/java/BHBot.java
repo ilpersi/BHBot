@@ -5,7 +5,6 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.*;
 
-import com.google.common.base.Throwables;
 import com.google.gson.Gson;
 
 import net.pushover.client.*;
@@ -15,7 +14,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
@@ -46,6 +44,8 @@ public class BHBot {
 
 	/** log4j logger */
 	static BHBotLogger logger;
+
+    private static Properties gitPropertis;
 
 	public static void main(String[] args) {
 		
@@ -104,7 +104,7 @@ public class BHBot {
             logger.info(PROGRAM_NAME + " v" + BHBotVersion + " started. Unknown build date.");
 		}
 
-		Properties gitPropertis = Misc.getGITInfo();
+		gitPropertis = Misc.getGITInfo();
 		logger.info("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time")) ;
 
 		if (!"UNKNOWN".equals(BHBotVersion)) {
@@ -520,14 +520,15 @@ public class BHBot {
 	private static void checkNewRelease() {
 
 		HttpClient httpClient = HttpClients.custom().useSystemProperties().build();
-		final HttpGet getReq = new HttpGet("https://api.github.com/repos/Betalord/BHBot/releases/latest");
+		final HttpGet releaseGetReq = new HttpGet("https://api.github.com/repos/ilpersi/BHBot/releases/latest");
+
 		Gson gson = new Gson();
 
 		Double currentVersion = Double.parseDouble(BHBotVersion);
 
 		HttpResponse response;
 		try {
-			response = httpClient.execute(getReq);
+			response = httpClient.execute(releaseGetReq);
 		} catch (IOException e) {
 			logger.error("Impossible to reach GitHub latest release endpoing", e);
 			return;
@@ -550,9 +551,28 @@ public class BHBot {
 				return;
 			}
 
+			String tagName = lastReleaseInfo.tagName;
+			String tagUrl = "https://api.github.com/repos/ilpersi/BHBot/git/refs/tags/" + tagName;
+
+            final HttpGet tagGetReq = new HttpGet(tagUrl);
+            try {
+                response = httpClient.execute(tagGetReq);
+            } catch (IOException e) {
+                logger.error("Impossible to reach GitHub latest tag endpoing", e);
+                return;
+            }
+
+			GitHubTag lastReleaseTagInfo;
+			try {
+			    lastReleaseTagInfo = gson.fromJson(EntityUtils.toString(response.getEntity()), GitHubTag.class);
+            } catch (IOException e) {
+                logger.error("Error while parsing GitHub latest tag JSON.", e);
+                return;
+            }
+
 			Double onlineVersion = Double.parseDouble(lastReleaseInfo.tagName.replace("v", ""));
 
-			if (onlineVersion > currentVersion) {
+			if (onlineVersion > currentVersion ) {
 				logger.warn("A new BHBot version is available and you can get it from " + lastReleaseInfo.releaseURL);
 				logger.warn("Here are the news:");
 				for (String feature : lastReleaseInfo.releaseNotes.split("\n")) {
@@ -566,7 +586,11 @@ public class BHBot {
 					logger.warn("Error while waiting for GitHub release check");
 				}
 			} else if (onlineVersion.equals(currentVersion)) {
-				logger.debug("BHBot is running on the latest version.");
+			    if (lastReleaseTagInfo.object.sha.equals(gitPropertis.get("git.commit.id"))) {
+                    logger.debug("BHBot is running on the latest version.");
+                } else {
+                    logger.warn("You are running on a bleeding edge version of BHBot and there may be bugs.");
+                }
 			} else {
 				logger.warn("You are running on a bleeding edge version of BHBot and there may be bugs.");
 			}
