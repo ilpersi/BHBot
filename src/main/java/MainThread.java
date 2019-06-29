@@ -3931,6 +3931,9 @@ public class MainThread implements Runnable {
 		MarvinSegment seg1 = detectCue(cues.get("Victory"));
 		MarvinSegment seg2 = detectCue(cues.get("WorldBossVictory"));
 		if (seg1 != null || (state == State.WorldBoss && seg2 != null)) { //seg2 needs state defined as otherwise the battle victory screen in dungeon-type encounters triggers it
+
+			handleVictory();
+
 			seg = detectCue(cues.get("CloseGreen"), 2*SECOND); // we need to wait a little bit because the popup scrolls down and the close button is semi-transparent (it stabilizes after popup scrolls down and bounces a bit)
 			if (seg != null)
 				clickOnSeg(seg);
@@ -3981,44 +3984,7 @@ public class MainThread implements Runnable {
 		seg = detectCue(cues.get("VictoryPopup"));
 		if (seg != null) {
 
-			BufferedImage victoryPopUpImg = img;
-
-			if (BHBot.settings.victoryScreenshot) {
-				saveGameScreen("victory", img);
-			}
-
-			if (BHBot.settings.enablePushover) {
-				readScreen();
-
-				String DroppedItem = "";
-				Bounds victoryDropArea = new Bounds(175, 340, 625, 425);
-
-				if (BHBot.settings.victoryScreenshot) {
-					saveGameScreen("victory-pushover", img);
-				}
-
-				if (BHBot.settings.poNotifyDrop.contains("l") &&
-						detectCue(cues.get("ItemLeg"), 0, victoryDropArea) != null ) {
-						DroppedItem += "Legendary Item dropped";
-				}
-				if (BHBot.settings.poNotifyDrop.contains("s") &&
-						detectCue(cues.get("ItemSet"), 0, victoryDropArea) != null ) {
-					if (DroppedItem.length() > 0) DroppedItem += "\n";
-					DroppedItem += "Set Item dropped";
-				}
-				if (BHBot.settings.poNotifyDrop.contains("m") &&
-						detectCue(cues.get("ItemMyt"), 0, victoryDropArea) != null ) {
-					if (DroppedItem.length() > 0) DroppedItem += "\n";
-					DroppedItem += "Mythical Item dropped";
-				}
-
-				if (DroppedItem.length() > 0) {
-					String victoryScreenName = saveGameScreen("victory-screen", victoryPopUpImg);
-					File victoryScreenFile = new File(victoryScreenName);
-					sendPushOverMessage("Item Drop", DroppedItem, "magic", MessagePriority.HIGH, victoryScreenFile);
-					if(!victoryScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img file for victory drop.");
-				}
-			}
+			handleVictory();
 
 			closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
 
@@ -7301,6 +7267,45 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             clickOnSeg(seg);
         }
         
+	}
+
+	private void handleVictory() {
+
+		BufferedImage victoryPopUpImg = img;
+
+		if (BHBot.settings.victoryScreenshot) {
+			saveGameScreen("victory-" + state, img);
+		}
+
+		if (BHBot.settings.enablePushover) {
+			readScreen();
+
+			String DroppedItem = "";
+			Bounds victoryDropArea = new Bounds(175, 340, 625, 425);
+
+			if (BHBot.settings.poNotifyDrop.contains("l") &&
+					detectCue(cues.get("ItemLeg"), 0, victoryDropArea) != null ) {
+				DroppedItem += "Legendary Item dropped";
+			}
+			if (BHBot.settings.poNotifyDrop.contains("s") &&
+					detectCue(cues.get("ItemSet"), 0, victoryDropArea) != null ) {
+				if (DroppedItem.length() > 0) DroppedItem += "\n";
+				DroppedItem += "Set Item dropped";
+			}
+			if (BHBot.settings.poNotifyDrop.contains("m") &&
+					detectCue(cues.get("ItemMyt"), 0, victoryDropArea) != null ) {
+				if (DroppedItem.length() > 0) DroppedItem += "\n";
+				DroppedItem += "Mythical Item dropped";
+			}
+
+			if (DroppedItem.length() > 0) {
+				String victoryScreenName = saveGameScreen("victory-screen", victoryPopUpImg);
+				File victoryScreenFile = new File(victoryScreenName);
+				sendPushOverMessage("Item Drop", DroppedItem, "magic", MessagePriority.HIGH, victoryScreenFile);
+				if(!victoryScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img file for victory drop.");
+			}
+		}
+
 	}
 
 }
