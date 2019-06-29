@@ -3470,7 +3470,7 @@ public class MainThread implements Runnable {
 		MarvinSegment seg = findSubimage(img, cue);
 
 		while (seg == null) {
-			if (Misc.getTime() - timer >= timeout)
+			if ((Misc.getTime() - timer) >= timeout)
 				break;
 			readScreen(500, game);
 			seg = findSubimage(img, cue);
@@ -7312,7 +7312,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			if (DroppedItem.length() > 0) {
 				String victoryScreenName = saveGameScreen("victory-screen", victoryPopUpImg);
 				File victoryScreenFile = new File(victoryScreenName);
-				sendPushOverMessage("Item Drop", DroppedItem, "magic", MessagePriority.HIGH, victoryScreenFile);
+				sendPushOverMessage(state + " item Drop", DroppedItem, "magic", MessagePriority.HIGH, victoryScreenFile);
 				if(!victoryScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img file for victory drop.");
 			}
 		}
