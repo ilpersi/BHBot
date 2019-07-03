@@ -500,6 +500,8 @@ public class MainThread implements Runnable {
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
 
+    private Iterator<String> activitysIterator = BHBot.settings.activitiesEnabled.iterator();
+
 	private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
 		ClassLoader classLoader = MainThread.class.getClassLoader();
@@ -3020,12 +3022,17 @@ public class MainThread implements Runnable {
 			return null;
 		} else {
 
-			Iterator<String> activitysIterator = BHBot.settings.activitiesEnabled.iterator(); //load list as iterator
-			String activity = activitysIterator.next(); //set iterator to string for .equals()
+            String activity;
 
-			//loop through in defined order, if we match activity and timer we select the activity
-			while (activitysIterator.hasNext()) {
-				if ( activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL) ) {
+            if (!BHBot.settings.activitiesRoundRobin) {
+                activitysIterator = BHBot.settings.activitiesEnabled.iterator(); //reset the iterator
+            }
+
+            //loop through in defined order, if we match activity and timer we select the activity
+            while (activitysIterator.hasNext()) {
+                activity = activitysIterator.next(); //set iterator to string for .equals()
+
+                if ( activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL) ) {
 					return "r";
 				} else if ( "d".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
 					return "d";
@@ -3043,8 +3050,14 @@ public class MainThread implements Runnable {
 					return "v";
 				} else if ( "e".equals(activity) && ((Misc.getTime() - timeLastExpBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
 					return "e";
-				} else activity = activitysIterator.next(); //if we get to the end of the loop and nothing has been selected we move to the next activity and check again
+				}
 			}
+
+            // If we reach this point activityIterator.hasNext() is false
+            if (BHBot.settings.activitiesRoundRobin) {
+				activitysIterator = BHBot.settings.activitiesEnabled.iterator();
+			}
+
 			return null; //return null if no matches
 		}
 	}

@@ -34,6 +34,7 @@ public class Settings {
 	
 	//activity settings alpha
 	LinkedHashSet<String> activitiesEnabled;
+	boolean activitiesRoundRobin = true;
 
 	// Pushover settings
 	boolean enablePushover = false;
@@ -786,14 +787,15 @@ public class Settings {
 		autoStartChromeDriver = lastUsedMap.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
 		reconnectTimer = Integer.parseInt(lastUsedMap.getOrDefault("reconnectTimer", ""+reconnectTimer));
 		
-		setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()) + " z"); //we add a z to the end else hasNext() skips the last activity in activitySelector()
-		
+		setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()));
+		activitiesRoundRobin = lastUsedMap.getOrDefault("activitiesRoundRobin", activitiesRoundRobin? "1" : "0").equals("1");
+
 		enablePushover = lastUsedMap.getOrDefault("enablePushover", enablePushover ? "1" : "0").equals("1");
 		poNotifyPM = lastUsedMap.getOrDefault("poNotifyPM", poNotifyPM ? "1" : "0").equals("1");
 		poNotifyCrash = lastUsedMap.getOrDefault("poNotifyCrash", poNotifyCrash ? "1" : "0").equals("1");
 		poNotifyErrors = lastUsedMap.getOrDefault("poNotifyErrors", poNotifyErrors ? "1" : "0").equals("1");
 		poNotifyBribe = lastUsedMap.getOrDefault("poNotifyBribe", poNotifyBribe ? "1" : "0").equals("1");
-		
+
 		maxShards = Integer.parseInt(lastUsedMap.getOrDefault("maxShards", ""+maxShards));
 		maxTokens = Integer.parseInt(lastUsedMap.getOrDefault("maxTokens", ""+maxTokens));
 		maxTickets = Integer.parseInt(lastUsedMap.getOrDefault("maxTickets", ""+maxTickets));
