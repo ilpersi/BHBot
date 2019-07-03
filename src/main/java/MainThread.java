@@ -463,7 +463,7 @@ public class MainThread implements Runnable {
 	private final long FISHING_CHECK_INTERVAL = DAY;
 
 	@SuppressWarnings("FieldCanBeLocal")
-	private final long MAX_IDLE_TIME = 20*MINUTE;
+	private final long MAX_IDLE_TIME = 15*MINUTE;
 	@SuppressWarnings("FieldCanBeLocal")
 	private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
@@ -1509,7 +1509,7 @@ public class MainThread implements Runnable {
 						BHBot.logger.debug("RecentlyDisconnected status is: " + state);
 					}
 					BHBot.logger.info("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
-					sleep(10*SECOND);
+					sleep(60*SECOND); //long sleep as if the checkShrine didn't find the potion button we'd enter a restart loop
 					checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
 					continue;
 				}
@@ -4094,8 +4094,6 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 						}
 						readScreen(100);
 
-						handleMinorBossRunes();
-
 						// We disable and re-enable the auto feature
 						while (detectCue(cues.get("AutoOn"), 500) != null) {
 							clickInGame(780, 270); //auto off
@@ -4107,6 +4105,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 						}
 
 						BHBot.logger.autoshrine("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
+						handleMinorBossRunes();
 						sleep(BHBot.settings.shrineDelay * SECOND); //long sleep while we activate shrines
 
 						if (!checkShrineSettings(false, false)) {
