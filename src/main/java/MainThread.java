@@ -6697,7 +6697,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     saveGameScreen("fishing-baits");
                     clickOnSeg(seg);
                     BHBot.logger.info("Correctly collected fishing baits");
-                    readScreen();
+                    readScreen(SECOND * 2);
                 } else {
                     BHBot.logger.error("Something weng wrong while collecting fishing baits, restarting...");
                     saveGameScreen("fishing-error-baits");
@@ -6706,19 +6706,21 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             }
 
 			if (BHBot.settings.doFishing) {
+				BHBot.logger.debug("Handling fishing...");
 				handleFishing();
 			}
 
-            seg = detectCue(cues.get("X"), 5 * SECOND);
+            readScreen();
+			seg = detectCue(cues.get("X"), 5 * SECOND);
             if (seg != null) {
                 clickOnSeg(seg);
                 sleep(SECOND);
                 readScreen();
             } else {
             	if (!BHBot.settings.doFishing) {
-                BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
-                saveGameScreen("fishing-error-closing");
-                restart();
+					BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
+					saveGameScreen("fishing-error-closing");
+					restart();
             	}
             }
 
