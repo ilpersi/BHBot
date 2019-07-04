@@ -465,7 +465,7 @@ public class MainThread implements Runnable {
 	private final long FISHING_CHECK_INTERVAL = DAY;
 
 	@SuppressWarnings("FieldCanBeLocal")
-	private final long MAX_IDLE_TIME = 20*MINUTE;
+	private final long MAX_IDLE_TIME = 15*MINUTE;
 	@SuppressWarnings("FieldCanBeLocal")
 	private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
@@ -505,6 +505,7 @@ public class MainThread implements Runnable {
 	private static WinDef.HWND BHHwnd;
 	private static DesktopWindow BHWindow;
 
+    private Iterator<String> activitysIterator = BHBot.settings.activitiesEnabled.iterator();
 
 	private static BufferedImage loadImage(String f) {
 		BufferedImage img = null;
@@ -1333,7 +1334,7 @@ public class MainThread implements Runnable {
 						BHBot.logger.debug("RecentlyDisconnected status is: " + state);
 					}
 					BHBot.logger.info("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
-					sleep(10*SECOND);
+					sleep(60*SECOND); //long sleep as if the checkShrine didn't find the potion button we'd enter a restart loop
 					checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
 					continue;
 				}
@@ -2827,12 +2828,17 @@ public class MainThread implements Runnable {
 			return null;
 		} else {
 
-			Iterator<String> activitysIterator = BHBot.settings.activitiesEnabled.iterator(); //load list as iterator
-			String activity = activitysIterator.next(); //set iterator to string for .equals()
+            String activity;
 
-			//loop through in defined order, if we match activity and timer we select the activity
-			while (activitysIterator.hasNext()) {
-				if ( activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL) ) {
+            if (!BHBot.settings.activitiesRoundRobin) {
+                activitysIterator = BHBot.settings.activitiesEnabled.iterator(); //reset the iterator
+            }
+
+            //loop through in defined order, if we match activity and timer we select the activity
+            while (activitysIterator.hasNext()) {
+                activity = activitysIterator.next(); //set iterator to string for .equals()
+
+                if ( activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL) ) {
 					return "r";
 				} else if ( "d".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
 					return "d";
@@ -2850,8 +2856,14 @@ public class MainThread implements Runnable {
 					return "v";
 				} else if ( "e".equals(activity) && ((Misc.getTime() - timeLastExpBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
 					return "e";
-				} else activity = activitysIterator.next(); //if we get to the end of the loop and nothing has been selected we move to the next activity and check again
+				}
 			}
+
+            // If we reach this point activityIterator.hasNext() is false
+            if (BHBot.settings.activitiesRoundRobin) {
+				activitysIterator = BHBot.settings.activitiesEnabled.iterator();
+			}
+
 			return null; //return null if no matches
 		}
 	}
@@ -3222,7 +3234,7 @@ public class MainThread implements Runnable {
 		MarvinSegment seg = findSubimage(img, cue);
 
 		while (seg == null) {
-			if (Misc.getTime() - timer >= timeout)
+			if ((Misc.getTime() - timer) >= timeout)
 				break;
 			readScreen(500, game);
 			seg = findSubimage(img, cue);
@@ -3867,8 +3879,6 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 						}
 						readScreen(100);
 
-						handleMinorBossRunes();
-
 						// We disable and re-enable the auto feature
 						while (detectCue(cues.get("AutoOn"), 500) != null) {
 							clickInGame(780, 270); //auto off
@@ -3880,6 +3890,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 						}
 
 						BHBot.logger.autoshrine("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
+						handleMinorBossRunes();
 						sleep(BHBot.settings.shrineDelay * SECOND); //long sleep while we activate shrines
 
 						if (!checkShrineSettings(false, false)) {
@@ -6469,7 +6480,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     saveGameScreen("fishing-baits");
                     clickOnSeg(seg);
                     BHBot.logger.info("Correctly collected fishing baits");
-                    readScreen();
+                    readScreen(SECOND * 2);
                 } else {
                     BHBot.logger.error("Something weng wrong while collecting fishing baits, restarting...");
                     saveGameScreen("fishing-error-baits");
@@ -6478,19 +6489,21 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             }
 
 			if (BHBot.settings.doFishing) {
+				BHBot.logger.debug("Handling fishing...");
 				handleFishing();
 			}
 
-            seg = detectCue(cues.get("X"), 5 * SECOND);
+            readScreen();
+			seg = detectCue(cues.get("X"), 5 * SECOND);
             if (seg != null) {
                 clickOnSeg(seg);
                 sleep(SECOND);
                 readScreen();
             } else {
             	if (!BHBot.settings.doFishing) {
-                BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
-                saveGameScreen("fishing-error-closing");
-                restart();
+					BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
+					saveGameScreen("fishing-error-closing");
+					restart();
             	}
             }
 
@@ -7084,7 +7097,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			if (DroppedItem.length() > 0) {
 				String victoryScreenName = saveGameScreen("victory-screen", victoryPopUpImg);
 				File victoryScreenFile = new File(victoryScreenName);
-				sendPushOverMessage("Item Drop", DroppedItem, "magic", MessagePriority.HIGH, victoryScreenFile);
+				sendPushOverMessage(state + " item Drop", DroppedItem, "magic", MessagePriority.HIGH, victoryScreenFile);
 				if(!victoryScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img file for victory drop.");
 			}
 		}

@@ -8,29 +8,31 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/ilpersi/BHBot.svg?style=popout)
 
 ## What is BHBot?
-BHBot is a program that automates different aspects of the [Bit Heroes](http://www.kongregate.com/games/juppiomenz/bit-heroes) game.
-It is a non intrusive program that works by opening up a Chromium window and controls it as a normal user would. It works by taking a screenshot every few seconds, detecting cues from the screenshot and
+BHBot is a program that automates the [Bit Heroes](http://www.kongregate.com/games/juppiomenz/bit-heroes) game.
+It is a non intrusive program that works by opening up a Chromium window and controls the game by taking a screenshot every few seconds, detecting cues from the screenshot and
 then simulating mouse clicks. BHBot is a good example of how to create such bots to automate flash games or other browser games
-(it can be easily adjusted to play some other game).
+(it can be easily adjusted to play other games).
 
 Once configured and running the bot is designed to run unattended indefinitely.
 
 ## Features
-This bot will automatically farm items, familiars and schematics running the following:
-* Dungeons (zones 1 to 9)
-* World Bosses (Orlag, Nether or Melvin)
-* Raids (1 to 7)
+This bot will automatically farm items, familiars and schematics running all current content:
+* Dungeons
+* World Bosses
+* Raids
 * Gauntlet / Trials
 * PvP / GvG
 * Expedition / Invasion
 
 The level/difficulty for each activity can be defined in the settings file. The bot can also:
 
-* Bribe specific familiars defined in the settings file (with limits so you dont waste gems)
-* Revive fallen party members in Trials/Gauntlets/Raids
+* Bribe specific familiars with gems
+* Revive fallen party members
 * Save shrines for use before the boss in Trials and Raids
-* Use consumables to keep 25% IF/XP/Gold boosts running unattended
-* Strip items for PvP to lower TS
+* Switch runes based on activity
+* Notify you on your mobile devices through [Pushover](https://github.com/ilpersi/BHBot/wiki/Pushover-integration-Documentation) on how it is doing and if any issue is present
+* Use consumables to keep boosts running unattended
+* Strip items for PvP/GvG
 * Solo certain zones for bounty requirements
 * Collect completed bounties
 * Collect fishing baits
@@ -38,14 +40,12 @@ The level/difficulty for each activity can be defined in the settings file. The 
 * Screenshot and close PMs
 * Open skeleton chests
 * Handle incomplete teams
-* Notify you on your mobile devices through [Pushover](https://github.com/ilpersi/BHBot/wiki/Pushover-integration-Documentation) on how it is doing and if any issue is present
-* Switch runes based on your preferences
 
 If the bot detects a "Disconnected" dialog, it will pause its execution for an hour giving the user a chance to play manually.
 Disconnects are usually result of another instance logging into the game. This is why bot pauses in case it detects it.
 
 ## Download
-You can download a release ready BHBot.jar from the [releases](https://github.com/ilpersi/BHBot/releases) page.
+You can download the latest stable release BHBot.jar from the [releases](https://github.com/ilpersi/BHBot/releases) page.
 
 For the latest functionality it is recommended to compile your own version as there are frequent commits with bug-fixes and new functionality between major releases.
 
@@ -83,9 +83,3 @@ command input box):
 ## Finally
 
 Hopefully this bot will prove useful to you, if you have any questions just raise an issue! Enjoy :-)
-
-## Author
-I, Betalord, am the original author of the bot. I have been using the bot until my character achieved level 165. On 29th
-of September 2017 (a 1st year anniversary of the Bit Heroes game) I have quit the game and released the bot to the public.
-
-If anyone is willing to continue maintaining and developing the bot contact me so that I can give you the repository rights.
