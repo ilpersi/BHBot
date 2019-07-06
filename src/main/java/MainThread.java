@@ -898,6 +898,7 @@ public class MainThread implements Runnable {
 		addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(190, 355, 400, 390));
 		addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(190, 355, 400, 390));
 		addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(190, 355, 400, 390));
+		addCue("3t3rWB", loadImage("cues/worldboss/3xt3rmin4tion.png"), new Bounds(190, 355, 400, 390));
 		addCue("cueWorldBossTitle", loadImage("cues/worldboss/cueWorldBossTitle.png"), new Bounds(280, 90, 515, 140));
 
 
@@ -2723,13 +2724,18 @@ public class MainThread implements Runnable {
 							int worldBossTimer = BHBot.settings.worldBossTimer;
 
 							//new settings loading
+							HashMap<String, String> wbNameDecode = new HashMap<>();
+							wbNameDecode.put("o", "Orlang Clan");
+							wbNameDecode.put("n", "Netherworld");
+							wbNameDecode.put("m", "Melvin");
+							wbNameDecode.put("3", "3t3rmin4tion");
 
 							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
-							String worldBossNameText =  "o".equals(worldBossType) ? "Orlag Clan" :  "n".equals(worldBossType) ? "Netherworld" : "Melvin Factory";
+
 							if (!BHBot.settings.worldBossSolo) {
-								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossNameText + ". Lobby timeout is " +  worldBossTimer + "s.");
+								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + ". Lobby timeout is " +  worldBossTimer + "s.");
 							} else {
-								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + worldBossNameText + " Solo");
+								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + " Solo");
 							}
 
 							readScreen();
@@ -2767,7 +2773,7 @@ public class MainThread implements Runnable {
 							}
 
 							if (!worldBossType.equals(selectedWB)) {
-								BHBot.logger.info(selectedWB + " selected, changing..");
+								BHBot.logger.info(wbNameDecode.get(selectedWB) + " selected, changing..");
 								changeSelectedWorldBoss(worldBossType);
 							}
 
@@ -2890,7 +2896,7 @@ public class MainThread implements Runnable {
 													sleep(2*SECOND); //wait for animation to finish
 													clickInGame(330,360); //yesgreen cue has issues so we use XY to click on Yes
 												}
-											BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossNameText + " started!");
+											BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + " started!");
 											state = State.WorldBoss;
 											sleep(6*SECOND); //long wait to make sure we are in the world boss dungeon
 											readScreen();
@@ -5416,7 +5422,8 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
 
 		//check name
-		if ("o".equals(worldBossType) || "n".equals(worldBossType) || "m".equals(worldBossType)) {
+		if ("o".equals(worldBossType) || "n".equals(worldBossType) || "m".equals(worldBossType)
+				|| "3".equals(worldBossType)) {
 			passed++;
 		} else {
 			BHBot.logger.error("Invalid world boss name, check settings file");
@@ -5431,11 +5438,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                 BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 1 and 9");
                 failed = true;
             }
-        } else if ("m".equals(worldBossType)) {
+        } else if ("m".equals(worldBossType) || "3".equals(worldBossType) ) {
 			if (worldBossTier == 10) {
                 passed++;
             } else {
-                BHBot.logger.error("Invalid world boss tier for Melvin, must be equal to 10");
+                BHBot.logger.error("Invalid world boss tier for Melvin or 3t3rmin4tion, must be equal to 10");
                 failed = true;
             }
         }
@@ -5564,16 +5571,22 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			return "n";
 		else if (detectCue(cues.get("MelvinWB"), SECOND) != null)
 			return "m";
+		else if (detectCue(cues.get("3t3rWB"), SECOND) != null)
+			return "3";
 		else return null;
 	}
 
 	private void changeSelectedWorldBoss(String bossname) {
-		if (bossname.contentEquals("o"))
-			clickInGame(376, 445);
-		else if (bossname.contentEquals("n"))
-			clickInGame(401, 445);
-		else if (bossname.contentEquals("m"))
-			clickInGame(426, 445);
+
+		if ("o".equals(bossname))
+			clickInGame(363, 445);
+		else if ("n".equals(bossname))
+			clickInGame(390, 445);
+		else if ("m".equals(bossname))
+			clickInGame(414, 445);
+		else if ("3".equals(bossname))
+			clickInGame(440, 445);
+		else BHBot.logger.warn("Unknown bossname '" + bossname + "' in changeSelectedWorldBoss.");
 	}
 
 	/**
