@@ -3036,9 +3036,15 @@ public class MainThread implements Runnable {
 
             //loop through in defined order, if we match activity and timer we select the activity
             while (activitysIterator.hasNext()) {
-                activity = activitysIterator.next(); //set iterator to string for .equals()
 
-                if ( activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL) ) {
+            	try {
+					activity = activitysIterator.next(); //set iterator to string for .equals()
+				} catch (java.util.ConcurrentModificationException e) {
+					activitysIterator = BHBot.settings.activitiesEnabled.iterator();
+					activity = activitysIterator.next();
+				}
+
+				if ( activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL) ) {
 					return "r";
 				} else if ( "d".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
 					return "d";
