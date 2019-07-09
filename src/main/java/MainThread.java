@@ -1785,6 +1785,8 @@ public class MainThread implements Runnable {
 							continue;
 						}
 
+						if("g".equals(currentActivity) && trials) continue;
+
 						clickOnSeg(seg);
 						MarvinSegment trialBTNSeg = seg;
 
@@ -6765,6 +6767,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	 * Let's collect any finished bounty!
 	 */
 	private void handleBounties() {
+		BHBot.logger.debug("Attempting bounties collection.");
 		MarvinSegment seg;
 
 		clickInGame(130, 440);
