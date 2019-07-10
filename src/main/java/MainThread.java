@@ -651,7 +651,7 @@ public class MainThread implements Runnable {
 		addCue("Yes", loadImage("cues/cueYes.png"), null);
 
 		addCue("Disconnected", loadImage("cues/cueSteamDisconnected.png"), new Bounds(290, 255, 503, 325)); // cue for "You have been disconnected" popup
-		addCue("Reconnect", loadImage("cues/cueReconnectButton.png"), new Bounds(320, 330, 400, 360)); // used with "You have been disconnected" dialog and also with the "maintenance" dialog
+		addCue("Reconnect", loadImage("cues/cueSteamReconnectButton.png"), new Bounds(330, 370, 460, 405)); // used with "You have been disconnected" dialog and also with the "maintenance" dialog
 		addCue("Reload", loadImage("cues/cueReload.png"), new Bounds(320, 330, 360, 360)); // used in "There is a new update required to play" dialog (happens on Friday night)
 		addCue("Maintenance", loadImage("cues/cueMaintenance.png"), new Bounds(230, 200, 320, 250)); // cue for "Bit Heroes is currently down for maintenance. Please check back shortly!"
 		addCue("Loading", loadImage("cues/cueLoading.png"), new Bounds(315, 210, 330, 225)); // cue for "Loading" superimposed screen
