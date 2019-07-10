@@ -643,7 +643,7 @@ public class MainThread implements Runnable {
 	}
 
 	static void loadCues() {
-		addCue("Main", loadImage("cues/cueMainScreen.png"), new Bounds(90, 5, 100, 10));
+		addCue("Main", loadImage("cues/cueSteamMainScreen.png"), new Bounds(90, 5, 100, 10));
 
 		addCue("Login", loadImage("cues/cueLogin.png"), new Bounds(270, 260, 330, 300)); // login window (happens seldom)
 
@@ -661,8 +661,8 @@ public class MainThread implements Runnable {
 		addCue("DailyRewards", loadImage("cues/cueDailyRewards.png"), new Bounds(260, 45, 285, 75));
 		addCue("Claim", loadImage("cues/cueClaim.png"), null); // claim button, when daily rewards popup is open
 		addCue("Items", loadImage("cues/cueItems.png"), null); // used when we clicked "claim" on daily rewards popup. Used also with main menu ads.
-		addCue("X", loadImage("cues/cueX.png"), null); // "X" close button used with claimed daily rewards popup
-		addCue("WeeklyRewards", loadImage("cues/cueWeeklyRewards.png"), new Bounds(185, 95, 250, 185)); // used with reward for GVG/PVP/Gauntlet/Trial on Friday night (when day changes into Saturday)
+		addCue("X", loadImage("cues/cueSteamX.png"), null); // "X" close button used with claimed daily rewards popup
+		addCue("WeeklyRewards", loadImage("cues/cueSteamWeeklyRewards.png"), new Bounds(170, 130, 630, 435)); // used with reward for GVG/PVP/Gauntlet/Trial on Friday night (when day changes into Saturday)
 		addCue("Bounties", loadImage("cues/cueBounties.png"), new Bounds(320, 63, 480, 103));
 		addCue("Loot", loadImage("cues/cueLoot.png"), null);
 
@@ -718,7 +718,7 @@ public class MainThread implements Runnable {
 		addCue("DeclineRed", loadImage("cues/cueDeclineRed.png"), null); // decline persuation attempts
 		addCue("Merchant", loadImage("cues/cueMerchant.png"), null); // cue for merchant dialog/popup
 		addCue("SettingsGear", loadImage("cues/cueSettingsGear.png"), new Bounds(655, 450, 730, 515)); // settings button
-		addCue("Settings", loadImage("cues/cueSettings.png"), new Bounds(249, 61, 558, 102)); // settings menu
+		addCue("Settings", loadImage("cues/cueSteamSettings.png"), new Bounds(245, 84, 554, 125)); // settings menu
 
 		addCue("Team", loadImage("cues/cueTeam.png"), null); // Team text part of pop-ups about teams
 		addCue("TeamNotFull", loadImage("cues/cueTeamNotFull.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
@@ -910,7 +910,7 @@ public class MainThread implements Runnable {
 		//fishing related
 		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
-		addCue("Fishing", loadImage("cues/cueFishing.png"), new Bounds(720, 200, 799, 519));
+		addCue("Fishing", loadImage("cues/cueSteamFishing.png"), new Bounds(725, 425, 790, 510));
 		addCue("FishingClose", loadImage("cues/fishingClose.png"),  null);
 
 		//Familiar bribing cues
