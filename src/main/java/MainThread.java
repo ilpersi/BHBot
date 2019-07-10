@@ -1785,7 +1785,7 @@ public class MainThread implements Runnable {
 							continue;
 						}
 
-						if("g".equals(currentActivity) && trials) continue;
+						if(("g".equals(currentActivity) && trials) || ("t".equals(currentActivity) && !trials)) continue;
 
 						clickOnSeg(seg);
 						MarvinSegment trialBTNSeg = seg;
