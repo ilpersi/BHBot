@@ -3417,34 +3417,6 @@ public class MainThread implements Runnable {
 		if (wait != 0)
 			sleep(wait);
 		img = takeScreenshot(game);
-
-//		// detect and handle "Loading" message (this is optional operation though):
-//		Cue cue = cues.get("Loading");
-//		int counter = 0;
-//		while (true) {
-//			List<MarvinSegment> result = FindSubimage.findSubimage(
-//					img,
-//					cue.im,
-//					1.0,
-//					false,
-//					true, // treat transparent pixels as obscured background
-//					cue.bounds != null ? cue.bounds.x1 : 0,
-//					cue.bounds != null ? cue.bounds.y1 : 0,
-//					cue.bounds != null ? cue.bounds.x2 : 0,
-//					cue.bounds != null ? cue.bounds.y2 : 0
-//			);
-//
-//			if (result.size() == 0)
-//				break; // we're clear of "Loading" message
-//
-//			sleep(5*SECOND); // wait a bit for the "Loading" to go away
-//			img = takeScreenshot(game);
-//			counter++;
-//			if (counter > 20) {
-//				BHBot.logger.info("Problem detected: loading screen detected, however timeout reached while waiting for it to go away. Ignoring...");
-//				break; // taking too long... will probably not load at all. We must restart it (we won't restart it from here, but idle detection mechanism will)
-//			}
-//		}
 	}
 
 	// https://stackoverflow.com/questions/297762/find-known-sub-image-in-larger-image
@@ -7268,6 +7240,8 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private void handleFishing() {
 		MarvinSegment seg;
 		int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 sconds per bait used, plus 10 seconds buffer
+
+		readScreen();
 
         seg = detectCue(cues.get("Fishing"), SECOND * 5);
         if (seg != null) {
