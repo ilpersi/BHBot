@@ -448,21 +448,21 @@ public class MainThread implements Runnable {
 	private BufferedImage img; // latest screen capture
 
 	@SuppressWarnings("FieldCanBeLocal")
-	private final long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
+	private long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
 	@SuppressWarnings("FieldCanBeLocal")
-	private final long SHARDS_CHECK_INTERVAL = 15 * MINUTE;
+	private long SHARDS_CHECK_INTERVAL = 15 * MINUTE;
 	@SuppressWarnings("FieldCanBeLocal")
-	private final long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
+	private long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
 	@SuppressWarnings("FieldCanBeLocal")
-	private final long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
+	private long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
 	@SuppressWarnings("FieldCanBeLocal")
-	private final long BADGES_CHECK_INTERVAL = 10 * MINUTE;
+	private long BADGES_CHECK_INTERVAL = 10 * MINUTE;
 	@SuppressWarnings("FieldCanBeLocal")
-	private final long BOUNTY_CHECK_INTERVAL = HOUR;
+	private long BOUNTY_CHECK_INTERVAL = HOUR;
 	@SuppressWarnings("FieldCanBeLocal")
-	private final long BONUS_CHECK_INTERVAL = 10 * MINUTE;
+	private long BONUS_CHECK_INTERVAL = 10 * MINUTE;
 	@SuppressWarnings("FieldCanBeLocal")
-	private final long FISHING_CHECK_INTERVAL = DAY;
+	private long FISHING_CHECK_INTERVAL = DAY;
 
 	@SuppressWarnings("FieldCanBeLocal")
 	private final long MAX_IDLE_TIME = 15*MINUTE;
@@ -472,7 +472,8 @@ public class MainThread implements Runnable {
 	private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
 	private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
 	private long timeLastTicketsCheck = 0; // when did we check for Tickets the last time?
-	private long timeLastTokensCheck = 0; // when did we check for Tokens the last time?
+	private long timeLastTrialsTokensCheck = 0; // when did we check for trials Tokens the last time?
+	private long timeLastGauntletTokensCheck = 0; // when did we check for gauntlet Tokens the last time?
 	private long timeLastExpBadgesCheck = 0; // when did we check for badges the last time?
 	private long timeLastInvBadgesCheck = 0; // when did we check for badges the last time?
 	private long timeLastGVGBadgesCheck = 0; // when did we check for badges the last time?
@@ -1385,7 +1386,7 @@ public class MainThread implements Runnable {
 					}
 
 
-					//faster testing
+					//comment for faster testing
 //					oneTimeshrineCheck = true;
 //					oneTimeRuneCheck = true;
 
@@ -1590,7 +1591,8 @@ public class MainThread implements Runnable {
 
 					// check for tokens (trials and gauntlet):
 					if ( BHBot.scheduler.doTrialsOrGauntletImmediately || ("t".equals(currentActivity)) || ("g".equals(currentActivity)) ) {
-						timeLastTokensCheck = Misc.getTime();
+						if ("t".equals(currentActivity)) timeLastTrialsTokensCheck = Misc.getTime();
+						if ("g".equals(currentActivity)) timeLastGauntletTokensCheck = Misc.getTime();
 
 						readScreen();
 
@@ -1610,7 +1612,8 @@ public class MainThread implements Runnable {
 							continue;
 						}
 
-						if(("g".equals(currentActivity) && trials) || ("t".equals(currentActivity) && !trials)) continue;
+						if (("g".equals(currentActivity) && trials) || ("t".equals(currentActivity) && !trials)) continue;
+
 
 						clickOnSeg(seg);
 						MarvinSegment trialBTNSeg = seg;
@@ -1635,6 +1638,15 @@ public class MainThread implements Runnable {
 							seg = detectCue(cues.get("X"),SECOND);
 							clickOnSeg(seg);
 							readScreen(SECOND);
+
+							//if we have 1 token and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one token short
+							int tokenDifference = (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet) - tokens; //difference between needed and current resource
+							if (tokenDifference > 1) {
+								int increase = (tokenDifference - 1) * 45;
+								TOKENS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
+							} else {
+								TOKENS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 token check every 10 minutes
+							}
 
 							if (BHBot.scheduler.doTrialsOrGauntletImmediately)
 								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // if we don't have resources to run we need to disable force it
@@ -2858,9 +2870,9 @@ public class MainThread implements Runnable {
 					return "d";
 				} else if ( "w".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
 					return "w";
-				} else if ( "t".equals(activity) && ((Misc.getTime() - timeLastTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
+				} else if ( "t".equals(activity) && ((Misc.getTime() - timeLastTrialsTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
 					return "t";
-				} else if ( "g".equals(activity) && ((Misc.getTime() - timeLastTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
+				} else if ( "g".equals(activity) && ((Misc.getTime() - timeLastGauntletTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
 					return "g";
 				} else if ( "p".equals(activity) && ((Misc.getTime() - timeLastTicketsCheck) > TICKETS_CHECK_INTERVAL) ) {
 					return "p";
@@ -3935,6 +3947,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         String activityName = state.getNameFromShortcut(activity);
         if (BHBot.settings.autoRuneDefault.isEmpty()) {
 			BHBot.logger.debug("autoRunesDefault not defined; aborting autoRunes");
+			return false;
 		}
 
         if (!BHBot.settings.autoRune.containsKey(activity)) {
@@ -6821,7 +6834,8 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		timeLastEnergyCheck = 0;
 		timeLastShardsCheck = 0;
 		timeLastTicketsCheck = 0;
-		timeLastTokensCheck = 0;
+		timeLastTrialsTokensCheck = 0;
+		timeLastGauntletTokensCheck = 0;
 		timeLastBonusCheck = 0;
 	}
 
@@ -6845,9 +6859,9 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 		if ( (globalTickets - BHBot.settings.costPVP) > BHBot.settings.minTickets && state == State.PVP ) timeLastTicketsCheck = 0;
 
-		if ( (globalTokens - BHBot.settings.costTrials) > BHBot.settings.minTokens && (state == State.Trials) ) timeLastTokensCheck = 0;
+		if ( (globalTokens - BHBot.settings.costTrials) > BHBot.settings.minTokens && (state == State.Trials) ) timeLastTrialsTokensCheck = 0;
 
-		if ( (globalTokens - BHBot.settings.costGauntlet) > BHBot.settings.minTokens && (state == State.Gauntlet) ) timeLastTokensCheck = 0;
+		if ( (globalTokens - BHBot.settings.costGauntlet) > BHBot.settings.minTokens && (state == State.Gauntlet) ) timeLastGauntletTokensCheck = 0;
 	}
 
 	private void resetRevives() {
@@ -7039,6 +7053,8 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private void handleFishing() {
 		MarvinSegment seg;
 		int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 sconds per bait used, plus 10 seconds buffer
+
+		readScreen();
 
         seg = detectCue(cues.get("Fishing"), SECOND * 5);
         if (seg != null) {
