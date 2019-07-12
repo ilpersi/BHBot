@@ -1851,7 +1851,6 @@ public class MainThread implements Runnable {
 									}
 
 									if (BHBot.settings.autoRune.containsKey("t")) {
-										BHBot.logger.info("Configuring autoRune for Trial");
 										handleMinorRunes("t");
 										readScreen(SECOND);
 									}
@@ -1864,7 +1863,6 @@ public class MainThread implements Runnable {
 							} else {
 
 								if (BHBot.settings.autoRune.containsKey("g")) {
-									BHBot.logger.info("Configuring autoRune for Gauntlet");
 									handleMinorRunes("g");
 									readScreen(SECOND);
 								}
@@ -3881,7 +3879,7 @@ public class MainThread implements Runnable {
 
 			// close the raid/dungeon/trials/gauntlet window:
 			readScreen(2*SECOND);
-			detectCue(cues.get("X"), 15*SECOND);
+			detectCue(cues.get("X"), 5*SECOND);
 			sleep(SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
 			seg = detectCue(cues.get("X"), SECOND);
 			if (seg != null)
@@ -3966,7 +3964,7 @@ public class MainThread implements Runnable {
 
 			// close the raid/dungeon/trial/gauntlet window:
 			readScreen(2*SECOND);
-			detectCue(cues.get("X"), 15*SECOND);
+			detectCue(cues.get("X"), 5*SECOND);
 			sleep(SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
 			seg = detectCue(cues.get("X"), SECOND);
 			if (seg != null)

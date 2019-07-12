@@ -580,14 +580,12 @@ public class BHBot {
 
 			if (onlineVersion > currentVersion ) {
 				logger.warn("A new BHBot version is available and you can get it from " + lastReleaseInfo.releaseURL);
-				logger.warn("Here are the news:");
+				logger.warn("Here are new features:");
 				for (String feature : lastReleaseInfo.releaseNotes.split("\n")) {
 					logger.warn(feature);
 				}
-
-				logger.warn("The bot will pause for 15 seconds for you to read this message.");
 				try {
-					Thread.sleep(15000);
+					Thread.sleep(5000);
 				} catch (InterruptedException e) {
 					logger.warn("Error while waiting for GitHub release check");
 				}
