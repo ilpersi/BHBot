@@ -4122,6 +4122,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         String activityName = state.getNameFromShortcut(activity);
         if (BHBot.settings.autoRuneDefault.isEmpty()) {
 			BHBot.logger.debug("autoRunesDefault not defined; aborting autoRunes");
+			return false;
 		}
 
         if (!BHBot.settings.autoRune.containsKey(activity)) {
