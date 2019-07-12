@@ -648,7 +648,7 @@ public class MainThread implements Runnable {
 
 		addCue("Login", loadImage("cues/cueLogin.png"), new Bounds(270, 260, 330, 300)); // login window (happens seldom)
 
-		addCue("AreYouThere", loadImage("cues/cueAreYouThere.png"), new Bounds(240, 245, 265, 260));
+		addCue("AreYouThere", loadImage("cues/cueSteamAreYouThere.png"), new Bounds(235, 260, 557, 314));
 		addCue("Yes", loadImage("cues/cueYes.png"), null);
 
 		addCue("Disconnected", loadImage("cues/cueSteamDisconnected.png"), new Bounds(290, 255, 503, 325)); // cue for "You have been disconnected" popup
