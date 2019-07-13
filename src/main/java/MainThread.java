@@ -2856,6 +2856,9 @@ public class MainThread implements Runnable {
 										case "m":
 											seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
 											break;
+										case "3":
+											seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for 3xt
+											break;
 									}
 
 									if (seg != null) { //while the relevant invite button exists
