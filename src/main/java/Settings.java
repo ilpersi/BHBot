@@ -1007,7 +1007,7 @@ public class Settings {
 
 		// sanitize autorune-related settings
 		String runeTypes = "(capture|experience|gold|item_find)";
-		String runeActions = "[degiprtw]";
+		String runeActions = "[degiprtwv]";
 		// match one or two rune specs
 		String runeRegex = runeTypes + "(\\s+" + runeTypes + ")?";
 		// match one or more actions, each followed by one or two runes
