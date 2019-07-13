@@ -748,8 +748,8 @@ public class MainThread implements Runnable {
 		addCue("Purchase", loadImage("cues/cuePurchase.png"), new Bounds(240, 240, 390, 280));
 
 		addCue("GuildButton", loadImage("cues/cueGuildButton.png"), new Bounds(500, 420, 590, 520));
-		addCue("IgnoreShrines", loadImage("cues/cueIgnoreShrines.png"), new Bounds(120, 250, 675, 475));
-		addCue("IgnoreBoss", loadImage("cues/cueIgnoreBoss.png"), new Bounds(120, 250, 675, 475));
+		addCue("IgnoreShrines", loadImage("cues/cueSteamIgnoreShrines.png"), new Bounds(165, 370, 410, 420));
+		addCue("IgnoreBoss", loadImage("cues/cueSteamIgnoreBoss.png"), new Bounds(165, 330, 380, 375));
 
 
 		addCue("Quest", loadImage("cues/cueQuest.png"), new Bounds(0, 0, 40, 40)); // cue for quest (dungeons) button
@@ -797,7 +797,7 @@ public class MainThread implements Runnable {
 		addCue("SelectDifficultyExpedition", loadImage("cues/cueSelectDifficultyExpedition.png"), null);
 //		addCue("DifficultyDropDown", loadImage("cues/cueDifficultyDropDown.png"), new Bounds(260, 50, 550, 125)); // difficulty drop down menu cue
 		addCue("DropDownUp", loadImage("cues/cueDropDownUp.png"), null); // up arrow in difficulty drop down menu (found in trials/gauntlet, for example)
-		addCue("DropDownDown", loadImage("cues/cueDropDownDown.png"), null); // down arrow in difficulty drop down menu (found in trials/gauntlet, for example)
+		addCue("DropDownDown", loadImage("cues/cueSteamDropDownDown.png"), null); // down arrow in difficulty drop down menu (found in trials/gauntlet, for example)
 		addCue("Cost", loadImage("cues/cueCost.png"), new Bounds(400, 150, 580, 240)); // used both for PvP and Gauntlet/Trials costs. Note that bounds are very wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
 		addCue("SelectCost", loadImage("cues/cueSelectCost.png"), new Bounds(555, 170, 595, 205)); // cue for select cost found in both PvP and Gauntlet/Trials windows. Note that bounds are wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
 		addCue("CostDropDown", loadImage("cues/cueCostDropDown.png"), new Bounds(260, 45, 320, 70)); // cue for cost selection drop down window
@@ -2913,7 +2913,22 @@ public class MainThread implements Runnable {
 		int ignoreBossCnt = 0;
 		int ignoreShrineCnt = 0;
 
+		MarvinSegment seg;
+
 		if (openSettings(SECOND)) {
+
+			seg = detectCue(cues.get("DropDownDown"), SECOND, new Bounds(605, 415, 628, 435));
+			if (seg != null) {
+				for (int i = 1; i <= 3; i++) {
+					clickOnSeg(seg);
+				}
+			} else {
+				BHBot.logger.error("Impossible to find the drop down go down arrow in settings menu");
+				return false;
+			}
+
+			readScreen();
+
 			if (ignoreBoss) {
 				while ( detectCue(cues.get("IgnoreBoss"), SECOND) != null ) {
 					BHBot.logger.debug("Enabling Ignore Boss");
