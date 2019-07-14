@@ -2979,6 +2979,7 @@ public class MainThread implements Runnable {
 											}
 										} else { //generic error / unknown action restart
 											BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
+											saveGameScreen("wb-no-start-button", img);
 											restart();
 										}
 
