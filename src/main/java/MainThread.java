@@ -2384,7 +2384,6 @@ public class MainThread implements Runnable {
                                     continue;
                                 }
 
-								
 								Bounds gvgOpponentBounds = opponentSelector(BHBot.settings.gvgOpponent);
 								String opponentName = (BHBot.settings.gvgOpponent == 1 ? "1st" : BHBot.settings.gvgOpponent == 2 ? "2nd" : BHBot.settings.gvgOpponent == 3 ? "3rd" : "4th");
 								BHBot.logger.info("Selecting " + opponentName + " opponent");
@@ -2395,15 +2394,17 @@ public class MainThread implements Runnable {
 									continue;
 								}
 								clickOnSeg(seg);
-
-								seg = detectCue(cues.get("Accept"), 5*SECOND);
+								readScreen();
+								sleep(1*SECOND);
+								
+								seg = detectCue(cues.get("Accept"), 2*SECOND);
 								if (seg == null) {
 									BHBot.logger.error("Imppossible to find the Accept button in the GvG screen, restarting!");
 									restart();
 									continue;
 								}
 								clickOnSeg(seg);
-								sleep(5*SECOND);
+								sleep(1*SECOND);
 
 								handleTeamMalformedWarning();
 								if (handleTeamMalformedWarning()) {
@@ -2951,8 +2952,9 @@ public class MainThread implements Runnable {
 											restart();
 										}
 
+										sleep(500);
 										readScreen();
-										MarvinSegment segStart = detectCue(cues.get("Start"), 2*SECOND);
+										MarvinSegment segStart = detectCue(cues.get("Start"), 5*SECOND);
 										if (segStart != null) {
 											clickOnSeg(segStart); //start World Boss
 											readScreen();
