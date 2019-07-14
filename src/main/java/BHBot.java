@@ -130,19 +130,24 @@ public class BHBot {
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		while (!finished) {
-	        String s;
+	        String s = null;
 			try {
 				//System.out.print("> ");
-				s = br.readLine();
+				if (br.ready() && System.in.available() > 0) {
+					s = br.readLine();
+				}
 			} catch (IOException e) {
 				logger.error("Impossible to read user input", e);
 				return;
 			}
-			try {
-				logger.info("User command: <" + s + ">");
-				processCommand(s);
-			} catch (Exception e) {
-				logger.error("Impossile to process user command: " + s, e);
+
+			if (s != null) {
+				try {
+					logger.info("User command: <" + s + ">");
+					processCommand(s);
+				} catch (Exception e) {
+					logger.error("Impossile to process user command: " + s, e);
+				}
 			}
 		}
 
