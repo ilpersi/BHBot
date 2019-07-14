@@ -900,7 +900,8 @@ public class MainThread implements Runnable {
 		addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(190, 355, 400, 390));
 		addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(190, 355, 400, 390));
 		addCue("3t3rWB", loadImage("cues/worldboss/3xt3rmin4tion.png"), new Bounds(190, 355, 400, 390));
-		addCue("cueWorldBossTitle", loadImage("cues/worldboss/cueWorldBossTitle.png"), new Bounds(280, 90, 515, 140));
+		addCue("WorldBossTitle", loadImage("cues/worldboss/cueWorldBossTitle.png"), new Bounds(280, 90, 515, 140));
+		addCue("WorldBossSummonTitle", loadImage("cues/worldboss/cueWorldBossSummonTitle.png"), new Bounds(325, 100, 480, 150));
 
 
 		//fishing related
@@ -2762,7 +2763,7 @@ public class MainThread implements Runnable {
                                     sendPushOverMessage("World Boss error", "Impossible to find blue summon.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
                                 }
 
-                                closePopupSecurely(cues.get("cueWorldBossTitle"), cues.get("X"));
+                                closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
                                 continue;
                             }
                             readScreen(2*SECOND); //wait for screen to stablise
@@ -2780,7 +2781,7 @@ public class MainThread implements Runnable {
 									sendPushOverMessage("World Boss error", "Impossible to read current selected world boss.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
 								}
 
-								closePopupSecurely(cues.get("cueWorldBossTitle"), cues.get("X"));
+								closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
 								continue;
 							}
 
@@ -2831,6 +2832,12 @@ public class MainThread implements Runnable {
 							readScreen(SECOND);
 							seg = detectCue(cues.get("SmallGreenSummon"),SECOND * 2);
 							clickOnSeg(seg); //accept current settings
+
+							boolean insufficientEnergy = handleNotEnoughEnergyPopup(SECOND * 3, State.WorldBoss);
+							if (insufficientEnergy) {
+								continue;
+							}
+
 							BHBot.logger.info("Starting lobby");
 
 							/*
@@ -2851,13 +2858,11 @@ public class MainThread implements Runnable {
 											seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
 											break;
 										case "n":
-											seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether
+										case "3":
+											seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether and 3t3rmin4tion
 											break;
 										case "m":
 											seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
-											break;
-										case "3":
-											seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for 3xt
 											break;
 									}
 
@@ -3732,7 +3737,7 @@ public class MainThread implements Runnable {
 		
 		// handle "Not enough energy" popup:
 		if (activityDuration < 30) {
-			boolean insufficientEnergy = handleNotEnoughEnergyPopup();
+			boolean insufficientEnergy = handleNotEnoughEnergyPopup(state);
 			if (insufficientEnergy) {
 				state = State.Main; // reset state
 				return;
@@ -5872,32 +5877,45 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         return false; // all ok, battles are enabled
     }
 
+	private boolean handleNotEnoughEnergyPopup(State state) {
+		return handleNotEnoughEnergyPopup(0, state);
+	}
+
 	/**
 	 * Will check if "Not enough energy" popup is open. If it is, it will automatically close it and close all other windows
 	 * until it returns to the main screen.
 	 *
 	 * @return true in case popup was detected and closed.
 	 */
-	private boolean handleNotEnoughEnergyPopup() {
-		MarvinSegment seg = detectCue(cues.get("NotEnoughEnergy"));
+	private boolean handleNotEnoughEnergyPopup(int delay, State state) {
+		MarvinSegment seg = detectCue(cues.get("NotEnoughEnergy"), delay);
 		if (seg != null) {
 			// we don't have enough energy!
-			BHBot.logger.warn("Problem detected: insufficient energy to attempt dungeon. Cancelling...");
+			BHBot.logger.warn("Problem detected: insufficient energy to attempt " + state + ". Cancelling...");
 			closePopupSecurely(cues.get("NotEnoughEnergy"), cues.get("No"));
 
-			closePopupSecurely(cues.get("AutoTeam"), cues.get("X"));
-			// if D4 close the dungeon info window, else close the char selection screen
-			if (specialDungeon) {
-				seg = detectCue(cues.get("X"), 5*SECOND);
-				if (seg != null)
-				clickOnSeg(seg);
-				specialDungeon = false;
+
+			if (state.equals(State.WorldBoss)) {
+				closePopupSecurely(cues.get("WorldBossSummonTitle"), cues.get("X"));
+
+				closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
 			} else {
-			// close difficulty selection screen:
-				closePopupSecurely(cues.get("Normal"), cues.get("X"));
+				closePopupSecurely(cues.get("AutoTeam"), cues.get("X"));
+
+				// if D4 close the dungeon info window, else close the char selection screen
+				if (specialDungeon) {
+					seg = detectCue(cues.get("X"), 5*SECOND);
+					if (seg != null)
+						clickOnSeg(seg);
+					specialDungeon = false;
+				} else {
+					// close difficulty selection screen:
+					closePopupSecurely(cues.get("Normal"), cues.get("X"));
+				}
+
+				// close zone view window:
+				closePopupSecurely(cues.get("ZonesButton"), cues.get("X"));
 			}
-			// close zone view window:
-			closePopupSecurely(cues.get("ZonesButton"), cues.get("X"));
 
 			return true;
 		} else {
