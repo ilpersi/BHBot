@@ -1820,9 +1820,7 @@ public class MainThread implements Runnable {
 							if (tokenDifference > 1) {
 								int increase = (tokenDifference - 1) * 45;
 								TOKENS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
-							} else {
-								TOKENS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 token check every 10 minutes
-							}
+							} else TOKENS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 token check every 10 minutes
 
 							if (BHBot.scheduler.doTrialsOrGauntletImmediately)
 								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // if we don't have resources to run we need to disable force it
@@ -1977,7 +1975,14 @@ public class MainThread implements Runnable {
 
 						if (!BHBot.scheduler.doDungeonImmediately && (energy <= BHBot.settings.minEnergyPercentage || BHBot.settings.dungeons.size() == 0)) {
 							sleep(SECOND);
-
+							
+							//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+							int energyDifference = BHBot.settings.minEnergyPercentage - energy; //difference between needed and current resource
+							if (energyDifference > 1) {
+								int increase = (energyDifference - 1) * 4;
+								ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
+							} else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+							
 							continue;
 						} else {
 							// do the dungeon!
@@ -2137,7 +2142,14 @@ public class MainThread implements Runnable {
 
 						if ((!BHBot.scheduler.doPVPImmediately && (tickets <= BHBot.settings.minTickets)) || (tickets < BHBot.settings.costPVP)) {
 							sleep(SECOND);
-
+							
+							//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+							int ticketDifference = BHBot.settings.costPVP - tickets; //difference between needed and current resource
+							if (ticketDifference > 1) {
+								int increase = (ticketDifference - 1) * 45;
+								TICKETS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+							} else TICKETS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+							
 							continue;
 						} else {
 							// do the pvp!
@@ -2288,6 +2300,14 @@ public class MainThread implements Runnable {
 						// check GVG:
 						if (badgeEvent == BadgeEvent.GVG) {
 							if ((!BHBot.scheduler.doGVGImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costGVG)) {
+								
+								//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+								int badgeDifference = BHBot.settings.costGVG - badges; //difference between needed and current resource
+								if (badgeDifference > 1) {
+									int increase = (badgeDifference - 1) * 45;
+									BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+								} else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+								
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
@@ -2400,6 +2420,14 @@ public class MainThread implements Runnable {
 						// check invasion:
 						else if (badgeEvent == BadgeEvent.Invasion) {
 							if ((!BHBot.scheduler.doInvasionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costInvasion)) {
+								
+								//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+								int badgeDifference = BHBot.settings.costGVG - badges; //difference between needed and current resource
+								if (badgeDifference > 1) {
+									int increase = (badgeDifference - 1) * 45;
+									BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+								} else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+								
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
@@ -2468,6 +2496,14 @@ public class MainThread implements Runnable {
 						else if (badgeEvent == BadgeEvent.Expedition) {
 
 							if ((!BHBot.scheduler.doExpeditionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costExpedition)) {
+								
+								//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+								int badgeDifference = BHBot.settings.costGVG - badges; //difference between needed and current resource
+								if (badgeDifference > 1) {
+									int increase = (badgeDifference - 1) * 45;
+									BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+								} else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+								
 								seg = detectCue(cues.get("X"));
 								clickOnSeg(seg);
 								sleep(2 * SECOND);
@@ -2704,6 +2740,14 @@ public class MainThread implements Runnable {
 						// }
 
 						if (!BHBot.scheduler.doWorldBossImmediately && (energy <= BHBot.settings.minEnergyPercentage)) {
+							
+							//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+							int energyDifference = BHBot.settings.minEnergyPercentage - energy; //difference between needed and current resource
+							if (energyDifference > 1) {
+								int increase = (energyDifference - 1) * 4;
+								ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
+							} else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+							
 							sleep(SECOND);
 							continue;
 						} else {
@@ -2879,6 +2923,7 @@ public class MainThread implements Runnable {
 												BHBot.scheduler.doDungeonImmediately = true;
 											} else {
 											BHBot.logger.info("Lobby timed out, returning to main screen.");
+											timeLastEnergyCheck -= 540; // remove 9 minutes from the check time so we check again in a minute
 											closeWorldBoss();
 											}
 										}
@@ -2935,7 +2980,6 @@ public class MainThread implements Runnable {
 										} else { //generic error / unknown action restart
 											BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
 											restart();
-											timeLastEnergyCheck = MINUTE; // leave it a minute before trying again
 										}
 
 									}
