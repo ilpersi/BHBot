@@ -385,6 +385,12 @@ public class BHBot {
 				settings.hideWindowOnRestart = false;
 				break;
             case "test":
+
+            	if (params.length <= 1) {
+            		BHBot.logger.error("Not enough parameters for test command");
+            		break;
+				}
+
                 switch (params[1]) {
                     case "ai":
                     case "autoignore":
