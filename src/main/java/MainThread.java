@@ -774,7 +774,7 @@ public class MainThread implements Runnable {
 		addCue("VictoryPopup", loadImage("cues/cueVictoryPopup.png"), null); // victory popup that appears in PVP after you have successfully completed it (needs to be closed). Also found in dungeons after you've completed an encounter (and hence probably also in trials, but not in gauntlet - that one has a different 'Victory' window!)
 		addCue("PVPWindow", loadImage("cues/cuePVPWindow.png"), null); // PVP window cue
 
-		addCue("DialogRight", loadImage("cues/cueDialogRight.png"), null); // cue for the dialog window (when arrow is at the right side of the window)
+		addCue("DialogRight", loadImage("cues/cueSteamDialogRight.png"), null); // cue for the dialog window (when arrow is at the right side of the window)
 		addCue("DialogLeft", loadImage("cues/cueDialogLeft.png"), null); // cue for the dialog window (when arrow is at the left side of the window)
 
 		addCue("SpeedCheck", loadImage("cues/cueSpeedCheck.png"), new Bounds(0, 450, 100, 520));
@@ -905,7 +905,8 @@ public class MainThread implements Runnable {
 		addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(190, 355, 400, 390));
 		addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(190, 355, 400, 390));
 		addCue("3t3rWB", loadImage("cues/worldboss/3xt3rmin4tion.png"), new Bounds(190, 355, 400, 390));
-		addCue("cueWorldBossTitle", loadImage("cues/worldboss/cueWorldBossTitle.png"), new Bounds(280, 90, 515, 140));
+		addCue("WorldBossTitle", loadImage("cues/worldboss/cueWorldBossTitle.png"), new Bounds(280, 90, 515, 140));
+		addCue("WorldBossSummonTitle", loadImage("cues/worldboss/cueWorldBossSummonTitle.png"), new Bounds(325, 100, 480, 150));
 
 
 		//fishing related
@@ -1644,9 +1645,7 @@ public class MainThread implements Runnable {
 							if (tokenDifference > 1) {
 								int increase = (tokenDifference - 1) * 45;
 								TOKENS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
-							} else {
-								TOKENS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 token check every 10 minutes
-							}
+							} else TOKENS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 token check every 10 minutes
 
 							if (BHBot.scheduler.doTrialsOrGauntletImmediately)
 								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // if we don't have resources to run we need to disable force it
@@ -1801,7 +1800,14 @@ public class MainThread implements Runnable {
 
 						if (!BHBot.scheduler.doDungeonImmediately && (energy <= BHBot.settings.minEnergyPercentage || BHBot.settings.dungeons.size() == 0)) {
 							sleep(SECOND);
-
+							
+							//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+							int energyDifference = BHBot.settings.minEnergyPercentage - energy; //difference between needed and current resource
+							if (energyDifference > 1) {
+								int increase = (energyDifference - 1) * 4;
+								ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
+							} else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+							
 							continue;
 						} else {
 							// do the dungeon!
@@ -1961,7 +1967,14 @@ public class MainThread implements Runnable {
 
 						if ((!BHBot.scheduler.doPVPImmediately && (tickets <= BHBot.settings.minTickets)) || (tickets < BHBot.settings.costPVP)) {
 							sleep(SECOND);
-
+							
+							//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+							int ticketDifference = BHBot.settings.costPVP - tickets; //difference between needed and current resource
+							if (ticketDifference > 1) {
+								int increase = (ticketDifference - 1) * 45;
+								TICKETS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+							} else TICKETS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+							
 							continue;
 						} else {
 							// do the pvp!
@@ -2112,6 +2125,14 @@ public class MainThread implements Runnable {
 						// check GVG:
 						if (badgeEvent == BadgeEvent.GVG) {
 							if ((!BHBot.scheduler.doGVGImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costGVG)) {
+								
+								//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+								int badgeDifference = BHBot.settings.costGVG - badges; //difference between needed and current resource
+								if (badgeDifference > 1) {
+									int increase = (badgeDifference - 1) * 45;
+									BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+								} else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+								
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
@@ -2188,7 +2209,6 @@ public class MainThread implements Runnable {
                                     continue;
                                 }
 
-								
 								Bounds gvgOpponentBounds = opponentSelector(BHBot.settings.gvgOpponent);
 								String opponentName = (BHBot.settings.gvgOpponent == 1 ? "1st" : BHBot.settings.gvgOpponent == 2 ? "2nd" : BHBot.settings.gvgOpponent == 3 ? "3rd" : "4th");
 								BHBot.logger.info("Selecting " + opponentName + " opponent");
@@ -2199,15 +2219,17 @@ public class MainThread implements Runnable {
 									continue;
 								}
 								clickOnSeg(seg);
-
-								seg = detectCue(cues.get("Accept"), 5*SECOND);
+								readScreen();
+								sleep(1*SECOND);
+								
+								seg = detectCue(cues.get("Accept"), 2*SECOND);
 								if (seg == null) {
 									BHBot.logger.error("Imppossible to find the Accept button in the GvG screen, restarting!");
 									restart();
 									continue;
 								}
 								clickOnSeg(seg);
-								sleep(5*SECOND);
+								sleep(1*SECOND);
 
 								handleTeamMalformedWarning();
 								if (handleTeamMalformedWarning()) {
@@ -2224,6 +2246,14 @@ public class MainThread implements Runnable {
 						// check invasion:
 						else if (badgeEvent == BadgeEvent.Invasion) {
 							if ((!BHBot.scheduler.doInvasionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costInvasion)) {
+								
+								//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+								int badgeDifference = BHBot.settings.costGVG - badges; //difference between needed and current resource
+								if (badgeDifference > 1) {
+									int increase = (badgeDifference - 1) * 45;
+									BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+								} else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+								
 								readScreen();
 								seg = detectCue(cues.get("X"),SECOND);
 								clickOnSeg(seg);
@@ -2292,6 +2322,14 @@ public class MainThread implements Runnable {
 						else if (badgeEvent == BadgeEvent.Expedition) {
 
 							if ((!BHBot.scheduler.doExpeditionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costExpedition)) {
+								
+								//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+								int badgeDifference = BHBot.settings.costGVG - badges; //difference between needed and current resource
+								if (badgeDifference > 1) {
+									int increase = (badgeDifference - 1) * 45;
+									BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+								} else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+								
 								seg = detectCue(cues.get("X"));
 								clickOnSeg(seg);
 								sleep(2 * SECOND);
@@ -2528,6 +2566,14 @@ public class MainThread implements Runnable {
 						// }
 
 						if (!BHBot.scheduler.doWorldBossImmediately && (energy <= BHBot.settings.minEnergyPercentage)) {
+							
+							//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+							int energyDifference = BHBot.settings.minEnergyPercentage - energy; //difference between needed and current resource
+							if (energyDifference > 1) {
+								int increase = (energyDifference - 1) * 4;
+								ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
+							} else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+							
 							sleep(SECOND);
 							continue;
 						} else {
@@ -2587,7 +2633,7 @@ public class MainThread implements Runnable {
                                     sendPushOverMessage("World Boss error", "Impossible to find blue summon.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
                                 }
 
-                                closePopupSecurely(cues.get("cueWorldBossTitle"), cues.get("X"));
+                                closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
                                 continue;
                             }
                             readScreen(2*SECOND); //wait for screen to stablise
@@ -2605,7 +2651,7 @@ public class MainThread implements Runnable {
 									sendPushOverMessage("World Boss error", "Impossible to read current selected world boss.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
 								}
 
-								closePopupSecurely(cues.get("cueWorldBossTitle"), cues.get("X"));
+								closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
 								continue;
 							}
 
@@ -2656,6 +2702,12 @@ public class MainThread implements Runnable {
 							readScreen(SECOND);
 							seg = detectCue(cues.get("SmallGreenSummon"),SECOND * 2);
 							clickOnSeg(seg); //accept current settings
+
+							boolean insufficientEnergy = handleNotEnoughEnergyPopup(SECOND * 3, State.WorldBoss);
+							if (insufficientEnergy) {
+								continue;
+							}
+
 							BHBot.logger.info("Starting lobby");
 
 							/*
@@ -2676,7 +2728,8 @@ public class MainThread implements Runnable {
 											seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
 											break;
 										case "n":
-											seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether
+										case "3":
+											seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether and 3t3rmin4tion
 											break;
 										case "m":
 											seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
@@ -2696,6 +2749,7 @@ public class MainThread implements Runnable {
 												BHBot.scheduler.doDungeonImmediately = true;
 											} else {
 											BHBot.logger.info("Lobby timed out, returning to main screen.");
+											timeLastEnergyCheck -= 540; // remove 9 minutes from the check time so we check again in a minute
 											closeWorldBoss();
 											}
 										}
@@ -2723,8 +2777,9 @@ public class MainThread implements Runnable {
 											restart();
 										}
 
+										sleep(500);
 										readScreen();
-										MarvinSegment segStart = detectCue(cues.get("Start"), 2*SECOND);
+										MarvinSegment segStart = detectCue(cues.get("Start"), 5*SECOND);
 										if (segStart != null) {
 											clickOnSeg(segStart); //start World Boss
 											readScreen();
@@ -2751,8 +2806,8 @@ public class MainThread implements Runnable {
 											}
 										} else { //generic error / unknown action restart
 											BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
+											saveGameScreen("wb-no-start-button", img);
 											restart();
-											timeLastEnergyCheck = MINUTE; // leave it a minute before trying again
 										}
 
 									}
@@ -3557,7 +3612,7 @@ public class MainThread implements Runnable {
 		
 		// handle "Not enough energy" popup:
 		if (activityDuration < 30) {
-			boolean insufficientEnergy = handleNotEnoughEnergyPopup();
+			boolean insufficientEnergy = handleNotEnoughEnergyPopup(state);
 			if (insufficientEnergy) {
 				state = State.Main; // reset state
 				return;
@@ -5683,32 +5738,45 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         return false; // all ok, battles are enabled
     }
 
+	private boolean handleNotEnoughEnergyPopup(State state) {
+		return handleNotEnoughEnergyPopup(0, state);
+	}
+
 	/**
 	 * Will check if "Not enough energy" popup is open. If it is, it will automatically close it and close all other windows
 	 * until it returns to the main screen.
 	 *
 	 * @return true in case popup was detected and closed.
 	 */
-	private boolean handleNotEnoughEnergyPopup() {
-		MarvinSegment seg = detectCue(cues.get("NotEnoughEnergy"));
+	private boolean handleNotEnoughEnergyPopup(int delay, State state) {
+		MarvinSegment seg = detectCue(cues.get("NotEnoughEnergy"), delay);
 		if (seg != null) {
 			// we don't have enough energy!
-			BHBot.logger.warn("Problem detected: insufficient energy to attempt dungeon. Cancelling...");
+			BHBot.logger.warn("Problem detected: insufficient energy to attempt " + state + ". Cancelling...");
 			closePopupSecurely(cues.get("NotEnoughEnergy"), cues.get("No"));
 
-			closePopupSecurely(cues.get("AutoTeam"), cues.get("X"));
-			// if D4 close the dungeon info window, else close the char selection screen
-			if (specialDungeon) {
-				seg = detectCue(cues.get("X"), 5*SECOND);
-				if (seg != null)
-				clickOnSeg(seg);
-				specialDungeon = false;
+
+			if (state.equals(State.WorldBoss)) {
+				closePopupSecurely(cues.get("WorldBossSummonTitle"), cues.get("X"));
+
+				closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
 			} else {
-			// close difficulty selection screen:
-				closePopupSecurely(cues.get("Normal"), cues.get("X"));
+				closePopupSecurely(cues.get("AutoTeam"), cues.get("X"));
+
+				// if D4 close the dungeon info window, else close the char selection screen
+				if (specialDungeon) {
+					seg = detectCue(cues.get("X"), 5*SECOND);
+					if (seg != null)
+						clickOnSeg(seg);
+					specialDungeon = false;
+				} else {
+					// close difficulty selection screen:
+					closePopupSecurely(cues.get("Normal"), cues.get("X"));
+				}
+
+				// close zone view window:
+				closePopupSecurely(cues.get("ZonesButton"), cues.get("X"));
 			}
-			// close zone view window:
-			closePopupSecurely(cues.get("ZonesButton"), cues.get("X"));
 
 			return true;
 		} else {
