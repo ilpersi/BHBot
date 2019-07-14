@@ -775,7 +775,7 @@ public class MainThread implements Runnable {
 		addCue("PVPWindow", loadImage("cues/cuePVPWindow.png"), null); // PVP window cue
 
 		addCue("DialogRight", loadImage("cues/cueSteamDialogRight.png"), null); // cue for the dialog window (when arrow is at the right side of the window)
-		addCue("DialogLeft", loadImage("cues/cueDialogLeft.png"), null); // cue for the dialog window (when arrow is at the left side of the window)
+		addCue("DialogLeft", loadImage("cues/cueSteamDialogLeft.png"), null); // cue for the dialog window (when arrow is at the left side of the window)
 
 		addCue("SpeedCheck", loadImage("cues/cueSpeedCheck.png"), new Bounds(0, 450, 100, 520));
 		addCue("Switch", loadImage("cues/cueSwitch.png"), new Bounds(0, 450, 100, 520)); //unused
