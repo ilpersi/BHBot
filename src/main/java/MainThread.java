@@ -909,6 +909,8 @@ public class MainThread implements Runnable {
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
 		addCue("Fishing", loadImage("cues/cueFishing.png"), new Bounds(720, 200, 799, 519));
 		addCue("FishingClose", loadImage("cues/fishingClose.png"),  null);
+		addCue("Hall", loadImage("cues/cueHall.png"), new Bounds(575, 455, 645, 480));
+		addCue("GuildHallC", loadImage("cues/cueGuildHallC.png"), new Bounds(750, 55, 792, 13));
 
 		//Familiar bribing cues
 		addCue("NotEnoughGems", loadImage("cues/cueNotEnoughGems.png"), null); // used when not enough gems are available
@@ -3847,6 +3849,36 @@ public class MainThread implements Runnable {
 			clickOnSeg(seg);
 			return;
 		}
+		
+		/*
+		 * Check if we're done (victory in PVP mode) - this may also close local fights in dungeons, this is why we check if state is State.PVP and react only to that one.
+		 * There were some crashing and clicking on SHOP problems with this one in dungeons and raids (and possibly elsewhere).
+		 * Hence I fixed it by checking if state==State.PVP.
+		 */
+		if (state == State.PVP) {
+		readScreen();
+		seg = detectCue(cues.get("VictoryPopup"));
+		if (seg != null) {
+
+			handleVictory();
+
+			closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
+
+			// close the PVP window, in case it is open:
+			readScreen(2*SECOND);
+
+			seg = detectCue(cues.get("PVPWindow"), 5*SECOND);
+			if (seg != null)
+				closePopupSecurely(cues.get("PVPWindow"), cues.get("X")); // ignore failure
+			sleep(SECOND);
+			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
+			resetAppropriateTimers();
+			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
+			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
+			state = State.Main; // reset state
+			return;
+			}
+		}
 
 		// check for any character dialog:
 		/* This is nearly half of the processing time of proccessDungeon(); so trying to minimize its usage */
@@ -4047,36 +4079,6 @@ public class MainThread implements Runnable {
 
 			state = State.Main; // reset state
 			return;
-		}
-
-		/*
-		 * Check if we're done (victory in PVP mode) - this may also close local fights in dungeons, this is why we check if state is State.PVP and react only to that one.
-		 * There were some crashing and clicking on SHOP problems with this one in dungeons and raids (and possibly elsewhere).
-		 * Hence I fixed it by checking if state==State.PVP.
-		 */
-		if (state == State.PVP) {
-//		seg = detectCue(cues.get("VictoryPopup"),500);
-		seg = detectCue(cues.get("VictoryPopup"));
-		if (seg != null) {
-
-			handleVictory();
-
-			closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
-
-			// close the PVP window, in case it is open:
-			readScreen(2*SECOND);
-
-			seg = detectCue(cues.get("PVPWindow"), 5*SECOND);
-			if (seg != null)
-				closePopupSecurely(cues.get("PVPWindow"), cues.get("X")); // ignore failure
-			sleep(SECOND);
-			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
-			resetAppropriateTimers();
-			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
-			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
-			state = State.Main; // reset state
-			return;
-			}
 		}
 
 		//small sleep so this function isn't too taxing on performance
@@ -6792,6 +6794,9 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			if (BHBot.settings.doFishing) {
 				BHBot.logger.debug("Handling fishing...");
 				handleFishing();
+				sleep(1 * SECOND);
+				enterGuildHall();
+				sleep(1 * SECOND);
 			}
 
             readScreen();
@@ -7368,6 +7373,28 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             clickOnSeg(seg);
         }
         
+	}
+	
+	private boolean enterGuildHall() {
+		MarvinSegment seg;
+		
+        seg = detectCue(cues.get("GuildButton"), SECOND * 2);
+        if (seg != null) {
+            clickOnSeg(seg);
+        }
+        
+        seg = detectCue(cues.get("Hall"), SECOND * 2);
+        if (seg != null) {
+            clickOnSeg(seg);
+        }
+        
+        seg = detectCue(cues.get("GuildHallC"), SECOND * 5);
+        if (seg != null) {
+        	BHBot.logger.debug("Guild hall entered");
+            return true;
+        }
+    	BHBot.logger.warn("Failed to enter guild hall");
+		return false;	
 	}
 
 	private void handleVictory() {
