@@ -909,6 +909,7 @@ public class MainThread implements Runnable {
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
 		addCue("Fishing", loadImage("cues/cueFishing.png"), new Bounds(720, 200, 799, 519));
 		addCue("FishingClose", loadImage("cues/fishingClose.png"),  null);
+		addCue("Trade", loadImage("cues/cueTrade.png"), new Bounds(360, 443, 441, 468));
 		addCue("Hall", loadImage("cues/cueHall.png"), new Bounds(575, 455, 645, 480));
 		addCue("GuildHallC", loadImage("cues/cueGuildHallC.png"), new Bounds(750, 55, 792, 13));
 
@@ -4386,6 +4387,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 		BHBot.logger.error("Unable to find rune of type " + desiredRune);
 		closePopupSecurely(cues.get("RunesPicker"), cues.get("X"));
+		sleep(1 * SECOND);
 		return false;
     }
     
@@ -6795,7 +6797,9 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 				BHBot.logger.debug("Handling fishing...");
 				handleFishing();
 				sleep(1 * SECOND);
-				enterGuildHall();
+				if (enterGuildHall()) { //the fishing island is a silly place, lets not stay there
+		        	BHBot.logger.debug("Guild hall entered");
+				} else BHBot.logger.warn("Failed to enter guild hall");
 				sleep(1 * SECOND);
 			}
 
@@ -7368,11 +7372,37 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             
 		} else BHBot.logger.info("start not found");
         
-        seg = detectCue(cues.get("FishingClose"), 5 * SECOND);
+       if (!closeFishingSafely()) {
+    	   BHBot.logger.error("Error closing fishing, restarting..");
+    	   restart();
+       }
+        
+	}
+	
+	private boolean closeFishingSafely() {
+		MarvinSegment seg;
+		readScreen();
+		
+        seg = detectCue(cues.get("Trade"), SECOND * 3);
         if (seg != null) {
             clickOnSeg(seg);
         }
         
+        seg = detectCue(cues.get("X"), SECOND * 3);
+        if (seg != null) {
+            clickOnSeg(seg);
+        }
+        
+        seg = detectCue(cues.get("FishingClose"), 3 * SECOND);
+        if (seg != null) {
+            clickOnSeg(seg);
+        }
+        
+        seg = detectCue(cues.get("GuildButton"), SECOND * 5);
+        if (seg != null) {
+            return true; //if we can see the guild button we are successful
+        } else return false; //else not
+ 
 	}
 	
 	private boolean enterGuildHall() {
@@ -7388,12 +7418,10 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             clickOnSeg(seg);
         }
         
-        seg = detectCue(cues.get("GuildHallC"), SECOND * 5);
+        seg = detectCue(cues.get("GuildHallC"), SECOND * 10); //long search time as the bot can take a while to load the assets
         if (seg != null) {
-        	BHBot.logger.debug("Guild hall entered");
             return true;
         }
-    	BHBot.logger.warn("Failed to enter guild hall");
 		return false;	
 	}
 
