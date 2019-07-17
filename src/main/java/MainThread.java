@@ -14,7 +14,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.concurrent.TimeUnit ;
+import java.util.concurrent.TimeUnit;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
@@ -1275,7 +1275,16 @@ public class MainThread implements Runnable {
 //		BHBot.logger.info(Integer.toString(BHBot.settings.shrineDelay));
 
 
-//		BHBot.logger.info(BHBot.settings.activitiesEnabled);
+////		BHBot.logger.info(BHBot.settings.activitiesEnabled);
+//		long firstTime = Misc.getTime();
+////		BHBot.logger.info(long.toString(firstTime));
+//		sleep(10 * SECOND);
+//		long secondTime = Misc.getTime();
+//		String runtime = String.format("%01dm %02ds", 
+//				  TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime),
+//				  TimeUnit.MILLISECONDS.toSeconds(secondTime - firstTime) - 
+//				  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime)));
+//		BHBot.logger.info(runtime);
 
 		//End debugging section
 
@@ -3763,26 +3772,26 @@ public class MainThread implements Runnable {
 		readScreen();
 
 		if (!startTimeCheck) {
-			activityStartTime = (System.currentTimeMillis() / 1000L);
+			activityStartTime = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
 			BHBot.logger.debug("Start time: " + activityStartTime);
-			outOfEncounterTimestamp = Misc.getTime() / 1000;
-			inEncounterTimestamp = Misc.getTime() / 1000;
+			outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
+			inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
 			startTimeCheck = true;
 		}
 
-		activityDuration = ((System.currentTimeMillis() / 1000L) - activityStartTime);
+		activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
 
 		//We use guild button visibility to determine whether we are in an encounter or not
 		MarvinSegment guildButtonSeg = detectCue(cues.get("GuildButton"));
 		if (guildButtonSeg != null) {
-			outOfEncounterTimestamp = Misc.getTime() / 1000;
+			outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
 		} else {
-			inEncounterTimestamp = Misc.getTime() / 1000;
+			inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
 //			BHBot.logger.debug("Encounter detected");
 		}
 		
 		if ((outOfEncounterTimestamp - inEncounterTimestamp) > 0) {
-		BHBot.logger.debug("Time since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
+		BHBot.logger.debug("Seconds since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
 		}
 		
 		// handle "Not enough energy" popup:
@@ -3925,7 +3934,18 @@ public class MainThread implements Runnable {
 				raidVictoryCounter++;
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
-				BHBot.logger.stats("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
+				BHBot.logger.stats("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%.");
+				long runMillis = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
+				String runtime = String.format("%01dm%02ds", //format to mss
+						  TimeUnit.MILLISECONDS.toMinutes(runMillis),
+						  TimeUnit.MILLISECONDS.toSeconds(runMillis) - 
+						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
+				long runMillisAvg =+ runMillis; //on success add runtime to runMillisAvg
+				String runtimeAvg = String.format("%01dm%02ds", //format to mss
+						  TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter), //then we divide runMillisavg by completed raids to get average time
+						  TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / raidVictoryCounter) - 
+						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter)));
+				BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
 			} else {
 			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
 			}
@@ -4000,7 +4020,12 @@ public class MainThread implements Runnable {
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
 				BHBot.logger.stats("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
-
+				long runMillis = Misc.getTime() - (activityStartTime * 1000);
+				String runtime = String.format("%01dm%02ds", 
+						  TimeUnit.MILLISECONDS.toMinutes(runMillis),
+						  TimeUnit.MILLISECONDS.toSeconds(runMillis) - 
+						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
+				BHBot.logger.stats("Run time: " + runtime);
 			} else {
 			BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
 			}
