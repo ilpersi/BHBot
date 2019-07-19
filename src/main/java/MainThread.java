@@ -870,6 +870,7 @@ public class MainThread implements Runnable {
 		addCue("Expedition1", loadImage("cues/expedition/cueExpedition1Hallowed.png"), new Bounds(168, 34, 628, 108)); // Hallowed Expedtion Title
 		addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"), new Bounds(200, 40, 600, 100)); //Inferno Expedition
 		addCue("Expedition3", loadImage("cues/expedition/cueExpedition3Jammie.png"), new Bounds(230, 40, 565, 100)); //Jammie Dimension
+		addCue("Expedition4", loadImage("cues/expedition/cueExpedition4PLACEHOLDER.png"), new Bounds(230, 40, 565, 100)); //New Dimension
 
 		//WorldBoss Related
 		addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"),  null);
@@ -2626,6 +2627,8 @@ public class MainThread implements Runnable {
 									currentExpedition = 2;
 								} else if (detectCue(cues.get("Expedition3")) != null) {
 									currentExpedition = 3;
+								} else if (detectCue(cues.get("Expedition4")) != null) {
+									currentExpedition = 4;
 								} else {
 									BHBot.settings.activitiesEnabled.remove("e");
 									BHBot.logger.error("It was impossible to get the current expedition type!");
@@ -5322,7 +5325,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	 * Function to return the name of the portal for console output
 	 */
 	private String getExpeditionName(int currentExpedition, String targetPortal) {
-		if (currentExpedition > 3) {
+		if (currentExpedition > 4) {
 			BHBot.logger.error("Unexpected expedition int in getExpeditionName: " + currentExpedition);
 			return null;
 		}
@@ -5373,6 +5376,19 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 					default:
 						return null;
 				}
+			case 4:
+				switch (targetPortal) {
+					case "p1":
+						return "Portal 1";
+					case "p2":
+						return "Portal 2";
+					case "p3":
+						return "Portal 3";
+					case "p4":
+						return "Portal 4";
+					default:
+						return null;
+				}
 			default:
 				return null;
 		}
@@ -5396,6 +5412,8 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			portalName = "Inferno";
 		}  else if (currentExpedition == 3) {
 			portalName = "Jammie";
+		}  else if (currentExpedition == 4) {
+			portalName = "Placeholder Expedition";
 		} else {
 			BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
 			saveGameScreen("unknown-expedition");
@@ -5455,7 +5473,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			portalPosition[1] = new Point(600, 195); // Blemo
 			portalPosition[2] = new Point(420, 405); // Gummy
 			portalPosition[3] = new Point(420, 270); // Zarlock
-		} else { // Jammie
+		} else if (currentExpedition == 3) { // Jammie
 			portalCheck[0] = new Point(145, 187); // Zorgo
 			portalCheck[1] = new Point(309, 289); // Yackerz
 			portalCheck[2] = new Point(474, 343); // Vionot
@@ -5465,6 +5483,16 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			portalPosition[1] = new Point(315, 260); // Yackerz
 			portalPosition[2] = new Point(480, 360); // Vinot
 			portalPosition[3] = new Point(635, 385); // Grampa
+		} else { // Placeholder Expedition
+			portalCheck[0] = new Point(1, 1); // 
+			portalCheck[1] = new Point(2, 2); // 
+			portalCheck[2] = new Point(3, 3); // 
+			portalCheck[3] = new Point(4, 4); // 
+
+			portalPosition[0] = new Point(1, 1); // 
+			portalPosition[1] = new Point(2, 2); // 
+			portalPosition[2] = new Point(3, 3); // 
+			portalPosition[3] = new Point(4, 4); // 
 		}
 
 		// We check which of the portals are enabled
@@ -6823,7 +6851,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 				handleFishing();
 				sleep(1 * SECOND);
 				if (enterGuildHall()) { //the fishing island is a silly place, lets not stay there
-		        	BHBot.logger.debug("Guild hall entered");
+		        	BHBot.logger.debug("Entered Guild Hall");
 				} else BHBot.logger.warn("Failed to enter guild hall");
 				sleep(1 * SECOND);
 			}
@@ -7433,16 +7461,17 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 	private boolean enterGuildHall() {
 		MarvinSegment seg;
 		
-        seg = detectCue(cues.get("GuildButton"), SECOND * 2);
+        seg = detectCue(cues.get("GuildButton"), SECOND * 5);
         if (seg != null) {
             clickOnSeg(seg);
         }
         
-        seg = detectCue(cues.get("Hall"), SECOND * 2);
+        seg = detectCue(cues.get("Hall"), SECOND * 5);
         if (seg != null) {
             clickOnSeg(seg);
         }
         
+        readScreen();
         seg = detectCue(cues.get("GuildHallC"), SECOND * 10); //long search time as the bot can take a while to load the assets
         if (seg != null) {
             return true;
