@@ -4717,6 +4717,12 @@ public class MainThread implements Runnable {
                             continue;
                         }
                     } else {
+                        if (detectCue(cues.get("SuperAvailable")) != null) {
+                            BHBot.logger.debug("Slot " + slotNum + " is up for super potion detected, closing revive window.");
+                            seg = detectCue(cues.get("X"));
+                            clickOnSeg(seg);
+                            readScreen(SECOND);
+                        }
                         continue;
                     }
 
@@ -6744,7 +6750,6 @@ public class MainThread implements Runnable {
         boolean gold = detectCue(cues.get("BonusGold")) != null;
 
         // Special consumables
-        // TODO Manage super scroll
         if (detectCue(cues.get("ConsumablePumkgor")) != null || detectCue(cues.get("ConsumableBroccoli")) != null
                 || detectCue(cues.get("ConsumableGreatFeast")) != null || detectCue(cues.get("ConsumableGingernaut")) != null
                 || detectCue(cues.get("ConsumableCoco")) != null) {
