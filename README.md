@@ -1,6 +1,7 @@
 # BHBot
 
 [![Paypal Donate](https://img.shields.io/badge/donate-paypal-informational.svg?logo=paypal&style=plastic)](https://www.paypal.me/ilpersi)
+[![Beerpay](https://beerpay.io/ilpersi/BHBot/badge.svg?style=beer)](https://beerpay.io/ilpersi/BHBot)
 [![Gitter chat](https://img.shields.io/gitter/room/ilpersi/BHBot.svg?color=red&style=plastic&logo=gitter)](https://gitter.im/BHBot/community)
 [![GitHub release](https://img.shields.io/github/release/ilpersi/BHBot.svg?label=last%20release&style=plastic&logo=docusign) ![GitHub Release Date](https://img.shields.io/github/release-date/ilpersi/BHBot.svg?label=released&style=plastic)](https://github.com/ilpersi/BHBot/releases/latest)
 [![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=plastic&logo=hackaday)](https://github.com/ilpersi/BHBot/labels/bug)
@@ -82,7 +83,7 @@ command input box):
 - `stop`: stops the bot execution (may take a few seconds. Once it is stopped, the console will close automatically).
   
 ## Donate
-BHBot is free and it will always be so. If you like to, we accept spontaneous donations through our [paypal link](https://www.paypal.me/ilpersi).
+BHBot is free and it will always be so. If you like to, we accept spontaneous donations through our [paypal link](https://www.paypal.me/ilpersi) or supporting us using [Beerpay](https://beerpay.io/ilpersi/BHBot).
   
 ## Authors
 BHBot is an original idea by [Betalord](https://github.com/Betalord) and he used it until his character achieved level 165. On 29th of September 2017 (a 1st year anniversary of the Bit Heroes game) he quit the game and released the bot to the public. In december 2018 [Fortigate](https://github.com/Fortigate) decided to pick on the development and from march 2019 [ilpersi](https://github.com/ilpersi) joined him to make the bot what it is today. Starting from june 2019 ilpersi is the new owner of the project.
