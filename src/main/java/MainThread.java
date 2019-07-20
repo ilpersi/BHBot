@@ -2529,6 +2529,14 @@ public class MainThread implements Runnable {
 								if (BHBot.scheduler.doExpeditionImmediately)
 									BHBot.scheduler.doExpeditionImmediately = false; // reset it
 
+                                if (BHBot.settings.costExpedition > badges) {
+                                    BHBot.logger.info("Target cost " + BHBot.settings.costExpedition + " is higher than available badges " + badges + ". Expedition will be skipped.");
+                                    seg = detectCue(cues.get("X"));
+                                    clickOnSeg(seg);
+                                    sleep(2*SECOND);
+                                    continue;
+                                }
+
 								// One time check for Autoshrine
 								if (BHBot.settings.autoShrine.contains("e") || BHBot.settings.autoBossRune.containsKey("e")) {
 									seg = detectCue(cues.get("X"));
@@ -2562,14 +2570,6 @@ public class MainThread implements Runnable {
 								if (cost == 0) { // error!
 									BHBot.logger.error("Due to an error#1 in cost detection, Expedition cost will be skipped.");
 									closePopupSecurely(cues.get("ExpeditionWindow"), cues.get("X"));
-									continue;
-								}
-
-								if (cost > badges) {
-									BHBot.logger.info("Detected cost " + cost + " is higher than available badges " + badges + ". Expedition will be skipped.");
-									seg = detectCue(cues.get("X"));
-									clickOnSeg(seg);
-									sleep(2*SECOND);
 									continue;
 								}
 
