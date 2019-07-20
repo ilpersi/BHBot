@@ -2,7 +2,7 @@ class BribeDetails {
     String familiarName;
     int toBribeCnt;
 
-    BribeDetails(){
+    BribeDetails() {
         this.familiarName = "";
         this.toBribeCnt = 0;
     }

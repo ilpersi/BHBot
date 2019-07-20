@@ -31,13 +31,13 @@ class GitHubTag {
 
 class GitHubRelease {
 
-    @SerializedName(value="tag_name")
+    @SerializedName(value = "tag_name")
     String tagName;
 
-    @SerializedName(value="body")
+    @SerializedName(value = "body")
     String releaseNotes;
 
-    @SerializedName(value="html_url")
+    @SerializedName(value = "html_url")
     String releaseURL;
 
 }

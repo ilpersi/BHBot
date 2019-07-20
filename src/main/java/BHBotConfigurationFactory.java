@@ -35,7 +35,7 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
         AppenderComponentBuilder stdErrBuilder = builder.newAppender("StdErr", "CONSOLE").
                 addAttribute("target", ConsoleAppender.Target.SYSTEM_ERR);
         stdErrBuilder.add(builder.newLayout("PatternLayout")
-        		.addAttribute("pattern", "%d{ABSOLUTE} %style{%highlight{%level}{FATAL=bg_red, ERROR=red, WARN=bg_yellow, AUTOBRIBE=cyan, AUTOREVIVE=cyan, AUTOSHRINE=cyan, AUTORUNE=cyan, STATS=magenta, READOUT=yellow, INFO=green, DEBUG=blue} - %msg%n}{red}"));
+                .addAttribute("pattern", "%d{ABSOLUTE} %style{%highlight{%level}{FATAL=bg_red, ERROR=red, WARN=bg_yellow, AUTOBRIBE=cyan, AUTOREVIVE=cyan, AUTOSHRINE=cyan, AUTORUNE=cyan, STATS=magenta, READOUT=yellow, INFO=green, DEBUG=blue} - %msg%n}{red}"));
         stdErrBuilder.add(builder.newFilter("ThresholdFilter", Filter.Result.ACCEPT,
                 Filter.Result.DENY).addAttribute("level", Level.ERROR));
         builder.add(stdErrBuilder);
@@ -82,13 +82,13 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
 
     @Override
     public Configuration getConfiguration(final LoggerContext loggerContext, final String name, final URI configLocation) {
-        ConfigurationBuilder < BuiltConfiguration > builder = newConfigurationBuilder();
+        ConfigurationBuilder<BuiltConfiguration> builder = newConfigurationBuilder();
         return createConfiguration(name, builder);
     }
 
     @Override
     protected String[] getSupportedTypes() {
-        return new String[] {
+        return new String[]{
                 "*"
         };
     }

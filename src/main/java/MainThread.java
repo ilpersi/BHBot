@@ -41,381 +41,37 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MainThread implements Runnable {
-    public enum State {
-        Loading("Loading..."),
-        Main("Main screen"),
-        Raid("Raid", "r"),
-        Trials("Trials", "t"),
-        Gauntlet("Gauntlet", "g"),
-        Dungeon("Dungeon", "d"),
-        PVP("PVP", "p"),
-        GVG("GVG", "v"),
-        Invasion("Invasion", "i"),
-        Expedition("Expedition", "e"),
-        WorldBoss("World Boss", "w"),
-        UnidentifiedDungeon("Unidentified dungeon", "ud"); // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
-
-        private String name;
-        private String shortcut;
-
-        State(String name) {
-            this.name = name;
-            this.shortcut = null;
-        }
-
-        State(String name, String shortcut) {
-            this.name = name;
-            this.shortcut = shortcut;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getShortcut() {
-            return shortcut;
-        }
-
-        public String getNameFromShortcut(String shortcut) {
-            for (State state : State.values())
-                if (state.shortcut != null && state.shortcut.equals(shortcut))
-                    return state.name;
-            return null;
-        }
-    }
-
-    public enum PersuationType {
-        DECLINE("Decline"),
-        PERSUADE("Persuasion"),
-        BRIBE("Bribe");
-
-        private final String name;
-
-        PersuationType(String name) {
-            this.name = name;
-        }
-
-        public String toString() {
-            return this.name;
-        }
-
-    }
-
-    public enum FamiliarType {
-        ERROR("Error", 0),
-        COMMON("Common", 1),
-        RARE("Rare", 2),
-        EPIC("Epic", 3),
-        LEGENDARY("Legendary", 4);
-
-        private final String name;
-        private final int type;
-
-        FamiliarType(String name, int type) {
-            this.name = name;
-            this.type = type;
-        }
-
-        public int getValue() {
-            return this.type;
-        }
-
-        public String toString() {
-            return this.name;
-        }
-
-    }
-
-    /**
-     * Events that use badges as "fuel".
-     */
-    public enum BadgeEvent {
-        None,
-        GVG,
-        Expedition,
-        Invasion
-    }
-
-    public enum EquipmentType {
-        Mainhand("StripTypeMainhand"),
-        Offhand("StripTypeOffhand"),
-        Head("StripTypeHead"),
-        Body("StripTypeBody"),
-        Neck("StripTypeNeck"),
-        Ring("StripTypeRing");
-
-        private String cueName;
-
-        EquipmentType(String cueName) {
-            this.cueName = cueName;
-        }
-
-        /**
-         * Returns equipment filter button cue (it's title cue actually)
-         */
-        public Cue getCue() {
-            return cues.get(cueName);
-        }
-
-        public int minPos() {
-            return 4 + ordinal();
-        }
-
-//		public int maxPos() {
-////			return Math.min(6 + ordinal(), 10);
-////		}
-
-        public int getButtonPos() {
-            return 8 + ordinal();
-        }
-
-        public static String letterToName(String s) {
-            switch (s) {
-                case "m":
-                    return "mainhand";
-                case "o":
-                    return "offhand";
-                case "h":
-                    return "head";
-                case "b":
-                    return "body";
-                case "n":
-                    return "neck";
-                case "r":
-                    return "ring";
-                default:
-                    return "unknown_item";
-            }
-        }
-
-        public static EquipmentType letterToType(String s) {
-            switch (s) {
-                case "m":
-                    return Mainhand;
-                case "o":
-                    return Offhand;
-                case "h":
-                    return Head;
-                case "b":
-                    return Body;
-                case "n":
-                    return Neck;
-                case "r":
-                    return Ring;
-                default:
-                    return null; // should not happen!
-            }
-        }
-    }
-
-    public enum StripDirection {
-        StripDown,
-        DressUp
-    }
-
-    private enum ConsumableType {
-        EXP_MINOR("exp_minor", "ConsumableExpMinor"), // experience tome
-        EXP_AVERAGE("exp_average", "ConsumableExpAverage"),
-        EXP_MAJOR("exp_major", "ConsumableExpMajor"),
-
-        ITEM_MINOR("item_minor", "ConsumableItemMinor"), // item find scroll
-        ITEM_AVERAGE("item_average", "ConsumableItemAverage"),
-        ITEM_MAJOR("item_major", "ConsumableItemMajor"),
-
-        GOLD_MINOR("gold_minor", "ConsumableGoldMinor"), // item find scroll
-        GOLD_AVERAGE("gold_average", "ConsumableGoldAverage"),
-        GOLD_MAJOR("gold_major", "ConsumableGoldMajor"),
-
-        SPEED_MINOR("speed_minor", "ConsumableSpeedMinor"), // speed kicks
-        SPEED_AVERAGE("speed_average", "ConsumableSpeedAverage"),
-        SPEED_MAJOR("speed_major", "ConsumableSpeedMajor");
-
-        private String name;
-        private String inventoryCue;
-
-        ConsumableType(String name, String inventoryCue) {
-            this.name = name;
-            this.inventoryCue = inventoryCue;
-        }
-
-        /**
-         * Returns name as it appears in e.g. settings.ini.
-         */
-        public String getName() {
-            return name;
-        }
-
-        public static ConsumableType getTypeFromName(String name) {
-            for (ConsumableType type : ConsumableType.values())
-                if (type.name.equals(name))
-                    return type;
-            return null;
-        }
-
-        /**
-         * Returns image cue from inventory window
-         */
-        public Cue getInventoryCue() {
-            return cues.get(inventoryCue);
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    public enum ItemGrade {
-        COMMON("Common", 1),
-        RARE("Rare", 2),
-        EPIC("Epic", 3),
-        LEGENDARY("Legendary", 4);
-		/*SET("Set", 5),
-		MYTHIC("Mythic", 6),
-		ANCIENT("Ancient", 6);*/
-
-        private final String name;
-        private final int value;
-
-        ItemGrade(String name, int value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        public static ItemGrade getGradeFromValue(int value) {
-            for (ItemGrade grade : ItemGrade.values())
-                if (grade.value == value)
-                    return grade;
-            return null;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    private enum MinorRuneEffect {
-        CAPTURE("Capture"),
-        EXPERIENCE("Experience"),
-        GOLD("Gold"),
-        ITEM_FIND("Item_Find");
-
-        private final String name;
-
-        MinorRuneEffect(String name) {
-            this.name = name;
-        }
-
-        public static MinorRuneEffect getEffectFromName(String name) {
-            for (MinorRuneEffect effect : MinorRuneEffect.values())
-                if (effect.name.toLowerCase().equals(name.toLowerCase()))
-                    return effect;
-            return null;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    private enum MinorRune {
-        EXP_COMMON(MinorRuneEffect.EXPERIENCE, ItemGrade.COMMON),
-        EXP_RARE(MinorRuneEffect.EXPERIENCE, ItemGrade.RARE),
-        EXP_EPIC(MinorRuneEffect.EXPERIENCE, ItemGrade.EPIC),
-        EXP_LEGENDARY(MinorRuneEffect.EXPERIENCE, ItemGrade.LEGENDARY),
-
-        ITEM_COMMON(MinorRuneEffect.ITEM_FIND, ItemGrade.COMMON),
-        ITEM_RARE(MinorRuneEffect.ITEM_FIND, ItemGrade.RARE),
-        ITEM_EPIC(MinorRuneEffect.ITEM_FIND, ItemGrade.EPIC),
-        ITEM_LEGENDARY(MinorRuneEffect.ITEM_FIND, ItemGrade.LEGENDARY),
-
-        GOLD_COMMON(MinorRuneEffect.GOLD, ItemGrade.COMMON),
-        //		GOLD_RARE(MinorRuneEffect.GOLD, ItemGrade.RARE),
-//		GOLD_EPIC(MinorRuneEffect.GOLD, ItemGrade.EPIC),
-        GOLD_LEGENDARY(MinorRuneEffect.GOLD, ItemGrade.LEGENDARY),
-
-        CAPTURE_COMMON(MinorRuneEffect.CAPTURE, ItemGrade.COMMON),
-        CAPTURE_RARE(MinorRuneEffect.CAPTURE, ItemGrade.RARE),
-        CAPTURE_EPIC(MinorRuneEffect.CAPTURE, ItemGrade.EPIC),
-        CAPTURE_LEGENDARY(MinorRuneEffect.CAPTURE, ItemGrade.LEGENDARY);
-
-        private MinorRuneEffect effect;
-        private ItemGrade grade;
-
-        public static ItemGrade maxGrade = ItemGrade.LEGENDARY;
-
-        MinorRune(MinorRuneEffect effect, ItemGrade grade) {
-            this.effect = effect;
-            this.grade = grade;
-        }
-
-        public static MinorRune getRune(MinorRuneEffect effect, ItemGrade grade) {
-            for (MinorRune rune : MinorRune.values()) {
-                if (rune.effect == effect && rune.grade == grade)
-                    return rune;
-            }
-            return null;
-        }
-
-        public MinorRuneEffect getRuneEffect() {
-            return effect;
-        }
-
-        public String getRuneCueName() {
-            return "MinorRune" + effect + grade;
-        }
-
-        public String getRuneCueFileName() {
-            return "cues/runes/minor" + effect + grade + ".png";
-        }
-
-        public Cue getRuneCue() {
-            return cues.get(getRuneCueName());
-        }
-
-
-        public String getRuneSelectCueName() {
-            return "MinorRune" + effect + grade + "Select";
-        }
-
-        public String getRuneSelectCueFileName() {
-            return "cues/runes/minor" + effect + grade + "Select.png";
-        }
-
-        public Cue getRuneSelectCue() {
-            return cues.get(getRuneSelectCueName());
-        }
-
-        @Override
-        public String toString() {
-            return grade.toString().toLowerCase() + "_" + effect.toString().toLowerCase();
-        }
-    }
-
     static final int SECOND = 1000;
     static final int MINUTE = 60 * SECOND;
     private static final int HOUR = 60 * MINUTE;
     private static final int DAY = 24 * HOUR;
-
-    @SuppressWarnings("FieldCanBeLocal")
-    private boolean idleMode = false;
-
     private static int globalShards;
     private static int globalBadges;
     private static int globalEnergy;
     private static int globalTickets;
     private static int globalTokens;
-
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    private static Map<String, Cue> cues = new HashMap<>();
+    private static WebDriver driver;
+    private static JavascriptExecutor jsExecutor;
+    private static WebElement game;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final int MAX_NUM_FAILED_RESTARTS = 5;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final long MAX_IDLE_TIME = 15 * MINUTE;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
+    boolean finished = false;
+    /**
+     * Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through!
+     */
+    long timeLastAdOffer;
+    @SuppressWarnings("FieldCanBeLocal")
+    private boolean idleMode = false;
     private boolean[] revived = {false, false, false, false, false};
     private int potionsUsed = 0;
-
     private boolean startTimeCheck = false;
     private boolean oneTimeshrineCheck = false;
     private boolean autoShrined = false;
@@ -423,33 +79,16 @@ public class MainThread implements Runnable {
     private long activityDuration;
     private long outOfEncounterTimestamp = 0;
     private long inEncounterTimestamp = 0;
-
     private long runMillisAvg = 0;
-
     private boolean specialDungeon; //d4 check for closing properly when no energy
-
     private int dungeonCounter = 0;
     private int raidVictoryCounter = 0;
     private int raidDefeatCounter = 0;
-
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-
-    private static Map<String, Cue> cues = new HashMap<>();
-
-    boolean finished = false;
     private int numFailedRestarts = 0; // in a row
     // When we do not have anymore gems to use this is true
     private boolean noGemsToBribe = false;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final int MAX_NUM_FAILED_RESTARTS = 5;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
-    private static WebDriver driver;
-    private static JavascriptExecutor jsExecutor;
-    private static WebElement game;
     private State state; // at which stage of the game/menu are we currently?
     private BufferedImage img; // latest screen capture
-
     @SuppressWarnings("FieldCanBeLocal")
     private long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
@@ -466,12 +105,6 @@ public class MainThread implements Runnable {
     private long BONUS_CHECK_INTERVAL = 10 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
     private long FISHING_CHECK_INTERVAL = DAY;
-
-    @SuppressWarnings("FieldCanBeLocal")
-    private final long MAX_IDLE_TIME = 15 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
-
     private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
     private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
     private long timeLastTicketsCheck = 0; // when did we check for Tickets the last time?
@@ -484,38 +117,26 @@ public class MainThread implements Runnable {
     private long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
     private long timeLastFishingCheck = 0; // when did we check for fishing baits the last time?
     private long timeLastPOAlive = Misc.getTime(); // when did we send the last PO Notification?
-
     /**
      * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale.
      */
     private int numConsecutiveException = 0;
-//	/** Amount of ads that were offered in main screen since last restart. We need it in order to do restart() after 2 ads, since sometimes ads won't get offered anymore after two restarts. */
-//	private int numAdOffers = 0;
-    /**
-     * Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through!
-     */
-    long timeLastAdOffer;
-
     /**
      * Used to format double numbers in a human readable way
      */
     private DecimalFormat df = new DecimalFormat("#.00");
-
     /**
      * autoshrine settings save
      */
     private boolean ignoreBossSetting = false;
     private boolean ignoreShrinesSetting = false;
-
     /**
      * global autorune vals
      */
     private boolean autoBossRuned = false;
     private boolean oneTimeRuneCheck = false;
-
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
-
     private Iterator<String> activitysIterator = BHBot.settings.activitiesEnabled.iterator();
 
     private static BufferedImage loadImage(String f) {
@@ -540,6 +161,8 @@ public class MainThread implements Runnable {
 
         return img;
     }
+//	/** Amount of ads that were offered in main screen since last restart. We need it in order to do restart() after 2 ads, since sometimes ads won't get offered anymore after two restarts. */
+//	private int numAdOffers = 0;
 
     private static void addCue(String name, BufferedImage im, Bounds bounds) {
         cues.put(name, new Cue(name, im, bounds));
@@ -1116,17 +739,154 @@ public class MainThread implements Runnable {
         BHBot.logger.info("Cookies loaded.");
     }
 
+    // https://stackoverflow.com/questions/297762/find-known-sub-image-in-larger-image
+    private static MarvinSegment findSubimage(BufferedImage src, Cue cue) {
+        long timer = Misc.getTime();
+
+        MarvinSegment seg;
+
+        seg = FindSubimage.findImage(
+                src,
+                cue.im,
+                cue.bounds != null ? cue.bounds.x1 : 0,
+                cue.bounds != null ? cue.bounds.y1 : 0,
+                cue.bounds != null ? cue.bounds.x2 : 0,
+                cue.bounds != null ? cue.bounds.y2 : 0
+        );
+
+        //source.drawRect(seg.x1, seg.y1, seg.x2-seg.x1, seg.y2-seg.y1, Color.blue);
+        //MarvinImageIO.saveImage(source, "window_out.png");
+        if (BHBot.settings.debugDetectionTimes)
+            BHBot.logger.info("cue detection time: " + (Misc.getTime() - timer) + "ms (" + cue.name + ") [" + (seg != null ? "true" : "false") + "]");
+//        if (seg == null) {
+//        	return -1;
+//        }
+        return seg;
+    }
+
+    static void printFamiliars() {
+
+        List<String> folders = new ArrayList<>();
+        folders.add("cues/familiars/old_format");
+        folders.add("cues/familiars/new_format");
+
+        Set<String> uniqueFamiliars = new TreeSet<>();
+
+        for (String cuesPath : folders) {
+            // We make sure that the last char of the path is a folder separator
+            if (!"/".equals(cuesPath.substring(cuesPath.length() - 1))) cuesPath += "/";
+
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+            URL url = classLoader.getResource(cuesPath);
+            if (url != null) { // Run from the IDE
+                if ("file".equals(url.getProtocol())) {
+
+                    InputStream in = classLoader.getResourceAsStream(cuesPath);
+                    if (in == null) {
+                        BHBot.logger.error("Impossible to create InputStream in printFamiliars");
+                        return;
+                    }
+
+                    BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                    String resource;
+
+                    while (true) {
+                        try {
+                            resource = br.readLine();
+                            if (resource == null) break;
+                        } catch (IOException e) {
+                            BHBot.logger.error("Error while reading resources in printFamiliars", e);
+                            continue;
+                        }
+                        int dotPosition = resource.lastIndexOf('.');
+                        String fileExtension = dotPosition > 0 ? resource.substring(dotPosition + 1) : "";
+                        if ("png".equals(fileExtension.toLowerCase())) {
+                            String cueName = resource.substring(0, dotPosition);
+
+                            cueName = cueName.replace("cue", "");
+
+                            uniqueFamiliars.add(cueName.toLowerCase());
+                        }
+                    }
+                } else if ("jar".equals(url.getProtocol())) { // Run from JAR
+                    String path = url.getPath();
+                    String jarPath = path.substring(5, path.indexOf("!"));
+
+                    String decodedURL;
+                    try {
+                        decodedURL = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
+                    } catch (UnsupportedEncodingException e) {
+                        BHBot.logger.error("Impossible to decode path for jar in printFamiliars: " + jarPath, e);
+                        return;
+                    }
+
+                    JarFile jar;
+                    try {
+                        jar = new JarFile(decodedURL);
+                    } catch (IOException e) {
+                        BHBot.logger.error("Impossible to open JAR file in printFamiliars: " + decodedURL, e);
+                        return;
+                    }
+
+                    Enumeration<JarEntry> entries = jar.entries();
+
+                    while (entries.hasMoreElements()) {
+                        JarEntry entry = entries.nextElement();
+                        String name = entry.getName();
+                        if (name.startsWith(cuesPath) && !cuesPath.equals(name)) {
+                            URL resource = classLoader.getResource(name);
+
+                            if (resource == null) continue;
+
+                            String resourcePath = resource.toString();
+                            BHBot.logger.trace("resourcePath: " + resourcePath);
+                            if (!resourcePath.contains("!")) {
+                                BHBot.logger.warn("Unexpected resource filename in load printFamiliars");
+                                continue;
+                            }
+
+                            String[] fileDetails = resourcePath.split("!");
+                            String resourceRelativePath = fileDetails[1];
+                            BHBot.logger.trace("resourceRelativePath : " + resourceRelativePath);
+                            int lastSlashPosition = resourceRelativePath.lastIndexOf('/');
+                            String fileName = resourceRelativePath.substring(lastSlashPosition + 1);
+
+                            int dotPosition = fileName.lastIndexOf('.');
+                            String fileExtension = dotPosition > 0 ? fileName.substring(dotPosition + 1) : "";
+                            if ("png".equals(fileExtension.toLowerCase())) {
+                                String cueName = fileName.substring(0, dotPosition);
+
+                                cueName = cueName.replace("cue", "");
+                                BHBot.logger.trace("cueName: " + cueName);
+
+                                // resourceRelativePath begins with a '/' char and we want to be sure to remove it
+                                uniqueFamiliars.add(cueName.toLowerCase());
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        StringBuilder familiarString = new StringBuilder();
+        int currentFamiliar = 1;
+
+        for (String familiar : uniqueFamiliars) {
+            if (familiarString.length() > 0) familiarString.append(", ");
+            if (currentFamiliar % 5 == 0) familiarString.append("\n");
+            familiarString.append(familiar);
+            currentFamiliar++;
+        }
+
+        BHBot.logger.info(familiarString.toString());
+    }
+
     void hideBrowser() {
         driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
         BHBot.logger.info("Chrome window has been hidden.");
     }
-
-	/*public void hideBrowserStartup() {
-		sleep(10000);
-		driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
-		BHBot.logger.info("Chrome window has been hidden.");
-	}*/
-
 
     void showBrowser() {
         driver.manage().window().setPosition(new Point(0, 0));
@@ -3158,6 +2918,12 @@ public class MainThread implements Runnable {
         }
     }
 
+	/*public void hideBrowserStartup() {
+		sleep(10000);
+		driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
+		BHBot.logger.info("Chrome window has been hidden.");
+	}*/
+
     private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {
         readScreen();
 
@@ -3505,31 +3271,6 @@ public class MainThread implements Runnable {
         img = takeScreenshot(game);
     }
 
-    // https://stackoverflow.com/questions/297762/find-known-sub-image-in-larger-image
-    private static MarvinSegment findSubimage(BufferedImage src, Cue cue) {
-        long timer = Misc.getTime();
-
-        MarvinSegment seg;
-
-        seg = FindSubimage.findImage(
-                src,
-                cue.im,
-                cue.bounds != null ? cue.bounds.x1 : 0,
-                cue.bounds != null ? cue.bounds.y1 : 0,
-                cue.bounds != null ? cue.bounds.x2 : 0,
-                cue.bounds != null ? cue.bounds.y2 : 0
-        );
-
-        //source.drawRect(seg.x1, seg.y1, seg.x2-seg.x1, seg.y2-seg.y1, Color.blue);
-        //MarvinImageIO.saveImage(source, "window_out.png");
-        if (BHBot.settings.debugDetectionTimes)
-            BHBot.logger.info("cue detection time: " + (Misc.getTime() - timer) + "ms (" + cue.name + ") [" + (seg != null ? "true" : "false") + "]");
-//        if (seg == null) {
-//        	return -1;
-//        }
-        return seg;
-    }
-
     private MarvinSegment detectCue(Cue cue) {
         return detectCue(cue, 0, true);
     }
@@ -3537,10 +3278,6 @@ public class MainThread implements Runnable {
     private MarvinSegment detectCue(Cue cue, int timeout, Bounds bounds) {
         return detectCue(new Cue(cue, bounds), timeout, true);
     }
-
-	/*public MarvinSegment detectCue(Cue cue, Bounds bounds) {
-		return detectCue(new Cue(cue, bounds), 0, true);
-	}*/
 
     private MarvinSegment detectCue(Cue cue, int timeout) {
         return detectCue(cue, timeout, true);
@@ -3651,6 +3388,10 @@ public class MainThread implements Runnable {
 
         return Math.round(value * (100 / 77.0f)); // scale it to interval [0..100]
     }
+
+	/*public MarvinSegment detectCue(Cue cue, Bounds bounds) {
+		return detectCue(new Cue(cue, bounds), 0, true);
+	}*/
 
     /**
      * Returns number of tickets left (for PvP) in interval [0..10]. Returns -1 in case it cannot read number of tickets for some reason.
@@ -5095,17 +4836,6 @@ public class MainThread implements Runnable {
 //		return true;
     }
 
-	/*private int checkFamiliarCounter(String fam) { //returns current catch count for given familiar from the settings file
-		int catchCount = 0;
-		for (String f : BHBot.settings.familiars) { //cycle familiars defined in settings
-				String fString = f.toUpperCase().split(" ")[0]; //stringify the familiar name
-				if (fam.equals(fString)) { // on match return
-					catchCount = Integer.parseInt(f.split(" ")[1]);
-				}
-			}
-		return catchCount;
-		}*/
-
     private void updateFamiliarCounter(String fam) {
         String familiarToUpdate = "";
         String updatedFamiliar = "";
@@ -5658,6 +5388,17 @@ public class MainThread implements Runnable {
         else
             return 0;
     }
+
+	/*private int checkFamiliarCounter(String fam) { //returns current catch count for given familiar from the settings file
+		int catchCount = 0;
+		for (String f : BHBot.settings.familiars) { //cycle familiars defined in settings
+				String fString = f.toUpperCase().split(" ")[0]; //stringify the familiar name
+				if (fam.equals(fString)) { // on match return
+					catchCount = Integer.parseInt(f.split(" ")[1]);
+				}
+			}
+		return catchCount;
+		}*/
 
     void raidReadTest() {
         int test = readUnlockedRaidTier();
@@ -6548,33 +6289,6 @@ public class MainThread implements Runnable {
         }
     }
 
-    //*** for DEBUG only!
-	/*public void numTest() {
-		MarvinSegment seg;
-
-		while (true) {
-			readScreen(500);
-
-			MarvinImage subm = new MarvinImage(img.getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu
-			makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
-			BufferedImage sub = subm.getBufferedImage();
-			int num = readNumFromImg(sub);
-			if (num == 0) {
-				BHBot.logger.info("Error: unable to read difficulty level from a drop-down menu!");
-				return;
-			}
-			BHBot.logger.info("Difficulty: " + num);
-
-			// move up
-			seg = detectCue(cues.get("DropDownUp"));
-			if (seg == null) {
-				BHBot.logger.info("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
-				return;
-			}
-			clickOnSeg(seg);
-		}
-	}*/
-
     /**
      * This method detects the select cost in PvP/GvG/Trials/Gauntlet window. <p>
      * <p>
@@ -6875,6 +6589,33 @@ public class MainThread implements Runnable {
         }
         Collections.reverse(striplist);
     }
+
+    //*** for DEBUG only!
+	/*public void numTest() {
+		MarvinSegment seg;
+
+		while (true) {
+			readScreen(500);
+
+			MarvinImage subm = new MarvinImage(img.getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu
+			makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
+			BufferedImage sub = subm.getBufferedImage();
+			int num = readNumFromImg(sub);
+			if (num == 0) {
+				BHBot.logger.info("Error: unable to read difficulty level from a drop-down menu!");
+				return;
+			}
+			BHBot.logger.info("Difficulty: " + num);
+
+			// move up
+			seg = detectCue(cues.get("DropDownUp"));
+			if (seg == null) {
+				BHBot.logger.info("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
+				return;
+			}
+			clickOnSeg(seg);
+		}
+	}*/
 
     /**
      * Daily collection of fishing baits!
@@ -7297,125 +7038,6 @@ public class MainThread implements Runnable {
         }
     }
 
-    static void printFamiliars() {
-
-        List<String> folders = new ArrayList<>();
-        folders.add("cues/familiars/old_format");
-        folders.add("cues/familiars/new_format");
-
-        Set<String> uniqueFamiliars = new TreeSet<>();
-
-        for (String cuesPath : folders) {
-            // We make sure that the last char of the path is a folder separator
-            if (!"/".equals(cuesPath.substring(cuesPath.length() - 1))) cuesPath += "/";
-
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-
-            URL url = classLoader.getResource(cuesPath);
-            if (url != null) { // Run from the IDE
-                if ("file".equals(url.getProtocol())) {
-
-                    InputStream in = classLoader.getResourceAsStream(cuesPath);
-                    if (in == null) {
-                        BHBot.logger.error("Impossible to create InputStream in printFamiliars");
-                        return;
-                    }
-
-                    BufferedReader br = new BufferedReader(new InputStreamReader(in));
-                    String resource;
-
-                    while (true) {
-                        try {
-                            resource = br.readLine();
-                            if (resource == null) break;
-                        } catch (IOException e) {
-                            BHBot.logger.error("Error while reading resources in printFamiliars", e);
-                            continue;
-                        }
-                        int dotPosition = resource.lastIndexOf('.');
-                        String fileExtension = dotPosition > 0 ? resource.substring(dotPosition + 1) : "";
-                        if ("png".equals(fileExtension.toLowerCase())) {
-                            String cueName = resource.substring(0, dotPosition);
-
-                            cueName = cueName.replace("cue", "");
-
-                            uniqueFamiliars.add(cueName.toLowerCase());
-                        }
-                    }
-                } else if ("jar".equals(url.getProtocol())) { // Run from JAR
-                    String path = url.getPath();
-                    String jarPath = path.substring(5, path.indexOf("!"));
-
-                    String decodedURL;
-                    try {
-                        decodedURL = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
-                    } catch (UnsupportedEncodingException e) {
-                        BHBot.logger.error("Impossible to decode path for jar in printFamiliars: " + jarPath, e);
-                        return;
-                    }
-
-                    JarFile jar;
-                    try {
-                        jar = new JarFile(decodedURL);
-                    } catch (IOException e) {
-                        BHBot.logger.error("Impossible to open JAR file in printFamiliars: " + decodedURL, e);
-                        return;
-                    }
-
-                    Enumeration<JarEntry> entries = jar.entries();
-
-                    while (entries.hasMoreElements()) {
-                        JarEntry entry = entries.nextElement();
-                        String name = entry.getName();
-                        if (name.startsWith(cuesPath) && !cuesPath.equals(name)) {
-                            URL resource = classLoader.getResource(name);
-
-                            if (resource == null) continue;
-
-                            String resourcePath = resource.toString();
-                            BHBot.logger.trace("resourcePath: " + resourcePath);
-                            if (!resourcePath.contains("!")) {
-                                BHBot.logger.warn("Unexpected resource filename in load printFamiliars");
-                                continue;
-                            }
-
-                            String[] fileDetails = resourcePath.split("!");
-                            String resourceRelativePath = fileDetails[1];
-                            BHBot.logger.trace("resourceRelativePath : " + resourceRelativePath);
-                            int lastSlashPosition = resourceRelativePath.lastIndexOf('/');
-                            String fileName = resourceRelativePath.substring(lastSlashPosition + 1);
-
-                            int dotPosition = fileName.lastIndexOf('.');
-                            String fileExtension = dotPosition > 0 ? fileName.substring(dotPosition + 1) : "";
-                            if ("png".equals(fileExtension.toLowerCase())) {
-                                String cueName = fileName.substring(0, dotPosition);
-
-                                cueName = cueName.replace("cue", "");
-                                BHBot.logger.trace("cueName: " + cueName);
-
-                                // resourceRelativePath begins with a '/' char and we want to be sure to remove it
-                                uniqueFamiliars.add(cueName.toLowerCase());
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-
-        StringBuilder familiarString = new StringBuilder();
-        int currentFamiliar = 1;
-
-        for (String familiar : uniqueFamiliars) {
-            if (familiarString.length() > 0) familiarString.append(", ");
-            if (currentFamiliar % 5 == 0) familiarString.append("\n");
-            familiarString.append(familiar);
-            currentFamiliar++;
-        }
-
-        BHBot.logger.info(familiarString.toString());
-    }
-
     private Bounds opponentSelector(int opponent) {
 
         if (BHBot.settings.pvpOpponent < 1 || BHBot.settings.pvpOpponent > 4) {
@@ -7583,6 +7205,363 @@ public class MainThread implements Runnable {
             }
         }
 
+    }
+
+    public enum State {
+        Loading("Loading..."),
+        Main("Main screen"),
+        Raid("Raid", "r"),
+        Trials("Trials", "t"),
+        Gauntlet("Gauntlet", "g"),
+        Dungeon("Dungeon", "d"),
+        PVP("PVP", "p"),
+        GVG("GVG", "v"),
+        Invasion("Invasion", "i"),
+        Expedition("Expedition", "e"),
+        WorldBoss("World Boss", "w"),
+        UnidentifiedDungeon("Unidentified dungeon", "ud"); // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
+
+        private String name;
+        private String shortcut;
+
+        State(String name) {
+            this.name = name;
+            this.shortcut = null;
+        }
+
+        State(String name, String shortcut) {
+            this.name = name;
+            this.shortcut = shortcut;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getShortcut() {
+            return shortcut;
+        }
+
+        public String getNameFromShortcut(String shortcut) {
+            for (State state : State.values())
+                if (state.shortcut != null && state.shortcut.equals(shortcut))
+                    return state.name;
+            return null;
+        }
+    }
+
+    public enum PersuationType {
+        DECLINE("Decline"),
+        PERSUADE("Persuasion"),
+        BRIBE("Bribe");
+
+        private final String name;
+
+        PersuationType(String name) {
+            this.name = name;
+        }
+
+        public String toString() {
+            return this.name;
+        }
+
+    }
+
+    public enum FamiliarType {
+        ERROR("Error", 0),
+        COMMON("Common", 1),
+        RARE("Rare", 2),
+        EPIC("Epic", 3),
+        LEGENDARY("Legendary", 4);
+
+        private final String name;
+        private final int type;
+
+        FamiliarType(String name, int type) {
+            this.name = name;
+            this.type = type;
+        }
+
+        public int getValue() {
+            return this.type;
+        }
+
+        public String toString() {
+            return this.name;
+        }
+
+    }
+
+    /**
+     * Events that use badges as "fuel".
+     */
+    public enum BadgeEvent {
+        None,
+        GVG,
+        Expedition,
+        Invasion
+    }
+
+    public enum EquipmentType {
+        Mainhand("StripTypeMainhand"),
+        Offhand("StripTypeOffhand"),
+        Head("StripTypeHead"),
+        Body("StripTypeBody"),
+        Neck("StripTypeNeck"),
+        Ring("StripTypeRing");
+
+        private String cueName;
+
+        EquipmentType(String cueName) {
+            this.cueName = cueName;
+        }
+
+        public static String letterToName(String s) {
+            switch (s) {
+                case "m":
+                    return "mainhand";
+                case "o":
+                    return "offhand";
+                case "h":
+                    return "head";
+                case "b":
+                    return "body";
+                case "n":
+                    return "neck";
+                case "r":
+                    return "ring";
+                default:
+                    return "unknown_item";
+            }
+        }
+
+        public static EquipmentType letterToType(String s) {
+            switch (s) {
+                case "m":
+                    return Mainhand;
+                case "o":
+                    return Offhand;
+                case "h":
+                    return Head;
+                case "b":
+                    return Body;
+                case "n":
+                    return Neck;
+                case "r":
+                    return Ring;
+                default:
+                    return null; // should not happen!
+            }
+        }
+
+//		public int maxPos() {
+////			return Math.min(6 + ordinal(), 10);
+////		}
+
+        /**
+         * Returns equipment filter button cue (it's title cue actually)
+         */
+        public Cue getCue() {
+            return cues.get(cueName);
+        }
+
+        public int minPos() {
+            return 4 + ordinal();
+        }
+
+        public int getButtonPos() {
+            return 8 + ordinal();
+        }
+    }
+
+    public enum StripDirection {
+        StripDown,
+        DressUp
+    }
+
+    private enum ConsumableType {
+        EXP_MINOR("exp_minor", "ConsumableExpMinor"), // experience tome
+        EXP_AVERAGE("exp_average", "ConsumableExpAverage"),
+        EXP_MAJOR("exp_major", "ConsumableExpMajor"),
+
+        ITEM_MINOR("item_minor", "ConsumableItemMinor"), // item find scroll
+        ITEM_AVERAGE("item_average", "ConsumableItemAverage"),
+        ITEM_MAJOR("item_major", "ConsumableItemMajor"),
+
+        GOLD_MINOR("gold_minor", "ConsumableGoldMinor"), // item find scroll
+        GOLD_AVERAGE("gold_average", "ConsumableGoldAverage"),
+        GOLD_MAJOR("gold_major", "ConsumableGoldMajor"),
+
+        SPEED_MINOR("speed_minor", "ConsumableSpeedMinor"), // speed kicks
+        SPEED_AVERAGE("speed_average", "ConsumableSpeedAverage"),
+        SPEED_MAJOR("speed_major", "ConsumableSpeedMajor");
+
+        private String name;
+        private String inventoryCue;
+
+        ConsumableType(String name, String inventoryCue) {
+            this.name = name;
+            this.inventoryCue = inventoryCue;
+        }
+
+        public static ConsumableType getTypeFromName(String name) {
+            for (ConsumableType type : ConsumableType.values())
+                if (type.name.equals(name))
+                    return type;
+            return null;
+        }
+
+        /**
+         * Returns name as it appears in e.g. settings.ini.
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Returns image cue from inventory window
+         */
+        public Cue getInventoryCue() {
+            return cues.get(inventoryCue);
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    public enum ItemGrade {
+        COMMON("Common", 1),
+        RARE("Rare", 2),
+        EPIC("Epic", 3),
+        LEGENDARY("Legendary", 4);
+		/*SET("Set", 5),
+		MYTHIC("Mythic", 6),
+		ANCIENT("Ancient", 6);*/
+
+        private final String name;
+        private final int value;
+
+        ItemGrade(String name, int value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        public static ItemGrade getGradeFromValue(int value) {
+            for (ItemGrade grade : ItemGrade.values())
+                if (grade.value == value)
+                    return grade;
+            return null;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    private enum MinorRuneEffect {
+        CAPTURE("Capture"),
+        EXPERIENCE("Experience"),
+        GOLD("Gold"),
+        ITEM_FIND("Item_Find");
+
+        private final String name;
+
+        MinorRuneEffect(String name) {
+            this.name = name;
+        }
+
+        public static MinorRuneEffect getEffectFromName(String name) {
+            for (MinorRuneEffect effect : MinorRuneEffect.values())
+                if (effect.name.toLowerCase().equals(name.toLowerCase()))
+                    return effect;
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private enum MinorRune {
+        EXP_COMMON(MinorRuneEffect.EXPERIENCE, ItemGrade.COMMON),
+        EXP_RARE(MinorRuneEffect.EXPERIENCE, ItemGrade.RARE),
+        EXP_EPIC(MinorRuneEffect.EXPERIENCE, ItemGrade.EPIC),
+        EXP_LEGENDARY(MinorRuneEffect.EXPERIENCE, ItemGrade.LEGENDARY),
+
+        ITEM_COMMON(MinorRuneEffect.ITEM_FIND, ItemGrade.COMMON),
+        ITEM_RARE(MinorRuneEffect.ITEM_FIND, ItemGrade.RARE),
+        ITEM_EPIC(MinorRuneEffect.ITEM_FIND, ItemGrade.EPIC),
+        ITEM_LEGENDARY(MinorRuneEffect.ITEM_FIND, ItemGrade.LEGENDARY),
+
+        GOLD_COMMON(MinorRuneEffect.GOLD, ItemGrade.COMMON),
+        //		GOLD_RARE(MinorRuneEffect.GOLD, ItemGrade.RARE),
+//		GOLD_EPIC(MinorRuneEffect.GOLD, ItemGrade.EPIC),
+        GOLD_LEGENDARY(MinorRuneEffect.GOLD, ItemGrade.LEGENDARY),
+
+        CAPTURE_COMMON(MinorRuneEffect.CAPTURE, ItemGrade.COMMON),
+        CAPTURE_RARE(MinorRuneEffect.CAPTURE, ItemGrade.RARE),
+        CAPTURE_EPIC(MinorRuneEffect.CAPTURE, ItemGrade.EPIC),
+        CAPTURE_LEGENDARY(MinorRuneEffect.CAPTURE, ItemGrade.LEGENDARY);
+
+        public static ItemGrade maxGrade = ItemGrade.LEGENDARY;
+        private MinorRuneEffect effect;
+        private ItemGrade grade;
+
+        MinorRune(MinorRuneEffect effect, ItemGrade grade) {
+            this.effect = effect;
+            this.grade = grade;
+        }
+
+        public static MinorRune getRune(MinorRuneEffect effect, ItemGrade grade) {
+            for (MinorRune rune : MinorRune.values()) {
+                if (rune.effect == effect && rune.grade == grade)
+                    return rune;
+            }
+            return null;
+        }
+
+        public MinorRuneEffect getRuneEffect() {
+            return effect;
+        }
+
+        public String getRuneCueName() {
+            return "MinorRune" + effect + grade;
+        }
+
+        public String getRuneCueFileName() {
+            return "cues/runes/minor" + effect + grade + ".png";
+        }
+
+        public Cue getRuneCue() {
+            return cues.get(getRuneCueName());
+        }
+
+
+        public String getRuneSelectCueName() {
+            return "MinorRune" + effect + grade + "Select";
+        }
+
+        public String getRuneSelectCueFileName() {
+            return "cues/runes/minor" + effect + grade + "Select.png";
+        }
+
+        public Cue getRuneSelectCue() {
+            return cues.get(getRuneSelectCueName());
+        }
+
+        @Override
+        public String toString() {
+            return grade.toString().toLowerCase() + "_" + effect.toString().toLowerCase();
+        }
     }
 
 }
