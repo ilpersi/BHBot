@@ -1,7 +1,7 @@
 # BHBot
 
 [![Paypal Donate](https://img.shields.io/badge/donate-paypal-informational.svg?logo=paypal&style=plastic)](https://www.paypal.me/ilpersi)
-[![Beerpay](https://beerpay.io/ilpersi/BHBot/badge.svg?style=beer)](https://beerpay.io/ilpersi/BHBot)
+[![Liberapay receiving](https://img.shields.io/liberapay/receives/BHBot.svg?logo=liberapay&style=plastic)](https://liberapay.com/BHBot/donate)
 [![Gitter chat](https://img.shields.io/gitter/room/ilpersi/BHBot.svg?color=red&style=plastic&logo=gitter)](https://gitter.im/BHBot/community)
 [![GitHub release](https://img.shields.io/github/release/ilpersi/BHBot.svg?label=last%20release&style=plastic&logo=docusign) ![GitHub Release Date](https://img.shields.io/github/release-date/ilpersi/BHBot.svg?label=released&style=plastic)](https://github.com/ilpersi/BHBot/releases/latest)
 [![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=plastic&logo=hackaday)](https://github.com/ilpersi/BHBot/labels/bug)
