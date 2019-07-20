@@ -420,8 +420,8 @@ public class MainThread implements Runnable {
 	private long activityDuration;
 	private long outOfEncounterTimestamp = 0;
 	private long inEncounterTimestamp = 0;
-	
-	private long runMillisAvg;
+
+	private long runMillisAvg = 0;
 
 	private boolean specialDungeon; //d4 check for closing properly when no energy
 
@@ -3935,7 +3935,7 @@ public class MainThread implements Runnable {
 						  TimeUnit.MILLISECONDS.toMinutes(runMillis),
 						  TimeUnit.MILLISECONDS.toSeconds(runMillis) - 
 						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
-				runMillisAvg =+ runMillis; //on success add runtime to runMillisAvg
+				runMillisAvg += runMillis; //on success add runtime to runMillisAvg
 				String runtimeAvg = String.format("%01dm%02ds", //format to mss
 						  TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter), //then we divide runMillisavg by completed raids to get average time
 						  TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / raidVictoryCounter) - 
