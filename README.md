@@ -1,12 +1,12 @@
 # BHBot
 
-[![Paypal Donate](https://img.shields.io/badge/donate-paypal-informational.svg?logo=paypal&style=popout)](https://www.paypal.me/ilpersi)
-[![Gitter chat](https://img.shields.io/gitter/room/ilpersi/BHBot.svg?color=red&style=popout&logo=gitter)](https://gitter.im/BHBot/community)
-[![GitHub release](https://img.shields.io/github/release/ilpersi/BHBot.svg?label=last%20release&style=popout&logo=docusign) ![GitHub Release Date](https://img.shields.io/github/release-date/ilpersi/BHBot.svg?label=released&style=popout)](https://github.com/ilpersi/BHBot/releases/latest)
-[![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=popout&logo=hackaday)](https://github.com/ilpersi/BHBot/labels/bug)
-[![GitHub last commit](https://img.shields.io/github/last-commit/ilpersi/BHBot.svg?style=popout&logo=github)](https://github.com/ilpersi/BHBot/commits)
-![GitHub All Releases](https://img.shields.io/github/downloads/ilpersi/BHBot/total.svg?label=total%20downloads&style=popout)
-![GitHub top language](https://img.shields.io/github/languages/top/ilpersi/BHBot.svg?style=popout)
+[![Paypal Donate](https://img.shields.io/badge/donate-paypal-informational.svg?logo=paypal&style=plastic)](https://www.paypal.me/ilpersi)
+[![Gitter chat](https://img.shields.io/gitter/room/ilpersi/BHBot.svg?color=red&style=plastic&logo=gitter)](https://gitter.im/BHBot/community)
+[![GitHub release](https://img.shields.io/github/release/ilpersi/BHBot.svg?label=last%20release&style=plastic&logo=docusign) ![GitHub Release Date](https://img.shields.io/github/release-date/ilpersi/BHBot.svg?label=released&style=plastic)](https://github.com/ilpersi/BHBot/releases/latest)
+[![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=plastic&logo=hackaday)](https://github.com/ilpersi/BHBot/labels/bug)
+[![GitHub last commit](https://img.shields.io/github/last-commit/ilpersi/BHBot.svg?style=plastic&logo=github)](https://github.com/ilpersi/BHBot/commits)
+![GitHub All Releases](https://img.shields.io/github/downloads/ilpersi/BHBot/total.svg?label=total%20downloads&style=plastic)
+![GitHub top language](https://img.shields.io/github/languages/top/ilpersi/BHBot.svg?style=plastic)
 
 ## What is BHBot?
 BHBot is a program that automates the [Bit Heroes](http://www.kongregate.com/games/juppiomenz/bit-heroes) game.
