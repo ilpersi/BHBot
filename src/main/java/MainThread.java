@@ -2529,41 +2529,30 @@ public class MainThread implements Runnable {
 									BHBot.scheduler.doExpeditionImmediately = false; // reset it
 
 								// One time check for Autoshrine
-								if (BHBot.settings.autoShrine.contains("e")) {
+								if (BHBot.settings.autoShrine.contains("e") || BHBot.settings.autoBossRune.containsKey("e")) {
 									seg = detectCue(cues.get("X"));
 									clickOnSeg(seg);
 									readScreen(2 * SECOND);
 
-									BHBot.logger.info("Configuring autoShrine for Expedition");
-									if(!checkShrineSettings(true, true)) {
-										BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
-									}
 
-									readScreen(SECOND);
+                                    if (BHBot.settings.autoShrine.contains("e")) {
+                                        BHBot.logger.info("Configuring autoShrine for Expedition");
+                                        if(!checkShrineSettings(true, true)) {
+                                            BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
+                                        }
+                                    }
+
+                                    if (BHBot.settings.autoBossRune.containsKey("e")) {
+                                        //configure activity runes
+                                        handleMinorRunes("e");
+                                        readScreen(SECOND);
+                                        clickOnSeg(badgeBtn);
+                                    }
+
+                                    readScreen(SECOND);
 									clickOnSeg(badgeBtn);
 									readScreen(SECOND * 2);
 								}
-
-								//configure activity runes
-								handleMinorRunes("e");
-								readScreen(SECOND);
-								clickOnSeg(badgeBtn);
-								
-								//configure boss runes if no autoshrine
-								if (BHBot.settings.autoBossRune.containsKey("e") && !BHBot.settings.autoShrine.contains("e")) { //if autoshrine disabled but autorune enabled
-									seg = detectCue(cues.get("X"),SECOND);
-									clickOnSeg(seg);
-									readScreen(SECOND);
-
-									BHBot.logger.info("Configuring autoBossRune for Expedition");
-									if (!checkShrineSettings(true, false)) {
-										BHBot.logger.error("Impossible to configure autoBossRune for Expedition!");
-									}
-								}
-								
-								readScreen(SECOND);
-								clickOnSeg(badgeBtn);
-								sleep(SECOND); //wait for window animation
 
 								BHBot.logger.info("Attempting expedition...");
 
