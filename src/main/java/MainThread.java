@@ -3394,22 +3394,22 @@ public class MainThread implements Runnable {
         } else {
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
 //			BHBot.logger.debug("Encounter detected");
-        }
+		}
 
-        if ((outOfEncounterTimestamp - inEncounterTimestamp) > 0) {
-            BHBot.logger.debug("Seconds since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
-        }
-
-        // handle "Not enough energy" popup:
-        if (activityDuration < 30) {
-            boolean insufficientEnergy = handleNotEnoughEnergyPopup(state);
-            if (insufficientEnergy) {
-                state = State.Main; // reset state
-                return;
-            }
-            return;
-        }
-
+        if ( State.Dungeon.equals(state) && activityDuration < 30) {
+		BHBot.logger.debug("Seconds since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
+		}
+		
+		// handle "Not enough energy" popup:
+		if (activityDuration < 30) {
+			boolean insufficientEnergy = handleNotEnoughEnergyPopup(state);
+			if (insufficientEnergy) {
+				state = State.Main; // reset state
+				return;
+			}
+			return;
+		}
+		
 
         /*
          * autoRune Code
