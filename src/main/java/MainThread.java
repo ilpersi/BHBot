@@ -1,24 +1,4 @@
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.function.BooleanSupplier;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.concurrent.TimeUnit;
-
-import javax.activation.MimetypesFileTypeMap;
-import javax.imageio.ImageIO;
-
+import com.assertthat.selenium_shutterbug.core.Shutterbug;
 import net.pushover.client.MessagePriority;
 import net.pushover.client.PushoverException;
 import net.pushover.client.PushoverMessage;
@@ -29,63 +9,80 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Cookie;
 import org.openqa.selenium.Dimension;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Point;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-import com.assertthat.selenium_shutterbug.core.Shutterbug;
+import javax.activation.MimetypesFileTypeMap;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MainThread implements Runnable {
-	public enum State {
-		Loading("Loading..."),
-		Main("Main screen"),
-		Raid("Raid", "r"),
-		Trials("Trials", "t"),
-		Gauntlet("Gauntlet", "g"),
-		Dungeon("Dungeon", "d"),
-		PVP("PVP", "p"),
-		GVG("GVG", "v"),
-		Invasion("Invasion", "i"),
-		Expedition("Expedition", "e"),
-		WorldBoss("World Boss", "w"),
-		UnidentifiedDungeon("Unidentified dungeon", "ud"); // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
+    public enum State {
+        Loading("Loading..."),
+        Main("Main screen"),
+        Raid("Raid", "r"),
+        Trials("Trials", "t"),
+        Gauntlet("Gauntlet", "g"),
+        Dungeon("Dungeon", "d"),
+        PVP("PVP", "p"),
+        GVG("GVG", "v"),
+        Invasion("Invasion", "i"),
+        Expedition("Expedition", "e"),
+        WorldBoss("World Boss", "w"),
+        UnidentifiedDungeon("Unidentified dungeon", "ud"); // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
 
-		private String name;
+        private String name;
         private String shortcut;
 
-		State(String name) {
-			this.name = name;
-			this.shortcut = null;
-		}
+        State(String name) {
+            this.name = name;
+            this.shortcut = null;
+        }
 
         State(String name, String shortcut) {
             this.name = name;
             this.shortcut = shortcut;
         }
 
-        public String getName() { return name; }
+        public String getName() {
+            return name;
+        }
 
         public String getShortcut() {
             return shortcut;
         }
 
-		public String getNameFromShortcut(String shortcut) {
-			for (State state : State.values())
-				if (state.shortcut != null && state.shortcut.equals(shortcut))
-					return state.name;
-			return null;
-		}
-	}
+        public String getNameFromShortcut(String shortcut) {
+            for (State state : State.values())
+                if (state.shortcut != null && state.shortcut.equals(shortcut))
+                    return state.name;
+            return null;
+        }
+    }
 
     public enum PersuationType {
         DECLINE("Decline"),
@@ -109,7 +106,7 @@ public class MainThread implements Runnable {
         COMMON("Common", 1),
         RARE("Rare", 2),
         EPIC("Epic", 3),
-        LEGENDARY("Legendary",4 );
+        LEGENDARY("Legendary", 4);
 
         private final String name;
         private final int type;
@@ -119,7 +116,7 @@ public class MainThread implements Runnable {
             this.type = type;
         }
 
-        public int getValue(){
+        public int getValue() {
             return this.type;
         }
 
@@ -129,828 +126,844 @@ public class MainThread implements Runnable {
 
     }
 
-	/** Events that use badges as "fuel". */
-	public enum BadgeEvent {
-		None,
-		GVG,
-		Expedition,
-		Invasion
-	}
+    /**
+     * Events that use badges as "fuel".
+     */
+    public enum BadgeEvent {
+        None,
+        GVG,
+        Expedition,
+        Invasion
+    }
 
-	public enum EquipmentType {
-		Mainhand ("StripTypeMainhand"),
-		Offhand ("StripTypeOffhand"),
-		Head ("StripTypeHead"),
-		Body ("StripTypeBody"),
-		Neck ("StripTypeNeck"),
-		Ring ("StripTypeRing");
+    public enum EquipmentType {
+        Mainhand("StripTypeMainhand"),
+        Offhand("StripTypeOffhand"),
+        Head("StripTypeHead"),
+        Body("StripTypeBody"),
+        Neck("StripTypeNeck"),
+        Ring("StripTypeRing");
 
-		private String cueName;
+        private String cueName;
 
-		EquipmentType(String cueName) {
-			this.cueName = cueName;
-		}
+        EquipmentType(String cueName) {
+            this.cueName = cueName;
+        }
 
-		/**
-		 * Returns equipment filter button cue (it's title cue actually)
-		 */
-		public Cue getCue() {
-			return cues.get(cueName);
-		}
+        /**
+         * Returns equipment filter button cue (it's title cue actually)
+         */
+        public Cue getCue() {
+            return cues.get(cueName);
+        }
 
-		public int minPos() {
-			return 4 + ordinal();
-		}
+        public int minPos() {
+            return 4 + ordinal();
+        }
 
 //		public int maxPos() {
 ////			return Math.min(6 + ordinal(), 10);
 ////		}
 
-		public int getButtonPos() {
-			return 8 + ordinal();
-		}
+        public int getButtonPos() {
+            return 8 + ordinal();
+        }
 
-		public static String letterToName(String s) {
-			switch (s) {
-				case "m":
-					return "mainhand";
-				case "o":
-					return "offhand";
-				case "h":
-					return "head";
-				case "b":
-					return "body";
-				case "n":
-					return "neck";
-				case "r":
-					return "ring";
-				default:
-					return "unknown_item";
-			}
-		}
+        public static String letterToName(String s) {
+            switch (s) {
+                case "m":
+                    return "mainhand";
+                case "o":
+                    return "offhand";
+                case "h":
+                    return "head";
+                case "b":
+                    return "body";
+                case "n":
+                    return "neck";
+                case "r":
+                    return "ring";
+                default:
+                    return "unknown_item";
+            }
+        }
 
-		public static EquipmentType letterToType(String s) {
-			switch (s) {
-				case "m":
-					return Mainhand;
-				case "o":
-					return Offhand;
-				case "h":
-					return Head;
-				case "b":
-					return Body;
-				case "n":
-					return Neck;
-				case "r":
-					return Ring;
-				default:
-					return null; // should not happen!
-			}
-		}
-	}
+        public static EquipmentType letterToType(String s) {
+            switch (s) {
+                case "m":
+                    return Mainhand;
+                case "o":
+                    return Offhand;
+                case "h":
+                    return Head;
+                case "b":
+                    return Body;
+                case "n":
+                    return Neck;
+                case "r":
+                    return Ring;
+                default:
+                    return null; // should not happen!
+            }
+        }
+    }
 
-	public enum StripDirection {
-		StripDown,
-		DressUp
-	}
+    public enum StripDirection {
+        StripDown,
+        DressUp
+    }
 
-	private enum ConsumableType {
-		EXP_MINOR("exp_minor", "ConsumableExpMinor"), // experience tome
-		EXP_AVERAGE("exp_average", "ConsumableExpAverage"),
-		EXP_MAJOR("exp_major", "ConsumableExpMajor"),
+    private enum ConsumableType {
+        EXP_MINOR("exp_minor", "ConsumableExpMinor"), // experience tome
+        EXP_AVERAGE("exp_average", "ConsumableExpAverage"),
+        EXP_MAJOR("exp_major", "ConsumableExpMajor"),
 
-		ITEM_MINOR("item_minor", "ConsumableItemMinor"), // item find scroll
-		ITEM_AVERAGE("item_average", "ConsumableItemAverage"),
-		ITEM_MAJOR("item_major", "ConsumableItemMajor"),
+        ITEM_MINOR("item_minor", "ConsumableItemMinor"), // item find scroll
+        ITEM_AVERAGE("item_average", "ConsumableItemAverage"),
+        ITEM_MAJOR("item_major", "ConsumableItemMajor"),
 
-		GOLD_MINOR("gold_minor", "ConsumableGoldMinor"), // item find scroll
-		GOLD_AVERAGE("gold_average", "ConsumableGoldAverage"),
-		GOLD_MAJOR("gold_major", "ConsumableGoldMajor"),
+        GOLD_MINOR("gold_minor", "ConsumableGoldMinor"), // item find scroll
+        GOLD_AVERAGE("gold_average", "ConsumableGoldAverage"),
+        GOLD_MAJOR("gold_major", "ConsumableGoldMajor"),
 
-		SPEED_MINOR("speed_minor", "ConsumableSpeedMinor"), // speed kicks
-		SPEED_AVERAGE("speed_average", "ConsumableSpeedAverage"),
-		SPEED_MAJOR("speed_major", "ConsumableSpeedMajor");
+        SPEED_MINOR("speed_minor", "ConsumableSpeedMinor"), // speed kicks
+        SPEED_AVERAGE("speed_average", "ConsumableSpeedAverage"),
+        SPEED_MAJOR("speed_major", "ConsumableSpeedMajor");
 
-		private String name;
-		private String inventoryCue;
+        private String name;
+        private String inventoryCue;
 
-		ConsumableType(String name, String inventoryCue) {
-			this.name = name;
-			this.inventoryCue = inventoryCue;
-		}
+        ConsumableType(String name, String inventoryCue) {
+            this.name = name;
+            this.inventoryCue = inventoryCue;
+        }
 
-		/** Returns name as it appears in e.g. settings.ini. */
-		public String getName() {
-			return name;
-		}
+        /**
+         * Returns name as it appears in e.g. settings.ini.
+         */
+        public String getName() {
+            return name;
+        }
 
-		public static ConsumableType getTypeFromName(String name) {
-			for (ConsumableType type : ConsumableType.values())
-				if (type.name.equals(name))
-					return type;
-			return null;
-		}
+        public static ConsumableType getTypeFromName(String name) {
+            for (ConsumableType type : ConsumableType.values())
+                if (type.name.equals(name))
+                    return type;
+            return null;
+        }
 
-		/** Returns image cue from inventory window */
-		public Cue getInventoryCue() {
-			return cues.get(inventoryCue);
-		}
+        /**
+         * Returns image cue from inventory window
+         */
+        public Cue getInventoryCue() {
+            return cues.get(inventoryCue);
+        }
 
-		@Override
-		public String toString() {
-			return name;
-		}
-	}
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
 
-	public enum ItemGrade {
-		COMMON("Common", 1),
-		RARE("Rare", 2),
-		EPIC("Epic", 3),
-		LEGENDARY("Legendary",4);
+    public enum ItemGrade {
+        COMMON("Common", 1),
+        RARE("Rare", 2),
+        EPIC("Epic", 3),
+        LEGENDARY("Legendary", 4);
 		/*SET("Set", 5),
 		MYTHIC("Mythic", 6),
 		ANCIENT("Ancient", 6);*/
 
-		private final String name;
-		private final int value;
+        private final String name;
+        private final int value;
 
-		ItemGrade(String name, int value) {
-			this.name = name;
-			this.value = value;
-		}
+        ItemGrade(String name, int value) {
+            this.name = name;
+            this.value = value;
+        }
 
-		public static ItemGrade getGradeFromValue(int value) {
-			for (ItemGrade grade : ItemGrade.values())
-				if (grade.value == value)
-					return grade;
-			return null;
-		}
+        public static ItemGrade getGradeFromValue(int value) {
+            for (ItemGrade grade : ItemGrade.values())
+                if (grade.value == value)
+                    return grade;
+            return null;
+        }
 
-		public int getValue(){
-			return value;
-		}
+        public int getValue() {
+            return value;
+        }
 
-		@Override
-		public String toString() {
-			return name;
-		}
-	}
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
 
-	private enum MinorRuneEffect {
-		CAPTURE("Capture"),
-		EXPERIENCE("Experience"),
-		GOLD("Gold"),
-		ITEM_FIND("Item_Find");
+    private enum MinorRuneEffect {
+        CAPTURE("Capture"),
+        EXPERIENCE("Experience"),
+        GOLD("Gold"),
+        ITEM_FIND("Item_Find");
 
-		private final String name;
+        private final String name;
 
-		MinorRuneEffect(String name) {
-			this.name = name;
-		}
+        MinorRuneEffect(String name) {
+            this.name = name;
+        }
 
-		public static MinorRuneEffect getEffectFromName(String name) {
-			for (MinorRuneEffect effect : MinorRuneEffect.values())
-				if (effect.name.toLowerCase().equals(name.toLowerCase()))
-					return effect;
-			return null;
-		}
+        public static MinorRuneEffect getEffectFromName(String name) {
+            for (MinorRuneEffect effect : MinorRuneEffect.values())
+                if (effect.name.toLowerCase().equals(name.toLowerCase()))
+                    return effect;
+            return null;
+        }
 
-		@Override
-		public String toString() {
-			return name;
-		}
-	}
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
 
-	@SuppressWarnings("unused")
-	private enum MinorRune {
-		EXP_COMMON(MinorRuneEffect.EXPERIENCE, ItemGrade.COMMON),
-		EXP_RARE(MinorRuneEffect.EXPERIENCE, ItemGrade.RARE),
-		EXP_EPIC(MinorRuneEffect.EXPERIENCE, ItemGrade.EPIC),
-		EXP_LEGENDARY(MinorRuneEffect.EXPERIENCE, ItemGrade.LEGENDARY),
+    @SuppressWarnings("unused")
+    private enum MinorRune {
+        EXP_COMMON(MinorRuneEffect.EXPERIENCE, ItemGrade.COMMON),
+        EXP_RARE(MinorRuneEffect.EXPERIENCE, ItemGrade.RARE),
+        EXP_EPIC(MinorRuneEffect.EXPERIENCE, ItemGrade.EPIC),
+        EXP_LEGENDARY(MinorRuneEffect.EXPERIENCE, ItemGrade.LEGENDARY),
 
-		ITEM_COMMON(MinorRuneEffect.ITEM_FIND, ItemGrade.COMMON),
-		ITEM_RARE(MinorRuneEffect.ITEM_FIND, ItemGrade.RARE),
-		ITEM_EPIC(MinorRuneEffect.ITEM_FIND, ItemGrade.EPIC),
-		ITEM_LEGENDARY(MinorRuneEffect.ITEM_FIND, ItemGrade.LEGENDARY),
+        ITEM_COMMON(MinorRuneEffect.ITEM_FIND, ItemGrade.COMMON),
+        ITEM_RARE(MinorRuneEffect.ITEM_FIND, ItemGrade.RARE),
+        ITEM_EPIC(MinorRuneEffect.ITEM_FIND, ItemGrade.EPIC),
+        ITEM_LEGENDARY(MinorRuneEffect.ITEM_FIND, ItemGrade.LEGENDARY),
 
-		GOLD_COMMON(MinorRuneEffect.GOLD, ItemGrade.COMMON),
-//		GOLD_RARE(MinorRuneEffect.GOLD, ItemGrade.RARE),
+        GOLD_COMMON(MinorRuneEffect.GOLD, ItemGrade.COMMON),
+        //		GOLD_RARE(MinorRuneEffect.GOLD, ItemGrade.RARE),
 //		GOLD_EPIC(MinorRuneEffect.GOLD, ItemGrade.EPIC),
-		GOLD_LEGENDARY(MinorRuneEffect.GOLD, ItemGrade.LEGENDARY),
+        GOLD_LEGENDARY(MinorRuneEffect.GOLD, ItemGrade.LEGENDARY),
 
-		CAPTURE_COMMON(MinorRuneEffect.CAPTURE, ItemGrade.COMMON),
-		CAPTURE_RARE(MinorRuneEffect.CAPTURE, ItemGrade.RARE),
-		CAPTURE_EPIC(MinorRuneEffect.CAPTURE, ItemGrade.EPIC),
-		CAPTURE_LEGENDARY(MinorRuneEffect.CAPTURE, ItemGrade.LEGENDARY);
+        CAPTURE_COMMON(MinorRuneEffect.CAPTURE, ItemGrade.COMMON),
+        CAPTURE_RARE(MinorRuneEffect.CAPTURE, ItemGrade.RARE),
+        CAPTURE_EPIC(MinorRuneEffect.CAPTURE, ItemGrade.EPIC),
+        CAPTURE_LEGENDARY(MinorRuneEffect.CAPTURE, ItemGrade.LEGENDARY);
 
-		private MinorRuneEffect effect;
-		private ItemGrade grade;
+        private MinorRuneEffect effect;
+        private ItemGrade grade;
 
-		public static ItemGrade maxGrade = ItemGrade.LEGENDARY;
+        public static ItemGrade maxGrade = ItemGrade.LEGENDARY;
 
-		MinorRune(MinorRuneEffect effect, ItemGrade grade) {
-			this.effect = effect;
-			this.grade = grade;
-		}
+        MinorRune(MinorRuneEffect effect, ItemGrade grade) {
+            this.effect = effect;
+            this.grade = grade;
+        }
 
-		public static MinorRune getRune(MinorRuneEffect effect, ItemGrade grade) {
-			for(MinorRune rune : MinorRune.values()) {
-				if(rune.effect == effect && rune.grade == grade)
-					return rune;
-			}
-			return null;
-		}
+        public static MinorRune getRune(MinorRuneEffect effect, ItemGrade grade) {
+            for (MinorRune rune : MinorRune.values()) {
+                if (rune.effect == effect && rune.grade == grade)
+                    return rune;
+            }
+            return null;
+        }
 
-		public MinorRuneEffect getRuneEffect() {
-			return effect;
-		}
+        public MinorRuneEffect getRuneEffect() {
+            return effect;
+        }
 
-		public String getRuneCueName() {
-			return "MinorRune" + effect + grade;
-		}
+        public String getRuneCueName() {
+            return "MinorRune" + effect + grade;
+        }
 
-		public String getRuneCueFileName() {
-			return "cues/runes/minor" + effect + grade + ".png";
-		}
+        public String getRuneCueFileName() {
+            return "cues/runes/minor" + effect + grade + ".png";
+        }
 
-		public Cue getRuneCue() {
-			return cues.get(getRuneCueName());
-		}
+        public Cue getRuneCue() {
+            return cues.get(getRuneCueName());
+        }
 
 
-		public String getRuneSelectCueName() {
-			return "MinorRune" + effect + grade + "Select";
-		}
+        public String getRuneSelectCueName() {
+            return "MinorRune" + effect + grade + "Select";
+        }
 
-		public String getRuneSelectCueFileName() {
-			return "cues/runes/minor" + effect + grade + "Select.png";
-		}
+        public String getRuneSelectCueFileName() {
+            return "cues/runes/minor" + effect + grade + "Select.png";
+        }
 
-		public Cue getRuneSelectCue() {
-			return cues.get(getRuneSelectCueName());
-		}
+        public Cue getRuneSelectCue() {
+            return cues.get(getRuneSelectCueName());
+        }
 
-		@Override
-		public String toString() {
-			return grade.toString().toLowerCase() + "_" + effect.toString().toLowerCase();
-		}
-	}
+        @Override
+        public String toString() {
+            return grade.toString().toLowerCase() + "_" + effect.toString().toLowerCase();
+        }
+    }
 
-	static final int SECOND = 1000;
-	static final int MINUTE = 60 * SECOND;
-	private static final int HOUR = 60 * MINUTE;
-	private static final int DAY = 24 * HOUR;
+    static final int SECOND = 1000;
+    static final int MINUTE = 60 * SECOND;
+    private static final int HOUR = 60 * MINUTE;
+    private static final int DAY = 24 * HOUR;
 
-	@SuppressWarnings("FieldCanBeLocal")
-	private boolean idleMode = false;
+    @SuppressWarnings("FieldCanBeLocal")
+    private boolean idleMode = false;
 
-	private static int globalShards;
-	private static int globalBadges;
-	private static int globalEnergy;
-	private static int globalTickets;
-	private static int globalTokens;
+    private static int globalShards;
+    private static int globalBadges;
+    private static int globalEnergy;
+    private static int globalTickets;
+    private static int globalTokens;
 
-	private boolean[] revived = {false, false, false, false, false};
-	private int potionsUsed = 0;
+    private boolean[] revived = {false, false, false, false, false};
+    private int potionsUsed = 0;
 
-	private boolean startTimeCheck = false;
-	private boolean oneTimeshrineCheck = false;
-	private boolean autoShrined = false;
-	private long activityStartTime;
-	private long activityDuration;
-	private long outOfEncounterTimestamp = 0;
-	private long inEncounterTimestamp = 0;
+    private boolean startTimeCheck = false;
+    private boolean oneTimeshrineCheck = false;
+    private boolean autoShrined = false;
+    private long activityStartTime;
+    private long activityDuration;
+    private long outOfEncounterTimestamp = 0;
+    private long inEncounterTimestamp = 0;
 
-	private long runMillisAvg = 0;
+    private long runMillisAvg = 0;
 
-	private boolean specialDungeon; //d4 check for closing properly when no energy
+    private boolean specialDungeon; //d4 check for closing properly when no energy
 
-	private int dungeonCounter = 0;
-	private int raidVictoryCounter = 0;
-	private int raidDefeatCounter = 0;
+    private int dungeonCounter = 0;
+    private int raidVictoryCounter = 0;
+    private int raidDefeatCounter = 0;
 
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
-	private static Map<String, Cue> cues = new HashMap<>();
+    private static Map<String, Cue> cues = new HashMap<>();
 
-	boolean finished = false;
-	private int numFailedRestarts = 0; // in a row
-	// When we do not have anymore gems to use this is true
-	private boolean noGemsToBribe = false;
-	@SuppressWarnings("FieldCanBeLocal")
-	private final int MAX_NUM_FAILED_RESTARTS = 5;
-	@SuppressWarnings("FieldCanBeLocal")
-	private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
-	private static WebDriver driver;
-	private static JavascriptExecutor jsExecutor;
-	private static WebElement game;
-	private State state; // at which stage of the game/menu are we currently?
-	private BufferedImage img; // latest screen capture
+    boolean finished = false;
+    private int numFailedRestarts = 0; // in a row
+    // When we do not have anymore gems to use this is true
+    private boolean noGemsToBribe = false;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final int MAX_NUM_FAILED_RESTARTS = 5;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
+    private static WebDriver driver;
+    private static JavascriptExecutor jsExecutor;
+    private static WebElement game;
+    private State state; // at which stage of the game/menu are we currently?
+    private BufferedImage img; // latest screen capture
 
-	@SuppressWarnings("FieldCanBeLocal")
-	private long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
-	@SuppressWarnings("FieldCanBeLocal")
-	private long SHARDS_CHECK_INTERVAL = 15 * MINUTE;
-	@SuppressWarnings("FieldCanBeLocal")
-	private long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
-	@SuppressWarnings("FieldCanBeLocal")
-	private long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
-	@SuppressWarnings("FieldCanBeLocal")
-	private long BADGES_CHECK_INTERVAL = 10 * MINUTE;
-	@SuppressWarnings("FieldCanBeLocal")
-	private long BOUNTY_CHECK_INTERVAL = HOUR;
-	@SuppressWarnings("FieldCanBeLocal")
-	private long BONUS_CHECK_INTERVAL = 10 * MINUTE;
-	@SuppressWarnings("FieldCanBeLocal")
-	private long FISHING_CHECK_INTERVAL = DAY;
+    @SuppressWarnings("FieldCanBeLocal")
+    private long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
+    @SuppressWarnings("FieldCanBeLocal")
+    private long SHARDS_CHECK_INTERVAL = 15 * MINUTE;
+    @SuppressWarnings("FieldCanBeLocal")
+    private long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
+    @SuppressWarnings("FieldCanBeLocal")
+    private long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
+    @SuppressWarnings("FieldCanBeLocal")
+    private long BADGES_CHECK_INTERVAL = 10 * MINUTE;
+    @SuppressWarnings("FieldCanBeLocal")
+    private long BOUNTY_CHECK_INTERVAL = HOUR;
+    @SuppressWarnings("FieldCanBeLocal")
+    private long BONUS_CHECK_INTERVAL = 10 * MINUTE;
+    @SuppressWarnings("FieldCanBeLocal")
+    private long FISHING_CHECK_INTERVAL = DAY;
 
-	@SuppressWarnings("FieldCanBeLocal")
-	private final long MAX_IDLE_TIME = 15*MINUTE;
-	@SuppressWarnings("FieldCanBeLocal")
-	private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final long MAX_IDLE_TIME = 15 * MINUTE;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
-	private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
-	private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
-	private long timeLastTicketsCheck = 0; // when did we check for Tickets the last time?
-	private long timeLastTrialsTokensCheck = 0; // when did we check for trials Tokens the last time?
-	private long timeLastGauntletTokensCheck = 0; // when did we check for gauntlet Tokens the last time?
-	private long timeLastExpBadgesCheck = 0; // when did we check for badges the last time?
-	private long timeLastInvBadgesCheck = 0; // when did we check for badges the last time?
-	private long timeLastGVGBadgesCheck = 0; // when did we check for badges the last time?
-	private long timeLastBountyCheck = 0; // when did we check for bounties the last time?
-	private long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
-	private long timeLastFishingCheck = 0; // when did we check for fishing baits the last time?
-	private long timeLastPOAlive = Misc.getTime(); // when did we send the last PO Notification?
+    private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
+    private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
+    private long timeLastTicketsCheck = 0; // when did we check for Tickets the last time?
+    private long timeLastTrialsTokensCheck = 0; // when did we check for trials Tokens the last time?
+    private long timeLastGauntletTokensCheck = 0; // when did we check for gauntlet Tokens the last time?
+    private long timeLastExpBadgesCheck = 0; // when did we check for badges the last time?
+    private long timeLastInvBadgesCheck = 0; // when did we check for badges the last time?
+    private long timeLastGVGBadgesCheck = 0; // when did we check for badges the last time?
+    private long timeLastBountyCheck = 0; // when did we check for bounties the last time?
+    private long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
+    private long timeLastFishingCheck = 0; // when did we check for fishing baits the last time?
+    private long timeLastPOAlive = Misc.getTime(); // when did we send the last PO Notification?
 
-	/** Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale. */
-	private int numConsecutiveException = 0;
+    /**
+     * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale.
+     */
+    private int numConsecutiveException = 0;
 //	/** Amount of ads that were offered in main screen since last restart. We need it in order to do restart() after 2 ads, since sometimes ads won't get offered anymore after two restarts. */
 //	private int numAdOffers = 0;
-	/** Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through! */
-	long timeLastAdOffer;
+    /**
+     * Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through!
+     */
+    long timeLastAdOffer;
 
-	/** Used to format double numbers in a human readable way*/
-	private DecimalFormat df = new DecimalFormat("#.00");
+    /**
+     * Used to format double numbers in a human readable way
+     */
+    private DecimalFormat df = new DecimalFormat("#.00");
 
-	/** autoshrine settings save */
-	private boolean ignoreBossSetting = false;
-	private boolean ignoreShrinesSetting = false;
+    /**
+     * autoshrine settings save
+     */
+    private boolean ignoreBossSetting = false;
+    private boolean ignoreShrinesSetting = false;
 
-	/** global autorune vals */
-	private boolean autoBossRuned = false;
-	private boolean oneTimeRuneCheck = false;
+    /**
+     * global autorune vals
+     */
+    private boolean autoBossRuned = false;
+    private boolean oneTimeRuneCheck = false;
 
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
 
     private Iterator<String> activitysIterator = BHBot.settings.activitiesEnabled.iterator();
 
-	private static BufferedImage loadImage(String f) {
-		BufferedImage img = null;
-		ClassLoader classLoader = MainThread.class.getClassLoader();
-		InputStream resourceURL = classLoader.getResourceAsStream(f);
+    private static BufferedImage loadImage(String f) {
+        BufferedImage img = null;
+        ClassLoader classLoader = MainThread.class.getClassLoader();
+        InputStream resourceURL = classLoader.getResourceAsStream(f);
 
-		if (resourceURL != null) {
-			try {
-				img = ImageIO.read(resourceURL);
-			} catch (IOException e) {
-				BHBot.logger.error("Error while loading Image", e);
-			}
-		} else {
-			BHBot.logger.error("Error with resource: " + f);
+        if (resourceURL != null) {
+            try {
+                img = ImageIO.read(resourceURL);
+            } catch (IOException e) {
+                BHBot.logger.error("Error while loading Image", e);
+            }
+        } else {
+            BHBot.logger.error("Error with resource: " + f);
 //		try {
 //			img = ImageIO.read(new File(f));
 //		} catch (IOException e) {
 //			BHBot.logger.error("Error while loading image");
 //			BHBot.logger.error("Error while loading image", e);
-		}
+        }
 
-		return img;
-	}
+        return img;
+    }
 
-	private static void addCue(String name, BufferedImage im, Bounds bounds) {
-		cues.put(name, new Cue(name, im, bounds));
-	}
+    private static void addCue(String name, BufferedImage im, Bounds bounds) {
+        cues.put(name, new Cue(name, im, bounds));
+    }
 
-	@SuppressWarnings("SameParameterValue")
-	private static int loadCueFolder(String cuesPath, String prefix, boolean stripCueStr, Bounds bounds) {
-		int totalLoaded = 0;
+    @SuppressWarnings("SameParameterValue")
+    private static int loadCueFolder(String cuesPath, String prefix, boolean stripCueStr, Bounds bounds) {
+        int totalLoaded = 0;
 
-		// We make sure that the last char of the path is a folder separator
-		if (!"/".equals(cuesPath.substring(cuesPath.length() - 1))) cuesPath += "/";
+        // We make sure that the last char of the path is a folder separator
+        if (!"/".equals(cuesPath.substring(cuesPath.length() - 1))) cuesPath += "/";
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-		URL url = classLoader.getResource(cuesPath);
-		if (url != null) { // Run from the IDE
-			if ("file".equals(url.getProtocol())) {
+        URL url = classLoader.getResource(cuesPath);
+        if (url != null) { // Run from the IDE
+            if ("file".equals(url.getProtocol())) {
 
-				InputStream in = classLoader.getResourceAsStream(cuesPath);
-				if (in == null) {
-				    BHBot.logger.error("Impossible to create InputStream in loadCueFolder");
-				    return  totalLoaded;
+                InputStream in = classLoader.getResourceAsStream(cuesPath);
+                if (in == null) {
+                    BHBot.logger.error("Impossible to create InputStream in loadCueFolder");
+                    return totalLoaded;
                 }
 
-				BufferedReader br = new BufferedReader(new InputStreamReader(in));
-				String resource;
+                BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                String resource;
 
-				while (true) {
-					try {
-						resource = br.readLine();
-						if (resource == null) break;
-					} catch (IOException e) {
-						BHBot.logger.error("Error while reading resources in loadCueFoler", e);
-						continue;
-					}
-					int dotPosition = resource.lastIndexOf('.');
-					String fileExtension = dotPosition > 0 ? resource.substring(dotPosition + 1) : "";
-					if ("png".equals(fileExtension.toLowerCase())) {
-						String cueName = resource.substring(0, dotPosition);
+                while (true) {
+                    try {
+                        resource = br.readLine();
+                        if (resource == null) break;
+                    } catch (IOException e) {
+                        BHBot.logger.error("Error while reading resources in loadCueFoler", e);
+                        continue;
+                    }
+                    int dotPosition = resource.lastIndexOf('.');
+                    String fileExtension = dotPosition > 0 ? resource.substring(dotPosition + 1) : "";
+                    if ("png".equals(fileExtension.toLowerCase())) {
+                        String cueName = resource.substring(0, dotPosition);
 
-						if (prefix != null) cueName = prefix + cueName;
-						if (stripCueStr) cueName = cueName.replace("cue", "");
+                        if (prefix != null) cueName = prefix + cueName;
+                        if (stripCueStr) cueName = cueName.replace("cue", "");
 
-						addCue(cueName.toLowerCase(), loadImage(cuesPath + resource), bounds);
-						totalLoaded++;
-					}
-				}
-			} else if ("jar".equals(url.getProtocol())) { // Run from JAR
-				BHBot.logger.debug("Reading JAR File for cues in path " + cuesPath);
-				String path = url.getPath();
-				String jarPath = path.substring(5, path.indexOf("!"));
+                        addCue(cueName.toLowerCase(), loadImage(cuesPath + resource), bounds);
+                        totalLoaded++;
+                    }
+                }
+            } else if ("jar".equals(url.getProtocol())) { // Run from JAR
+                BHBot.logger.debug("Reading JAR File for cues in path " + cuesPath);
+                String path = url.getPath();
+                String jarPath = path.substring(5, path.indexOf("!"));
 
-				String decodedURL;
-				try {
-					decodedURL = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
-				} catch (UnsupportedEncodingException e) {
-					BHBot.logger.error("Impossible to decode pat for jar: " + jarPath, e);
-					return totalLoaded;
-				}
+                String decodedURL;
+                try {
+                    decodedURL = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
+                } catch (UnsupportedEncodingException e) {
+                    BHBot.logger.error("Impossible to decode pat for jar: " + jarPath, e);
+                    return totalLoaded;
+                }
 
-				JarFile jar;
-				try {
-					jar = new JarFile(decodedURL);
-				} catch (IOException e) {
-					BHBot.logger.error("Impossible to open JAR file : " + decodedURL, e);
-					return totalLoaded;
-				}
+                JarFile jar;
+                try {
+                    jar = new JarFile(decodedURL);
+                } catch (IOException e) {
+                    BHBot.logger.error("Impossible to open JAR file : " + decodedURL, e);
+                    return totalLoaded;
+                }
 
-				Enumeration<JarEntry> entries = jar.entries();
+                Enumeration<JarEntry> entries = jar.entries();
 
-				while (entries.hasMoreElements()) {
-					JarEntry entry = entries.nextElement();
-					String name = entry.getName();
-					if (name.startsWith(cuesPath) && !cuesPath.equals(name)) {
-						URL resource = classLoader.getResource(name);
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    String name = entry.getName();
+                    if (name.startsWith(cuesPath) && !cuesPath.equals(name)) {
+                        URL resource = classLoader.getResource(name);
 
-						if (resource == null) continue;
+                        if (resource == null) continue;
 
-						String resourcePath = resource.toString();
-						BHBot.logger.trace("resourcePath: " +  resourcePath);
-						if (!resourcePath.contains("!")) {
-							BHBot.logger.warn("Unexpected resource filename in load Cue Folder");
-							continue;
-						}
+                        String resourcePath = resource.toString();
+                        BHBot.logger.trace("resourcePath: " + resourcePath);
+                        if (!resourcePath.contains("!")) {
+                            BHBot.logger.warn("Unexpected resource filename in load Cue Folder");
+                            continue;
+                        }
 
-						String[] fileDetails = resourcePath.split("!");
-						String resourceRelativePath = fileDetails[1];
-						BHBot.logger.trace("resourceRelativePath : " +  resourceRelativePath );
-						int lastSlashPosition = resourceRelativePath.lastIndexOf('/');
-						String fileName = resourceRelativePath.substring(lastSlashPosition + 1);
+                        String[] fileDetails = resourcePath.split("!");
+                        String resourceRelativePath = fileDetails[1];
+                        BHBot.logger.trace("resourceRelativePath : " + resourceRelativePath);
+                        int lastSlashPosition = resourceRelativePath.lastIndexOf('/');
+                        String fileName = resourceRelativePath.substring(lastSlashPosition + 1);
 
-						int dotPosition = fileName.lastIndexOf('.');
-						String fileExtension = dotPosition > 0 ? fileName.substring(dotPosition + 1) : "";
-						if ("png".equals(fileExtension.toLowerCase())) {
-							String cueName = fileName.substring(0, dotPosition);
+                        int dotPosition = fileName.lastIndexOf('.');
+                        String fileExtension = dotPosition > 0 ? fileName.substring(dotPosition + 1) : "";
+                        if ("png".equals(fileExtension.toLowerCase())) {
+                            String cueName = fileName.substring(0, dotPosition);
 
-							if (prefix != null) cueName = prefix + cueName;
-							if (stripCueStr) cueName = cueName.replace("cue", "");
-							BHBot.logger.trace("cueName: " + cueName);
+                            if (prefix != null) cueName = prefix + cueName;
+                            if (stripCueStr) cueName = cueName.replace("cue", "");
+                            BHBot.logger.trace("cueName: " + cueName);
 
-							// resourceRelativePath begins with a '/' char and we want to be sure to remove it
-							addCue(cueName.toLowerCase(), loadImage(resourceRelativePath.substring(1)), bounds);
-							totalLoaded++;
-						}
-					}
-				}
+                            // resourceRelativePath begins with a '/' char and we want to be sure to remove it
+                            addCue(cueName.toLowerCase(), loadImage(resourceRelativePath.substring(1)), bounds);
+                            totalLoaded++;
+                        }
+                    }
+                }
 
-			}
-		}
+            }
+        }
 
-		return totalLoaded;
-	}
+        return totalLoaded;
+    }
 
-	static void loadCues() {
-		addCue("Main", loadImage("cues/cueMainScreen.png"), new Bounds(90, 5, 100, 10));
+    static void loadCues() {
+        addCue("Main", loadImage("cues/cueMainScreen.png"), new Bounds(90, 5, 100, 10));
 
-		addCue("Login", loadImage("cues/cueLogin.png"), new Bounds(270, 260, 330, 300)); // login window (happens seldom)
+        addCue("Login", loadImage("cues/cueLogin.png"), new Bounds(270, 260, 330, 300)); // login window (happens seldom)
 
-		addCue("AreYouThere", loadImage("cues/cueAreYouThere.png"), new Bounds(240, 245, 265, 260));
-		addCue("Yes", loadImage("cues/cueYes.png"), null);
+        addCue("AreYouThere", loadImage("cues/cueAreYouThere.png"), new Bounds(240, 245, 265, 260));
+        addCue("Yes", loadImage("cues/cueYes.png"), null);
 
-		addCue("Disconnected", loadImage("cues/cueDisconnected.png"), new Bounds(290, 230, 315, 250)); // cue for "You have been disconnected" popup
-		addCue("Reconnect", loadImage("cues/cueReconnectButton.png"), new Bounds(320, 330, 400, 360)); // used with "You have been disconnected" dialog and also with the "maintenance" dialog
-		addCue("Reload", loadImage("cues/cueReload.png"), new Bounds(320, 330, 360, 360)); // used in "There is a new update required to play" dialog (happens on Friday night)
-		addCue("Maintenance", loadImage("cues/cueMaintenance.png"), new Bounds(230, 200, 320, 250)); // cue for "Bit Heroes is currently down for maintenance. Please check back shortly!"
-		addCue("Loading", loadImage("cues/cueLoading.png"), new Bounds(315, 210, 330, 225)); // cue for "Loading" superimposed screen
-		addCue("RecentlyDisconnected", loadImage("cues/cueRecentlyDisconnected.png"), new Bounds(220, 195, 255, 230)); // cue for "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
-		addCue("UnableToConnect", loadImage("cues/cueUnableToConnect.png"), new Bounds(245, 235, 270, 250)); // happens when some error occurs for which the flash app is unable to connect to the server. We must simply click on the "Reconnect" button in this case!
+        addCue("Disconnected", loadImage("cues/cueDisconnected.png"), new Bounds(290, 230, 315, 250)); // cue for "You have been disconnected" popup
+        addCue("Reconnect", loadImage("cues/cueReconnectButton.png"), new Bounds(320, 330, 400, 360)); // used with "You have been disconnected" dialog and also with the "maintenance" dialog
+        addCue("Reload", loadImage("cues/cueReload.png"), new Bounds(320, 330, 360, 360)); // used in "There is a new update required to play" dialog (happens on Friday night)
+        addCue("Maintenance", loadImage("cues/cueMaintenance.png"), new Bounds(230, 200, 320, 250)); // cue for "Bit Heroes is currently down for maintenance. Please check back shortly!"
+        addCue("Loading", loadImage("cues/cueLoading.png"), new Bounds(315, 210, 330, 225)); // cue for "Loading" superimposed screen
+        addCue("RecentlyDisconnected", loadImage("cues/cueRecentlyDisconnected.png"), new Bounds(220, 195, 255, 230)); // cue for "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
+        addCue("UnableToConnect", loadImage("cues/cueUnableToConnect.png"), new Bounds(245, 235, 270, 250)); // happens when some error occurs for which the flash app is unable to connect to the server. We must simply click on the "Reconnect" button in this case!
 
-		addCue("DailyRewards", loadImage("cues/cueDailyRewards.png"), new Bounds(260, 45, 285, 75));
-		addCue("Claim", loadImage("cues/cueClaim.png"), null); // claim button, when daily rewards popup is open
-		addCue("Items", loadImage("cues/cueItems.png"), null); // used when we clicked "claim" on daily rewards popup. Used also with main menu ads.
-		addCue("X", loadImage("cues/cueX.png"), null); // "X" close button used with claimed daily rewards popup
-		addCue("WeeklyRewards", loadImage("cues/cueWeeklyRewards.png"), new Bounds(185, 95, 250, 185)); // used with reward for GVG/PVP/Gauntlet/Trial on Friday night (when day changes into Saturday)
-		addCue("Bounties", loadImage("cues/cueBounties.png"), new Bounds(320, 63, 480, 103));
-		addCue("Loot", loadImage("cues/cueLoot.png"), null);
+        addCue("DailyRewards", loadImage("cues/cueDailyRewards.png"), new Bounds(260, 45, 285, 75));
+        addCue("Claim", loadImage("cues/cueClaim.png"), null); // claim button, when daily rewards popup is open
+        addCue("Items", loadImage("cues/cueItems.png"), null); // used when we clicked "claim" on daily rewards popup. Used also with main menu ads.
+        addCue("X", loadImage("cues/cueX.png"), null); // "X" close button used with claimed daily rewards popup
+        addCue("WeeklyRewards", loadImage("cues/cueWeeklyRewards.png"), new Bounds(185, 95, 250, 185)); // used with reward for GVG/PVP/Gauntlet/Trial on Friday night (when day changes into Saturday)
+        addCue("Bounties", loadImage("cues/cueBounties.png"), new Bounds(320, 63, 480, 103));
+        addCue("Loot", loadImage("cues/cueLoot.png"), null);
 
-		addCue("News", loadImage("cues/cueNewsPopup.png"), new Bounds(345, 60, 365, 85)); // news popup
-		addCue("Close", loadImage("cues/cueClose.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
+        addCue("News", loadImage("cues/cueNewsPopup.png"), new Bounds(345, 60, 365, 85)); // news popup
+        addCue("Close", loadImage("cues/cueClose.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
 
-		addCue("Ad", loadImage("cues/cueAd.png"), new Bounds(720, 100, 750, 410)); // main screen ad button cue. Note that sometimes it is higher up on the screen than other times (during GvG week, it will be higher up, above GvG icon)
-		addCue("AdPopup", loadImage("cues/cueAdPopup.png"), null);
-		addCue("Watch", loadImage("cues/cueWatch.png"), null); // used with ad main screen watch button. Does not work in dungeons (button is a bit different there - used button there!)
-		addCue("Watch2", loadImage("cues/cueWatch2.png"), null); // this is an alternative watch button. It is practically the same as the first one, but it has another shade of blue in the first row. Used with watching ads in dungeons (confirmed).
-		addCue("AdInProgress", loadImage("cues/cueAdInProgress.png"), null); // we currently don't really need this cue
-		addCue("AdFinished", loadImage("cues/cueAdFinished.png"), null); // we currently don't really need this cue
-		addCue("Skip", loadImage("cues/cueSkip.png"), null);
+        addCue("Ad", loadImage("cues/cueAd.png"), new Bounds(720, 100, 750, 410)); // main screen ad button cue. Note that sometimes it is higher up on the screen than other times (during GvG week, it will be higher up, above GvG icon)
+        addCue("AdPopup", loadImage("cues/cueAdPopup.png"), null);
+        addCue("Watch", loadImage("cues/cueWatch.png"), null); // used with ad main screen watch button. Does not work in dungeons (button is a bit different there - used button there!)
+        addCue("Watch2", loadImage("cues/cueWatch2.png"), null); // this is an alternative watch button. It is practically the same as the first one, but it has another shade of blue in the first row. Used with watching ads in dungeons (confirmed).
+        addCue("AdInProgress", loadImage("cues/cueAdInProgress.png"), null); // we currently don't really need this cue
+        addCue("AdFinished", loadImage("cues/cueAdFinished.png"), null); // we currently don't really need this cue
+        addCue("Skip", loadImage("cues/cueSkip.png"), null);
 //		addCue("adRead", loadImage("cues/cueAdRead.png"), null); testing for new ad engine
 //		addCue("adClose", loadImage("cues/cueAdClose.png"), null); testing for new ad engine
 
 
-		addCue("EnergyBar", loadImage("cues/cueEnergyBar.png"), new Bounds(390, 0, 420, 20));
-		addCue("TicketBar", loadImage("cues/cueTicketBar.png"), new Bounds(540, 0, 770, 20));
+        addCue("EnergyBar", loadImage("cues/cueEnergyBar.png"), new Bounds(390, 0, 420, 20));
+        addCue("TicketBar", loadImage("cues/cueTicketBar.png"), new Bounds(540, 0, 770, 20));
 
-		addCue("RaidButton", loadImage("cues/cueRaidButton.png"), new Bounds(0, 200, 40, 400));
-		addCue("RaidPopup", loadImage("cues/cueRaidPopup.png"), new Bounds(300, 35, 340, 70));
-		addCue("RaidSummon", loadImage("cues/cueRaidSummon.png"), new Bounds(480, 360, 540, 380));
-		addCue("RaidLevel", loadImage("cues/cueRaidLevel.png"), new Bounds(300, 435, 510, 455)); // selected raid type button cue
-		addCue("cueRaidLevelEmpty", loadImage("cues/cueRaidLevelEmpty.png"), new Bounds(300, 435, 510, 455)); // selected raid type button cue
+        addCue("RaidButton", loadImage("cues/cueRaidButton.png"), new Bounds(0, 200, 40, 400));
+        addCue("RaidPopup", loadImage("cues/cueRaidPopup.png"), new Bounds(300, 35, 340, 70));
+        addCue("RaidSummon", loadImage("cues/cueRaidSummon.png"), new Bounds(480, 360, 540, 380));
+        addCue("RaidLevel", loadImage("cues/cueRaidLevel.png"), new Bounds(300, 435, 510, 455)); // selected raid type button cue
+        addCue("cueRaidLevelEmpty", loadImage("cues/cueRaidLevelEmpty.png"), new Bounds(300, 435, 510, 455)); // selected raid type button cue
 
-		// New Raid level detection logic
-		addCue("Raid1Name", loadImage("cues/raid/r1Name.png"), new Bounds(185, 340, 485, 395));// Raid 1 Name
-		addCue("Raid2Name", loadImage("cues/raid/r2Name.png"), new Bounds(185, 340, 485, 395));// Raid 2 Name
-		addCue("Raid3Name", loadImage("cues/raid/r3Name.png"), new Bounds(185, 340, 485, 395));// Raid 3 Name
-		addCue("Raid4Name", loadImage("cues/raid/r4Name.png"), new Bounds(185, 340, 485, 395));// Raid 4 Name
-		addCue("Raid5Name", loadImage("cues/raid/r5Name.png"), new Bounds(185, 340, 485, 395));// Raid 5 Name
-		addCue("Raid6Name", loadImage("cues/raid/r6Name.png"), new Bounds(185, 340, 485, 395));// Raid 6 Name
-		addCue("Raid7Name", loadImage("cues/raid/r7Name.png"), new Bounds(185, 340, 485, 395));// Raid 7 Name
+        // New Raid level detection logic
+        addCue("Raid1Name", loadImage("cues/raid/r1Name.png"), new Bounds(185, 340, 485, 395));// Raid 1 Name
+        addCue("Raid2Name", loadImage("cues/raid/r2Name.png"), new Bounds(185, 340, 485, 395));// Raid 2 Name
+        addCue("Raid3Name", loadImage("cues/raid/r3Name.png"), new Bounds(185, 340, 485, 395));// Raid 3 Name
+        addCue("Raid4Name", loadImage("cues/raid/r4Name.png"), new Bounds(185, 340, 485, 395));// Raid 4 Name
+        addCue("Raid5Name", loadImage("cues/raid/r5Name.png"), new Bounds(185, 340, 485, 395));// Raid 5 Name
+        addCue("Raid6Name", loadImage("cues/raid/r6Name.png"), new Bounds(185, 340, 485, 395));// Raid 6 Name
+        addCue("Raid7Name", loadImage("cues/raid/r7Name.png"), new Bounds(185, 340, 485, 395));// Raid 7 Name
 
-		addCue("R1Only", loadImage("cues/cueR1Only.png"), null); // cue for R1 type selected when R2 (and R3) is not open yet (in that case it won't show raid type selection buttons)
+        addCue("R1Only", loadImage("cues/cueR1Only.png"), null); // cue for R1 type selected when R2 (and R3) is not open yet (in that case it won't show raid type selection buttons)
 
-		addCue("Normal", loadImage("cues/cueNormal.png"), null);
-		addCue("Hard", loadImage("cues/cueHard.png"), null);
-		addCue("Heroic", loadImage("cues/cueHeroic.png"), null);
-		addCue("Accept", loadImage("cues/cueAccept.png"), null);
-		addCue("D4Accept", loadImage("cues/cueD4Accept.png"), null);
-		addCue("Cleared", loadImage("cues/cueCleared.png"), null); // used for example when raid has been finished
-		addCue("Defeat", loadImage("cues/cueDefeat.png"), null); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
-		addCue("YesGreen", loadImage("cues/cueYesGreen.png"), null); // used for example when raid has been finished ("Cleared" popup)
-		addCue("Persuade", loadImage("cues/cuePersuade.png"), new Bounds(116, 311, 286, 380));
-		addCue("View", loadImage("cues/cueView.png"), new Bounds(390, 415, 600, 486));
-		addCue("Bribe", loadImage("cues/cueBribe.png"), new Bounds(505, 305, 684, 375));
-		addCue("SkeletonTreasure", loadImage("cues/cueSkeletonTreasure.png"), new Bounds(185, 165, 295, 280)); // skeleton treasure found in dungeons (it's a dialog/popup cue)
-		addCue("Open", loadImage("cues/cueOpen.png"), null); // skeleton treasure open button
-		addCue("AdTreasure", loadImage("cues/cueAdTreasure.png"), null); // ad treasure found in dungeons (it's a dialog/popup cue)
-		addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
-		addCue("DeclineRed", loadImage("cues/cueDeclineRed.png"), null); // decline persuation attempts
-		addCue("Merchant", loadImage("cues/cueMerchant.png"), null); // cue for merchant dialog/popup
-		addCue("SettingsGear", loadImage("cues/cueSettingsGear.png"), new Bounds(655, 450, 730, 515)); // settings button
-		addCue("Settings", loadImage("cues/cueSettings.png"), new Bounds(249, 61, 558, 102)); // settings menu
+        addCue("Normal", loadImage("cues/cueNormal.png"), null);
+        addCue("Hard", loadImage("cues/cueHard.png"), null);
+        addCue("Heroic", loadImage("cues/cueHeroic.png"), null);
+        addCue("Accept", loadImage("cues/cueAccept.png"), null);
+        addCue("D4Accept", loadImage("cues/cueD4Accept.png"), null);
+        addCue("Cleared", loadImage("cues/cueCleared.png"), null); // used for example when raid has been finished
+        addCue("Defeat", loadImage("cues/cueDefeat.png"), null); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
+        addCue("YesGreen", loadImage("cues/cueYesGreen.png"), null); // used for example when raid has been finished ("Cleared" popup)
+        addCue("Persuade", loadImage("cues/cuePersuade.png"), new Bounds(116, 311, 286, 380));
+        addCue("View", loadImage("cues/cueView.png"), new Bounds(390, 415, 600, 486));
+        addCue("Bribe", loadImage("cues/cueBribe.png"), new Bounds(505, 305, 684, 375));
+        addCue("SkeletonTreasure", loadImage("cues/cueSkeletonTreasure.png"), new Bounds(185, 165, 295, 280)); // skeleton treasure found in dungeons (it's a dialog/popup cue)
+        addCue("Open", loadImage("cues/cueOpen.png"), null); // skeleton treasure open button
+        addCue("AdTreasure", loadImage("cues/cueAdTreasure.png"), null); // ad treasure found in dungeons (it's a dialog/popup cue)
+        addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
+        addCue("DeclineRed", loadImage("cues/cueDeclineRed.png"), null); // decline persuation attempts
+        addCue("Merchant", loadImage("cues/cueMerchant.png"), null); // cue for merchant dialog/popup
+        addCue("SettingsGear", loadImage("cues/cueSettingsGear.png"), new Bounds(655, 450, 730, 515)); // settings button
+        addCue("Settings", loadImage("cues/cueSettings.png"), new Bounds(249, 61, 558, 102)); // settings menu
 
-		addCue("Team", loadImage("cues/cueTeam.png"), null); // Team text part of pop-ups about teams
-		addCue("TeamNotFull", loadImage("cues/cueTeamNotFull.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
-		addCue("TeamNotOrdered", loadImage("cues/cueTeamNotOrdered.png"), new Bounds(230, 190, 350, 250)); // warning popup when some guild member left and your GvG team is not complete anymore
-		addCue("GuildLeaveConfirm", loadImage("cues/cueGuildLeaveConfirm.png"), new Bounds(195, 105, 605, 395)); // GVG confirm
-		addCue("DisabledBattles", loadImage("cues/cueDisabledBattles.png"), new Bounds(240, 210, 560, 330)); // Disabled Battles Poppup
+        addCue("Team", loadImage("cues/cueTeam.png"), null); // Team text part of pop-ups about teams
+        addCue("TeamNotFull", loadImage("cues/cueTeamNotFull.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
+        addCue("TeamNotOrdered", loadImage("cues/cueTeamNotOrdered.png"), new Bounds(230, 190, 350, 250)); // warning popup when some guild member left and your GvG team is not complete anymore
+        addCue("GuildLeaveConfirm", loadImage("cues/cueGuildLeaveConfirm.png"), new Bounds(195, 105, 605, 395)); // GVG confirm
+        addCue("DisabledBattles", loadImage("cues/cueDisabledBattles.png"), new Bounds(240, 210, 560, 330)); // Disabled Battles Poppup
 
-		addCue("No", loadImage("cues/cueNo.png"), null); // cue for a blue "No" button used for example with "Your team is not full" dialog, or for "Replace consumable" dialog, etc. This is why we can't put concrete borders as position varies a lot.
-		addCue("AutoTeam", loadImage("cues/cueAutoTeam.png"), null); // "Auto" button that automatically assigns team (in raid, GvG, ...)
-		addCue("Clear", loadImage("cues/cueClear.png"), null); //clear team button
+        addCue("No", loadImage("cues/cueNo.png"), null); // cue for a blue "No" button used for example with "Your team is not full" dialog, or for "Replace consumable" dialog, etc. This is why we can't put concrete borders as position varies a lot.
+        addCue("AutoTeam", loadImage("cues/cueAutoTeam.png"), null); // "Auto" button that automatically assigns team (in raid, GvG, ...)
+        addCue("Clear", loadImage("cues/cueClear.png"), null); //clear team button
 
-		addCue("AutoOn", loadImage("cues/cueAutoOn.png"), new Bounds(740, 180, 785, 220)); // cue for auto pilot on
-		addCue("AutoOff", loadImage("cues/cueAutoOff.png"), new Bounds(740, 180, 785, 220)); // cue for auto pilot off
+        addCue("AutoOn", loadImage("cues/cueAutoOn.png"), new Bounds(740, 180, 785, 220)); // cue for auto pilot on
+        addCue("AutoOff", loadImage("cues/cueAutoOff.png"), new Bounds(740, 180, 785, 220)); // cue for auto pilot off
 
-		addCue("Trials", loadImage("cues/cueTrials.png"), new Bounds(0, 0, 40, 400)); // cue for trials button (note that as of 23.9.2017 they changed the button position to the right side of the screen and modified the glyph)
-		addCue("Trials2", loadImage("cues/cueTrials2.png"), new Bounds(720, 0, 770, 400)); // an alternative cue for trials (flipped horizontally, located on the right side of the screen). Used since 23.9.2017.
-		addCue("Gauntlet", loadImage("cues/cueGauntlet.png"), null); // cue for gauntlet button
-		addCue("Gauntlet2", loadImage("cues/cueGauntlet2.png"), null); // alternative cue for gauntlet button
-		addCue("Play", loadImage("cues/cuePlay.png"), null); // cue for play button in trials/gauntlet window
-		addCue("TokenBar", loadImage("cues/cueTokenBar.png"), null);
-		addCue("CloseGreen", loadImage("cues/cueCloseGreen.png"), null); // close button used with "You have been defeated" popup in gauntlet and also "Victory" window in gauntlet
-		addCue("Victory", loadImage("cues/cueVictory.png"), null); // victory window cue found upon completing gauntlet / PvP
+        addCue("Trials", loadImage("cues/cueTrials.png"), new Bounds(0, 0, 40, 400)); // cue for trials button (note that as of 23.9.2017 they changed the button position to the right side of the screen and modified the glyph)
+        addCue("Trials2", loadImage("cues/cueTrials2.png"), new Bounds(720, 0, 770, 400)); // an alternative cue for trials (flipped horizontally, located on the right side of the screen). Used since 23.9.2017.
+        addCue("Gauntlet", loadImage("cues/cueGauntlet.png"), null); // cue for gauntlet button
+        addCue("Gauntlet2", loadImage("cues/cueGauntlet2.png"), null); // alternative cue for gauntlet button
+        addCue("Play", loadImage("cues/cuePlay.png"), null); // cue for play button in trials/gauntlet window
+        addCue("TokenBar", loadImage("cues/cueTokenBar.png"), null);
+        addCue("CloseGreen", loadImage("cues/cueCloseGreen.png"), null); // close button used with "You have been defeated" popup in gauntlet and also "Victory" window in gauntlet
+        addCue("Victory", loadImage("cues/cueVictory.png"), null); // victory window cue found upon completing gauntlet / PvP
 
-		addCue("UhOh", loadImage("cues/cueUhoh.png"), new Bounds(319, 122, 526, 184));
-		addCue("ReviveAverage", loadImage("cues/cueReviveAverage.png"), null);
-		addCue("Purchase", loadImage("cues/cuePurchase.png"), new Bounds(240, 240, 390, 280));
+        addCue("UhOh", loadImage("cues/cueUhoh.png"), new Bounds(319, 122, 526, 184));
+        addCue("ReviveAverage", loadImage("cues/cueReviveAverage.png"), null);
+        addCue("Purchase", loadImage("cues/cuePurchase.png"), new Bounds(240, 240, 390, 280));
 
-		addCue("GuildButton", loadImage("cues/cueGuildButton.png"), new Bounds(500, 420, 590, 520));
-		addCue("IgnoreShrines", loadImage("cues/cueIgnoreShrines.png"), new Bounds(120, 250, 675, 475));
-		addCue("IgnoreBoss", loadImage("cues/cueIgnoreBoss.png"), new Bounds(120, 250, 675, 475));
+        addCue("GuildButton", loadImage("cues/cueGuildButton.png"), new Bounds(500, 420, 590, 520));
+        addCue("IgnoreShrines", loadImage("cues/cueIgnoreShrines.png"), new Bounds(120, 250, 675, 475));
+        addCue("IgnoreBoss", loadImage("cues/cueIgnoreBoss.png"), new Bounds(120, 250, 675, 475));
 
 
-		addCue("Quest", loadImage("cues/cueQuest.png"), new Bounds(0, 0, 40, 40)); // cue for quest (dungeons) button
-		addCue("ZonesButton", loadImage("cues/cueZonesButton.png"), new Bounds(105, 60, 125, 75));
-		addCue("Zone1", loadImage("cues/cueZone1.png"), null);
-		addCue("Zone2", loadImage("cues/cueZone2.png"), null);
-		addCue("Zone3", loadImage("cues/cueZone3.png"), null);
-		addCue("Zone4", loadImage("cues/cueZone4.png"), null);
-		addCue("Zone5", loadImage("cues/cueZone5.png"), null);
-		addCue("Zone6", loadImage("cues/cueZone6.png"), null);
-		addCue("Zone7", loadImage("cues/cueZone7.png"), null);
-		addCue("Zone8", loadImage("cues/cueZone8.png"), null);
-		addCue("Zone9", loadImage("cues/cueZone9.png"), null);
-		addCue("RightArrow", loadImage("cues/cueRightArrow.png"), null); // arrow used in quest screen to change zone
-		addCue("LeftArrow", loadImage("cues/cueLeftArrow.png"), null); // arrow used in quest screen to change zone
-		addCue("Enter", loadImage("cues/cueEnter.png"), null); // "Enter" button found on d4 window
+        addCue("Quest", loadImage("cues/cueQuest.png"), new Bounds(0, 0, 40, 40)); // cue for quest (dungeons) button
+        addCue("ZonesButton", loadImage("cues/cueZonesButton.png"), new Bounds(105, 60, 125, 75));
+        addCue("Zone1", loadImage("cues/cueZone1.png"), null);
+        addCue("Zone2", loadImage("cues/cueZone2.png"), null);
+        addCue("Zone3", loadImage("cues/cueZone3.png"), null);
+        addCue("Zone4", loadImage("cues/cueZone4.png"), null);
+        addCue("Zone5", loadImage("cues/cueZone5.png"), null);
+        addCue("Zone6", loadImage("cues/cueZone6.png"), null);
+        addCue("Zone7", loadImage("cues/cueZone7.png"), null);
+        addCue("Zone8", loadImage("cues/cueZone8.png"), null);
+        addCue("Zone9", loadImage("cues/cueZone9.png"), null);
+        addCue("RightArrow", loadImage("cues/cueRightArrow.png"), null); // arrow used in quest screen to change zone
+        addCue("LeftArrow", loadImage("cues/cueLeftArrow.png"), null); // arrow used in quest screen to change zone
+        addCue("Enter", loadImage("cues/cueEnter.png"), null); // "Enter" button found on d4 window
 //		addCue("EnterExpedition", loadImage("cues/cueEnter.png"),null ); // "Enter" for Expeditions
-		addCue("NotEnoughEnergy", loadImage("cues/cueNotEnoughEnergy.png"), new Bounds(260, 210, 290, 235)); // "Not enough Energy" popup cue
+        addCue("NotEnoughEnergy", loadImage("cues/cueNotEnoughEnergy.png"), new Bounds(260, 210, 290, 235)); // "Not enough Energy" popup cue
 
-		addCue("PVP", loadImage("cues/cuePVP.png"), new Bounds(0, 70, 40, 110)); // PVP icon in main screen
-		addCue("Fight", loadImage("cues/cueFight.png"), null); // fight button in PVP window
-		addCue("VictoryPopup", loadImage("cues/cueVictoryPopup.png"), null); // victory popup that appears in PVP after you have successfully completed it (needs to be closed). Also found in dungeons after you've completed an encounter (and hence probably also in trials, but not in gauntlet - that one has a different 'Victory' window!)
-		addCue("PVPWindow", loadImage("cues/cuePVPWindow.png"), null); // PVP window cue
+        addCue("PVP", loadImage("cues/cuePVP.png"), new Bounds(0, 70, 40, 110)); // PVP icon in main screen
+        addCue("Fight", loadImage("cues/cueFight.png"), null); // fight button in PVP window
+        addCue("VictoryPopup", loadImage("cues/cueVictoryPopup.png"), null); // victory popup that appears in PVP after you have successfully completed it (needs to be closed). Also found in dungeons after you've completed an encounter (and hence probably also in trials, but not in gauntlet - that one has a different 'Victory' window!)
+        addCue("PVPWindow", loadImage("cues/cuePVPWindow.png"), null); // PVP window cue
 
-		addCue("DialogRight", loadImage("cues/cueDialogRight.png"), null); // cue for the dialog window (when arrow is at the right side of the window)
-		addCue("DialogLeft", loadImage("cues/cueDialogLeft.png"), null); // cue for the dialog window (when arrow is at the left side of the window)
+        addCue("DialogRight", loadImage("cues/cueDialogRight.png"), null); // cue for the dialog window (when arrow is at the right side of the window)
+        addCue("DialogLeft", loadImage("cues/cueDialogLeft.png"), null); // cue for the dialog window (when arrow is at the left side of the window)
 
-		addCue("SpeedCheck", loadImage("cues/cueSpeedCheck.png"), new Bounds(0, 450, 100, 520));
-		addCue("Switch", loadImage("cues/cueSwitch.png"), new Bounds(0, 450, 100, 520)); //unused
+        addCue("SpeedCheck", loadImage("cues/cueSpeedCheck.png"), new Bounds(0, 450, 100, 520));
+        addCue("Switch", loadImage("cues/cueSwitch.png"), new Bounds(0, 450, 100, 520)); //unused
 
-		// GVG related:
-		addCue("GVG", loadImage("cues/cueGVG.png"), null); // main GVG button cue
-		addCue("BadgeBar", loadImage("cues/cueBadgeBar.png"), null);
-		addCue("GVGWindow", loadImage("cues/cueGVGWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
+        // GVG related:
+        addCue("GVG", loadImage("cues/cueGVG.png"), null); // main GVG button cue
+        addCue("BadgeBar", loadImage("cues/cueBadgeBar.png"), null);
+        addCue("GVGWindow", loadImage("cues/cueGVGWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
 
-		addCue("InGamePM", loadImage("cues/cueInGamePM.png"), new Bounds(450, 330, 530, 380)); // note that the guild window uses the same cue! That's why it's important that user doesn't open guild window while bot is working!
+        addCue("InGamePM", loadImage("cues/cueInGamePM.png"), new Bounds(450, 330, 530, 380)); // note that the guild window uses the same cue! That's why it's important that user doesn't open guild window while bot is working!
 
-		addCue("TrialsOrGauntletWindow", loadImage("cues/cueTrialsOrGauntletWindow.png"), new Bounds(300, 30, 510, 105)); // cue for a trials/gauntlet window
-		addCue("Difficulty", loadImage("cues/cueDifficulty.png"), new Bounds(450, 330, 640, 450)); // selected difficulty in trials/gauntlet window
-		addCue("DifficultyDisabled", loadImage("cues/cueDifficultyDisabled.png"), new Bounds(450, 330, 640, 450)); // selected difficulty in trials/gauntlet window (disabled - because game is still fetching data from server)
-		addCue("SelectDifficulty", loadImage("cues/cueSelectDifficulty.png"), new Bounds(400, 260, 0, 0)/*not exact bounds... the lower-right part of screen!*/); // select difficulty button in trials/gauntlet
-		addCue("DifficultyDropDown", loadImage("cues/cueDifficultyDropDown.png"), new Bounds(260, 50, 550, 125)); // difficulty drop down menu cue
-		addCue("DifficultyExpedition", loadImage("cues/cueDifficultyExpedition.png"), null); // selected difficulty in trials/gauntlet window
+        addCue("TrialsOrGauntletWindow", loadImage("cues/cueTrialsOrGauntletWindow.png"), new Bounds(300, 30, 510, 105)); // cue for a trials/gauntlet window
+        addCue("Difficulty", loadImage("cues/cueDifficulty.png"), new Bounds(450, 330, 640, 450)); // selected difficulty in trials/gauntlet window
+        addCue("DifficultyDisabled", loadImage("cues/cueDifficultyDisabled.png"), new Bounds(450, 330, 640, 450)); // selected difficulty in trials/gauntlet window (disabled - because game is still fetching data from server)
+        addCue("SelectDifficulty", loadImage("cues/cueSelectDifficulty.png"), new Bounds(400, 260, 0, 0)/*not exact bounds... the lower-right part of screen!*/); // select difficulty button in trials/gauntlet
+        addCue("DifficultyDropDown", loadImage("cues/cueDifficultyDropDown.png"), new Bounds(260, 50, 550, 125)); // difficulty drop down menu cue
+        addCue("DifficultyExpedition", loadImage("cues/cueDifficultyExpedition.png"), null); // selected difficulty in trials/gauntlet window
 //		addCue("DifficultyDisabled", loadImage("cues/cueDifficultyDisabled.png"), new Bounds(450, 330, 640, 450)); // selected difficulty in trials/gauntlet window (disabled - because game is still fetching data from server)
-		addCue("SelectDifficultyExpedition", loadImage("cues/cueSelectDifficultyExpedition.png"), null);
+        addCue("SelectDifficultyExpedition", loadImage("cues/cueSelectDifficultyExpedition.png"), null);
 //		addCue("DifficultyDropDown", loadImage("cues/cueDifficultyDropDown.png"), new Bounds(260, 50, 550, 125)); // difficulty drop down menu cue
-		addCue("DropDownUp", loadImage("cues/cueDropDownUp.png"), null); // up arrow in difficulty drop down menu (found in trials/gauntlet, for example)
-		addCue("DropDownDown", loadImage("cues/cueDropDownDown.png"), null); // down arrow in difficulty drop down menu (found in trials/gauntlet, for example)
-		addCue("Cost", loadImage("cues/cueCost.png"), new Bounds(400, 150, 580, 240)); // used both for PvP and Gauntlet/Trials costs. Note that bounds are very wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
-		addCue("SelectCost", loadImage("cues/cueSelectCost.png"), new Bounds(555, 170, 595, 205)); // cue for select cost found in both PvP and Gauntlet/Trials windows. Note that bounds are wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
-		addCue("CostDropDown", loadImage("cues/cueCostDropDown.png"), new Bounds(260, 45, 320, 70)); // cue for cost selection drop down window
-		addCue("0", loadImage("cues/cue0.png"), null);
-		addCue("1", loadImage("cues/cue1.png"), null);
-		addCue("2", loadImage("cues/cue2.png"), null);
-		addCue("3", loadImage("cues/cue3.png"), null);
-		addCue("4", loadImage("cues/cue4.png"), null);
-		addCue("5", loadImage("cues/cue5.png"), null);
-		addCue("6", loadImage("cues/cue6.png"), null);
-		addCue("7", loadImage("cues/cue7.png"), null);
-		addCue("8", loadImage("cues/cue8.png"), null);
-		addCue("9", loadImage("cues/cue9.png"), null);
+        addCue("DropDownUp", loadImage("cues/cueDropDownUp.png"), null); // up arrow in difficulty drop down menu (found in trials/gauntlet, for example)
+        addCue("DropDownDown", loadImage("cues/cueDropDownDown.png"), null); // down arrow in difficulty drop down menu (found in trials/gauntlet, for example)
+        addCue("Cost", loadImage("cues/cueCost.png"), new Bounds(400, 150, 580, 240)); // used both for PvP and Gauntlet/Trials costs. Note that bounds are very wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
+        addCue("SelectCost", loadImage("cues/cueSelectCost.png"), new Bounds(555, 170, 595, 205)); // cue for select cost found in both PvP and Gauntlet/Trials windows. Note that bounds are wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
+        addCue("CostDropDown", loadImage("cues/cueCostDropDown.png"), new Bounds(260, 45, 320, 70)); // cue for cost selection drop down window
+        addCue("0", loadImage("cues/cue0.png"), null);
+        addCue("1", loadImage("cues/cue1.png"), null);
+        addCue("2", loadImage("cues/cue2.png"), null);
+        addCue("3", loadImage("cues/cue3.png"), null);
+        addCue("4", loadImage("cues/cue4.png"), null);
+        addCue("5", loadImage("cues/cue5.png"), null);
+        addCue("6", loadImage("cues/cue6.png"), null);
+        addCue("7", loadImage("cues/cue7.png"), null);
+        addCue("8", loadImage("cues/cue8.png"), null);
+        addCue("9", loadImage("cues/cue9.png"), null);
 
-		// PvP strip related:
-		addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos.png"), new Bounds(525, 140, 540, 370));
-		addCue("StripEquipped", loadImage("cues/strip/cueStripEquipped.png"), new Bounds(465, 180, 485, 200)); // the little "E" icon upon an equipped item (the top-left item though, we want to detect just that one)
-		addCue("StripItemsTitle", loadImage("cues/strip/cueStripItemsTitle.png"), new Bounds(335, 70, 360, 80));
-		addCue("StripSelectorButton", loadImage("cues/strip/cueStripSelectorButton.png"), new Bounds(450, 115, 465, 130));
-		// filter titles:
-		addCue("StripTypeBody", loadImage("cues/strip/cueStripTypeBody.png"), new Bounds(460, 125, 550, 140));
-		addCue("StripTypeHead", loadImage("cues/strip/cueStripTypeHead.png"), new Bounds(460, 125, 550, 140));
-		addCue("StripTypeMainhand", loadImage("cues/strip/cueStripTypeMainhand.png"), new Bounds(460, 125, 550, 140));
-		addCue("StripTypeOffhand", loadImage("cues/strip/cueStripTypeOffhand.png"), new Bounds(460, 125, 550, 140));
-		addCue("StripTypeNeck", loadImage("cues/strip/cueStripTypeNeck.png"), new Bounds(460, 125, 550, 140));
-		addCue("StripTypeRing", loadImage("cues/strip/cueStripTypeRing.png"), new Bounds(460, 125, 550, 140));
+        // PvP strip related:
+        addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos.png"), new Bounds(525, 140, 540, 370));
+        addCue("StripEquipped", loadImage("cues/strip/cueStripEquipped.png"), new Bounds(465, 180, 485, 200)); // the little "E" icon upon an equipped item (the top-left item though, we want to detect just that one)
+        addCue("StripItemsTitle", loadImage("cues/strip/cueStripItemsTitle.png"), new Bounds(335, 70, 360, 80));
+        addCue("StripSelectorButton", loadImage("cues/strip/cueStripSelectorButton.png"), new Bounds(450, 115, 465, 130));
+        // filter titles:
+        addCue("StripTypeBody", loadImage("cues/strip/cueStripTypeBody.png"), new Bounds(460, 125, 550, 140));
+        addCue("StripTypeHead", loadImage("cues/strip/cueStripTypeHead.png"), new Bounds(460, 125, 550, 140));
+        addCue("StripTypeMainhand", loadImage("cues/strip/cueStripTypeMainhand.png"), new Bounds(460, 125, 550, 140));
+        addCue("StripTypeOffhand", loadImage("cues/strip/cueStripTypeOffhand.png"), new Bounds(460, 125, 550, 140));
+        addCue("StripTypeNeck", loadImage("cues/strip/cueStripTypeNeck.png"), new Bounds(460, 125, 550, 140));
+        addCue("StripTypeRing", loadImage("cues/strip/cueStripTypeRing.png"), new Bounds(460, 125, 550, 140));
 
-		// consumables management related:
-		addCue("BonusExp", loadImage("cues/cueBonusExp.png"), new Bounds(100, 455, 370, 485)); // consumable icon in the main menu (when it's being used)
-		addCue("BonusItem", loadImage("cues/cueBonusItem.png"), new Bounds(100, 455, 370, 485));
-		addCue("BonusGold", loadImage("cues/cueBonusGold.png"), new Bounds(100, 455, 370, 485));
-		addCue("BonusSpeed", loadImage("cues/cueBonusSpeed.png"), new Bounds(100, 455, 370, 485));
-		addCue("ConsumableExpMinor", loadImage("cues/cueConsumableExpMinor.png"), null); // consumable icon in the inventory
-		addCue("ConsumableExpAverage", loadImage("cues/cueConsumableExpAverage.png"), null);
-		addCue("ConsumableExpMajor", loadImage("cues/cueConsumableExpMajor.png"), null);
-		addCue("ConsumableItemMinor", loadImage("cues/cueConsumableItemMinor.png"), null);
-		addCue("ConsumableItemAverage", loadImage("cues/cueConsumableItemAverage.png"), null);
-		addCue("ConsumableItemMajor", loadImage("cues/cueConsumableItemMajor.png"), null);
-		addCue("ConsumableSpeedMinor", loadImage("cues/cueConsumableSpeedMinor.png"), null);
-		addCue("ConsumableSpeedAverage", loadImage("cues/cueConsumableSpeedAverage.png"), null);
-		addCue("ConsumableSpeedMajor", loadImage("cues/cueConsumableSpeedMajor.png"), null);
-		addCue("ConsumableGoldMinor", loadImage("cues/cueConsumableGoldMinor.png"), null);
-		addCue("ConsumableGoldAverage", loadImage("cues/cueConsumableGoldAverage.png"), null);
-		addCue("ConsumableGoldMajor", loadImage("cues/cueConsumableGoldMajor.png"), null);
-		addCue("ConsumablePumkgor", loadImage("cues/cueConsumablePumkgor.png"), new Bounds(150, 460, 205, 519)); // Special Halloween consumable
-		addCue("ConsumableGingernaut", loadImage("cues/cueConsumableGingernaut.png"), new Bounds(150, 460, 205, 519)); // Special Chrismast consumable
-		addCue("ConsumableGreatFeast", loadImage("cues/cueConsumableGreatFeast.png"), new Bounds(150, 460, 205, 519)); // Thanksgiving consumable
-		addCue("ConsumableBroccoli", loadImage("cues/cueConsumableBroccoli.png"), new Bounds(150, 460, 205, 519)); // Special Halloween consumable
-		addCue("ConsumableCoco", loadImage("cues/cueConsumableCoco.png"), new Bounds(150, 460, 205, 519)); // Special ?? consumable
-		addCue("ScrollerAtBottom", loadImage("cues/cueScrollerAtBottom.png"), null); // cue for scroller being at the bottom-most position (we can't scroll down more than this)
-		addCue("ConsumableTitle", loadImage("cues/cueConsumableTitle.png"), new Bounds(280, 100, 310, 180)); // cue for title of the window that pops up when we want to consume a consumable. Note that vertical range is big here since sometimes is higher due to greater window size and sometimes is lower.
-		addCue("FilterConsumables", loadImage("cues/cueFilterConsumables.png"), new Bounds(460, 125, 550, 140)); // cue for filter button name
-		addCue("LoadingInventoryIcon", loadImage("cues/cueLoadingInventoryIcon.png"), null); // cue for loading animation for the icons inside inventory
+        // consumables management related:
+        addCue("BonusExp", loadImage("cues/cueBonusExp.png"), new Bounds(100, 455, 370, 485)); // consumable icon in the main menu (when it's being used)
+        addCue("BonusItem", loadImage("cues/cueBonusItem.png"), new Bounds(100, 455, 370, 485));
+        addCue("BonusGold", loadImage("cues/cueBonusGold.png"), new Bounds(100, 455, 370, 485));
+        addCue("BonusSpeed", loadImage("cues/cueBonusSpeed.png"), new Bounds(100, 455, 370, 485));
+        addCue("ConsumableExpMinor", loadImage("cues/cueConsumableExpMinor.png"), null); // consumable icon in the inventory
+        addCue("ConsumableExpAverage", loadImage("cues/cueConsumableExpAverage.png"), null);
+        addCue("ConsumableExpMajor", loadImage("cues/cueConsumableExpMajor.png"), null);
+        addCue("ConsumableItemMinor", loadImage("cues/cueConsumableItemMinor.png"), null);
+        addCue("ConsumableItemAverage", loadImage("cues/cueConsumableItemAverage.png"), null);
+        addCue("ConsumableItemMajor", loadImage("cues/cueConsumableItemMajor.png"), null);
+        addCue("ConsumableSpeedMinor", loadImage("cues/cueConsumableSpeedMinor.png"), null);
+        addCue("ConsumableSpeedAverage", loadImage("cues/cueConsumableSpeedAverage.png"), null);
+        addCue("ConsumableSpeedMajor", loadImage("cues/cueConsumableSpeedMajor.png"), null);
+        addCue("ConsumableGoldMinor", loadImage("cues/cueConsumableGoldMinor.png"), null);
+        addCue("ConsumableGoldAverage", loadImage("cues/cueConsumableGoldAverage.png"), null);
+        addCue("ConsumableGoldMajor", loadImage("cues/cueConsumableGoldMajor.png"), null);
+        addCue("ConsumablePumkgor", loadImage("cues/cueConsumablePumkgor.png"), new Bounds(150, 460, 205, 519)); // Special Halloween consumable
+        addCue("ConsumableGingernaut", loadImage("cues/cueConsumableGingernaut.png"), new Bounds(150, 460, 205, 519)); // Special Chrismast consumable
+        addCue("ConsumableGreatFeast", loadImage("cues/cueConsumableGreatFeast.png"), new Bounds(150, 460, 205, 519)); // Thanksgiving consumable
+        addCue("ConsumableBroccoli", loadImage("cues/cueConsumableBroccoli.png"), new Bounds(150, 460, 205, 519)); // Special Halloween consumable
+        addCue("ConsumableCoco", loadImage("cues/cueConsumableCoco.png"), new Bounds(150, 460, 205, 519)); // Special ?? consumable
+        addCue("ScrollerAtBottom", loadImage("cues/cueScrollerAtBottom.png"), null); // cue for scroller being at the bottom-most position (we can't scroll down more than this)
+        addCue("ConsumableTitle", loadImage("cues/cueConsumableTitle.png"), new Bounds(280, 100, 310, 180)); // cue for title of the window that pops up when we want to consume a consumable. Note that vertical range is big here since sometimes is higher due to greater window size and sometimes is lower.
+        addCue("FilterConsumables", loadImage("cues/cueFilterConsumables.png"), new Bounds(460, 125, 550, 140)); // cue for filter button name
+        addCue("LoadingInventoryIcon", loadImage("cues/cueLoadingInventoryIcon.png"), null); // cue for loading animation for the icons inside inventory
 
 
-		// rune management related:
+        // rune management related:
         addCue("Runes", loadImage("cues/cueRunes.png"), new Bounds(120, 450, 245, 495)); // runes button in profile
         addCue("RunesLayout", loadImage("cues/cueRunesLayout.png"), new Bounds(340, 70, 460, 110)); // runes layout header
-		addCue("RunesPicker", loadImage("cues/cueRunesPicker.png"), null); // rune picker
+        addCue("RunesPicker", loadImage("cues/cueRunesPicker.png"), null); // rune picker
         addCue("RunesSwitch", loadImage("cues/cueRunesSwitch.png"), new Bounds(320, 260, 480, 295)); // rune picker
 
-		// All minor rune cues
-		for (MinorRune rune : MinorRune.values()) {
-			addCue(rune.getRuneCueName(), loadImage(rune.getRuneCueFileName()), null);
-			addCue(rune.getRuneSelectCueName(), loadImage(rune.getRuneSelectCueFileName()), new Bounds(235, 185, 540, 350));
-		}
+        // All minor rune cues
+        for (MinorRune rune : MinorRune.values()) {
+            addCue(rune.getRuneCueName(), loadImage(rune.getRuneCueFileName()), null);
+            addCue(rune.getRuneSelectCueName(), loadImage(rune.getRuneSelectCueFileName()), new Bounds(235, 185, 540, 350));
+        }
 
-		// invasion related:
+        // invasion related:
 //		addCue("Invasion", loadImage("cues/cueInvasion.png"), new Bounds(720, 270, 770, 480)); // main Invasion button cue
-		addCue("Invasion", loadImage("cues/cueInvasion.png"), null);
-		addCue("InvasionWindow", loadImage("cues/cueInvasionWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
+        addCue("Invasion", loadImage("cues/cueInvasion.png"), null);
+        addCue("InvasionWindow", loadImage("cues/cueInvasionWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
 
-		// Expedition related:
-		addCue("ExpeditionButton", loadImage("cues/cueExpeditionButton.png"), null);
-		addCue("Expedition1", loadImage("cues/expedition/cueExpedition1Hallowed.png"), new Bounds(168, 34, 628, 108)); // Hallowed Expedtion Title
-		addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"), new Bounds(200, 40, 600, 100)); //Inferno Expedition
-		addCue("Expedition3", loadImage("cues/expedition/cueExpedition3Jammie.png"), new Bounds(230, 40, 565, 100)); //Jammie Dimension
-		addCue("Expedition4", loadImage("cues/expedition/cueExpedition4Idol.png"), new Bounds(230, 40, 565, 100)); //Idol Dimension
+        // Expedition related:
+        addCue("ExpeditionButton", loadImage("cues/cueExpeditionButton.png"), null);
+        addCue("Expedition1", loadImage("cues/expedition/cueExpedition1Hallowed.png"), new Bounds(168, 34, 628, 108)); // Hallowed Expedtion Title
+        addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"), new Bounds(200, 40, 600, 100)); //Inferno Expedition
+        addCue("Expedition3", loadImage("cues/expedition/cueExpedition3Jammie.png"), new Bounds(230, 40, 565, 100)); //Jammie Dimension
+        addCue("Expedition4", loadImage("cues/expedition/cueExpedition4Idol.png"), new Bounds(230, 40, 565, 100)); //Idol Dimension
 
-		//WorldBoss Related
-		addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"),  null);
-		addCue("WorldBossSelector", loadImage("cues/cueWorldBossSelector.png"),  null);
-		addCue("BlueSummon", loadImage("cues/cueBlueSummon.png"),  null);
-		addCue("LargeGreenSummon", loadImage("cues/cueLargeGreenSummon.png"),  null);
-		addCue("SmallGreenSummon", loadImage("cues/cueSmallGreenSummon.png"),  null);
-		addCue("Invite3rd", loadImage("cues/cueInviteAny.png"), new Bounds(334, 275, 456, 323)); //bounds defined 3rd invite button for Nether
-		addCue("Invite4th", loadImage("cues/cueInviteAny.png"), new Bounds(330, 330, 460, 380)); //bounds defined 4th invite button for Melvin
-		addCue("Invite", loadImage("cues/cueInvite.png"),  new Bounds(336, 387, 452, 422)); //bounds defined 5th invite button for Orlag
-		addCue("Start", loadImage("cues/cueStart.png"),  null);
-		addCue("WorldBossVictory", loadImage("cues/cueWorldBossVictory.png"), null);
-		addCue("OrlagSelected", loadImage("cues/cueOrlagSelected.png"), new Bounds(360, 430, 440, 460));
-		addCue("NetherSelected", loadImage("cues/cueNetherSelected.png"), null);
-		addCue("Private", loadImage("cues/cuePrivate.png"), new Bounds(310, 320, 370, 380));
-		addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
-		addCue("WorldBossTier1", loadImage("cues/cueWorldBossTier1.png"), new Bounds(300, 180, 500, 250));
-		addCue("WorldBossTier2", loadImage("cues/cueWorldBossTier2.png"), new Bounds(300, 180, 500, 250));
-		addCue("WorldBossDifficultyNormal", loadImage("cues/cueWorldBossDifficultyNormal.png"), new Bounds(300, 275, 500, 325));
-		addCue("WorldBossDifficultyHard", loadImage("cues/cueWorldBossDifficultyHard.png"), new Bounds(300, 275, 500, 325));
-		addCue("WorldBossDifficultyHeroic", loadImage("cues/cueWorldBossDifficultyHeroic.png"), new Bounds(300, 275, 500, 325));
+        //WorldBoss Related
+        addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"), null);
+        addCue("WorldBossSelector", loadImage("cues/cueWorldBossSelector.png"), null);
+        addCue("BlueSummon", loadImage("cues/cueBlueSummon.png"), null);
+        addCue("LargeGreenSummon", loadImage("cues/cueLargeGreenSummon.png"), null);
+        addCue("SmallGreenSummon", loadImage("cues/cueSmallGreenSummon.png"), null);
+        addCue("Invite3rd", loadImage("cues/cueInviteAny.png"), new Bounds(334, 275, 456, 323)); //bounds defined 3rd invite button for Nether
+        addCue("Invite4th", loadImage("cues/cueInviteAny.png"), new Bounds(330, 330, 460, 380)); //bounds defined 4th invite button for Melvin
+        addCue("Invite", loadImage("cues/cueInvite.png"), new Bounds(336, 387, 452, 422)); //bounds defined 5th invite button for Orlag
+        addCue("Start", loadImage("cues/cueStart.png"), null);
+        addCue("WorldBossVictory", loadImage("cues/cueWorldBossVictory.png"), null);
+        addCue("OrlagSelected", loadImage("cues/cueOrlagSelected.png"), new Bounds(360, 430, 440, 460));
+        addCue("NetherSelected", loadImage("cues/cueNetherSelected.png"), null);
+        addCue("Private", loadImage("cues/cuePrivate.png"), new Bounds(310, 320, 370, 380));
+        addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
+        addCue("WorldBossTier1", loadImage("cues/cueWorldBossTier1.png"), new Bounds(300, 180, 500, 250));
+        addCue("WorldBossTier2", loadImage("cues/cueWorldBossTier2.png"), new Bounds(300, 180, 500, 250));
+        addCue("WorldBossDifficultyNormal", loadImage("cues/cueWorldBossDifficultyNormal.png"), new Bounds(300, 275, 500, 325));
+        addCue("WorldBossDifficultyHard", loadImage("cues/cueWorldBossDifficultyHard.png"), new Bounds(300, 275, 500, 325));
+        addCue("WorldBossDifficultyHeroic", loadImage("cues/cueWorldBossDifficultyHeroic.png"), new Bounds(300, 275, 500, 325));
 
-		addCue("cueWBSelectNormal", loadImage("cues/worldboss/cueWBSelectNormal.png"), new Bounds(260, 140, 510, 320));
-		addCue("cueWBSelectHard", loadImage("cues/worldboss/cueWBSelectHard.png"), new Bounds(260, 140, 510, 320));
-		addCue("cueWBSelectHeroic", loadImage("cues/worldboss/cueWBSelectHeroic.png"), new Bounds(260, 140, 510, 320));
+        addCue("cueWBSelectNormal", loadImage("cues/worldboss/cueWBSelectNormal.png"), new Bounds(260, 140, 510, 320));
+        addCue("cueWBSelectHard", loadImage("cues/worldboss/cueWBSelectHard.png"), new Bounds(260, 140, 510, 320));
+        addCue("cueWBSelectHeroic", loadImage("cues/worldboss/cueWBSelectHeroic.png"), new Bounds(260, 140, 510, 320));
 
-		addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(190, 355, 400, 390));
-		addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(190, 355, 400, 390));
-		addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(190, 355, 400, 390));
-		addCue("3t3rWB", loadImage("cues/worldboss/3xt3rmin4tion.png"), new Bounds(190, 355, 400, 390));
-		addCue("WorldBossTitle", loadImage("cues/worldboss/cueWorldBossTitle.png"), new Bounds(280, 90, 515, 140));
-		addCue("WorldBossSummonTitle", loadImage("cues/worldboss/cueWorldBossSummonTitle.png"), new Bounds(325, 100, 480, 150));
-
-
-		//fishing related
-		addCue("FishingButton", loadImage("cues/cueFishingButton.png"),  null);
-		addCue("Exit", loadImage("cues/cueExit.png"),  null);
-		addCue("Fishing", loadImage("cues/cueFishing.png"), new Bounds(720, 200, 799, 519));
-		addCue("FishingClose", loadImage("cues/fishingClose.png"),  null);
-		addCue("Trade", loadImage("cues/cueTrade.png"), new Bounds(360, 443, 441, 468));
-		addCue("Hall", loadImage("cues/cueHall.png"), new Bounds(575, 455, 645, 480));
-		addCue("GuildHallC", loadImage("cues/cueGuildHallC.png"), new Bounds(750, 55, 792, 13));
-
-		//Familiar bribing cues
-		addCue("NotEnoughGems", loadImage("cues/cueNotEnoughGems.png"), null); // used when not enough gems are available
-		addCue("CommonFamiliar", loadImage("cues/familiars/type/cue01CommonFamiliar.png"), new Bounds(525, 240, 674, 365)); // Common Bribe cue
-		addCue("RareFamiliar", loadImage("cues/familiars/type/cue02RareFamiliar.png"), new Bounds(525, 240, 674, 365)); // Rare Bribe cue
-		addCue("EpicFamiliar", loadImage("cues/familiars/type/cue03EpicFamiliar.png"), new Bounds(525, 240, 674, 365)); // Epic Bribe cue
-		addCue("LegendaryFamiliar", loadImage("cues/familiars/type/cue04LegendaryFamiliar.png"), new Bounds(525, 240, 674, 365)); // Epic Bribe cue
-
-		//AutoRevive cues
-		addCue("Potions", loadImage("cues/autorevive/cuePotions.png"), new Bounds(0, 370, 90, 460)); //Potions button
-		addCue("NoPotions", loadImage("cues/autorevive/cueNoPotions.png"), new Bounds(210, 190, 590, 350)); // The team does not need revive
-		addCue("Restores", loadImage("cues/autorevive/cueRestores.png"), new Bounds(145, 320, 655, 395)); // To identify revive and healing potions
-		addCue("Revives", loadImage("cues/autorevive/cueRevives.png"), new Bounds(145, 320, 655, 395)); // To identify revive potions
-		addCue("MinorAvailable", loadImage("cues/autorevive/cueMinorAvailable.png"), new Bounds(170, 205, 270, 300));
-		addCue("AverageAvailable", loadImage("cues/autorevive/cueAverageAvailable.png"), new Bounds(350, 205, 450, 300));
-		addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable.png"), new Bounds(535, 205, 635, 300));
-		addCue("SuperAvailable", loadImage("cues/autorevive/cueSuperAvailable.png"), new Bounds(140, 150, 300, 200));
-		addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
-
-		//Items related cues
-		addCue("ItemLeg", loadImage("cues/items/cueItemLeg.png"), null); // Legendary Item border
-		addCue("ItemSet", loadImage("cues/items/cueItemSet.png"), null); // Set Item border
-		addCue("ItemMyt", loadImage("cues/items/cueItemMyt.png"), null); // Mythical Item border
+        addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(190, 355, 400, 390));
+        addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(190, 355, 400, 390));
+        addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(190, 355, 400, 390));
+        addCue("3t3rWB", loadImage("cues/worldboss/3xt3rmin4tion.png"), new Bounds(190, 355, 400, 390));
+        addCue("WorldBossTitle", loadImage("cues/worldboss/cueWorldBossTitle.png"), new Bounds(280, 90, 515, 140));
+        addCue("WorldBossSummonTitle", loadImage("cues/worldboss/cueWorldBossSummonTitle.png"), new Bounds(325, 100, 480, 150));
 
 
-		int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
+        //fishing related
+        addCue("FishingButton", loadImage("cues/cueFishingButton.png"), null);
+        addCue("Exit", loadImage("cues/cueExit.png"), null);
+        addCue("Fishing", loadImage("cues/cueFishing.png"), new Bounds(720, 200, 799, 519));
+        addCue("FishingClose", loadImage("cues/fishingClose.png"), null);
+        addCue("Trade", loadImage("cues/cueTrade.png"), new Bounds(360, 443, 441, 468));
+        addCue("Hall", loadImage("cues/cueHall.png"), new Bounds(575, 455, 645, 480));
+        addCue("GuildHallC", loadImage("cues/cueGuildHallC.png"), new Bounds(750, 55, 792, 13));
 
-		BHBot.logger.debug("Found " + newFamCnt + " familiar cue(s) with new format.");
+        //Familiar bribing cues
+        addCue("NotEnoughGems", loadImage("cues/cueNotEnoughGems.png"), null); // used when not enough gems are available
+        addCue("CommonFamiliar", loadImage("cues/familiars/type/cue01CommonFamiliar.png"), new Bounds(525, 240, 674, 365)); // Common Bribe cue
+        addCue("RareFamiliar", loadImage("cues/familiars/type/cue02RareFamiliar.png"), new Bounds(525, 240, 674, 365)); // Rare Bribe cue
+        addCue("EpicFamiliar", loadImage("cues/familiars/type/cue03EpicFamiliar.png"), new Bounds(525, 240, 674, 365)); // Epic Bribe cue
+        addCue("LegendaryFamiliar", loadImage("cues/familiars/type/cue04LegendaryFamiliar.png"), new Bounds(525, 240, 674, 365)); // Epic Bribe cue
 
-	}
+        //AutoRevive cues
+        addCue("Potions", loadImage("cues/autorevive/cuePotions.png"), new Bounds(0, 370, 90, 460)); //Potions button
+        addCue("NoPotions", loadImage("cues/autorevive/cueNoPotions.png"), new Bounds(210, 190, 590, 350)); // The team does not need revive
+        addCue("Restores", loadImage("cues/autorevive/cueRestores.png"), new Bounds(145, 320, 655, 395)); // To identify revive and healing potions
+        addCue("Revives", loadImage("cues/autorevive/cueRevives.png"), new Bounds(145, 320, 655, 395)); // To identify revive potions
+        addCue("MinorAvailable", loadImage("cues/autorevive/cueMinorAvailable.png"), new Bounds(170, 205, 270, 300));
+        addCue("AverageAvailable", loadImage("cues/autorevive/cueAverageAvailable.png"), new Bounds(350, 205, 450, 300));
+        addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable.png"), new Bounds(535, 205, 635, 300));
+        addCue("SuperAvailable", loadImage("cues/autorevive/cueSuperAvailable.png"), new Bounds(140, 150, 300, 200));
+        addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
 
-	private static void connectDriver() throws MalformedURLException {
-		ChromeOptions options = new ChromeOptions();
+        //Items related cues
+        addCue("ItemLeg", loadImage("cues/items/cueItemLeg.png"), null); // Legendary Item border
+        addCue("ItemSet", loadImage("cues/items/cueItemSet.png"), null); // Set Item border
+        addCue("ItemMyt", loadImage("cues/items/cueItemMyt.png"), null); // Mythical Item border
 
-		options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
-		options.setBinary(BHBot.chromiumExePath); //set Chromium v69 binary location
+
+        int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
+
+        BHBot.logger.debug("Found " + newFamCnt + " familiar cue(s) with new format.");
+
+    }
+
+    private static void connectDriver() throws MalformedURLException {
+        ChromeOptions options = new ChromeOptions();
+
+        options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
+        options.setBinary(BHBot.chromiumExePath); //set Chromium v69 binary location
 
         if (BHBot.settings.autoStartChromeDriver) {
             System.setProperty("webdriver.chrome.driver", BHBot.chromeDriverExePath);
@@ -961,15 +974,15 @@ public class MainThread implements Runnable {
             }
         }
 
-		// disable ephemeral flash permissions flag
-		options.addArguments("--disable-features=EnableEphemeralFlashPermission");
-		options.addArguments("disable-infobars");
+        // disable ephemeral flash permissions flag
+        options.addArguments("--disable-features=EnableEphemeralFlashPermission");
+        options.addArguments("disable-infobars");
 //		options.addArguments("--log-level=OFF");
 //		options.addArguments("--silent");
-		Map<String, Object> prefs = new HashMap<>();
-		// Enable flash for all sites for Chrome 69
-		prefs.put("profile.content_settings.exceptions.plugins.*,*.setting", 1);
-		options.setExperimentalOption("prefs", prefs);
+        Map<String, Object> prefs = new HashMap<>();
+        // Enable flash for all sites for Chrome 69
+        prefs.put("profile.content_settings.exceptions.plugins.*,*.setting", 1);
+        options.setExperimentalOption("prefs", prefs);
 
 //		if (BHBot.settings.useHeadlessMode) {
 //			options.setBinary("C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe"); //set chromium v69 binary location
@@ -1004,111 +1017,109 @@ public class MainThread implements Runnable {
 //
 //			options.setExperimentalOption("excludeSwitches", Arrays.asList("disable-component-update", "disable-default-apps"));
 
-			//options.setExperimentalOption("#run-all-flash-in-allow-mode", Arrays.asList("Enabled"));
-			//options.setExperimentalOption("#run-all-flash-in-allow-mode", "Enabled");
+        //options.setExperimentalOption("#run-all-flash-in-allow-mode", Arrays.asList("Enabled"));
+        //options.setExperimentalOption("#run-all-flash-in-allow-mode", "Enabled");
 
 //			Map<String, Object> prefs = new HashMap<>();
 //			prefs.put("run-all-flash-in-allow-mode", Boolean.valueOf(true));
 //			prefs.put("profile.run_all_flash_in_allow_mode", Boolean.valueOf(true));
 //			options.setExperimentalOption("prefs", prefs);
 
-			//options.addExtensions(new File("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/Application/chrome_profile_test/PepperFlash/26.0.0.137/pepflashplayer.dll"));
-			//options.addExtensions(new File("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/User Data/PepperFlash/26.0.0.137/pepflashplayer.dll"));
+        //options.addExtensions(new File("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/Application/chrome_profile_test/PepperFlash/26.0.0.137/pepflashplayer.dll"));
+        //options.addExtensions(new File("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/User Data/PepperFlash/26.0.0.137/pepflashplayer.dll"));
 
-			//options.addArguments("--remote-debugging-port=9222"); // this doesn't work because ChromeDriver uses dubuging port internally. Read about it here: https://bugs.chromium.org/p/chromedriver/issues/detail?id=878#c16
+        //options.addArguments("--remote-debugging-port=9222"); // this doesn't work because ChromeDriver uses dubuging port internally. Read about it here: https://bugs.chromium.org/p/chromedriver/issues/detail?id=878#c16
 //		}
 
-		//options.addArguments("--no-startup-window"); // does not work with WebDriver. Read about it here: https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/5351
+        //options.addArguments("--no-startup-window"); // does not work with WebDriver. Read about it here: https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/5351
 
 
-		//options.addArguments("--headless");
-		//options.addArguments("--disable-gpu");
+        //options.addArguments("--headless");
+        //options.addArguments("--disable-gpu");
 //		options.addArguments("--mute-audio"); // found this solution here: https://stackoverflow.com/questions/39392479/how-to-mute-all-sounds-in-chrome-webdriver-with-selenium/39392601#39392601
 
-		//***ChromeDriverService chromeDriverService = ChromeDriverService.createDefaultService();
-		//***chromeDriverService.CHROME_DRIVER_SILENT_OUTPUT_PROPERTY
+        //***ChromeDriverService chromeDriverService = ChromeDriverService.createDefaultService();
+        //***chromeDriverService.CHROME_DRIVER_SILENT_OUTPUT_PROPERTY
 
-		DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-		capabilities.setCapability("chrome.verbose", false);
-		capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+        capabilities.setCapability("chrome.verbose", false);
+        capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 //		driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
-		if (BHBot.settings.autoStartChromeDriver) {
-			driver = new ChromeDriver(options);
-		} else {
-			driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
-		}
-		jsExecutor = (JavascriptExecutor) driver;
-	}
+        if (BHBot.settings.autoStartChromeDriver) {
+            driver = new ChromeDriver(options);
+        } else {
+            driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
+        }
+        jsExecutor = (JavascriptExecutor) driver;
+    }
 
-	// http://www.qaautomationsimplified.com/selenium/selenium-webdriver-get-cookies-from-an-existing-session-and-add-those-to-a-newly-instantiated-webdriver-browser-instance/
-	// http://www.guru99.com/handling-cookies-selenium-webdriver.html
-	static void saveCookies() {
-		// create file named Cookies to store Login Information
-		File file = new File("Cookies.data");
-		try
-		{
-			// Delete old file if exists
-			Files.deleteIfExists(file.toPath());
-			boolean isCookieFile = file.createNewFile();
-			if (!isCookieFile) throw new Exception("Impossible to create cookie file!");
-			FileWriter fileWrite = new FileWriter(file);
-			BufferedWriter Bwrite = new BufferedWriter(fileWrite);
-			// loop for getting the cookie information
-			for (Cookie ck : driver.manage().getCookies()) {
-				Bwrite.write((ck.getName() + ";" + ck.getValue() + ";" + ck.getDomain() + ";" + ck.getPath() + ";" + (ck.getExpiry() == null ? 0 : ck.getExpiry().getTime()) + ";" + ck.isSecure()));
-				Bwrite.newLine();
-			}
-			Bwrite.flush();
-			Bwrite.close();
-			fileWrite.close();
-		} catch(Exception ex) {
-			BHBot.logger.error("Impossible to save cookies in saveCookies.", ex);
-		}
+    // http://www.qaautomationsimplified.com/selenium/selenium-webdriver-get-cookies-from-an-existing-session-and-add-those-to-a-newly-instantiated-webdriver-browser-instance/
+    // http://www.guru99.com/handling-cookies-selenium-webdriver.html
+    static void saveCookies() {
+        // create file named Cookies to store Login Information
+        File file = new File("Cookies.data");
+        try {
+            // Delete old file if exists
+            Files.deleteIfExists(file.toPath());
+            boolean isCookieFile = file.createNewFile();
+            if (!isCookieFile) throw new Exception("Impossible to create cookie file!");
+            FileWriter fileWrite = new FileWriter(file);
+            BufferedWriter Bwrite = new BufferedWriter(fileWrite);
+            // loop for getting the cookie information
+            for (Cookie ck : driver.manage().getCookies()) {
+                Bwrite.write((ck.getName() + ";" + ck.getValue() + ";" + ck.getDomain() + ";" + ck.getPath() + ";" + (ck.getExpiry() == null ? 0 : ck.getExpiry().getTime()) + ";" + ck.isSecure()));
+                Bwrite.newLine();
+            }
+            Bwrite.flush();
+            Bwrite.close();
+            fileWrite.close();
+        } catch (Exception ex) {
+            BHBot.logger.error("Impossible to save cookies in saveCookies.", ex);
+        }
 
-		BHBot.logger.info("Cookies saved to disk.");
-	}
+        BHBot.logger.info("Cookies saved to disk.");
+    }
 
-	static void loadCookies() {
-		try{
-			File file = new File("Cookies.data");
-			FileReader fileReader = new FileReader(file);
-			BufferedReader Buffreader = new BufferedReader(fileReader);
-			String strline;
-			while((strline=Buffreader.readLine())!=null){
-				StringTokenizer token = new StringTokenizer(strline,";");
-				while(token.hasMoreTokens()){
-					String name = token.nextToken();
-					String value = token.nextToken();
-					String domain = token.nextToken();
-					String path = token.nextToken();
+    static void loadCookies() {
+        try {
+            File file = new File("Cookies.data");
+            FileReader fileReader = new FileReader(file);
+            BufferedReader Buffreader = new BufferedReader(fileReader);
+            String strline;
+            while ((strline = Buffreader.readLine()) != null) {
+                StringTokenizer token = new StringTokenizer(strline, ";");
+                while (token.hasMoreTokens()) {
+                    String name = token.nextToken();
+                    String value = token.nextToken();
+                    String domain = token.nextToken();
+                    String path = token.nextToken();
 
-					String val;
-					if(!(val=token.nextToken()).equals("null"))
-					{
-						new Date(Long.parseLong(val));
-					}
-					boolean isSecure = Boolean.parseBoolean(token.nextToken());
-					Cookie ck = new Cookie(name,value,domain,path, null,isSecure);
-					try {
-						driver.manage().addCookie(ck); // This will add the stored cookie to your current session
-					} catch (Exception e) {
-						BHBot.logger.error("Error while adding cookie", e);
-					}
-				}
-			}
-			Buffreader.close();
-			fileReader.close();
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
+                    String val;
+                    if (!(val = token.nextToken()).equals("null")) {
+                        new Date(Long.parseLong(val));
+                    }
+                    boolean isSecure = Boolean.parseBoolean(token.nextToken());
+                    Cookie ck = new Cookie(name, value, domain, path, null, isSecure);
+                    try {
+                        driver.manage().addCookie(ck); // This will add the stored cookie to your current session
+                    } catch (Exception e) {
+                        BHBot.logger.error("Error while adding cookie", e);
+                    }
+                }
+            }
+            Buffreader.close();
+            fileReader.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
-		BHBot.logger.info("Cookies loaded.");
-	}
+        BHBot.logger.info("Cookies loaded.");
+    }
 
-	void hideBrowser() {
-		driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
-		BHBot.logger.info("Chrome window has been hidden.");
-	}
+    void hideBrowser() {
+        driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
+        BHBot.logger.info("Chrome window has been hidden.");
+    }
 
 	/*public void hideBrowserStartup() {
 		sleep(10000);
@@ -1117,125 +1128,124 @@ public class MainThread implements Runnable {
 	}*/
 
 
-	void showBrowser() {
-		driver.manage().window().setPosition(new Point(0, 0));
-		BHBot.logger.info("Chrome window has been restored.");
-	}
+    void showBrowser() {
+        driver.manage().window().setPosition(new Point(0, 0));
+        BHBot.logger.info("Chrome window has been restored.");
+    }
 
-	private void dumpCrashLog() {
-		// save screen shot:
-		String file = saveGameScreen("crash");
+    private void dumpCrashLog() {
+        // save screen shot:
+        String file = saveGameScreen("crash");
 
-		// save stack trace:
-		boolean savedST = Misc.saveTextFile(file.substring(0, file.length() - 4) + ".txt", Misc.getStackTrace());
-		if (!savedST) {
-			BHBot.logger.info("Impossible to save the stack trace in dumpCrashLog!");
-		}
+        // save stack trace:
+        boolean savedST = Misc.saveTextFile(file.substring(0, file.length() - 4) + ".txt", Misc.getStackTrace());
+        if (!savedST) {
+            BHBot.logger.info("Impossible to save the stack trace in dumpCrashLog!");
+        }
 
-		if (BHBot.settings.enablePushover && BHBot.settings.poNotifyCrash) {
-			sendPushOverMessage("BHbot CRASH!",
-					"BHBot has crashed and a driver emergency restart has been performed!\n\n" + Misc.getStackTrace(), "falling",
-					MessagePriority.HIGH, new File(file));
-		}
-	}
+        if (BHBot.settings.enablePushover && BHBot.settings.poNotifyCrash) {
+            sendPushOverMessage("BHbot CRASH!",
+                    "BHBot has crashed and a driver emergency restart has been performed!\n\n" + Misc.getStackTrace(), "falling",
+                    MessagePriority.HIGH, new File(file));
+        }
+    }
 
-	private void restart() {
-		restart(true); // assume emergency restart
-		oneTimeshrineCheck = false; //reset first run shrine check in case its enabled after restarting
-	}
+    private void restart() {
+        restart(true); // assume emergency restart
+        oneTimeshrineCheck = false; //reset first run shrine check in case its enabled after restarting
+    }
 
-	/**
-	 *
-	 * @param emergency true in case something bad happened (some kind of an error for which we had to do a restart)
-	 */
-	void restart(boolean emergency) {
-		// take emergency screenshot (which will have the developer to debug the problem):
-		if (emergency) {
-			BHBot.logger.warn("Doing driver emergency restart...");
-			dumpCrashLog();
-		}
+    /**
+     * @param emergency true in case something bad happened (some kind of an error for which we had to do a restart)
+     */
+    void restart(boolean emergency) {
+        // take emergency screenshot (which will have the developer to debug the problem):
+        if (emergency) {
+            BHBot.logger.warn("Doing driver emergency restart...");
+            dumpCrashLog();
+        }
 
-		try {
-			if (driver != null) driver.quit();
-		} catch (Exception e) {
-			BHBot.logger.error("Error while quitting from Chromium", e);
-		}
+        try {
+            if (driver != null) driver.quit();
+        } catch (Exception e) {
+            BHBot.logger.error("Error while quitting from Chromium", e);
+        }
 
-		// disable some annoying INFO messages:
-		Logger.getLogger("").setLevel(Level.WARNING);
+        // disable some annoying INFO messages:
+        Logger.getLogger("").setLevel(Level.WARNING);
 
-		try {
-			connectDriver();
-			if (BHBot.settings.hideWindowOnRestart)
-				hideBrowser();
-			driver.navigate().to("http://www.kongregate.com/games/Juppiomenz/bit-heroes");
-			//sleep(5000);
-			//driver.navigate().to("chrome://flags/#run-all-flash-in-allow-mode");
-			//driver.navigate().to("chrome://settings/content");
-			//BHBot.processCommand("shot");
-			game = driver.findElement(By.id("game"));
-		} catch (Exception e) {
+        try {
+            connectDriver();
+            if (BHBot.settings.hideWindowOnRestart)
+                hideBrowser();
+            driver.navigate().to("http://www.kongregate.com/games/Juppiomenz/bit-heroes");
+            //sleep(5000);
+            //driver.navigate().to("chrome://flags/#run-all-flash-in-allow-mode");
+            //driver.navigate().to("chrome://settings/content");
+            //BHBot.processCommand("shot");
+            game = driver.findElement(By.id("game"));
+        } catch (Exception e) {
 
-			if (e instanceof org.openqa.selenium.NoSuchElementException)
-				BHBot.logger.warn("Problem: web element with id 'game' not found!");
-			if (e instanceof MalformedURLException)
-				BHBot.logger.warn("Problem: malformed url detected!");
-			if (e instanceof org.openqa.selenium.remote.UnreachableBrowserException) {
-				BHBot.logger.error("Impossible to connect to the browser. Make sure chromedirver is started. Will retry in a few minutes... (sleeping)");
-				sleep(5*MINUTE);
-				restart();
-				return;
-			}
+            if (e instanceof org.openqa.selenium.NoSuchElementException)
+                BHBot.logger.warn("Problem: web element with id 'game' not found!");
+            if (e instanceof MalformedURLException)
+                BHBot.logger.warn("Problem: malformed url detected!");
+            if (e instanceof org.openqa.selenium.remote.UnreachableBrowserException) {
+                BHBot.logger.error("Impossible to connect to the browser. Make sure chromedirver is started. Will retry in a few minutes... (sleeping)");
+                sleep(5 * MINUTE);
+                restart();
+                return;
+            }
 
-			numFailedRestarts++;
-			if (QUIT_AFTER_MAX_FAILED_RESTARTS && numFailedRestarts > MAX_NUM_FAILED_RESTARTS) {
-				BHBot.logger.fatal("Something went wrong with driver restart. Number of restarts exceeded " + MAX_NUM_FAILED_RESTARTS + ", this is why I'm aborting...");
-				finished = true;
-				return;
-			} else {
-				BHBot.logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)", e);
-				sleep(5*MINUTE);
-				restart();
-				return;
-			}
-		}
+            numFailedRestarts++;
+            if (QUIT_AFTER_MAX_FAILED_RESTARTS && numFailedRestarts > MAX_NUM_FAILED_RESTARTS) {
+                BHBot.logger.fatal("Something went wrong with driver restart. Number of restarts exceeded " + MAX_NUM_FAILED_RESTARTS + ", this is why I'm aborting...");
+                finished = true;
+                return;
+            } else {
+                BHBot.logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)", e);
+                sleep(5 * MINUTE);
+                restart();
+                return;
+            }
+        }
 
-		detectSignInFormAndHandleIt(); // just in case (happens seldom though)
+        detectSignInFormAndHandleIt(); // just in case (happens seldom though)
 
-		int vw = Math.toIntExact ((Long) jsExecutor.executeScript("return window.outerWidth - window.innerWidth + arguments[0];", game.getSize().width));
-		int vh = Math.toIntExact ((Long) jsExecutor.executeScript("return window.outerHeight - window.innerHeight + arguments[0];", game.getSize().height));
-		vw += 50; // compensate for scrollbars 70
-		vh += 30; // compensate for scrollbars 50
-		driver.manage().window().setSize(new Dimension(vw, vh));
-		scrollGameIntoView();
+        int vw = Math.toIntExact((Long) jsExecutor.executeScript("return window.outerWidth - window.innerWidth + arguments[0];", game.getSize().width));
+        int vh = Math.toIntExact((Long) jsExecutor.executeScript("return window.outerHeight - window.innerHeight + arguments[0];", game.getSize().height));
+        vw += 50; // compensate for scrollbars 70
+        vh += 30; // compensate for scrollbars 50
+        driver.manage().window().setSize(new Dimension(vw, vh));
+        scrollGameIntoView();
 
-		int counter = 0;
-		boolean restart = false;
-		while (true) {
-			try {
-				detectLoginFormAndHandleIt();
-			} catch (Exception e) {
-				counter++;
-				if (counter > 20) {
-					BHBot.logger.error("Error: <" + e.getMessage() + "> while trying to detect and handle login form. Restarting...", e);
-					restart = true;
-					break;
-				}
+        int counter = 0;
+        boolean restart = false;
+        while (true) {
+            try {
+                detectLoginFormAndHandleIt();
+            } catch (Exception e) {
+                counter++;
+                if (counter > 20) {
+                    BHBot.logger.error("Error: <" + e.getMessage() + "> while trying to detect and handle login form. Restarting...", e);
+                    restart = true;
+                    break;
+                }
 
-				sleep(10*SECOND);
-				continue;
-			}
-			break;
-		}
-		if (restart) {
-			restart();
-			return;
-		}
+                sleep(10 * SECOND);
+                continue;
+            }
+            break;
+        }
+        if (restart) {
+            restart();
+            return;
+        }
 
 //		BHBot.logger.info("Window handle is: " + driver.getWindowHandle());
-		BHBot.logger.info("Game element found. Starting to run bot..");
+        BHBot.logger.info("Game element found. Starting to run bot..");
 
-		//Code under is all debugging
+        //Code under is all debugging
 
 //		BHBot.logger.info("Current Raid tier unlocked set to R" + BHBot.settings.currentRaidTier + " in settings. Make sure this is correct!");
 //		String invasionSetting = Boolean.toString(collectedFishingRewards);
@@ -1284,1271 +1294,1273 @@ public class MainThread implements Runnable {
 ////		BHBot.logger.info(long.toString(firstTime));
 //		sleep(10 * SECOND);
 //		long secondTime = Misc.getTime();
-//		String runtime = String.format("%01dm %02ds", 
+//		String runtime = String.format("%01dm %02ds",
 //				  TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime),
-//				  TimeUnit.MILLISECONDS.toSeconds(secondTime - firstTime) - 
+//				  TimeUnit.MILLISECONDS.toSeconds(secondTime - firstTime) -
 //				  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime)));
 //		BHBot.logger.info(runtime);
 
-		//End debugging section
+        //End debugging section
 
-		if (BHBot.settings.idleMode) { //skip startup checks if we are in idle mode
-			oneTimeshrineCheck = true;
-			oneTimeRuneCheck = true;
-		}
+        if (BHBot.settings.idleMode) { //skip startup checks if we are in idle mode
+            oneTimeshrineCheck = true;
+            oneTimeRuneCheck = true;
+        }
 
-		if ((BHBot.settings.activitiesEnabled.contains("d")) && (BHBot.settings.activitiesEnabled.contains("w"))) {
-			BHBot.logger.info("Both Dungeons and World Boss selected, disabling World Boss.");
-			BHBot.logger.info("To run a mixture of both use a low lobby timer and enable dungeonOnTimeout");
-			BHBot.settings.activitiesEnabled.remove("w");
-		}
-		state = State.Loading;
-		BHBot.scheduler.resetIdleTime();
+        if ((BHBot.settings.activitiesEnabled.contains("d")) && (BHBot.settings.activitiesEnabled.contains("w"))) {
+            BHBot.logger.info("Both Dungeons and World Boss selected, disabling World Boss.");
+            BHBot.logger.info("To run a mixture of both use a low lobby timer and enable dungeonOnTimeout");
+            BHBot.settings.activitiesEnabled.remove("w");
+        }
+        state = State.Loading;
+        BHBot.scheduler.resetIdleTime();
 //		numAdOffers = 0; // reset ad offers counter
-		timeLastAdOffer = Misc.getTime();
-		BHBot.scheduler.resume(); // in case it was paused
-		numFailedRestarts = 0; // must be last line in this method!
-	}
+        timeLastAdOffer = Misc.getTime();
+        BHBot.scheduler.resume(); // in case it was paused
+        numFailedRestarts = 0; // must be last line in this method!
+    }
 
-	private void scrollGameIntoView() {
-		WebElement element = driver.findElement(By.id("game"));
+    private void scrollGameIntoView() {
+        WebElement element = driver.findElement(By.id("game"));
 
-		String scrollElementIntoMiddle = "var viewPortHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);"
-		                                            + "var elementTop = arguments[0].getBoundingClientRect().top;"
-		                                            + "window.scrollBy(0, elementTop-(viewPortHeight/2));";
+        String scrollElementIntoMiddle = "var viewPortHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);"
+                + "var elementTop = arguments[0].getBoundingClientRect().top;"
+                + "window.scrollBy(0, elementTop-(viewPortHeight/2));";
 
-		((JavascriptExecutor) driver).executeScript(scrollElementIntoMiddle, element);
-		sleep(3000);
-		/*
-		 * Bellow code doesn't work well (it does not scroll horizontally):
-		 *
-		 * ((JavascriptExecutor)driver).executeScript("arguments[0].scrollIntoView(true);", game);
-		 */
+        ((JavascriptExecutor) driver).executeScript(scrollElementIntoMiddle, element);
+        sleep(3000);
+        /*
+         * Bellow code doesn't work well (it does not scroll horizontally):
+         *
+         * ((JavascriptExecutor)driver).executeScript("arguments[0].scrollIntoView(true);", game);
+         */
 //		Actions actions = new Actions(driver);
 //		actions.moveToElement(game);
 //		sleep(5000);
 //		actions.perform();
-	}
+    }
 
-	public void run() {
+    public void run() {
 
-		BHBot.logger.info("Driver started succesfully");
+        BHBot.logger.info("Driver started succesfully");
 
-		restart(false);
+        restart(false);
 
-		while (!finished) {
-			BHBot.scheduler.backupIdleTime();
-			try {
-				// do some sleeping at the start of loop:
-				sleep(500);
-				BHBot.scheduler.process();
-				if (BHBot.scheduler.isPaused()) continue;
+        while (!finished) {
+            BHBot.scheduler.backupIdleTime();
+            try {
+                // do some sleeping at the start of loop:
+                sleep(500);
+                BHBot.scheduler.process();
+                if (BHBot.scheduler.isPaused()) continue;
 
-				if (Misc.getTime() - BHBot.scheduler.getIdleTime() > MAX_IDLE_TIME) {
-					BHBot.logger.warn("Idle time exceeded... perhaps caught in a loop? Restarting... (state=" + state + ")");
+                if (Misc.getTime() - BHBot.scheduler.getIdleTime() > MAX_IDLE_TIME) {
+                    BHBot.logger.warn("Idle time exceeded... perhaps caught in a loop? Restarting... (state=" + state + ")");
 
-					// Safety measure to avoid being stuck forever in dungeons
-					if (state != State.Main && state != State.Loading) {
-						BHBot.logger.info("Ensuring that autoShrine settings are disabled");
-						if (!checkShrineSettings(false, false)) {
-							BHBot.logger.error("It was not possible to verify autoShrine settings");
-						}
-						autoShrined = false;
+                    // Safety measure to avoid being stuck forever in dungeons
+                    if (state != State.Main && state != State.Loading) {
+                        BHBot.logger.info("Ensuring that autoShrine settings are disabled");
+                        if (!checkShrineSettings(false, false)) {
+                            BHBot.logger.error("It was not possible to verify autoShrine settings");
+                        }
+                        autoShrined = false;
 
-						if(!BHBot.settings.autoRuneDefault.isEmpty()) {
-							BHBot.logger.info("Re-validating autoRunes");
-							if (!detectEquippedMinorRunes(true, true)) {
-								BHBot.logger.error("It was not possible to verify the equipped runes!");
-							}
-						}
-					}
+                        if (!BHBot.settings.autoRuneDefault.isEmpty()) {
+                            BHBot.logger.info("Re-validating autoRunes");
+                            if (!detectEquippedMinorRunes(true, true)) {
+                                BHBot.logger.error("It was not possible to verify the equipped runes!");
+                            }
+                        }
+                    }
 
-					restart();
-					continue;
-				}
-				BHBot.scheduler.resetIdleTime();
+                    restart();
+                    continue;
+                }
+                BHBot.scheduler.resetIdleTime();
 
-				moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
-				readScreen();
-				MarvinSegment seg;
+                moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
+                readScreen();
+                MarvinSegment seg;
 
-				seg = detectCue(cues.get("UnableToConnect"));
-				if (seg != null) {
-					BHBot.logger.info("'Unable to connect' dialog detected. Reconnecting...");
-					seg = detectCue(cues.get("Reconnect"), 5*SECOND);
-					clickOnSeg(seg);
-					sleep(5*SECOND);
-					state = State.Loading;
-					continue;
-				}
-
-
-				// check for "Bit Heroes is currently down for maintenance. Please check back shortly!" window:
-				seg = detectCue(cues.get("Maintenance"));
-				if (seg != null) {
-					seg = detectCue(cues.get("Reconnect"), 5*SECOND);
-					clickOnSeg(seg);
-					BHBot.logger.info("Maintenance dialog dismissed.");
-					sleep(5*SECOND);
-					state = State.Loading;
-					continue;
-				}
-
-				// check for "You have been disconnected" dialog:
-				seg = detectCue(cues.get("Disconnected"));
-				if (seg != null) {
-					if (BHBot.scheduler.isUserInteracting || BHBot.scheduler.dismissReconnectOnNextIteration) {
-						BHBot.scheduler.isUserInteracting = false;
-						BHBot.scheduler.dismissReconnectOnNextIteration = false;
-						seg = detectCue(cues.get("Reconnect"), 5*SECOND);
-						clickOnSeg(seg);
-						BHBot.logger.info("Disconnected dialog dismissed (reconnecting).");
-						sleep(5*SECOND);
-						state = State.Loading;
-						continue;
-					} else {
-						BHBot.scheduler.isUserInteracting = true;
-						// probably user has logged in, that's why we got disconnected. Lets leave him alone for some time and then resume!
-						BHBot.logger.info("Disconnect has been detected. Probably due to user interaction. Sleeping for " + Misc.millisToHumanForm(BHBot.settings.reconnectTimer * MINUTE) + "...");
-						BHBot.scheduler.pause(BHBot.settings.reconnectTimer * MINUTE);
-						state = State.Loading;
-						continue;
-					}
-				}
-
-				BHBot.scheduler.dismissReconnectOnNextIteration = false; // must be done after checking for "Disconnected" dialog!
-
-				// check for "There is a new update required to play" and click on "Reload" button:
-				seg = detectCue(cues.get("Reload"));
-				if (seg != null) {
-					clickOnSeg(seg);
-					BHBot.logger.info("Update dialog dismissed.");
-					sleep(5*SECOND);
-					state = State.Loading;
-					continue;
-				}
-
-				// close any PMs:
-				handlePM();
-
-				// check for "Are you still there?" popup:
-				seg = detectCue(cues.get("AreYouThere"));
-				if (seg != null) {
-					BHBot.scheduler.restoreIdleTime();
-					seg = detectCue(cues.get("Yes"), 2*SECOND);
-					if (seg != null)
-						clickOnSeg(seg);
-					else {
-						BHBot.logger.info("Problem: 'Are you still there?' popup detected, but 'Yes' button not detected. Ignoring...");
-						continue;
-					}
-					sleep(2*SECOND);
-					continue; // skip other stuff, we must first get rid of this popup!
-				}
-
-				// check for "News" popup:
-				seg = detectCue(cues.get("News"));
-				if (seg != null) {
-					seg = detectCue(cues.get("Close"), 2*SECOND);
-					clickOnSeg(seg);
-					BHBot.logger.info("News popup dismissed.");
-					sleep(2*SECOND);
-
-					continue;
-				}
-
-				// check for daily rewards popup:
-				seg = detectCue(cues.get("DailyRewards"));
-				if (seg != null) {
-					seg = detectCue(cues.get("Claim"), 5*SECOND);
-					if (seg != null)
-						clickOnSeg(seg);
-					else {
-						BHBot.logger.error("Problem: 'Daily reward' popup detected, however could not detect the 'claim' button. Restarting...");
-						restart();
-						continue; // may happen every while, rarely though
-					}
-
-					readScreen(5*SECOND);
-					seg = detectCue(cues.get("Items"), SECOND);
-					if (seg == null) {
-						// we must terminate this thread... something happened that should not (unexpected). We must restart the thread!
-						BHBot.logger.error("Error: there is no 'Items' dialog open upon clicking on the 'Claim' button. Restarting...");
-						restart();
-						continue;
-					}
-					seg = detectCue(cues.get("X"));
-					clickOnSeg(seg);
-					BHBot.logger.info("Daily reward claimed successfully.");
-					sleep(2*SECOND);
-
-					continue;
-				}
-
-				// check for weekly (GvG, PvP, Trial, Gauntlet) rewards popup (and also for rewards in dungeons, which get auto-closed though):
-				// (note that several, 2 or even 3 such popups may open one after another)
-				seg = detectCue(cues.get("WeeklyRewards"));
-				if (seg != null) {
-					BufferedImage weeklyImg = img;
-
-					// hopefully we won't close some other important window that has the same fingerprint! (stuff that you find in dungeons has same fingerprint, but perhaps some other dialogs too...)
-					seg = detectCue(cues.get("X"), 5*SECOND);
-					if (seg != null)
-						clickOnSeg(seg);
-					else if (state == State.Loading || state == State.Main) {
-						BHBot.logger.error("Problem: 'Weekly reward' popup detected, however could not detect the close ('X') button. Restarting...");
-						restart();
-						continue;
-					}
-
-					if (state == State.Loading || state == State.Main) { // inform about weekly reward only if we're not in a dungeon (in a dungeon it will close the normal reward popup)
-						BHBot.logger.info("Weekly reward claimed successfully.");
-						saveGameScreen("weekly_reward", weeklyImg);
-					}
-					readScreen(2*SECOND);
-
-					continue;
-				}
-
-				// check for "recently disconnected" popup:
-				seg = detectCue(cues.get("RecentlyDisconnected"));
-				if (seg != null) {
-					seg = detectCue(cues.get("YesGreen"), 2*SECOND);
-					if (seg == null) {
-						BHBot.logger.error("Error: detected 'recently disconnected' popup but could not find 'Yes' button. Restarting...");
-						restart();
-						continue;
-					}
-
-					clickOnSeg(seg);
-					if (state == State.Main || state == State.Loading) {
-						// we set this when we are not sure of what type of dungeon we are doing
-						state = State.UnidentifiedDungeon;
-					} else {
-						BHBot.logger.debug("RecentlyDisconnected status is: " + state);
-					}
-					BHBot.logger.info("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
-					sleep(60*SECOND); //long sleep as if the checkShrine didn't find the potion button we'd enter a restart loop
-					checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
-					continue;
-				}
-
-				// process dungeons of any kind (if we are in any):
-				if (state == State.Raid || state == State.Trials || state == State.Gauntlet || state == State.Dungeon || state == State.PVP || state == State.GVG || state == State.Invasion || state == State.UnidentifiedDungeon || state == State.Expedition || state == State.WorldBoss ) {
-					processDungeon();
-					continue;
-				}
-
-				// check if we are in the main menu:
-				seg = detectCue(cues.get("Main"));
-				if (seg != null) {
-					state = State.Main;
-
-					//Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
-					if (!idleMode) {
-						seg = detectCue(cues.get("AutoOn")); //if we're in Main state, with auto button visible, then we need to change state
-							if (seg != null) {
-							state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
-						    BHBot.logger.warn("Possible dungeon crash, activating failsafe");
-						    continue;
-							}
-					}
-
-					// check for pushover alive notifications!
-					if ((BHBot.settings.enablePushover && BHBot.settings.poNotifyAlive > 0) &&
-							((Misc.getTime() - timeLastPOAlive) > (BHBot.settings.poNotifyAlive * HOUR))) {
-						timeLastPOAlive = Misc.getTime();
-						String aliveScreenName = saveGameScreen("alive-screen");
-						File aliveScreenFile = new File(aliveScreenName);
-						sendPushOverMessage("Alive notification", "I am alive and doing fine!", MessagePriority.QUIET, aliveScreenFile);
-						if (!aliveScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
-					}
-
-					// check for bonuses:
-					if (BHBot.settings.autoConsume && (Misc.getTime() - timeLastBonusCheck > BONUS_CHECK_INTERVAL)) {
-						timeLastBonusCheck = Misc.getTime();
-						handleConsumables();
-					}
-
-					// collect any fishing bait
-					if (BHBot.settings.collectFishingBaits && ((Misc.getTime() - timeLastFishingCheck > FISHING_CHECK_INTERVAL) || timeLastFishingCheck == 0)) {
-						timeLastFishingCheck = Misc.getTime();
-						handleFishingBaits();
-						continue;
-					}
+                seg = detectCue(cues.get("UnableToConnect"));
+                if (seg != null) {
+                    BHBot.logger.info("'Unable to connect' dialog detected. Reconnecting...");
+                    seg = detectCue(cues.get("Reconnect"), 5 * SECOND);
+                    clickOnSeg(seg);
+                    sleep(5 * SECOND);
+                    state = State.Loading;
+                    continue;
+                }
 
 
-					//comment for faster testing
+                // check for "Bit Heroes is currently down for maintenance. Please check back shortly!" window:
+                seg = detectCue(cues.get("Maintenance"));
+                if (seg != null) {
+                    seg = detectCue(cues.get("Reconnect"), 5 * SECOND);
+                    clickOnSeg(seg);
+                    BHBot.logger.info("Maintenance dialog dismissed.");
+                    sleep(5 * SECOND);
+                    state = State.Loading;
+                    continue;
+                }
+
+                // check for "You have been disconnected" dialog:
+                seg = detectCue(cues.get("Disconnected"));
+                if (seg != null) {
+                    if (BHBot.scheduler.isUserInteracting || BHBot.scheduler.dismissReconnectOnNextIteration) {
+                        BHBot.scheduler.isUserInteracting = false;
+                        BHBot.scheduler.dismissReconnectOnNextIteration = false;
+                        seg = detectCue(cues.get("Reconnect"), 5 * SECOND);
+                        clickOnSeg(seg);
+                        BHBot.logger.info("Disconnected dialog dismissed (reconnecting).");
+                        sleep(5 * SECOND);
+                        state = State.Loading;
+                        continue;
+                    } else {
+                        BHBot.scheduler.isUserInteracting = true;
+                        // probably user has logged in, that's why we got disconnected. Lets leave him alone for some time and then resume!
+                        BHBot.logger.info("Disconnect has been detected. Probably due to user interaction. Sleeping for " + Misc.millisToHumanForm(BHBot.settings.reconnectTimer * MINUTE) + "...");
+                        BHBot.scheduler.pause(BHBot.settings.reconnectTimer * MINUTE);
+                        state = State.Loading;
+                        continue;
+                    }
+                }
+
+                BHBot.scheduler.dismissReconnectOnNextIteration = false; // must be done after checking for "Disconnected" dialog!
+
+                // check for "There is a new update required to play" and click on "Reload" button:
+                seg = detectCue(cues.get("Reload"));
+                if (seg != null) {
+                    clickOnSeg(seg);
+                    BHBot.logger.info("Update dialog dismissed.");
+                    sleep(5 * SECOND);
+                    state = State.Loading;
+                    continue;
+                }
+
+                // close any PMs:
+                handlePM();
+
+                // check for "Are you still there?" popup:
+                seg = detectCue(cues.get("AreYouThere"));
+                if (seg != null) {
+                    BHBot.scheduler.restoreIdleTime();
+                    seg = detectCue(cues.get("Yes"), 2 * SECOND);
+                    if (seg != null)
+                        clickOnSeg(seg);
+                    else {
+                        BHBot.logger.info("Problem: 'Are you still there?' popup detected, but 'Yes' button not detected. Ignoring...");
+                        continue;
+                    }
+                    sleep(2 * SECOND);
+                    continue; // skip other stuff, we must first get rid of this popup!
+                }
+
+                // check for "News" popup:
+                seg = detectCue(cues.get("News"));
+                if (seg != null) {
+                    seg = detectCue(cues.get("Close"), 2 * SECOND);
+                    clickOnSeg(seg);
+                    BHBot.logger.info("News popup dismissed.");
+                    sleep(2 * SECOND);
+
+                    continue;
+                }
+
+                // check for daily rewards popup:
+                seg = detectCue(cues.get("DailyRewards"));
+                if (seg != null) {
+                    seg = detectCue(cues.get("Claim"), 5 * SECOND);
+                    if (seg != null)
+                        clickOnSeg(seg);
+                    else {
+                        BHBot.logger.error("Problem: 'Daily reward' popup detected, however could not detect the 'claim' button. Restarting...");
+                        restart();
+                        continue; // may happen every while, rarely though
+                    }
+
+                    readScreen(5 * SECOND);
+                    seg = detectCue(cues.get("Items"), SECOND);
+                    if (seg == null) {
+                        // we must terminate this thread... something happened that should not (unexpected). We must restart the thread!
+                        BHBot.logger.error("Error: there is no 'Items' dialog open upon clicking on the 'Claim' button. Restarting...");
+                        restart();
+                        continue;
+                    }
+                    seg = detectCue(cues.get("X"));
+                    clickOnSeg(seg);
+                    BHBot.logger.info("Daily reward claimed successfully.");
+                    sleep(2 * SECOND);
+
+                    continue;
+                }
+
+                // check for weekly (GvG, PvP, Trial, Gauntlet) rewards popup (and also for rewards in dungeons, which get auto-closed though):
+                // (note that several, 2 or even 3 such popups may open one after another)
+                seg = detectCue(cues.get("WeeklyRewards"));
+                if (seg != null) {
+                    BufferedImage weeklyImg = img;
+
+                    // hopefully we won't close some other important window that has the same fingerprint! (stuff that you find in dungeons has same fingerprint, but perhaps some other dialogs too...)
+                    seg = detectCue(cues.get("X"), 5 * SECOND);
+                    if (seg != null)
+                        clickOnSeg(seg);
+                    else if (state == State.Loading || state == State.Main) {
+                        BHBot.logger.error("Problem: 'Weekly reward' popup detected, however could not detect the close ('X') button. Restarting...");
+                        restart();
+                        continue;
+                    }
+
+                    if (state == State.Loading || state == State.Main) { // inform about weekly reward only if we're not in a dungeon (in a dungeon it will close the normal reward popup)
+                        BHBot.logger.info("Weekly reward claimed successfully.");
+                        saveGameScreen("weekly_reward", weeklyImg);
+                    }
+                    readScreen(2 * SECOND);
+
+                    continue;
+                }
+
+                // check for "recently disconnected" popup:
+                seg = detectCue(cues.get("RecentlyDisconnected"));
+                if (seg != null) {
+                    seg = detectCue(cues.get("YesGreen"), 2 * SECOND);
+                    if (seg == null) {
+                        BHBot.logger.error("Error: detected 'recently disconnected' popup but could not find 'Yes' button. Restarting...");
+                        restart();
+                        continue;
+                    }
+
+                    clickOnSeg(seg);
+                    if (state == State.Main || state == State.Loading) {
+                        // we set this when we are not sure of what type of dungeon we are doing
+                        state = State.UnidentifiedDungeon;
+                    } else {
+                        BHBot.logger.debug("RecentlyDisconnected status is: " + state);
+                    }
+                    BHBot.logger.info("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
+                    sleep(60 * SECOND); //long sleep as if the checkShrine didn't find the potion button we'd enter a restart loop
+                    checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
+                    continue;
+                }
+
+                // process dungeons of any kind (if we are in any):
+                if (state == State.Raid || state == State.Trials || state == State.Gauntlet || state == State.Dungeon || state == State.PVP || state == State.GVG || state == State.Invasion || state == State.UnidentifiedDungeon || state == State.Expedition || state == State.WorldBoss) {
+                    processDungeon();
+                    continue;
+                }
+
+                // check if we are in the main menu:
+                seg = detectCue(cues.get("Main"));
+                if (seg != null) {
+                    state = State.Main;
+
+                    //Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
+                    if (!idleMode) {
+                        seg = detectCue(cues.get("AutoOn")); //if we're in Main state, with auto button visible, then we need to change state
+                        if (seg != null) {
+                            state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
+                            BHBot.logger.warn("Possible dungeon crash, activating failsafe");
+                            continue;
+                        }
+                    }
+
+                    // check for pushover alive notifications!
+                    if ((BHBot.settings.enablePushover && BHBot.settings.poNotifyAlive > 0) &&
+                            ((Misc.getTime() - timeLastPOAlive) > (BHBot.settings.poNotifyAlive * HOUR))) {
+                        timeLastPOAlive = Misc.getTime();
+                        String aliveScreenName = saveGameScreen("alive-screen");
+                        File aliveScreenFile = new File(aliveScreenName);
+                        sendPushOverMessage("Alive notification", "I am alive and doing fine!", MessagePriority.QUIET, aliveScreenFile);
+                        if (!aliveScreenFile.delete())
+                            BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
+                    }
+
+                    // check for bonuses:
+                    if (BHBot.settings.autoConsume && (Misc.getTime() - timeLastBonusCheck > BONUS_CHECK_INTERVAL)) {
+                        timeLastBonusCheck = Misc.getTime();
+                        handleConsumables();
+                    }
+
+                    // collect any fishing bait
+                    if (BHBot.settings.collectFishingBaits && ((Misc.getTime() - timeLastFishingCheck > FISHING_CHECK_INTERVAL) || timeLastFishingCheck == 0)) {
+                        timeLastFishingCheck = Misc.getTime();
+                        handleFishingBaits();
+                        continue;
+                    }
+
+
+                    //comment for faster testing
 //					oneTimeshrineCheck = true;
 //					oneTimeRuneCheck = true;
 
                     // One time check for Autoshrine
                     if (!oneTimeshrineCheck) {
 
-                    	BHBot.logger.info("Startup check to make sure autoShrine is initially disabled");
-						if (!checkShrineSettings(false, false)) {
-							BHBot.logger.error("It was not possible to perform the autoShrine start-up check!");
-						}
+                        BHBot.logger.info("Startup check to make sure autoShrine is initially disabled");
+                        if (!checkShrineSettings(false, false)) {
+                            BHBot.logger.error("It was not possible to perform the autoShrine start-up check!");
+                        }
                         oneTimeshrineCheck = true;
-                        readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
+                        readScreen(2 * SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
                     }
 
-					// One time check for equipped minor runes
-					if (!BHBot.settings.autoRuneDefault.isEmpty() && !oneTimeRuneCheck) {
+                    // One time check for equipped minor runes
+                    if (!BHBot.settings.autoRuneDefault.isEmpty() && !oneTimeRuneCheck) {
 
-						BHBot.logger.info("Startup check to determined configured minor runes");
-						if (!detectEquippedMinorRunes(true, true)) {
-							BHBot.logger.error("It was not possible to perform the equipped runes start-up check! Disabling autoRune..");
-							BHBot.settings.autoRuneDefault.clear();
-							BHBot.settings.autoRune.clear();
-							BHBot.settings.autoBossRune.clear();
-							continue;
-							
-						}
-			        	BHBot.logger.info(getRuneName(leftMinorRune.getRuneCueName()) + " equipped in left slot.");
-			        	BHBot.logger.info(getRuneName(rightMinorRune.getRuneCueName()) + " equipped in right slot.");
-						oneTimeRuneCheck = true;
-						readScreen(2*SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
-					}
+                        BHBot.logger.info("Startup check to determined configured minor runes");
+                        if (!detectEquippedMinorRunes(true, true)) {
+                            BHBot.logger.error("It was not possible to perform the equipped runes start-up check! Disabling autoRune..");
+                            BHBot.settings.autoRuneDefault.clear();
+                            BHBot.settings.autoRune.clear();
+                            BHBot.settings.autoBossRune.clear();
+                            continue;
 
-					String currentActivity = activitySelector(); //else select the activity to attempt
-					if (currentActivity != null) BHBot.logger.debug("Checking activity: " + currentActivity);
+                        }
+                        BHBot.logger.info(getRuneName(leftMinorRune.getRuneCueName()) + " equipped in left slot.");
+                        BHBot.logger.info(getRuneName(rightMinorRune.getRuneCueName()) + " equipped in right slot.");
+                        oneTimeRuneCheck = true;
+                        readScreen(2 * SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
+                    }
+
+                    String currentActivity = activitySelector(); //else select the activity to attempt
+                    if (currentActivity != null) BHBot.logger.debug("Checking activity: " + currentActivity);
 
 
-					// check for shards:
-					if ( BHBot.scheduler.doRaidImmediately || ("r".equals(currentActivity)) ) {
-						timeLastShardsCheck = Misc.getTime();
+                    // check for shards:
+                    if (BHBot.scheduler.doRaidImmediately || ("r".equals(currentActivity))) {
+                        timeLastShardsCheck = Misc.getTime();
 
-						readScreen();
-						MarvinSegment raidBTNSeg = detectCue(cues.get("RaidButton"));
+                        readScreen();
+                        MarvinSegment raidBTNSeg = detectCue(cues.get("RaidButton"));
 
-						if (raidBTNSeg == null) { // if null, then raid button is transparent meaning that raiding is not enabled (we have not achieved it yet, for example)
-							BHBot.scheduler.restoreIdleTime();
-							continue;
-						}
-						clickOnSeg(raidBTNSeg);
+                        if (raidBTNSeg == null) { // if null, then raid button is transparent meaning that raiding is not enabled (we have not achieved it yet, for example)
+                            BHBot.scheduler.restoreIdleTime();
+                            continue;
+                        }
+                        clickOnSeg(raidBTNSeg);
 
-						seg = detectCue(cues.get("RaidPopup"), 10*SECOND); // wait until the raid window opens
-						if (seg == null) {
-							BHBot.logger.warn("Error: attempt at opening raid window failed. No window cue detected. Ignoring...");
-							BHBot.scheduler.restoreIdleTime();
-							continue;
-						}
-						
+                        seg = detectCue(cues.get("RaidPopup"), 10 * SECOND); // wait until the raid window opens
+                        if (seg == null) {
+                            BHBot.logger.warn("Error: attempt at opening raid window failed. No window cue detected. Ignoring...");
+                            BHBot.scheduler.restoreIdleTime();
+                            continue;
+                        }
 
-						int shards = getShards();
-						globalShards = shards;
-						BHBot.logger.readout("Shards: " + shards + ", required: >" + BHBot.settings.minShards);
 
-						if (shards == -1) { // error
-							BHBot.scheduler.restoreIdleTime();
-							continue;
-						}
+                        int shards = getShards();
+                        globalShards = shards;
+                        BHBot.logger.readout("Shards: " + shards + ", required: >" + BHBot.settings.minShards);
 
-						if ((shards == 0) || (!BHBot.scheduler.doRaidImmediately && (shards <= BHBot.settings.minShards || BHBot.settings.raids.size() == 0))) {
-							if (BHBot.scheduler.doRaidImmediately)
-								BHBot.scheduler.doRaidImmediately = false; // reset it
+                        if (shards == -1) { // error
+                            BHBot.scheduler.restoreIdleTime();
+                            continue;
+                        }
 
-							readScreen();
-							seg = detectCue(cues.get("X"),SECOND);
-							clickOnSeg(seg);
-							sleep(SECOND);
+                        if ((shards == 0) || (!BHBot.scheduler.doRaidImmediately && (shards <= BHBot.settings.minShards || BHBot.settings.raids.size() == 0))) {
+                            if (BHBot.scheduler.doRaidImmediately)
+                                BHBot.scheduler.doRaidImmediately = false; // reset it
 
-							continue;
+                            readScreen();
+                            seg = detectCue(cues.get("X"), SECOND);
+                            clickOnSeg(seg);
+                            sleep(SECOND);
 
-						} else { // do the raiding!
+                            continue;
 
-							if (BHBot.scheduler.doRaidImmediately)
-								BHBot.scheduler.doRaidImmediately = false; // reset it
+                        } else { // do the raiding!
 
-							//configure shrine for raid if applicable
-							if (BHBot.settings.autoShrine.contains("r")) {
+                            if (BHBot.scheduler.doRaidImmediately)
+                                BHBot.scheduler.doRaidImmediately = false; // reset it
 
-								// we need to close the raid window to check the autoshrine
-								readScreen();
-								seg = detectCue(cues.get("X"),SECOND);
-								clickOnSeg(seg);
-								readScreen(SECOND);
+                            //configure shrine for raid if applicable
+                            if (BHBot.settings.autoShrine.contains("r")) {
 
-								BHBot.logger.info("Configuring autoShrine for Raid");
-								if (!checkShrineSettings(true, true)) {
-									BHBot.logger.error("Impossible to configure autoShrine for Raid!");
-								}
+                                // we need to close the raid window to check the autoshrine
+                                readScreen();
+                                seg = detectCue(cues.get("X"), SECOND);
+                                clickOnSeg(seg);
+                                readScreen(SECOND);
 
-								readScreen(SECOND);
-								clickOnSeg(raidBTNSeg);
-							}
+                                BHBot.logger.info("Configuring autoShrine for Raid");
+                                if (!checkShrineSettings(true, true)) {
+                                    BHBot.logger.error("Impossible to configure autoShrine for Raid!");
+                                }
 
-							//configure activity runes
-							if (handleMinorRunes("r")) {
-							readScreen(SECOND);
-							seg = detectCue(cues.get("RaidButton"),SECOND);
-							if (seg == null) {
-								BHBot.logger.error("Can't find raid button after switching runes!");
-							}
-							clickOnSeg(seg);
-							sleep(SECOND);
-							}
+                                readScreen(SECOND);
+                                clickOnSeg(raidBTNSeg);
+                            }
 
-							//configure boss runes if no autoshrine
-							if (BHBot.settings.autoBossRune.containsKey("r") && !BHBot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autorune enabled
-								readScreen();
-								seg = detectCue(cues.get("X"),SECOND);
-								clickOnSeg(seg);
-								readScreen(SECOND);
+                            //configure activity runes
+                            if (handleMinorRunes("r")) {
+                                readScreen(SECOND);
+                                seg = detectCue(cues.get("RaidButton"), SECOND);
+                                if (seg == null) {
+                                    BHBot.logger.error("Can't find raid button after switching runes!");
+                                }
+                                clickOnSeg(seg);
+                                sleep(SECOND);
+                            }
 
-								BHBot.logger.info("Configuring autoBossRune for Raid");
-								if (!checkShrineSettings(true, false)) {
-									BHBot.logger.error("Impossible to configure autoBossRune for Raid!");
-								}
+                            //configure boss runes if no autoshrine
+                            if (BHBot.settings.autoBossRune.containsKey("r") && !BHBot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autorune enabled
+                                readScreen();
+                                seg = detectCue(cues.get("X"), SECOND);
+                                clickOnSeg(seg);
+                                readScreen(SECOND);
 
-								readScreen(SECOND);
-								clickOnSeg(raidBTNSeg);
-							}
+                                BHBot.logger.info("Configuring autoBossRune for Raid");
+                                if (!checkShrineSettings(true, false)) {
+                                    BHBot.logger.error("Impossible to configure autoBossRune for Raid!");
+                                }
 
-							String raid = decideRaidRandomly();
-							if (raid == null) {
-								BHBot.settings.activitiesEnabled.remove("r");
-								BHBot.logger.error("It was impossible to choose a raid randomly, raids are disabled!");
-								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-									sendPushOverMessage("Raid Error", "It was impossible to choose a raid randomly, raids are disabled!", "siren");
-								continue;
-							}
+                                readScreen(SECOND);
+                                clickOnSeg(raidBTNSeg);
+                            }
 
-							int difficulty = Integer.parseInt(raid.split(" ")[1]);
-							int raidType = Integer.parseInt(raid.split(" ")[0]);
-							int raidUnlocked = readUnlockedRaidTier();
+                            String raid = decideRaidRandomly();
+                            if (raid == null) {
+                                BHBot.settings.activitiesEnabled.remove("r");
+                                BHBot.logger.error("It was impossible to choose a raid randomly, raids are disabled!");
+                                if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+                                    sendPushOverMessage("Raid Error", "It was impossible to choose a raid randomly, raids are disabled!", "siren");
+                                continue;
+                            }
+
+                            int difficulty = Integer.parseInt(raid.split(" ")[1]);
+                            int raidType = Integer.parseInt(raid.split(" ")[0]);
+                            int raidUnlocked = readUnlockedRaidTier();
 //							BHBot.logger.info("Detected: R" + Integer.toString(raidUnlocked) + " unlocked");
 //							int raidUnlocked = BHBot.settings.currentRaidTier;
-							BHBot.logger.info("Attempting R" + raidType + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
+                            BHBot.logger.info("Attempting R" + raidType + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
 
-							readScreen(SECOND);
+                            readScreen(SECOND);
 
-							int currentType = readSelectedRaidTier();
-							String currentRaid = Integer.toString(currentType);
+                            int currentType = readSelectedRaidTier();
+                            String currentRaid = Integer.toString(currentType);
 //							BHBot.logger.info("Raid selected is R" + currentRaid);
 
-							if (currentType == 0) { // an error!
-								BHBot.logger.error("Error: detected selected raid is 0, which is an error. Restarting...");
+                            if (currentType == 0) { // an error!
+                                BHBot.logger.error("Error: detected selected raid is 0, which is an error. Restarting...");
 //								restart();
-								continue;
-							}
+                                continue;
+                            }
 
-							if (currentType != raidType) {
-								if 	(raidUnlocked < raidType) {
-									BHBot.logger.warn("Raid selected in settings (R" + raidType + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
-									if (!setRaidType(raidType, raidUnlocked)){
-										BHBot.logger.error("Impossible to set the raid type!");
-										continue;
-									}
-									readScreen(2*SECOND);
-								} else {
-								// we need to change the raid type!
-								BHBot.logger.info("Changing from R" + currentRaid + " to R" + raidType);
-								setRaidType(raidType, currentType);
-								readScreen(2*SECOND);
-								}
-							}
+                            if (currentType != raidType) {
+                                if (raidUnlocked < raidType) {
+                                    BHBot.logger.warn("Raid selected in settings (R" + raidType + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
+                                    if (!setRaidType(raidType, raidUnlocked)) {
+                                        BHBot.logger.error("Impossible to set the raid type!");
+                                        continue;
+                                    }
+                                    readScreen(2 * SECOND);
+                                } else {
+                                    // we need to change the raid type!
+                                    BHBot.logger.info("Changing from R" + currentRaid + " to R" + raidType);
+                                    setRaidType(raidType, currentType);
+                                    readScreen(2 * SECOND);
+                                }
+                            }
 
-							seg = detectCue(cues.get("RaidSummon"), 2*SECOND);
-							clickOnSeg(seg);
-							//sleep(2*SECOND);
-							readScreen();
+                            seg = detectCue(cues.get("RaidSummon"), 2 * SECOND);
+                            clickOnSeg(seg);
+                            //sleep(2*SECOND);
+                            readScreen();
 
-							// dismiss character dialog if it pops up:
-							readScreen();
-							detectCharacterDialogAndHandleIt();
+                            // dismiss character dialog if it pops up:
+                            readScreen();
+                            detectCharacterDialogAndHandleIt();
 
-							seg = detectCue(cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
-							clickOnSeg(seg);
-							readScreen(2*SECOND);
-							seg = detectCue(cues.get("Accept"), 5*SECOND);
-							clickOnSeg(seg);
-							readScreen(2*SECOND);
+                            seg = detectCue(cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
+                            clickOnSeg(seg);
+                            readScreen(2 * SECOND);
+                            seg = detectCue(cues.get("Accept"), 5 * SECOND);
+                            clickOnSeg(seg);
+                            readScreen(2 * SECOND);
 
-							handleTeamMalformedWarning();
-							if (handleTeamMalformedWarning()) {
-								BHBot.logger.error("Team incomplete, doing emergency restart..");
-								restart();
-								continue;
-							} else {
-								state = State.Raid;
-								BHBot.logger.info("Raid initiated!");
-								autoShrined = false;
-								autoBossRuned = false;
-							}
-						}
-						continue;
-					} // shards
+                            handleTeamMalformedWarning();
+                            if (handleTeamMalformedWarning()) {
+                                BHBot.logger.error("Team incomplete, doing emergency restart..");
+                                restart();
+                                continue;
+                            } else {
+                                state = State.Raid;
+                                BHBot.logger.info("Raid initiated!");
+                                autoShrined = false;
+                                autoBossRuned = false;
+                            }
+                        }
+                        continue;
+                    } // shards
 
-					// check for tokens (trials and gauntlet):
-					if ( BHBot.scheduler.doTrialsOrGauntletImmediately || ("t".equals(currentActivity)) || ("g".equals(currentActivity)) ) {
-						if ("t".equals(currentActivity)) timeLastTrialsTokensCheck = Misc.getTime();
-						if ("g".equals(currentActivity)) timeLastGauntletTokensCheck = Misc.getTime();
+                    // check for tokens (trials and gauntlet):
+                    if (BHBot.scheduler.doTrialsOrGauntletImmediately || ("t".equals(currentActivity)) || ("g".equals(currentActivity))) {
+                        if ("t".equals(currentActivity)) timeLastTrialsTokensCheck = Misc.getTime();
+                        if ("g".equals(currentActivity)) timeLastGauntletTokensCheck = Misc.getTime();
 
-						readScreen();
+                        readScreen();
 
-						boolean trials;
-						seg = detectCue(cues.get("Trials"));
-						if (seg==null) seg = detectCue(cues.get("Trials2"));
-						trials = seg != null; // if false, then we will do gauntlet instead of trials
+                        boolean trials;
+                        seg = detectCue(cues.get("Trials"));
+                        if (seg == null) seg = detectCue(cues.get("Trials2"));
+                        trials = seg != null; // if false, then we will do gauntlet instead of trials
 
-						if (seg == null)
-							seg = detectCue(cues.get("Gauntlet"));
-						if (seg == null) {
-							seg = detectCue(cues.get("Gauntlet2"));
-						}
-						if (seg == null) {// trials/gauntlet button not visible (perhaps it is disabled?)
-							BHBot.logger.warn("Gauntlet/Trials button not found");
-							BHBot.scheduler.restoreIdleTime();
-							continue;
-						}
+                        if (seg == null)
+                            seg = detectCue(cues.get("Gauntlet"));
+                        if (seg == null) {
+                            seg = detectCue(cues.get("Gauntlet2"));
+                        }
+                        if (seg == null) {// trials/gauntlet button not visible (perhaps it is disabled?)
+                            BHBot.logger.warn("Gauntlet/Trials button not found");
+                            BHBot.scheduler.restoreIdleTime();
+                            continue;
+                        }
 
-						if (("g".equals(currentActivity) && trials) || ("t".equals(currentActivity) && !trials)) continue;
-	
-						
-						clickOnSeg(seg);
-						MarvinSegment trialBTNSeg = seg;
-
-						// dismiss character dialog if it pops up:
-						readScreen(2 * SECOND);
-						detectCharacterDialogAndHandleIt();
-
-						readScreen();
-						int tokens = getTokens();
-						globalTokens = tokens;
-						BHBot.logger.readout("Tokens: " + tokens + ", required: >" + BHBot.settings.minTokens + ", " +
-								(trials ? "Trials" : "Gauntlet") + " cost: " + (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet));
-
-						if (tokens == -1) { // error
-							BHBot.scheduler.restoreIdleTime();
-							continue;
-						}
-
-						if ((!BHBot.scheduler.doTrialsOrGauntletImmediately && (tokens <= BHBot.settings.minTokens)) || (tokens < (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet))) {
-							readScreen();
-							seg = detectCue(cues.get("X"),SECOND);
-							clickOnSeg(seg);
-							readScreen(SECOND);
-							
-							//if we have 1 token and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one token short
-							int tokenDifference = (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet) - tokens; //difference between needed and current resource
-							if (tokenDifference > 1) {
-								int increase = (tokenDifference - 1) * 45;
-								TOKENS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
-							} else TOKENS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 token check every 10 minutes
-
-							if (BHBot.scheduler.doTrialsOrGauntletImmediately)
-								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // if we don't have resources to run we need to disable force it
-
-							continue;
-						} else {
-							// do the trials/gauntlet!
-
-							if (BHBot.scheduler.doTrialsOrGauntletImmediately)
-								BHBot.scheduler.doTrialsOrGauntletImmediately = false; // reset it
-
-							// One time check for Autoshrine
-							if (trials) {
-
-								if (BHBot.settings.autoShrine.contains("t") || BHBot.settings.autoRune.containsKey("t")) {
-									readScreen();
-									seg = detectCue(cues.get("X"),SECOND);
-									clickOnSeg(seg);
-									readScreen(SECOND);
-
-									if (BHBot.settings.autoShrine.contains("t")) {
-										BHBot.logger.info("Configuring autoShrine for Trial");
-										if(!checkShrineSettings(true, true)) {
-											BHBot.logger.error("Impossible to configure autoShrine for Trial");
-										}
-										readScreen(SECOND);
-									}
-
-									if (BHBot.settings.autoRune.containsKey("t")) {
-										handleMinorRunes("t");
-										readScreen(SECOND);
-									}
-
-									readScreen(SECOND);
-									clickOnSeg(trialBTNSeg);
-									readScreen(SECOND); //wait for window animation
-								}
-
-							} else {
-
-								if (BHBot.settings.autoRune.containsKey("g")) {
-									handleMinorRunes("g");
-									readScreen(SECOND);
-								}
-
-								readScreen(SECOND);
-								clickOnSeg(trialBTNSeg);
-								readScreen(SECOND); //wait for window animation
-							}
-
-							BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + BHBot.settings.difficulty + "...");
-
-							// select difficulty if needed:
-							int difficulty = detectDifficulty();
-							if (difficulty == 0) { // error!
-								BHBot.logger.error("Due to an error#1 in difficulty detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
-								closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"));
-								continue;
-							}
-							if (difficulty != BHBot.settings.difficulty) {
-								BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + BHBot.settings.difficulty + ". Changing..");
-								boolean result = selectDifficulty(difficulty, BHBot.settings.difficulty);
-								if (!result) { // error!
-									// see if drop down menu is still open and close it:
-									readScreen(SECOND);
-									tryClosingWindow(cues.get("DifficultyDropDown"));
-									readScreen(5*SECOND);
-									tryClosingWindow(cues.get("TrialsOrGauntletWindow"));
-									BHBot.logger.error("Due to an error#2 in difficulty selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
-									continue;
-								}
-							}
-
-							// select cost if needed:
-							readScreen(2*SECOND); // wait for the popup to stabilize a bit
-							int cost = detectCost();
-							if (cost == 0) { // error!
-								BHBot.logger.error("Due to an error#1 in cost detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
-								closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"));
-								continue;
-							}
-							if (cost != (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet)) {
-								BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " cost: " + cost + ", settings cost is " + (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet) + ". Changing it...");
-								boolean result = selectCost(cost, (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet));
-								if (!result) { // error!
-									// see if drop down menu is still open and close it:
-									readScreen(SECOND);
-									tryClosingWindow(cues.get("CostDropDown"));
-									readScreen(5*SECOND);
-									tryClosingWindow(cues.get("TrialsOrGauntletWindow"));
-									BHBot.logger.error("Due to an error#2 in cost selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
-									continue;
-								}
-							}
-
-							seg = detectCue(cues.get("Play"), 2*SECOND);
-							if (seg == null) {
-								BHBot.logger.error("Error: Play button not found while trying to do " + (trials ? "trials" : "gauntlet") + ". Ignoring...");
-								continue;
-							}
-							clickOnSeg(seg);
-							readScreen(2*SECOND);
-
-							// dismiss character dialog if it pops up:
-							detectCharacterDialogAndHandleIt();
-
-							seg = detectCue(cues.get("Accept"), 5*SECOND);
-							clickOnSeg(seg);
-							sleep(5*SECOND);
-
-							handleTeamMalformedWarning();
-							if (handleTeamMalformedWarning()) {
-								BHBot.logger.error("Team incomplete, doing emergency restart..");
-								restart();
-								continue;
-							} else {
-								state = trials ? State.Trials : State.Gauntlet;
-								BHBot.logger.info((trials ? "Trials" : "Gauntlet") + " initiated!");
-								autoShrined = false;
-								autoBossRuned = false;
-							}
-						}
-						continue;
-					} // tokens (trials and gauntlet)
-
-					// check for energy:
-					if (BHBot.scheduler.doDungeonImmediately || ("d".equals(currentActivity))) {
-						timeLastEnergyCheck = Misc.getTime();
-
-						readScreen();
-
-						int energy = getEnergy();
-						globalEnergy = energy;
-						BHBot.logger.readout("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
-
-						if (energy == -1) { // error
-							BHBot.scheduler.restoreIdleTime();
-							if (BHBot.scheduler.doDungeonImmediately)
-								BHBot.scheduler.doDungeonImmediately = false; // reset it
-							continue;
-						}
-
-						if (BHBot.settings.countActivities) {
-							int dungeonCounter = Integer.parseInt(BHBot.settings.dungeonsRun.split(" ")[1]);
-						    if (dungeonCounter >= 10) {
-							if (BHBot.scheduler.doDungeonImmediately)
-								BHBot.scheduler.doDungeonImmediately = false; // reset it
-							BHBot.scheduler.restoreIdleTime();
-							continue;
-						    }
-						}
-
-						if (!BHBot.scheduler.doDungeonImmediately && (energy <= BHBot.settings.minEnergyPercentage || BHBot.settings.dungeons.size() == 0)) {
-							sleep(SECOND);
-							
-							//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
-							int energyDifference = BHBot.settings.minEnergyPercentage - energy; //difference between needed and current resource
-							if (energyDifference > 1) {
-								int increase = (energyDifference - 1) * 4;
-								ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
-							} else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
-							
-							continue;
-						} else {
-							// do the dungeon!
-
-							if (BHBot.scheduler.doDungeonImmediately)
-								BHBot.scheduler.doDungeonImmediately = false; // reset it
-
-							//configure activity runes
-							handleMinorRunes("d");
-							
-							if (BHBot.settings.autoBossRune.containsKey("d") && !BHBot.settings.autoShrine.contains("d")) { //if autoshrine disabled but autorune enabled
-
-								BHBot.logger.info("Configuring autoBossRune for Dungeons");
-								if (!checkShrineSettings(true, false)) {
-									BHBot.logger.error("Impossible to configure autoBossRune for Dungeons!");
-								}
-								
-								readScreen(SECOND);
-								sleep(2*SECOND);
-							}
-
-							seg = detectCue(cues.get("Quest"));
-							clickOnSeg(seg);
-							readScreen(5*SECOND);
-
-							String dungeon = decideDungeonRandomly();
-							if (dungeon == null) {
-								BHBot.settings.activitiesEnabled.remove("d");
-								BHBot.logger.error("It was impossible to choose a dungeon randomly, dungeons are disabled!");
-								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-									sendPushOverMessage("Dungeon error", "It was impossible to choose a dungeon randomly, dungeons are disabled!", "siren");
-								continue;
-							}
+                        if (("g".equals(currentActivity) && trials) || ("t".equals(currentActivity) && !trials))
+                            continue;
 
 
-							int difficulty = Integer.parseInt(dungeon.split(" ")[1]);
-							String difficultyName = (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic");
-							dungeon = dungeon.split(" ")[0].toLowerCase(); //in case the settings file is input in upper case
-							int goalZone = Integer.parseInt(""+dungeon.charAt(1));
+                        clickOnSeg(seg);
+                        MarvinSegment trialBTNSeg = seg;
 
-							BHBot.logger.info("Attempting " + difficultyName + " " + dungeon);
+                        // dismiss character dialog if it pops up:
+                        readScreen(2 * SECOND);
+                        detectCharacterDialogAndHandleIt();
 
-							int currentZone = readCurrentZone();
-							int vec = goalZone - currentZone; // movement vector
+                        readScreen();
+                        int tokens = getTokens();
+                        globalTokens = tokens;
+                        BHBot.logger.readout("Tokens: " + tokens + ", required: >" + BHBot.settings.minTokens + ", " +
+                                (trials ? "Trials" : "Gauntlet") + " cost: " + (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet));
+
+                        if (tokens == -1) { // error
+                            BHBot.scheduler.restoreIdleTime();
+                            continue;
+                        }
+
+                        if ((!BHBot.scheduler.doTrialsOrGauntletImmediately && (tokens <= BHBot.settings.minTokens)) || (tokens < (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet))) {
+                            readScreen();
+                            seg = detectCue(cues.get("X"), SECOND);
+                            clickOnSeg(seg);
+                            readScreen(SECOND);
+
+                            //if we have 1 token and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one token short
+                            int tokenDifference = (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet) - tokens; //difference between needed and current resource
+                            if (tokenDifference > 1) {
+                                int increase = (tokenDifference - 1) * 45;
+                                TOKENS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
+                            } else TOKENS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 token check every 10 minutes
+
+                            if (BHBot.scheduler.doTrialsOrGauntletImmediately)
+                                BHBot.scheduler.doTrialsOrGauntletImmediately = false; // if we don't have resources to run we need to disable force it
+
+                            continue;
+                        } else {
+                            // do the trials/gauntlet!
+
+                            if (BHBot.scheduler.doTrialsOrGauntletImmediately)
+                                BHBot.scheduler.doTrialsOrGauntletImmediately = false; // reset it
+
+                            // One time check for Autoshrine
+                            if (trials) {
+
+                                if (BHBot.settings.autoShrine.contains("t") || BHBot.settings.autoRune.containsKey("t")) {
+                                    readScreen();
+                                    seg = detectCue(cues.get("X"), SECOND);
+                                    clickOnSeg(seg);
+                                    readScreen(SECOND);
+
+                                    if (BHBot.settings.autoShrine.contains("t")) {
+                                        BHBot.logger.info("Configuring autoShrine for Trial");
+                                        if (!checkShrineSettings(true, true)) {
+                                            BHBot.logger.error("Impossible to configure autoShrine for Trial");
+                                        }
+                                        readScreen(SECOND);
+                                    }
+
+                                    if (BHBot.settings.autoRune.containsKey("t")) {
+                                        handleMinorRunes("t");
+                                        readScreen(SECOND);
+                                    }
+
+                                    readScreen(SECOND);
+                                    clickOnSeg(trialBTNSeg);
+                                    readScreen(SECOND); //wait for window animation
+                                }
+
+                            } else {
+
+                                if (BHBot.settings.autoRune.containsKey("g")) {
+                                    handleMinorRunes("g");
+                                    readScreen(SECOND);
+                                }
+
+                                readScreen(SECOND);
+                                clickOnSeg(trialBTNSeg);
+                                readScreen(SECOND); //wait for window animation
+                            }
+
+                            BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + BHBot.settings.difficulty + "...");
+
+                            // select difficulty if needed:
+                            int difficulty = detectDifficulty();
+                            if (difficulty == 0) { // error!
+                                BHBot.logger.error("Due to an error#1 in difficulty detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
+                                closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"));
+                                continue;
+                            }
+                            if (difficulty != BHBot.settings.difficulty) {
+                                BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + BHBot.settings.difficulty + ". Changing..");
+                                boolean result = selectDifficulty(difficulty, BHBot.settings.difficulty);
+                                if (!result) { // error!
+                                    // see if drop down menu is still open and close it:
+                                    readScreen(SECOND);
+                                    tryClosingWindow(cues.get("DifficultyDropDown"));
+                                    readScreen(5 * SECOND);
+                                    tryClosingWindow(cues.get("TrialsOrGauntletWindow"));
+                                    BHBot.logger.error("Due to an error#2 in difficulty selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
+                                    continue;
+                                }
+                            }
+
+                            // select cost if needed:
+                            readScreen(2 * SECOND); // wait for the popup to stabilize a bit
+                            int cost = detectCost();
+                            if (cost == 0) { // error!
+                                BHBot.logger.error("Due to an error#1 in cost detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
+                                closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"));
+                                continue;
+                            }
+                            if (cost != (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet)) {
+                                BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " cost: " + cost + ", settings cost is " + (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet) + ". Changing it...");
+                                boolean result = selectCost(cost, (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet));
+                                if (!result) { // error!
+                                    // see if drop down menu is still open and close it:
+                                    readScreen(SECOND);
+                                    tryClosingWindow(cues.get("CostDropDown"));
+                                    readScreen(5 * SECOND);
+                                    tryClosingWindow(cues.get("TrialsOrGauntletWindow"));
+                                    BHBot.logger.error("Due to an error#2 in cost selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
+                                    continue;
+                                }
+                            }
+
+                            seg = detectCue(cues.get("Play"), 2 * SECOND);
+                            if (seg == null) {
+                                BHBot.logger.error("Error: Play button not found while trying to do " + (trials ? "trials" : "gauntlet") + ". Ignoring...");
+                                continue;
+                            }
+                            clickOnSeg(seg);
+                            readScreen(2 * SECOND);
+
+                            // dismiss character dialog if it pops up:
+                            detectCharacterDialogAndHandleIt();
+
+                            seg = detectCue(cues.get("Accept"), 5 * SECOND);
+                            clickOnSeg(seg);
+                            sleep(5 * SECOND);
+
+                            handleTeamMalformedWarning();
+                            if (handleTeamMalformedWarning()) {
+                                BHBot.logger.error("Team incomplete, doing emergency restart..");
+                                restart();
+                                continue;
+                            } else {
+                                state = trials ? State.Trials : State.Gauntlet;
+                                BHBot.logger.info((trials ? "Trials" : "Gauntlet") + " initiated!");
+                                autoShrined = false;
+                                autoBossRuned = false;
+                            }
+                        }
+                        continue;
+                    } // tokens (trials and gauntlet)
+
+                    // check for energy:
+                    if (BHBot.scheduler.doDungeonImmediately || ("d".equals(currentActivity))) {
+                        timeLastEnergyCheck = Misc.getTime();
+
+                        readScreen();
+
+                        int energy = getEnergy();
+                        globalEnergy = energy;
+                        BHBot.logger.readout("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage + "%");
+
+                        if (energy == -1) { // error
+                            BHBot.scheduler.restoreIdleTime();
+                            if (BHBot.scheduler.doDungeonImmediately)
+                                BHBot.scheduler.doDungeonImmediately = false; // reset it
+                            continue;
+                        }
+
+                        if (BHBot.settings.countActivities) {
+                            int dungeonCounter = Integer.parseInt(BHBot.settings.dungeonsRun.split(" ")[1]);
+                            if (dungeonCounter >= 10) {
+                                if (BHBot.scheduler.doDungeonImmediately)
+                                    BHBot.scheduler.doDungeonImmediately = false; // reset it
+                                BHBot.scheduler.restoreIdleTime();
+                                continue;
+                            }
+                        }
+
+                        if (!BHBot.scheduler.doDungeonImmediately && (energy <= BHBot.settings.minEnergyPercentage || BHBot.settings.dungeons.size() == 0)) {
+                            sleep(SECOND);
+
+                            //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+                            int energyDifference = BHBot.settings.minEnergyPercentage - energy; //difference between needed and current resource
+                            if (energyDifference > 1) {
+                                int increase = (energyDifference - 1) * 4;
+                                ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
+                            } else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+
+                            continue;
+                        } else {
+                            // do the dungeon!
+
+                            if (BHBot.scheduler.doDungeonImmediately)
+                                BHBot.scheduler.doDungeonImmediately = false; // reset it
+
+                            //configure activity runes
+                            handleMinorRunes("d");
+
+                            if (BHBot.settings.autoBossRune.containsKey("d") && !BHBot.settings.autoShrine.contains("d")) { //if autoshrine disabled but autorune enabled
+
+                                BHBot.logger.info("Configuring autoBossRune for Dungeons");
+                                if (!checkShrineSettings(true, false)) {
+                                    BHBot.logger.error("Impossible to configure autoBossRune for Dungeons!");
+                                }
+
+                                readScreen(SECOND);
+                                sleep(2 * SECOND);
+                            }
+
+                            seg = detectCue(cues.get("Quest"));
+                            clickOnSeg(seg);
+                            readScreen(5 * SECOND);
+
+                            String dungeon = decideDungeonRandomly();
+                            if (dungeon == null) {
+                                BHBot.settings.activitiesEnabled.remove("d");
+                                BHBot.logger.error("It was impossible to choose a dungeon randomly, dungeons are disabled!");
+                                if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+                                    sendPushOverMessage("Dungeon error", "It was impossible to choose a dungeon randomly, dungeons are disabled!", "siren");
+                                continue;
+                            }
+
+
+                            int difficulty = Integer.parseInt(dungeon.split(" ")[1]);
+                            String difficultyName = (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic");
+                            dungeon = dungeon.split(" ")[0].toLowerCase(); //in case the settings file is input in upper case
+                            int goalZone = Integer.parseInt("" + dungeon.charAt(1));
+
+                            BHBot.logger.info("Attempting " + difficultyName + " " + dungeon);
+
+                            int currentZone = readCurrentZone();
+                            int vec = goalZone - currentZone; // movement vector
 //							BHBot.logger.info("Current zone: " + Integer.toString(currentZone) + " Target Zone: " + Integer.toString(goalZone));
-							while (vec != 0) { // move to the correct zone
-								if (vec > 0) {
-									// note that moving to the right will fail in case player has not unlocked the zone yet!
-									readScreen(SECOND); // wait for screen to stabilise
-									seg = detectCue(cues.get("RightArrow"));
-									if (seg == null) {
-										BHBot.logger.error("Right button not found, zone unlocked?");
-										break; // happens for example when player hasn't unlock the zone yet
-									}
-									//coords are used as moving multiple screens would crash the bot when using the arrow cues
-									clickInGame(740,275);
-									vec--;
-								} else {
-									sleep(500);
-									//coords are used as moving multiple screens would crash the bot when using the arrow cues
-									clickInGame(55,275);
-									vec++;
-								}
-							}
+                            while (vec != 0) { // move to the correct zone
+                                if (vec > 0) {
+                                    // note that moving to the right will fail in case player has not unlocked the zone yet!
+                                    readScreen(SECOND); // wait for screen to stabilise
+                                    seg = detectCue(cues.get("RightArrow"));
+                                    if (seg == null) {
+                                        BHBot.logger.error("Right button not found, zone unlocked?");
+                                        break; // happens for example when player hasn't unlock the zone yet
+                                    }
+                                    //coords are used as moving multiple screens would crash the bot when using the arrow cues
+                                    clickInGame(740, 275);
+                                    vec--;
+                                } else {
+                                    sleep(500);
+                                    //coords are used as moving multiple screens would crash the bot when using the arrow cues
+                                    clickInGame(55, 275);
+                                    vec++;
+                                }
+                            }
 
-							readScreen(2*SECOND);
+                            readScreen(2 * SECOND);
 
-							// click on the dungeon:
-							Point p = getDungeonIconPos(dungeon);
-							if (p == null) {
-								BHBot.settings.activitiesEnabled.remove("d");
-								BHBot.logger.error("It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!");
-								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-									sendPushOverMessage("Dungeon error", "It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!", "siren");
-								continue;
-							}
+                            // click on the dungeon:
+                            Point p = getDungeonIconPos(dungeon);
+                            if (p == null) {
+                                BHBot.settings.activitiesEnabled.remove("d");
+                                BHBot.logger.error("It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!");
+                                if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+                                    sendPushOverMessage("Dungeon error", "It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!", "siren");
+                                continue;
+                            }
 
-							clickInGame(p.x, p.y);
+                            clickInGame(p.x, p.y);
 
-							readScreen(3*SECOND);
-							// select difficulty (If D4 just hit enter):
-							if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') || (dungeon.charAt(1) == '8' && dungeon.charAt(3) == '3' )) { // D4, or Z7D3/Z8D3
-								specialDungeon = true;
-								seg = detectCue(cues.get("Enter"), 5*SECOND);
-								clickOnSeg(seg);
-							} else  { //else select appropriate difficulty
-								seg = detectCue(cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), 5*SECOND);
-								clickOnSeg(seg);
-							}
+                            readScreen(3 * SECOND);
+                            // select difficulty (If D4 just hit enter):
+                            if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') || (dungeon.charAt(1) == '8' && dungeon.charAt(3) == '3')) { // D4, or Z7D3/Z8D3
+                                specialDungeon = true;
+                                seg = detectCue(cues.get("Enter"), 5 * SECOND);
+                                clickOnSeg(seg);
+                            } else { //else select appropriate difficulty
+                                seg = detectCue(cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), 5 * SECOND);
+                                clickOnSeg(seg);
+                            }
 
-							//team selection screen
-							/* Solo-for-bounty code */
-							int soloThreshold = Character.getNumericValue(dungeon.charAt(1)); //convert the zone char to int so we can compare
-							if (soloThreshold <= BHBot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
-								BHBot.logger.info("Selected zone under dungeon solo threshold, attempting solo");
-								readScreen(SECOND);
-								seg = detectCue(cues.get("Clear"), SECOND * 2);
-								clickOnSeg(seg);
-								readScreen();
-								seg = detectCue(cues.get("Accept"), SECOND * 2);
-								clickOnSeg(seg);
-								readScreen(2*SECOND); //wait for dropdown animation to finish
-								seg = detectCue(cues.get("YesGreen"), 2*SECOND);
-								if (seg == null) {
-									sleep(500);
-									clickInGame(330,360); //yesgreen cue has issues so we use pos to click on Yes as a backup
-								} else {
-									clickOnSeg(seg);
-									clickInGame(330,360); //click anyway this cue has issues
-								}
+                            //team selection screen
+                            /* Solo-for-bounty code */
+                            int soloThreshold = Character.getNumericValue(dungeon.charAt(1)); //convert the zone char to int so we can compare
+                            if (soloThreshold <= BHBot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
+                                BHBot.logger.info("Selected zone under dungeon solo threshold, attempting solo");
+                                readScreen(SECOND);
+                                seg = detectCue(cues.get("Clear"), SECOND * 2);
+                                clickOnSeg(seg);
+                                readScreen();
+                                seg = detectCue(cues.get("Accept"), SECOND * 2);
+                                clickOnSeg(seg);
+                                readScreen(2 * SECOND); //wait for dropdown animation to finish
+                                seg = detectCue(cues.get("YesGreen"), 2 * SECOND);
+                                if (seg == null) {
+                                    sleep(500);
+                                    clickInGame(330, 360); //yesgreen cue has issues so we use pos to click on Yes as a backup
+                                } else {
+                                    clickOnSeg(seg);
+                                    clickInGame(330, 360); //click anyway this cue has issues
+                                }
 
-								state = State.Dungeon;
-								BHBot.logger.info("Dungeon <" + dungeon + "> initiated solo!");
-								autoShrined = false;
-								autoBossRuned = false;
-								continue;
+                                state = State.Dungeon;
+                                BHBot.logger.info("Dungeon <" + dungeon + "> initiated solo!");
+                                autoShrined = false;
+                                autoBossRuned = false;
+                                continue;
 
-							} else { // d1-d3
-								readScreen(SECOND);
-								seg = detectCue(cues.get("D4Accept"), SECOND); //D4's accept button is a few pixels different for reasons
-								if (seg == null) {
-									seg = detectCue(cues.get("Accept"), SECOND); //standard accept button
-									clickOnSeg(seg);
-								} else {
-								clickOnSeg(seg);
-								}
-							}
+                            } else { // d1-d3
+                                readScreen(SECOND);
+                                seg = detectCue(cues.get("D4Accept"), SECOND); //D4's accept button is a few pixels different for reasons
+                                if (seg == null) {
+                                    seg = detectCue(cues.get("Accept"), SECOND); //standard accept button
+                                    clickOnSeg(seg);
+                                } else {
+                                    clickOnSeg(seg);
+                                }
+                            }
 
-							if (handleTeamMalformedWarning()) {
-								BHBot.logger.error("Team incomplete, doing emergency restart..");
-								restart();
-								continue;
-							} else {
-								state = State.Dungeon;
-								BHBot.logger.info("Dungeon <" + dungeon + "> initiated!");
-								autoShrined = false;
-								autoBossRuned = false;
-							}
-						}
-						continue;
-					} // energy
+                            if (handleTeamMalformedWarning()) {
+                                BHBot.logger.error("Team incomplete, doing emergency restart..");
+                                restart();
+                                continue;
+                            } else {
+                                state = State.Dungeon;
+                                BHBot.logger.info("Dungeon <" + dungeon + "> initiated!");
+                                autoShrined = false;
+                                autoBossRuned = false;
+                            }
+                        }
+                        continue;
+                    } // energy
 
-					// check for Tickets (PvP):
-					if ( BHBot.scheduler.doPVPImmediately || ("p".equals(currentActivity)) ) {
-						timeLastTicketsCheck = Misc.getTime();
+                    // check for Tickets (PvP):
+                    if (BHBot.scheduler.doPVPImmediately || ("p".equals(currentActivity))) {
+                        timeLastTicketsCheck = Misc.getTime();
 
-						readScreen();
+                        readScreen();
 
-						int tickets = getTickets();
-						globalTickets = tickets;
-						BHBot.logger.readout("Tickets: " + tickets  + ", required: >" + BHBot.settings.minTickets + ", PVP cost: " + BHBot.settings.costPVP);
+                        int tickets = getTickets();
+                        globalTickets = tickets;
+                        BHBot.logger.readout("Tickets: " + tickets + ", required: >" + BHBot.settings.minTickets + ", PVP cost: " + BHBot.settings.costPVP);
 
-						if (tickets == -1) { // error
-							BHBot.scheduler.restoreIdleTime();
-							continue;
-						}
+                        if (tickets == -1) { // error
+                            BHBot.scheduler.restoreIdleTime();
+                            continue;
+                        }
 
-						if ((!BHBot.scheduler.doPVPImmediately && (tickets <= BHBot.settings.minTickets)) || (tickets < BHBot.settings.costPVP)) {
-							sleep(SECOND);
-							
-							//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
-							int ticketDifference = BHBot.settings.costPVP - tickets; //difference between needed and current resource
-							if (ticketDifference > 1) {
-								int increase = (ticketDifference - 1) * 45;
-								TICKETS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-							} else TICKETS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
-							
-							continue;
-						} else {
-							// do the pvp!
+                        if ((!BHBot.scheduler.doPVPImmediately && (tickets <= BHBot.settings.minTickets)) || (tickets < BHBot.settings.costPVP)) {
+                            sleep(SECOND);
 
-							if (BHBot.scheduler.doPVPImmediately)
-								BHBot.scheduler.doPVPImmediately = false; // reset it
+                            //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+                            int ticketDifference = BHBot.settings.costPVP - tickets; //difference between needed and current resource
+                            if (ticketDifference > 1) {
+                                int increase = (ticketDifference - 1) * 45;
+                                TICKETS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                            } else TICKETS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
 
-							//configure activity runes
-							handleMinorRunes("p");
+                            continue;
+                        } else {
+                            // do the pvp!
 
-							BHBot.logger.info("Attempting PVP...");
-							stripDown(BHBot.settings.pvpstrip);
+                            if (BHBot.scheduler.doPVPImmediately)
+                                BHBot.scheduler.doPVPImmediately = false; // reset it
 
-							seg = detectCue(cues.get("PVP"));
-							if (seg == null) {
-								BHBot.logger.warn("PVP button not found. Skipping PVP...");
-								dressUp(BHBot.settings.pvpstrip);
-								continue; // should not happen though
-							}
-							clickOnSeg(seg);
+                            //configure activity runes
+                            handleMinorRunes("p");
 
-							// select cost if needed:
-							readScreen(2*SECOND); // wait for the popup to stabilize a bit
-							int cost = detectCost();
-							if (cost == 0) { // error!
-								BHBot.logger.error("Due to an error#1 in cost detection, PVP will be skipped.");
-								closePopupSecurely(cues.get("PVPWindow"), cues.get("X"));
-								dressUp(BHBot.settings.pvpstrip);
-								continue;
-							}
-							if (cost != BHBot.settings.costPVP) {
-								BHBot.logger.info("Detected PVP cost: " + cost + ", settings cost is " + BHBot.settings.costPVP + ". Changing..");
-								boolean result = selectCost(cost, BHBot.settings.costPVP);
-								if (!result) { // error!
-									// see if drop down menu is still open and close it:
-									readScreen(SECOND);
-									tryClosingWindow(cues.get("CostDropDown"));
-									readScreen(5*SECOND);
-									seg = detectCue(cues.get("PVPWindow"), 15*SECOND);
-									if (seg != null)
-										closePopupSecurely(cues.get("PVPWindow"), cues.get("X"));
-									BHBot.logger.error("Due to an error#2 in cost selection, PVP will be skipped.");
-									dressUp(BHBot.settings.pvpstrip);
-									continue;
-								}
-							}
+                            BHBot.logger.info("Attempting PVP...");
+                            stripDown(BHBot.settings.pvpstrip);
 
-							seg = detectCue(cues.get("Play"), 5*SECOND);
-							clickOnSeg(seg);
-							readScreen(2*SECOND);
+                            seg = detectCue(cues.get("PVP"));
+                            if (seg == null) {
+                                BHBot.logger.warn("PVP button not found. Skipping PVP...");
+                                dressUp(BHBot.settings.pvpstrip);
+                                continue; // should not happen though
+                            }
+                            clickOnSeg(seg);
 
-							// dismiss character dialog if it pops up:
-							detectCharacterDialogAndHandleIt();
+                            // select cost if needed:
+                            readScreen(2 * SECOND); // wait for the popup to stabilize a bit
+                            int cost = detectCost();
+                            if (cost == 0) { // error!
+                                BHBot.logger.error("Due to an error#1 in cost detection, PVP will be skipped.");
+                                closePopupSecurely(cues.get("PVPWindow"), cues.get("X"));
+                                dressUp(BHBot.settings.pvpstrip);
+                                continue;
+                            }
+                            if (cost != BHBot.settings.costPVP) {
+                                BHBot.logger.info("Detected PVP cost: " + cost + ", settings cost is " + BHBot.settings.costPVP + ". Changing..");
+                                boolean result = selectCost(cost, BHBot.settings.costPVP);
+                                if (!result) { // error!
+                                    // see if drop down menu is still open and close it:
+                                    readScreen(SECOND);
+                                    tryClosingWindow(cues.get("CostDropDown"));
+                                    readScreen(5 * SECOND);
+                                    seg = detectCue(cues.get("PVPWindow"), 15 * SECOND);
+                                    if (seg != null)
+                                        closePopupSecurely(cues.get("PVPWindow"), cues.get("X"));
+                                    BHBot.logger.error("Due to an error#2 in cost selection, PVP will be skipped.");
+                                    dressUp(BHBot.settings.pvpstrip);
+                                    continue;
+                                }
+                            }
 
-							Bounds pvpOpponentBounds = opponentSelector(BHBot.settings.pvpOpponent);
-							String opponentName = (BHBot.settings.pvpOpponent == 1 ? "1st" : BHBot.settings.pvpOpponent == 2 ? "2nd" : BHBot.settings.pvpOpponent == 3 ? "3rd" : "4th");
-							BHBot.logger.info("Selecting " + opponentName + " opponent");
-							seg = detectCue(cues.get("Fight"), 5*SECOND, pvpOpponentBounds);
-							if (seg == null) {
-								BHBot.logger.error("Imppossible to find the Fight button in the PVP screen, restarting!");
-								restart();
-								continue;
-							}
-							clickOnSeg(seg);
+                            seg = detectCue(cues.get("Play"), 5 * SECOND);
+                            clickOnSeg(seg);
+                            readScreen(2 * SECOND);
 
-							readScreen();
-							seg = detectCue(cues.get("Accept"),5*SECOND, new Bounds(430, 430, 630, 500));
-							if (seg == null) {
-								BHBot.logger.error("Impossible to find the Accept button in the PVP screen, restarting");
-								restart();
-								continue;
-							}
-							clickOnSeg(seg);
+                            // dismiss character dialog if it pops up:
+                            detectCharacterDialogAndHandleIt();
 
-							handleTeamMalformedWarning();
-							if (handleTeamMalformedWarning()) {
-								BHBot.logger.error("Team incomplete, doing emergency restart..");
-								restart();
-								continue;
-							} else {
-								state = State.PVP;
-								BHBot.logger.info("PVP initiated!");
-							}
-						}
-						continue;
-					} // PvP
+                            Bounds pvpOpponentBounds = opponentSelector(BHBot.settings.pvpOpponent);
+                            String opponentName = (BHBot.settings.pvpOpponent == 1 ? "1st" : BHBot.settings.pvpOpponent == 2 ? "2nd" : BHBot.settings.pvpOpponent == 3 ? "3rd" : "4th");
+                            BHBot.logger.info("Selecting " + opponentName + " opponent");
+                            seg = detectCue(cues.get("Fight"), 5 * SECOND, pvpOpponentBounds);
+                            if (seg == null) {
+                                BHBot.logger.error("Imppossible to find the Fight button in the PVP screen, restarting!");
+                                restart();
+                                continue;
+                            }
+                            clickOnSeg(seg);
 
-					// check for badges (for GVG/Invasion/Expedition):
-					if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || BHBot.scheduler.doExpeditionImmediately
-							|| ( ("v".equals(currentActivity)) || ("i".equals(currentActivity)) || ("e".equals(currentActivity))) ) {
+                            readScreen();
+                            seg = detectCue(cues.get("Accept"), 5 * SECOND, new Bounds(430, 430, 630, 500));
+                            if (seg == null) {
+                                BHBot.logger.error("Impossible to find the Accept button in the PVP screen, restarting");
+                                restart();
+                                continue;
+                            }
+                            clickOnSeg(seg);
 
-						String checkedActivity = currentActivity;
+                            handleTeamMalformedWarning();
+                            if (handleTeamMalformedWarning()) {
+                                BHBot.logger.error("Team incomplete, doing emergency restart..");
+                                restart();
+                                continue;
+                            } else {
+                                state = State.PVP;
+                                BHBot.logger.info("PVP initiated!");
+                            }
+                        }
+                        continue;
+                    } // PvP
 
-						if ("v".equals(currentActivity)) timeLastGVGBadgesCheck = Misc.getTime();
-						if ("i".equals(currentActivity)) timeLastInvBadgesCheck = Misc.getTime();
-						if ("e".equals(currentActivity)) timeLastExpBadgesCheck = Misc.getTime();
+                    // check for badges (for GVG/Invasion/Expedition):
+                    if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || BHBot.scheduler.doExpeditionImmediately
+                            || (("v".equals(currentActivity)) || ("i".equals(currentActivity)) || ("e".equals(currentActivity)))) {
 
-						readScreen();
+                        String checkedActivity = currentActivity;
 
-						BadgeEvent badgeEvent = BadgeEvent.None;
-						MarvinSegment badgeBtn = null;
+                        if ("v".equals(currentActivity)) timeLastGVGBadgesCheck = Misc.getTime();
+                        if ("i".equals(currentActivity)) timeLastInvBadgesCheck = Misc.getTime();
+                        if ("e".equals(currentActivity)) timeLastExpBadgesCheck = Misc.getTime();
 
-						HashMap<Cue, BadgeEvent> badgeEvents = new HashMap<>();
-						badgeEvents.put(cues.get("ExpeditionButton"), BadgeEvent.Expedition);
-						badgeEvents.put(cues.get("GVG"), BadgeEvent.GVG);
-						badgeEvents.put(cues.get("Invasion"), BadgeEvent.Invasion);
+                        readScreen();
 
-						for (Map.Entry<Cue, BadgeEvent> event : badgeEvents.entrySet()) {
-							badgeBtn = detectCue(event.getKey());
-							if (badgeBtn != null) {
-								badgeEvent = event.getValue();
-								seg = badgeBtn;
-								break;
-							}
-						}
+                        BadgeEvent badgeEvent = BadgeEvent.None;
+                        MarvinSegment badgeBtn = null;
 
+                        HashMap<Cue, BadgeEvent> badgeEvents = new HashMap<>();
+                        badgeEvents.put(cues.get("ExpeditionButton"), BadgeEvent.Expedition);
+                        badgeEvents.put(cues.get("GVG"), BadgeEvent.GVG);
+                        badgeEvents.put(cues.get("Invasion"), BadgeEvent.Invasion);
 
-						if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion/Expedition event?)
-							BHBot.scheduler.restoreIdleTime();
-							BHBot.logger.debug("No badge event found, skipping");
-							continue;
-						}
-
-						if (badgeEvent == BadgeEvent.Expedition) currentActivity = "e";
-						if (badgeEvent == BadgeEvent.Invasion) currentActivity = "i";
-						if (badgeEvent == BadgeEvent.GVG) currentActivity = "v";
-
-						if (currentActivity == null || !currentActivity.equals(checkedActivity)) { //if checked activity and chosen activity don't match we skip
-							continue;
-						}
-
-						clickOnSeg(seg);
-						sleep(2*SECOND);
-
-						detectCharacterDialogAndHandleIt(); // needed for invasion
-
-						readScreen();
-						int badges = getBadges();
-						globalBadges = badges;
-						BHBot.logger.readout("Badges: " + badges + ", required: >" + BHBot.settings.minBadges + ", " + badgeEvent.toString() +  " cost: " +
-								(badgeEvent == BadgeEvent.GVG ? BHBot.settings.costGVG : badgeEvent == BadgeEvent.Invasion ? BHBot.settings.costInvasion : BHBot.settings.costExpedition));
-
-						if (badges == -1) { // error
-							BHBot.scheduler.restoreIdleTime();
-							continue;
-						}
-
-						// check GVG:
-						if (badgeEvent == BadgeEvent.GVG) {
-							if ((!BHBot.scheduler.doGVGImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costGVG)) {
-								
-								//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
-								int badgeDifference = BHBot.settings.costGVG - badges; //difference between needed and current resource
-								if (badgeDifference > 1) {
-									int increase = (badgeDifference - 1) * 45;
-									BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-								} else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
-								
-								readScreen();
-								seg = detectCue(cues.get("X"),SECOND);
-								clickOnSeg(seg);
-								sleep(SECOND);
-								continue;
-							} else {
-								// do the GVG!
-
-								if (BHBot.scheduler.doGVGImmediately)
-									BHBot.scheduler.doGVGImmediately = false; // reset it
+                        for (Map.Entry<Cue, BadgeEvent> event : badgeEvents.entrySet()) {
+                            badgeBtn = detectCue(event.getKey());
+                            if (badgeBtn != null) {
+                                badgeEvent = event.getValue();
+                                seg = badgeBtn;
+                                break;
+                            }
+                        }
 
 
-								//configure activity runes
-								handleMinorRunes("v");
-								readScreen(SECOND);
-								clickOnSeg(badgeBtn);
+                        if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion/Expedition event?)
+                            BHBot.scheduler.restoreIdleTime();
+                            BHBot.logger.debug("No badge event found, skipping");
+                            continue;
+                        }
 
-								BHBot.logger.info("Attempting GVG...");
+                        if (badgeEvent == BadgeEvent.Expedition) currentActivity = "e";
+                        if (badgeEvent == BadgeEvent.Invasion) currentActivity = "i";
+                        if (badgeEvent == BadgeEvent.GVG) currentActivity = "v";
 
-								if (BHBot.settings.gvgstrip.size() > 0){
-									// If we need to strip down for GVG, we need to close the GVG gump and open it again
-									seg = detectCue(cues.get("X"), SECOND * 2);
-									clickOnSeg(seg);
-									readScreen(2*SECOND);
-									stripDown(BHBot.settings.gvgstrip);
-									seg = detectCue(cues.get("GVG"), SECOND * 3);
-									clickOnSeg(seg);
-								}
+                        if (currentActivity == null || !currentActivity.equals(checkedActivity)) { //if checked activity and chosen activity don't match we skip
+                            continue;
+                        }
 
-								// select cost if needed:
-								readScreen(2*SECOND); // wait for the popup to stabilize a bit
-								int cost = detectCost();
-								if (cost == 0) { // error!
-									BHBot.logger.error("Due to an error#1 in cost detection, GVG will be skipped.");
-									closePopupSecurely(cues.get("GVGWindow"), cues.get("X"));
-									continue;
-								}
-								if (cost != BHBot.settings.costGVG) {
-									BHBot.logger.info("Detected GVG cost: " + cost + ", settings cost is " + BHBot.settings.costGVG + ". Changing..");
-									boolean result = selectCost(cost, BHBot.settings.costGVG);
-									if (!result) { // error!
-										// see if drop down menu is still open and close it:
-										readScreen(SECOND);
-										tryClosingWindow(cues.get("CostDropDown"));
-										readScreen(5*SECOND);
-										seg = detectCue(cues.get("GVGWindow"), 15*SECOND);
-										if (seg != null)
-											closePopupSecurely(cues.get("GVGWindow"), cues.get("X"));
-										BHBot.logger.error("Due to an error#2 in cost selection, GVG will be skipped.");
-										dressUp(BHBot.settings.gvgstrip);
-										continue;
-									}
-								}
+                        clickOnSeg(seg);
+                        sleep(2 * SECOND);
+
+                        detectCharacterDialogAndHandleIt(); // needed for invasion
+
+                        readScreen();
+                        int badges = getBadges();
+                        globalBadges = badges;
+                        BHBot.logger.readout("Badges: " + badges + ", required: >" + BHBot.settings.minBadges + ", " + badgeEvent.toString() + " cost: " +
+                                (badgeEvent == BadgeEvent.GVG ? BHBot.settings.costGVG : badgeEvent == BadgeEvent.Invasion ? BHBot.settings.costInvasion : BHBot.settings.costExpedition));
+
+                        if (badges == -1) { // error
+                            BHBot.scheduler.restoreIdleTime();
+                            continue;
+                        }
+
+                        // check GVG:
+                        if (badgeEvent == BadgeEvent.GVG) {
+                            if ((!BHBot.scheduler.doGVGImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costGVG)) {
+
+                                //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+                                int badgeDifference = BHBot.settings.costGVG - badges; //difference between needed and current resource
+                                if (badgeDifference > 1) {
+                                    int increase = (badgeDifference - 1) * 45;
+                                    BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                } else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+
+                                readScreen();
+                                seg = detectCue(cues.get("X"), SECOND);
+                                clickOnSeg(seg);
+                                sleep(SECOND);
+                                continue;
+                            } else {
+                                // do the GVG!
+
+                                if (BHBot.scheduler.doGVGImmediately)
+                                    BHBot.scheduler.doGVGImmediately = false; // reset it
 
 
-								seg = detectCue(cues.get("Play"), 5*SECOND);
-								clickOnSeg(seg);
-								readScreen(2*SECOND);
+                                //configure activity runes
+                                handleMinorRunes("v");
+                                readScreen(SECOND);
+                                clickOnSeg(badgeBtn);
 
-								// Sometimes, before the reset, battles are disabled
-								Boolean disabledBattles = handleDisabledBattles();
-								if (disabledBattles == null) {
-									restart();
-									continue;
-								} else if (disabledBattles) {
-									readScreen();
-									closePopupSecurely(cues.get("GVGWindow"), cues.get("X"));
-									continue;
-								}
+                                BHBot.logger.info("Attempting GVG...");
 
-								//On initial GvG run you'll get a warning about not being able to leave guild, this will close that
+                                if (BHBot.settings.gvgstrip.size() > 0) {
+                                    // If we need to strip down for GVG, we need to close the GVG gump and open it again
+                                    seg = detectCue(cues.get("X"), SECOND * 2);
+                                    clickOnSeg(seg);
+                                    readScreen(2 * SECOND);
+                                    stripDown(BHBot.settings.gvgstrip);
+                                    seg = detectCue(cues.get("GVG"), SECOND * 3);
+                                    clickOnSeg(seg);
+                                }
+
+                                // select cost if needed:
+                                readScreen(2 * SECOND); // wait for the popup to stabilize a bit
+                                int cost = detectCost();
+                                if (cost == 0) { // error!
+                                    BHBot.logger.error("Due to an error#1 in cost detection, GVG will be skipped.");
+                                    closePopupSecurely(cues.get("GVGWindow"), cues.get("X"));
+                                    continue;
+                                }
+                                if (cost != BHBot.settings.costGVG) {
+                                    BHBot.logger.info("Detected GVG cost: " + cost + ", settings cost is " + BHBot.settings.costGVG + ". Changing..");
+                                    boolean result = selectCost(cost, BHBot.settings.costGVG);
+                                    if (!result) { // error!
+                                        // see if drop down menu is still open and close it:
+                                        readScreen(SECOND);
+                                        tryClosingWindow(cues.get("CostDropDown"));
+                                        readScreen(5 * SECOND);
+                                        seg = detectCue(cues.get("GVGWindow"), 15 * SECOND);
+                                        if (seg != null)
+                                            closePopupSecurely(cues.get("GVGWindow"), cues.get("X"));
+                                        BHBot.logger.error("Due to an error#2 in cost selection, GVG will be skipped.");
+                                        dressUp(BHBot.settings.gvgstrip);
+                                        continue;
+                                    }
+                                }
+
+
+                                seg = detectCue(cues.get("Play"), 5 * SECOND);
+                                clickOnSeg(seg);
+                                readScreen(2 * SECOND);
+
+                                // Sometimes, before the reset, battles are disabled
+                                Boolean disabledBattles = handleDisabledBattles();
+                                if (disabledBattles == null) {
+                                    restart();
+                                    continue;
+                                } else if (disabledBattles) {
+                                    readScreen();
+                                    closePopupSecurely(cues.get("GVGWindow"), cues.get("X"));
+                                    continue;
+                                }
+
+                                //On initial GvG run you'll get a warning about not being able to leave guild, this will close that
                                 if (handleGuildLeaveConfirm()) {
                                     restart();
                                     continue;
                                 }
 
-								Bounds gvgOpponentBounds = opponentSelector(BHBot.settings.gvgOpponent);
-								String opponentName = (BHBot.settings.gvgOpponent == 1 ? "1st" : BHBot.settings.gvgOpponent == 2 ? "2nd" : BHBot.settings.gvgOpponent == 3 ? "3rd" : "4th");
-								BHBot.logger.info("Selecting " + opponentName + " opponent");
-								seg = detectCue(cues.get("Fight"), 5*SECOND, gvgOpponentBounds);
-								if (seg == null) {
-									BHBot.logger.error("Imppossible to find the Fight button in the GvG screen, restarting!");
-									restart();
-									continue;
-								}
-								clickOnSeg(seg);
-								readScreen();
-								sleep(SECOND);
-								
-								seg = detectCue(cues.get("Accept"), 2*SECOND);
-								if (seg == null) {
-									BHBot.logger.error("Imppossible to find the Accept button in the GvG screen, restarting!");
-									restart();
-									continue;
-								}
-								clickOnSeg(seg);
-								sleep(SECOND);
+                                Bounds gvgOpponentBounds = opponentSelector(BHBot.settings.gvgOpponent);
+                                String opponentName = (BHBot.settings.gvgOpponent == 1 ? "1st" : BHBot.settings.gvgOpponent == 2 ? "2nd" : BHBot.settings.gvgOpponent == 3 ? "3rd" : "4th");
+                                BHBot.logger.info("Selecting " + opponentName + " opponent");
+                                seg = detectCue(cues.get("Fight"), 5 * SECOND, gvgOpponentBounds);
+                                if (seg == null) {
+                                    BHBot.logger.error("Imppossible to find the Fight button in the GvG screen, restarting!");
+                                    restart();
+                                    continue;
+                                }
+                                clickOnSeg(seg);
+                                readScreen();
+                                sleep(SECOND);
 
-								handleTeamMalformedWarning();
-								if (handleTeamMalformedWarning()) {
-									BHBot.logger.error("Team incomplete, doing emergency restart..");
-									restart();
-									continue;
-								} else {
-									state = State.GVG;
-									BHBot.logger.info("GVG initiated!");
-								}
-							}
-							continue;
-						} // GvG
-						// check invasion:
-						else if (badgeEvent == BadgeEvent.Invasion) {
-							if ((!BHBot.scheduler.doInvasionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costInvasion)) {
-								
-								//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
-								int badgeDifference = BHBot.settings.costGVG - badges; //difference between needed and current resource
-								if (badgeDifference > 1) {
-									int increase = (badgeDifference - 1) * 45;
-									BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-								} else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
-								
-								readScreen();
-								seg = detectCue(cues.get("X"),SECOND);
-								clickOnSeg(seg);
-								sleep(SECOND);
-								continue;
-							} else {
-								// do the invasion!
+                                seg = detectCue(cues.get("Accept"), 2 * SECOND);
+                                if (seg == null) {
+                                    BHBot.logger.error("Imppossible to find the Accept button in the GvG screen, restarting!");
+                                    restart();
+                                    continue;
+                                }
+                                clickOnSeg(seg);
+                                sleep(SECOND);
 
-								if (BHBot.scheduler.doInvasionImmediately)
-									BHBot.scheduler.doInvasionImmediately = false; // reset it
+                                handleTeamMalformedWarning();
+                                if (handleTeamMalformedWarning()) {
+                                    BHBot.logger.error("Team incomplete, doing emergency restart..");
+                                    restart();
+                                    continue;
+                                } else {
+                                    state = State.GVG;
+                                    BHBot.logger.info("GVG initiated!");
+                                }
+                            }
+                            continue;
+                        } // GvG
+                        // check invasion:
+                        else if (badgeEvent == BadgeEvent.Invasion) {
+                            if ((!BHBot.scheduler.doInvasionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costInvasion)) {
 
-								//configure activity runes
-								handleMinorRunes("i");
-								readScreen(SECOND);
-								clickOnSeg(badgeBtn);
+                                //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+                                int badgeDifference = BHBot.settings.costGVG - badges; //difference between needed and current resource
+                                if (badgeDifference > 1) {
+                                    int increase = (badgeDifference - 1) * 45;
+                                    BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                } else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
 
-								BHBot.logger.info("Attempting invasion...");
+                                readScreen();
+                                seg = detectCue(cues.get("X"), SECOND);
+                                clickOnSeg(seg);
+                                sleep(SECOND);
+                                continue;
+                            } else {
+                                // do the invasion!
 
-								// select cost if needed:
-								readScreen(2*SECOND); // wait for the popup to stabilize a bit
-								int cost = detectCost();
-								if (cost == 0) { // error!
-									BHBot.logger.error("Due to an error#1 in cost detection, invasion will be skipped.");
-									closePopupSecurely(cues.get("InvasionWindow"), cues.get("X"));
-									continue;
-								}
-								if (cost != BHBot.settings.costInvasion) {
-									BHBot.logger.info("Detected invasion cost: " + cost + ", settings cost is " + BHBot.settings.costInvasion + ". Changing..");
-									boolean result = selectCost(cost, BHBot.settings.costInvasion);
-									if (!result) { // error!
-										// see if drop down menu is still open and close it:
-										readScreen(SECOND);
-										tryClosingWindow(cues.get("CostDropDown"));
-										readScreen(5*SECOND);
-										seg = detectCue(cues.get("InvasionWindow"), 15*SECOND);
-										if (seg != null)
-											closePopupSecurely(cues.get("InvasionWindow"), cues.get("X"));
-										BHBot.logger.error("Due to an error#2 in cost selection, invasion will be skipped.");
-										continue;
-									}
-								}
+                                if (BHBot.scheduler.doInvasionImmediately)
+                                    BHBot.scheduler.doInvasionImmediately = false; // reset it
 
-								seg = detectCue(cues.get("Play"), 5*SECOND);
-								clickOnSeg(seg);
-								readScreen(2*SECOND);
+                                //configure activity runes
+                                handleMinorRunes("i");
+                                readScreen(SECOND);
+                                clickOnSeg(badgeBtn);
 
-								seg = detectCue(cues.get("Accept"), 5*SECOND);
-								clickOnSeg(seg);
-								sleep(5*SECOND);
+                                BHBot.logger.info("Attempting invasion...");
 
-								handleTeamMalformedWarning();
-								if (handleTeamMalformedWarning()) {
-									BHBot.logger.error("Team incomplete, doing emergency restart..");
-									restart();
-									continue;
-								} else {
-									state = State.Invasion;
-									BHBot.logger.info("Invasion initiated!");
-									autoShrined = false;
-								}
-							}
-							continue;
-						} // invasion
+                                // select cost if needed:
+                                readScreen(2 * SECOND); // wait for the popup to stabilize a bit
+                                int cost = detectCost();
+                                if (cost == 0) { // error!
+                                    BHBot.logger.error("Due to an error#1 in cost detection, invasion will be skipped.");
+                                    closePopupSecurely(cues.get("InvasionWindow"), cues.get("X"));
+                                    continue;
+                                }
+                                if (cost != BHBot.settings.costInvasion) {
+                                    BHBot.logger.info("Detected invasion cost: " + cost + ", settings cost is " + BHBot.settings.costInvasion + ". Changing..");
+                                    boolean result = selectCost(cost, BHBot.settings.costInvasion);
+                                    if (!result) { // error!
+                                        // see if drop down menu is still open and close it:
+                                        readScreen(SECOND);
+                                        tryClosingWindow(cues.get("CostDropDown"));
+                                        readScreen(5 * SECOND);
+                                        seg = detectCue(cues.get("InvasionWindow"), 15 * SECOND);
+                                        if (seg != null)
+                                            closePopupSecurely(cues.get("InvasionWindow"), cues.get("X"));
+                                        BHBot.logger.error("Due to an error#2 in cost selection, invasion will be skipped.");
+                                        continue;
+                                    }
+                                }
 
-						// check Expedition
-						else if (badgeEvent == BadgeEvent.Expedition) {
+                                seg = detectCue(cues.get("Play"), 5 * SECOND);
+                                clickOnSeg(seg);
+                                readScreen(2 * SECOND);
 
-							if ((!BHBot.scheduler.doExpeditionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costExpedition)) {
-								
-								//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
-								int badgeDifference = BHBot.settings.costGVG - badges; //difference between needed and current resource
-								if (badgeDifference > 1) {
-									int increase = (badgeDifference - 1) * 45;
-									BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-								} else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
-								
-								seg = detectCue(cues.get("X"));
-								clickOnSeg(seg);
-								sleep(2 * SECOND);
-								continue;
-							} else {
-								// do the expedition!
+                                seg = detectCue(cues.get("Accept"), 5 * SECOND);
+                                clickOnSeg(seg);
+                                sleep(5 * SECOND);
 
-								if (BHBot.scheduler.doExpeditionImmediately)
-									BHBot.scheduler.doExpeditionImmediately = false; // reset it
+                                handleTeamMalformedWarning();
+                                if (handleTeamMalformedWarning()) {
+                                    BHBot.logger.error("Team incomplete, doing emergency restart..");
+                                    restart();
+                                    continue;
+                                } else {
+                                    state = State.Invasion;
+                                    BHBot.logger.info("Invasion initiated!");
+                                    autoShrined = false;
+                                }
+                            }
+                            continue;
+                        } // invasion
+
+                        // check Expedition
+                        else if (badgeEvent == BadgeEvent.Expedition) {
+
+                            if ((!BHBot.scheduler.doExpeditionImmediately && (badges <= BHBot.settings.minBadges)) || (badges < BHBot.settings.costExpedition)) {
+
+                                //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+                                int badgeDifference = BHBot.settings.costGVG - badges; //difference between needed and current resource
+                                if (badgeDifference > 1) {
+                                    int increase = (badgeDifference - 1) * 45;
+                                    BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                } else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+
+                                seg = detectCue(cues.get("X"));
+                                clickOnSeg(seg);
+                                sleep(2 * SECOND);
+                                continue;
+                            } else {
+                                // do the expedition!
+
+                                if (BHBot.scheduler.doExpeditionImmediately)
+                                    BHBot.scheduler.doExpeditionImmediately = false; // reset it
 
                                 if (BHBot.settings.costExpedition > badges) {
                                     BHBot.logger.info("Target cost " + BHBot.settings.costExpedition + " is higher than available badges " + badges + ". Expedition will be skipped.");
                                     seg = detectCue(cues.get("X"));
                                     clickOnSeg(seg);
-                                    sleep(2*SECOND);
+                                    sleep(2 * SECOND);
                                     continue;
                                 }
 
-								// One time check for Autoshrine
-								if (BHBot.settings.autoShrine.contains("e") || BHBot.settings.autoBossRune.containsKey("e")) {
-									seg = detectCue(cues.get("X"));
-									clickOnSeg(seg);
-									readScreen(2 * SECOND);
+                                // One time check for Autoshrine
+                                if (BHBot.settings.autoShrine.contains("e") || BHBot.settings.autoBossRune.containsKey("e")) {
+                                    seg = detectCue(cues.get("X"));
+                                    clickOnSeg(seg);
+                                    readScreen(2 * SECOND);
 
 
                                     if (BHBot.settings.autoShrine.contains("e")) {
                                         BHBot.logger.info("Configuring autoShrine for Expedition");
-                                        if(!checkShrineSettings(true, true)) {
+                                        if (!checkShrineSettings(true, true)) {
                                             BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
                                         }
                                     }
@@ -2561,250 +2573,248 @@ public class MainThread implements Runnable {
                                     }
 
                                     readScreen(SECOND);
-									clickOnSeg(badgeBtn);
-									readScreen(SECOND * 2);
-								}
+                                    clickOnSeg(badgeBtn);
+                                    readScreen(SECOND * 2);
+                                }
 
-								BHBot.logger.info("Attempting expedition...");
+                                BHBot.logger.info("Attempting expedition...");
 
-								readScreen(SECOND * 2);
-								int cost = detectCost();
-								if (cost == 0) { // error!
-									BHBot.logger.error("Due to an error#1 in cost detection, Expedition cost will be skipped.");
-									closePopupSecurely(cues.get("ExpeditionWindow"), cues.get("X"));
-									continue;
-								}
+                                readScreen(SECOND * 2);
+                                int cost = detectCost();
+                                if (cost == 0) { // error!
+                                    BHBot.logger.error("Due to an error#1 in cost detection, Expedition cost will be skipped.");
+                                    closePopupSecurely(cues.get("ExpeditionWindow"), cues.get("X"));
+                                    continue;
+                                }
 
-								if (cost != BHBot.settings.costExpedition) {
-									BHBot.logger.info("Detected Expedition cost: " + cost + ", settings cost is " + BHBot.settings.costExpedition + ". Changing..");
-									boolean result = selectCost(cost, BHBot.settings.costExpedition);
-									if (!result) { // error!
-										// see if drop down menu is still open and close it:
-										readScreen(SECOND);
-										tryClosingWindow(cues.get("CostDropDown"));
-										readScreen(5*SECOND);
-										seg = detectCue(cues.get("X"));
-										clickOnSeg(seg);
-										sleep(2*SECOND);
-										BHBot.logger.error("Due to an error in cost selection, Expedition will be skipped.");
-										continue;
-									}
-									readScreen(SECOND * 2);
-								}
+                                if (cost != BHBot.settings.costExpedition) {
+                                    BHBot.logger.info("Detected Expedition cost: " + cost + ", settings cost is " + BHBot.settings.costExpedition + ". Changing..");
+                                    boolean result = selectCost(cost, BHBot.settings.costExpedition);
+                                    if (!result) { // error!
+                                        // see if drop down menu is still open and close it:
+                                        readScreen(SECOND);
+                                        tryClosingWindow(cues.get("CostDropDown"));
+                                        readScreen(5 * SECOND);
+                                        seg = detectCue(cues.get("X"));
+                                        clickOnSeg(seg);
+                                        sleep(2 * SECOND);
+                                        BHBot.logger.error("Due to an error in cost selection, Expedition will be skipped.");
+                                        continue;
+                                    }
+                                    readScreen(SECOND * 2);
+                                }
 
-								seg = detectCue(cues.get("Play"), 2*SECOND);
-								clickOnSeg(seg);
-								readScreen(2*SECOND);
+                                seg = detectCue(cues.get("Play"), 2 * SECOND);
+                                clickOnSeg(seg);
+                                readScreen(2 * SECOND);
 
-								//Select Expedition and write portal to a variable
-								String randomExpedition = BHBot.settings.expeditions.next();
-								if (randomExpedition == null) {
-									BHBot.settings.activitiesEnabled.remove("e");
-									BHBot.logger.error("It was impossible to randomly choose an expedtion. Expeditions are disabled.");
-									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-										sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedtion. Expeditions are disabled.", "siren");
-									continue;
-								}
+                                //Select Expedition and write portal to a variable
+                                String randomExpedition = BHBot.settings.expeditions.next();
+                                if (randomExpedition == null) {
+                                    BHBot.settings.activitiesEnabled.remove("e");
+                                    BHBot.logger.error("It was impossible to randomly choose an expedtion. Expeditions are disabled.");
+                                    if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+                                        sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedtion. Expeditions are disabled.", "siren");
+                                    continue;
+                                }
 
-								String[] expedition = randomExpedition.split(" ");
-								String targetPortal = expedition[0];
-								int targetDifficulty = Integer.parseInt(expedition[1]);
+                                String[] expedition = randomExpedition.split(" ");
+                                String targetPortal = expedition[0];
+                                int targetDifficulty = Integer.parseInt(expedition[1]);
 
-								readScreen();
-								int currentExpedition;
-								if (detectCue(cues.get("Expedition1")) != null) {
-									currentExpedition = 1;
-								}
-								else if (detectCue(cues.get("Expedition2")) != null) {
-									currentExpedition = 2;
-								} else if (detectCue(cues.get("Expedition3")) != null) {
-									currentExpedition = 3;
-								} else if (detectCue(cues.get("Expedition4")) != null) {
-									currentExpedition = 4;
-								} else {
-									BHBot.settings.activitiesEnabled.remove("e");
-									BHBot.logger.error("It was impossible to get the current expedition type!");
-									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-										sendPushOverMessage("Expedition error", "It was impossible to get the current expedition type. Expeditions are now disabled!", "siren");
+                                readScreen();
+                                int currentExpedition;
+                                if (detectCue(cues.get("Expedition1")) != null) {
+                                    currentExpedition = 1;
+                                } else if (detectCue(cues.get("Expedition2")) != null) {
+                                    currentExpedition = 2;
+                                } else if (detectCue(cues.get("Expedition3")) != null) {
+                                    currentExpedition = 3;
+                                } else if (detectCue(cues.get("Expedition4")) != null) {
+                                    currentExpedition = 4;
+                                } else {
+                                    BHBot.settings.activitiesEnabled.remove("e");
+                                    BHBot.logger.error("It was impossible to get the current expedition type!");
+                                    if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+                                        sendPushOverMessage("Expedition error", "It was impossible to get the current expedition type. Expeditions are now disabled!", "siren");
 
-									readScreen();
-									seg = detectCue(cues.get("X"), SECOND);
-									if (seg != null) clickOnSeg(seg);
-									readScreen(2*SECOND);
-									continue;
-								}
+                                    readScreen();
+                                    seg = detectCue(cues.get("X"), SECOND);
+                                    if (seg != null) clickOnSeg(seg);
+                                    readScreen(2 * SECOND);
+                                    continue;
+                                }
 
-								String expedName = getExpeditionName(currentExpedition, targetPortal);
-								BHBot.logger.info("Attempting " + expedName + " Portal at difficulty " + targetDifficulty);
+                                String expedName = getExpeditionName(currentExpedition, targetPortal);
+                                BHBot.logger.info("Attempting " + expedName + " Portal at difficulty " + targetDifficulty);
 
-								// click on the chosen portal:
-								Point p = getExpeditionIconPos(currentExpedition, targetPortal);
-								if (p == null) {
-									BHBot.settings.activitiesEnabled.remove("e");
-									BHBot.logger.error("It was impossible to get portal position for " + expedName + ". Expeditions are now disabled!");
-									if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-										sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + expedName + ". Expeditions are now disabled!", "siren");
+                                // click on the chosen portal:
+                                Point p = getExpeditionIconPos(currentExpedition, targetPortal);
+                                if (p == null) {
+                                    BHBot.settings.activitiesEnabled.remove("e");
+                                    BHBot.logger.error("It was impossible to get portal position for " + expedName + ". Expeditions are now disabled!");
+                                    if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+                                        sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + expedName + ". Expeditions are now disabled!", "siren");
 
-									readScreen();
-									seg = detectCue(cues.get("X"), SECOND);
-									if (seg != null) clickOnSeg(seg);
-									readScreen(2*SECOND);
-									continue;
-								}
+                                    readScreen();
+                                    seg = detectCue(cues.get("X"), SECOND);
+                                    if (seg != null) clickOnSeg(seg);
+                                    readScreen(2 * SECOND);
+                                    continue;
+                                }
 
-								clickInGame(p.x, p.y);
+                                clickInGame(p.x, p.y);
 
-								// select difficulty if needed:
-								int difficulty = detectDifficultyExpedition();
-								if (difficulty == 0) { // error!
-									BHBot.logger.warn("Due to an error in difficulty detection, Expedition will be skipped.");
-									seg = detectCue(cues.get("X"));
-									while (seg != null) {
-										clickOnSeg(seg);
-										readScreen(2*SECOND);
-										seg = detectCue(cues.get("X"));
-									}
-									continue;
-								}
+                                // select difficulty if needed:
+                                int difficulty = detectDifficultyExpedition();
+                                if (difficulty == 0) { // error!
+                                    BHBot.logger.warn("Due to an error in difficulty detection, Expedition will be skipped.");
+                                    seg = detectCue(cues.get("X"));
+                                    while (seg != null) {
+                                        clickOnSeg(seg);
+                                        readScreen(2 * SECOND);
+                                        seg = detectCue(cues.get("X"));
+                                    }
+                                    continue;
+                                }
 
-								if (difficulty != targetDifficulty) {
-									BHBot.logger.info("Detected Expedition difficulty level: " + difficulty + ", settings level is " + targetDifficulty + ". Changing..");
-									boolean result = selectDifficultyExpedition(difficulty, targetDifficulty);
-									if (!result) { // error!
-										// see if drop down menu is still open and close it:
-										readScreen();
-										seg = detectCue(cues.get("X"));
-										while (seg != null) {
-											clickOnSeg(seg);
-											readScreen(2*SECOND);
-											seg = detectCue(cues.get("X"));
-										}
-										BHBot.logger.error("Due to an error in difficulty selection, Expedition will be skipped.");
-										continue;
-									}
-								}
+                                if (difficulty != targetDifficulty) {
+                                    BHBot.logger.info("Detected Expedition difficulty level: " + difficulty + ", settings level is " + targetDifficulty + ". Changing..");
+                                    boolean result = selectDifficultyExpedition(difficulty, targetDifficulty);
+                                    if (!result) { // error!
+                                        // see if drop down menu is still open and close it:
+                                        readScreen();
+                                        seg = detectCue(cues.get("X"));
+                                        while (seg != null) {
+                                            clickOnSeg(seg);
+                                            readScreen(2 * SECOND);
+                                            seg = detectCue(cues.get("X"));
+                                        }
+                                        BHBot.logger.error("Due to an error in difficulty selection, Expedition will be skipped.");
+                                        continue;
+                                    }
+                                }
 
-								//click enter
-								seg = detectCue(cues.get("Enter"), 2*SECOND);
-								clickOnSeg(seg);
+                                //click enter
+                                seg = detectCue(cues.get("Enter"), 2 * SECOND);
+                                clickOnSeg(seg);
 
-								//click enter
-								seg = detectCue(cues.get("Accept"), 2*SECOND);
-								clickOnSeg(seg);
+                                //click enter
+                                seg = detectCue(cues.get("Accept"), 2 * SECOND);
+                                clickOnSeg(seg);
 
-								handleTeamMalformedWarning();
-								if (handleTeamMalformedWarning()) {
-									BHBot.logger.error("Team incomplete, doing emergency restart..");
-									restart();
-									continue;
-								} else {
-									state = State.Expedition;
-									BHBot.logger.info(expedName + " portal initiated!");
-									autoShrined = false;
-									autoBossRuned = false;
-								}
+                                handleTeamMalformedWarning();
+                                if (handleTeamMalformedWarning()) {
+                                    BHBot.logger.error("Team incomplete, doing emergency restart..");
+                                    restart();
+                                    continue;
+                                } else {
+                                    state = State.Expedition;
+                                    BHBot.logger.info(expedName + " portal initiated!");
+                                    autoShrined = false;
+                                    autoBossRuned = false;
+                                }
 
-								if (handleGuildLeaveConfirm()) {
-									restart();
-									continue;
-								}
-							}
-							continue;
-						}
-						else {
-							// do neither gvg nor invasion
-							seg = detectCue(cues.get("X"));
-							clickOnSeg(seg);
-							sleep(2*SECOND);
-							continue;
-						}
-					} // badges
+                                if (handleGuildLeaveConfirm()) {
+                                    restart();
+                                    continue;
+                                }
+                            }
+                            continue;
+                        } else {
+                            // do neither gvg nor invasion
+                            seg = detectCue(cues.get("X"));
+                            clickOnSeg(seg);
+                            sleep(2 * SECOND);
+                            continue;
+                        }
+                    } // badges
 
-					// Check worldBoss:
-					if ( BHBot.scheduler.doWorldBossImmediately || ("w".equals(currentActivity)) ) {
-						timeLastEnergyCheck = Misc.getTime();
-						int energy = getEnergy();
-						globalEnergy = energy;
-						BHBot.logger.readout("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage +"%");
+                    // Check worldBoss:
+                    if (BHBot.scheduler.doWorldBossImmediately || ("w".equals(currentActivity))) {
+                        timeLastEnergyCheck = Misc.getTime();
+                        int energy = getEnergy();
+                        globalEnergy = energy;
+                        BHBot.logger.readout("Energy: " + energy + "%, required: >" + BHBot.settings.minEnergyPercentage + "%");
 
-						if (energy == -1) { // error
-							if (BHBot.scheduler.doWorldBossImmediately)
-								BHBot.scheduler.doWorldBossImmediately = false; // reset it
-							BHBot.scheduler.restoreIdleTime();
+                        if (energy == -1) { // error
+                            if (BHBot.scheduler.doWorldBossImmediately)
+                                BHBot.scheduler.doWorldBossImmediately = false; // reset it
+                            BHBot.scheduler.restoreIdleTime();
 
 
-							continue;
-						}
+                            continue;
+                        }
 
-						// if (BHBot.settings.countActivities) {
-						// 	int worldBossCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]);
-						// 		if (worldBossCounter >= 10) {
-						// 		BHBot.logger.warn("World Boss limit met (" + worldBossCounter + "), skipping.");
-						// 		if (BHBot.scheduler.doDungeonImmediately)
-						// 			BHBot.scheduler.doDungeonImmediately = false; // reset it
-						// 		BHBot.scheduler.restoreIdleTime();
-						// 		continue;
-						// 		}
-						// }
+                        // if (BHBot.settings.countActivities) {
+                        // 	int worldBossCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]);
+                        // 		if (worldBossCounter >= 10) {
+                        // 		BHBot.logger.warn("World Boss limit met (" + worldBossCounter + "), skipping.");
+                        // 		if (BHBot.scheduler.doDungeonImmediately)
+                        // 			BHBot.scheduler.doDungeonImmediately = false; // reset it
+                        // 		BHBot.scheduler.restoreIdleTime();
+                        // 		continue;
+                        // 		}
+                        // }
 
-						if (!BHBot.scheduler.doWorldBossImmediately && (energy <= BHBot.settings.minEnergyPercentage)) {
-							
-							//if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
-							int energyDifference = BHBot.settings.minEnergyPercentage - energy; //difference between needed and current resource
-							if (energyDifference > 1) {
-								int increase = (energyDifference - 1) * 4;
-								ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
-							} else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
-							
-							sleep(SECOND);
-							continue;
-						} else {
-							// do the WorldBoss!
-							if (BHBot.scheduler.doWorldBossImmediately)
-								BHBot.scheduler.doWorldBossImmediately = false; // reset it
+                        if (!BHBot.scheduler.doWorldBossImmediately && (energy <= BHBot.settings.minEnergyPercentage)) {
 
-							if (!checkWorldBossInput()) {
-								BHBot.logger.warn("Invalid world boss settings detected, World Boss will be skipped");
-								continue;
-							}
+                            //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+                            int energyDifference = BHBot.settings.minEnergyPercentage - energy; //difference between needed and current resource
+                            if (energyDifference > 1) {
+                                int increase = (energyDifference - 1) * 4;
+                                ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
+                            } else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
 
-							//configure activity runes
-							handleMinorRunes("w");
+                            sleep(SECOND);
+                            continue;
+                        } else {
+                            // do the WorldBoss!
+                            if (BHBot.scheduler.doWorldBossImmediately)
+                                BHBot.scheduler.doWorldBossImmediately = false; // reset it
 
-							seg = detectCue(cues.get("WorldBoss"));
-							if (seg != null) {
-								clickOnSeg(seg);
-							} else {
-								BHBot.logger.error("World Boss button not found");
-								continue;
-							}
+                            if (!checkWorldBossInput()) {
+                                BHBot.logger.warn("Invalid world boss settings detected, World Boss will be skipped");
+                                continue;
+                            }
 
-							readScreen();
-							detectCharacterDialogAndHandleIt(); //clear dialogue
+                            //configure activity runes
+                            handleMinorRunes("w");
+
+                            seg = detectCue(cues.get("WorldBoss"));
+                            if (seg != null) {
+                                clickOnSeg(seg);
+                            } else {
+                                BHBot.logger.error("World Boss button not found");
+                                continue;
+                            }
+
+                            readScreen();
+                            detectCharacterDialogAndHandleIt(); //clear dialogue
 
 
-							String worldBossType = BHBot.settings.worldBossSettings.get(0);
-							int worldBossDifficulty = Integer.parseInt(BHBot.settings.worldBossSettings.get(1));
-							int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
-							int worldBossTimer = BHBot.settings.worldBossTimer;
+                            String worldBossType = BHBot.settings.worldBossSettings.get(0);
+                            int worldBossDifficulty = Integer.parseInt(BHBot.settings.worldBossSettings.get(1));
+                            int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
+                            int worldBossTimer = BHBot.settings.worldBossTimer;
 
-							//new settings loading
-							HashMap<String, String> wbNameDecode = new HashMap<>();
-							wbNameDecode.put("o", "Orlang Clan");
-							wbNameDecode.put("n", "Netherworld");
-							wbNameDecode.put("m", "Melvin");
-							wbNameDecode.put("3", "3t3rmin4tion");
+                            //new settings loading
+                            HashMap<String, String> wbNameDecode = new HashMap<>();
+                            wbNameDecode.put("o", "Orlang Clan");
+                            wbNameDecode.put("n", "Netherworld");
+                            wbNameDecode.put("m", "Melvin");
+                            wbNameDecode.put("3", "3t3rmin4tion");
 
-							String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
+                            String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
 
-							if (!BHBot.settings.worldBossSolo) {
-								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + ". Lobby timeout is " +  worldBossTimer + "s.");
-							} else {
-								BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + " Solo");
-							}
+                            if (!BHBot.settings.worldBossSolo) {
+                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + ". Lobby timeout is " + worldBossTimer + "s.");
+                            } else {
+                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + " Solo");
+                            }
 
-							readScreen();
-							seg = detectCue(cues.get("BlueSummon"),SECOND);
+                            readScreen();
+                            seg = detectCue(cues.get("BlueSummon"), SECOND);
                             if (seg != null) {
                                 clickOnSeg(seg);
                             } else {
@@ -2818,289 +2828,289 @@ public class MainThread implements Runnable {
                                 closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
                                 continue;
                             }
-                            readScreen(2*SECOND); //wait for screen to stablise
+                            readScreen(2 * SECOND); //wait for screen to stablise
 
-							//world boss type selection
-							String selectedWB = readSelectedWorldBoss();
-							if (selectedWB == null) {
-								BHBot.logger.error("Impossible to read current selected world boss.");
+                            //world boss type selection
+                            String selectedWB = readSelectedWorldBoss();
+                            if (selectedWB == null) {
+                                BHBot.logger.error("Impossible to read current selected world boss.");
 								/*BHBot.logger.error("Impossible to read current selected world boss. Dungeons will be activated instead of World Boss!");
 								BHBot.settings.activitiesEnabled.remove("w");
 								BHBot.settings.activitiesEnabled.add("d");*/
 
-								String WBErrorScreen = saveGameScreen("wb-no-read-selected", img);
-								if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
-									sendPushOverMessage("World Boss error", "Impossible to read current selected world boss.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
-								}
+                                String WBErrorScreen = saveGameScreen("wb-no-read-selected", img);
+                                if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                                    sendPushOverMessage("World Boss error", "Impossible to read current selected world boss.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
+                                }
 
-								closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
-								continue;
-							}
+                                closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
+                                continue;
+                            }
 
-							if (!worldBossType.equals(selectedWB)) {
-								BHBot.logger.info(wbNameDecode.get(selectedWB) + " selected, changing..");
-								changeSelectedWorldBoss(worldBossType);
-							}
+                            if (!worldBossType.equals(selectedWB)) {
+                                BHBot.logger.info(wbNameDecode.get(selectedWB) + " selected, changing..");
+                                changeSelectedWorldBoss(worldBossType);
+                            }
 
 //							sleep(SECOND); //more stabilising if we changed world boss type
-							readScreen(SECOND);
-							seg = detectCue(cues.get("LargeGreenSummon"),2*SECOND);
-							clickOnSeg(seg); //selected world boss
+                            readScreen(SECOND);
+                            seg = detectCue(cues.get("LargeGreenSummon"), 2 * SECOND);
+                            clickOnSeg(seg); //selected world boss
 
-							readScreen(SECOND);
-							seg = detectCue(cues.get("Private"),SECOND);
-							if (!BHBot.settings.worldBossSolo) {
-								if (seg != null) {
-									BHBot.logger.info("Unchecking private lobby");
-									clickOnSeg(seg);
-								}
-							} else {
-								if (seg == null) {
-									BHBot.logger.info("Enabling private lobby for solo World Boss");
-									sleep(500);
-									clickInGame(340,350);
-									readScreen(500);
-								}
-							}
+                            readScreen(SECOND);
+                            seg = detectCue(cues.get("Private"), SECOND);
+                            if (!BHBot.settings.worldBossSolo) {
+                                if (seg != null) {
+                                    BHBot.logger.info("Unchecking private lobby");
+                                    clickOnSeg(seg);
+                                }
+                            } else {
+                                if (seg == null) {
+                                    BHBot.logger.info("Enabling private lobby for solo World Boss");
+                                    sleep(500);
+                                    clickInGame(340, 350);
+                                    readScreen(500);
+                                }
+                            }
 
-							//world boss tier selection
+                            //world boss tier selection
 
-							int currentTier = detectWorldBossTier();
-							if (currentTier != worldBossTier) {
-								BHBot.logger.info("T" + currentTier + " detected, changing to T" + worldBossTier);
-								changeWorldBossTier(worldBossTier);
-							}
+                            int currentTier = detectWorldBossTier();
+                            if (currentTier != worldBossTier) {
+                                BHBot.logger.info("T" + currentTier + " detected, changing to T" + worldBossTier);
+                                changeWorldBossTier(worldBossTier);
+                            }
 
-							//world boss difficulty selection
+                            //world boss difficulty selection
 
-							int currentDifficulty = detectWorldBossDifficulty();
-							String currentDifficultyName = (currentDifficulty == 1 ? "Normal" : currentDifficulty == 2 ? "Hard" : "Heroic");
-							String settingsDifficultyName = (worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic");
-							if (currentDifficulty != worldBossDifficulty) {
-								BHBot.logger.info(currentDifficultyName + " detected, changing to " + settingsDifficultyName);
-								changeWorldBossDifficulty(worldBossDifficulty);
-							}
+                            int currentDifficulty = detectWorldBossDifficulty();
+                            String currentDifficultyName = (currentDifficulty == 1 ? "Normal" : currentDifficulty == 2 ? "Hard" : "Heroic");
+                            String settingsDifficultyName = (worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic");
+                            if (currentDifficulty != worldBossDifficulty) {
+                                BHBot.logger.info(currentDifficultyName + " detected, changing to " + settingsDifficultyName);
+                                changeWorldBossDifficulty(worldBossDifficulty);
+                            }
 
-							readScreen(SECOND);
-							seg = detectCue(cues.get("SmallGreenSummon"),SECOND * 2);
-							clickOnSeg(seg); //accept current settings
+                            readScreen(SECOND);
+                            seg = detectCue(cues.get("SmallGreenSummon"), SECOND * 2);
+                            clickOnSeg(seg); //accept current settings
 
-							boolean insufficientEnergy = handleNotEnoughEnergyPopup(SECOND * 3, State.WorldBoss);
-							if (insufficientEnergy) {
-								continue;
-							}
+                            boolean insufficientEnergy = handleNotEnoughEnergyPopup(SECOND * 3, State.WorldBoss);
+                            if (insufficientEnergy) {
+                                continue;
+                            }
 
-							BHBot.logger.info("Starting lobby");
+                            BHBot.logger.info("Starting lobby");
 
-							/*
-							 *
-							 * this part gets messy as WB is much more dynamic and harder to automate with human players
-							 * I've tried to introduce as many error catchers with restarts(); as possible to keep things running smoothly
-							 *
-							 */
+                            /*
+                             *
+                             * this part gets messy as WB is much more dynamic and harder to automate with human players
+                             * I've tried to introduce as many error catchers with restarts(); as possible to keep things running smoothly
+                             *
+                             */
 
-							//wait for lobby to fill with a timer
-							if (!BHBot.settings.worldBossSolo) {
-								for (int i = 0; i < worldBossTimer; i++) {
-									sleep(SECOND);
-									readScreen();
+                            //wait for lobby to fill with a timer
+                            if (!BHBot.settings.worldBossSolo) {
+                                for (int i = 0; i < worldBossTimer; i++) {
+                                    sleep(SECOND);
+                                    readScreen();
 
-									switch (worldBossType) {
-										case "o":  //shouldn't have this inside the loop but it doesn't work if its outside
-											seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
-											break;
-										case "n":
-										case "3":
-											seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether and 3t3rmin4tion
-											break;
-										case "m":
-											seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
-											break;
-									}
+                                    switch (worldBossType) {
+                                        case "o":  //shouldn't have this inside the loop but it doesn't work if its outside
+                                            seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
+                                            break;
+                                        case "n":
+                                        case "3":
+                                            seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether and 3t3rmin4tion
+                                            break;
+                                        case "m":
+                                            seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
+                                            break;
+                                    }
 
-									if (seg != null) { //while the relevant invite button exists
-										if (i != 0 && (i % 15) == 0) { //every 15 seconds
-												int timeLeft = worldBossTimer - i;
-												BHBot.logger.info("Waiting for full team. Time out in " + timeLeft + " seconds.");
-											}
-										if (i == (worldBossTimer - 1)) { //out of time
-											if (BHBot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
-												BHBot.logger.info("Lobby timed out, running dungeon instead");
-												closeWorldBoss();
-												sleep(4*SECOND); //make sure we're stable on the main screen
-												BHBot.scheduler.doDungeonImmediately = true;
-											} else {
-											BHBot.logger.info("Lobby timed out, returning to main screen.");
-											timeLastEnergyCheck -= 540; // remove 9 minutes from the check time so we check again in a minute
-											closeWorldBoss();
-											}
-										}
-									} else {
-										BHBot.logger.info("Lobby filled in " + i + " seconds!");
-										i = worldBossTimer; // end the for loop
+                                    if (seg != null) { //while the relevant invite button exists
+                                        if (i != 0 && (i % 15) == 0) { //every 15 seconds
+                                            int timeLeft = worldBossTimer - i;
+                                            BHBot.logger.info("Waiting for full team. Time out in " + timeLeft + " seconds.");
+                                        }
+                                        if (i == (worldBossTimer - 1)) { //out of time
+                                            if (BHBot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
+                                                BHBot.logger.info("Lobby timed out, running dungeon instead");
+                                                closeWorldBoss();
+                                                sleep(4 * SECOND); //make sure we're stable on the main screen
+                                                BHBot.scheduler.doDungeonImmediately = true;
+                                            } else {
+                                                BHBot.logger.info("Lobby timed out, returning to main screen.");
+                                                timeLastEnergyCheck -= 540; // remove 9 minutes from the check time so we check again in a minute
+                                                closeWorldBoss();
+                                            }
+                                        }
+                                    } else {
+                                        BHBot.logger.info("Lobby filled in " + i + " seconds!");
+                                        i = worldBossTimer; // end the for loop
 
-										//check that all players are ready
-										BHBot.logger.info("Making sure everyones ready..");
-										int j = 1;
-										while (j != 20) { //ready check for 10 seconds
-											seg = detectCue(cues.get("Unready"), 2*SECOND); //this checks all 4 ready statuses
-											readScreen();
-											if (seg == null) {// no red X's found
-												break;
-											} else { //red X's found
-												//BHBot.logger.info(Integer.toString(j));
-												j++;
-												sleep(500); //check every 500ms
-											}
-										}
+                                        //check that all players are ready
+                                        BHBot.logger.info("Making sure everyones ready..");
+                                        int j = 1;
+                                        while (j != 20) { //ready check for 10 seconds
+                                            seg = detectCue(cues.get("Unready"), 2 * SECOND); //this checks all 4 ready statuses
+                                            readScreen();
+                                            if (seg == null) {// no red X's found
+                                                break;
+                                            } else { //red X's found
+                                                //BHBot.logger.info(Integer.toString(j));
+                                                j++;
+                                                sleep(500); //check every 500ms
+                                            }
+                                        }
 
-										if (j >= 20) {
-											BHBot.logger.error("Ready check not passed after 10 seconds, restarting");
-											restart();
-										}
+                                        if (j >= 20) {
+                                            BHBot.logger.error("Ready check not passed after 10 seconds, restarting");
+                                            restart();
+                                        }
 
-										sleep(500);
-										readScreen();
-										MarvinSegment segStart = detectCue(cues.get("Start"), 5*SECOND);
-										if (segStart != null) {
-											clickOnSeg(segStart); //start World Boss
-											readScreen();
-											seg = detectCue(cues.get("TeamNotFull"), 2*SECOND); //check if we have the team not full screen an clear it
-												if (seg != null) {
-													sleep(2*SECOND); //wait for animation to finish
-													clickInGame(330,360); //yesgreen cue has issues so we use XY to click on Yes
-												}
-											BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + " started!");
-											state = State.WorldBoss;
-											sleep(6*SECOND); //long wait to make sure we are in the world boss dungeon
-											readScreen();
-											seg = detectCue(cues.get("AutoOff")); // takes processDungeon too long so we do it manually
-											if (seg != null) {
-												clickOnSeg(seg);
-												BHBot.logger.info("Auto-pilot is disabled. Enabling...");
-											}
-											sleep(4*SECOND);
-											readScreen();
-											MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
-											if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
-												BHBot.logger.info("World Boss started but no encounter detected, restarting");
-												restart();
-											}
-										} else { //generic error / unknown action restart
-											BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
-											saveGameScreen("wb-no-start-button", img);
-											restart();
-										}
+                                        sleep(500);
+                                        readScreen();
+                                        MarvinSegment segStart = detectCue(cues.get("Start"), 5 * SECOND);
+                                        if (segStart != null) {
+                                            clickOnSeg(segStart); //start World Boss
+                                            readScreen();
+                                            seg = detectCue(cues.get("TeamNotFull"), 2 * SECOND); //check if we have the team not full screen an clear it
+                                            if (seg != null) {
+                                                sleep(2 * SECOND); //wait for animation to finish
+                                                clickInGame(330, 360); //yesgreen cue has issues so we use XY to click on Yes
+                                            }
+                                            BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + " started!");
+                                            state = State.WorldBoss;
+                                            sleep(6 * SECOND); //long wait to make sure we are in the world boss dungeon
+                                            readScreen();
+                                            seg = detectCue(cues.get("AutoOff")); // takes processDungeon too long so we do it manually
+                                            if (seg != null) {
+                                                clickOnSeg(seg);
+                                                BHBot.logger.info("Auto-pilot is disabled. Enabling...");
+                                            }
+                                            sleep(4 * SECOND);
+                                            readScreen();
+                                            MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
+                                            if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
+                                                BHBot.logger.info("World Boss started but no encounter detected, restarting");
+                                                restart();
+                                            }
+                                        } else { //generic error / unknown action restart
+                                            BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
+                                            saveGameScreen("wb-no-start-button", img);
+                                            restart();
+                                        }
 
-									}
-								}
-							} else {
-								readScreen();
-								MarvinSegment segStart = detectCue(cues.get("Start"), 2*SECOND);
-								if (segStart != null) {
-									clickOnSeg(segStart); //start World Boss
-									sleep(2*SECOND); //wait for dropdown animation to finish
-									seg = detectCue(cues.get("YesGreen"), 2*SECOND); //clear empty team prompt
-									if (seg == null) {
-										sleep(500);
-										clickInGame(330,360); //yesgreen cue has issues so we use pos to click on Yes as a backup
-									} else {
-										clickOnSeg(seg);
-										clickInGame(330,360); //click anyway this cue has issues
-									}
-									BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " Solo started!");
-									state = State.WorldBoss;
-								continue;
-								}
-							continue;
-							}
-						}
-						continue;
-					} // World Boss
+                                    }
+                                }
+                            } else {
+                                readScreen();
+                                MarvinSegment segStart = detectCue(cues.get("Start"), 2 * SECOND);
+                                if (segStart != null) {
+                                    clickOnSeg(segStart); //start World Boss
+                                    sleep(2 * SECOND); //wait for dropdown animation to finish
+                                    seg = detectCue(cues.get("YesGreen"), 2 * SECOND); //clear empty team prompt
+                                    if (seg == null) {
+                                        sleep(500);
+                                        clickInGame(330, 360); //yesgreen cue has issues so we use pos to click on Yes as a backup
+                                    } else {
+                                        clickOnSeg(seg);
+                                        clickInGame(330, 360); //click anyway this cue has issues
+                                    }
+                                    BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " Solo started!");
+                                    state = State.WorldBoss;
+                                    continue;
+                                }
+                                continue;
+                            }
+                        }
+                        continue;
+                    } // World Boss
 
-					// Collect bounties:
-					if (BHBot.settings.collectBounties && ((Misc.getTime() - timeLastBountyCheck > BOUNTY_CHECK_INTERVAL) || timeLastBountyCheck == 0)) {
-						timeLastBountyCheck = Misc.getTime();
-						handleBounties();
-						}
+                    // Collect bounties:
+                    if (BHBot.settings.collectBounties && ((Misc.getTime() - timeLastBountyCheck > BOUNTY_CHECK_INTERVAL) || timeLastBountyCheck == 0)) {
+                        timeLastBountyCheck = Misc.getTime();
+                        handleBounties();
+                    }
 
 
-				} // main screen processing
-			} catch (Exception e) {
-				if (e instanceof org.openqa.selenium.WebDriverException && e.getMessage().startsWith("chrome not reachable")) {
-					// this happens when user manually closes the Chrome window, for example
-					BHBot.logger.error("Error: chrome is not reachable! Restarting...", e);
-					restart();
-					continue;
-				} else if (e instanceof java.awt.image.RasterFormatException) {
-					// not sure in what cases this happen, but it happens
-					BHBot.logger.error("Error: RasterFormatException. Attempting to re-align the window...", e);
-					sleep(500);
-					scrollGameIntoView();
-					sleep(500);
-					try {
-						readScreen();
-					} catch (Exception e2) {
-						BHBot.logger.error("Error: re-alignment failed(" + e2.getMessage() + "). Restarting...");
-						restart();
-						continue;
-					}
-					BHBot.logger.info("Realignment seems to have worked.");
-					continue;
-				} else if (e instanceof org.openqa.selenium.StaleElementReferenceException) {
-					// this is a rare error, however it happens. See this for more info:
-					// http://www.seleniumhq.org/exceptions/stale_element_reference.jsp
-					BHBot.logger.error("Error: StaleElementReferenceException. Restarting...", e);
-					restart();
-					continue;
-				} else if (e instanceof com.assertthat.selenium_shutterbug.utils.web.ElementOutsideViewportException) {
-					BHBot.logger.info("Error: ElementOutsideViewportException. Ignoring...");
-					//added this 1 second delay as attempting ads often triggers this
-					//will trigger the restart in the if statement below after 30 seconds
-					sleep(SECOND);
-					// we must not call 'continue' here, because this error could be a loop error, this is why we need to increase numConsecutiveException bellow in the code!
-				} else {
-					// unknown error!
-					BHBot.logger.error("Unmanaged exception in main run loop", e);
-				}
+                } // main screen processing
+            } catch (Exception e) {
+                if (e instanceof org.openqa.selenium.WebDriverException && e.getMessage().startsWith("chrome not reachable")) {
+                    // this happens when user manually closes the Chrome window, for example
+                    BHBot.logger.error("Error: chrome is not reachable! Restarting...", e);
+                    restart();
+                    continue;
+                } else if (e instanceof java.awt.image.RasterFormatException) {
+                    // not sure in what cases this happen, but it happens
+                    BHBot.logger.error("Error: RasterFormatException. Attempting to re-align the window...", e);
+                    sleep(500);
+                    scrollGameIntoView();
+                    sleep(500);
+                    try {
+                        readScreen();
+                    } catch (Exception e2) {
+                        BHBot.logger.error("Error: re-alignment failed(" + e2.getMessage() + "). Restarting...");
+                        restart();
+                        continue;
+                    }
+                    BHBot.logger.info("Realignment seems to have worked.");
+                    continue;
+                } else if (e instanceof org.openqa.selenium.StaleElementReferenceException) {
+                    // this is a rare error, however it happens. See this for more info:
+                    // http://www.seleniumhq.org/exceptions/stale_element_reference.jsp
+                    BHBot.logger.error("Error: StaleElementReferenceException. Restarting...", e);
+                    restart();
+                    continue;
+                } else if (e instanceof com.assertthat.selenium_shutterbug.utils.web.ElementOutsideViewportException) {
+                    BHBot.logger.info("Error: ElementOutsideViewportException. Ignoring...");
+                    //added this 1 second delay as attempting ads often triggers this
+                    //will trigger the restart in the if statement below after 30 seconds
+                    sleep(SECOND);
+                    // we must not call 'continue' here, because this error could be a loop error, this is why we need to increase numConsecutiveException bellow in the code!
+                } else {
+                    // unknown error!
+                    BHBot.logger.error("Unmanaged exception in main run loop", e);
+                }
 
-				numConsecutiveException++;
-				if (numConsecutiveException > MAX_CONSECUTIVE_EXCEPTIONS) {
-					numConsecutiveException = 0; // reset it
-					BHBot.logger.warn("Problem detected: number of consecutive exceptions is higher than " + MAX_CONSECUTIVE_EXCEPTIONS + ". This probably means we're caught in a loop. Restarting...");
-					restart();
-					continue;
-				}
+                numConsecutiveException++;
+                if (numConsecutiveException > MAX_CONSECUTIVE_EXCEPTIONS) {
+                    numConsecutiveException = 0; // reset it
+                    BHBot.logger.warn("Problem detected: number of consecutive exceptions is higher than " + MAX_CONSECUTIVE_EXCEPTIONS + ". This probably means we're caught in a loop. Restarting...");
+                    restart();
+                    continue;
+                }
 
-				BHBot.scheduler.restoreIdleTime();
+                BHBot.scheduler.restoreIdleTime();
 
-				continue;
-			}
+                continue;
+            }
 
-			// well, we got through all the checks. Means that nothing much has happened. So lets sleep for a few seconds in order to not make processing too heavy...
-			numConsecutiveException = 0; // reset exception counter
-			BHBot.scheduler.restoreIdleTime(); // revert changes to idle time
-			if (finished) break; // skip sleeping if finished flag has been set!
-			sleep(SECOND);
-		} // main while loop
+            // well, we got through all the checks. Means that nothing much has happened. So lets sleep for a few seconds in order to not make processing too heavy...
+            numConsecutiveException = 0; // reset exception counter
+            BHBot.scheduler.restoreIdleTime(); // revert changes to idle time
+            if (finished) break; // skip sleeping if finished flag has been set!
+            sleep(SECOND);
+        } // main while loop
 
-		BHBot.logger.info("Stopping main thread...");
-		driver.close();
-		driver.quit();
-		BHBot.logger.info("Main thread stopped.");
-	}
+        BHBot.logger.info("Stopping main thread...");
+        driver.close();
+        driver.quit();
+        BHBot.logger.info("Main thread stopped.");
+    }
 
-	// World boss invite button debugging
-	void wbTest() {
-		int t = detectWorldBossTier();
-		BHBot.logger.info(Integer.toString(t));
-	}
+    // World boss invite button debugging
+    void wbTest() {
+        int t = detectWorldBossTier();
+        BHBot.logger.info(Integer.toString(t));
+    }
 
-	private String activitySelector() {
+    private String activitySelector() {
 
-		if (BHBot.settings.activitiesEnabled.isEmpty()) {
-			return null;
-		} else {
+        if (BHBot.settings.activitiesEnabled.isEmpty()) {
+            return null;
+        } else {
 
             String activity;
 
@@ -3111,137 +3121,137 @@ public class MainThread implements Runnable {
             //loop through in defined order, if we match activity and timer we select the activity
             while (activitysIterator.hasNext()) {
 
-            	try {
-					activity = activitysIterator.next(); //set iterator to string for .equals()
-				} catch (java.util.ConcurrentModificationException e) {
-					activitysIterator = BHBot.settings.activitiesEnabled.iterator();
-					activity = activitysIterator.next();
-				}
+                try {
+                    activity = activitysIterator.next(); //set iterator to string for .equals()
+                } catch (java.util.ConcurrentModificationException e) {
+                    activitysIterator = BHBot.settings.activitiesEnabled.iterator();
+                    activity = activitysIterator.next();
+                }
 
-				if ( activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL) ) {
-					return "r";
-				} else if ( "d".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
-					return "d";
-				} else if ( "w".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL) ) {
-					return "w";
-				} else if ( "t".equals(activity) && ((Misc.getTime() - timeLastTrialsTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
-					return "t";
-				} else if ( "g".equals(activity) && ((Misc.getTime() - timeLastGauntletTokensCheck) > TOKENS_CHECK_INTERVAL) ) {
-					return "g";
-				} else if ( "p".equals(activity) && ((Misc.getTime() - timeLastTicketsCheck) > TICKETS_CHECK_INTERVAL) ) {
-					return "p";
-				} else if ( "i".equals(activity) && ((Misc.getTime() - timeLastInvBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
-					return "i";
-				} else if ( "v".equals(activity) && ((Misc.getTime() - timeLastGVGBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
-					return "v";
-				} else if ( "e".equals(activity) && ((Misc.getTime() - timeLastExpBadgesCheck) > BADGES_CHECK_INTERVAL) ) {
-					return "e";
-				}
-			}
+                if (activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL)) {
+                    return "r";
+                } else if ("d".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL)) {
+                    return "d";
+                } else if ("w".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL)) {
+                    return "w";
+                } else if ("t".equals(activity) && ((Misc.getTime() - timeLastTrialsTokensCheck) > TOKENS_CHECK_INTERVAL)) {
+                    return "t";
+                } else if ("g".equals(activity) && ((Misc.getTime() - timeLastGauntletTokensCheck) > TOKENS_CHECK_INTERVAL)) {
+                    return "g";
+                } else if ("p".equals(activity) && ((Misc.getTime() - timeLastTicketsCheck) > TICKETS_CHECK_INTERVAL)) {
+                    return "p";
+                } else if ("i".equals(activity) && ((Misc.getTime() - timeLastInvBadgesCheck) > BADGES_CHECK_INTERVAL)) {
+                    return "i";
+                } else if ("v".equals(activity) && ((Misc.getTime() - timeLastGVGBadgesCheck) > BADGES_CHECK_INTERVAL)) {
+                    return "v";
+                } else if ("e".equals(activity) && ((Misc.getTime() - timeLastExpBadgesCheck) > BADGES_CHECK_INTERVAL)) {
+                    return "e";
+                }
+            }
 
             // If we reach this point activityIterator.hasNext() is false
             if (BHBot.settings.activitiesRoundRobin) {
-				activitysIterator = BHBot.settings.activitiesEnabled.iterator();
-			}
+                activitysIterator = BHBot.settings.activitiesEnabled.iterator();
+            }
 
-			return null; //return null if no matches
-		}
-	}
+            return null; //return null if no matches
+        }
+    }
 
-	private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {
-		readScreen();
+    private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {
+        readScreen();
 
-		MarvinSegment seg = detectCue(cues.get("SettingsGear"));
-		if (seg != null) {
-			clickOnSeg(seg);
-			readScreen(delay);
-			seg = detectCue(cues.get("Settings"), SECOND*3);
-			return seg != null;
-		} else {
-			BHBot.logger.error("Impossible to find the settings button!");
-			saveGameScreen("open-settings-no-btn", img);
-			return false;
-		}
-	}
+        MarvinSegment seg = detectCue(cues.get("SettingsGear"));
+        if (seg != null) {
+            clickOnSeg(seg);
+            readScreen(delay);
+            seg = detectCue(cues.get("Settings"), SECOND * 3);
+            return seg != null;
+        } else {
+            BHBot.logger.error("Impossible to find the settings button!");
+            saveGameScreen("open-settings-no-btn", img);
+            return false;
+        }
+    }
 
-	boolean checkShrineSettings(boolean ignoreBoss, boolean ignoreShrines) {
-		//open settings
-		int ignoreBossCnt = 0;
-		int ignoreShrineCnt = 0;
+    boolean checkShrineSettings(boolean ignoreBoss, boolean ignoreShrines) {
+        //open settings
+        int ignoreBossCnt = 0;
+        int ignoreShrineCnt = 0;
 
-		if (openSettings(SECOND)) {
-			if (ignoreBoss) {
-				while ( detectCue(cues.get("IgnoreBoss"), SECOND) != null ) {
-					BHBot.logger.debug("Enabling Ignore Boss");
-					clickInGame(194, 366);
-					readScreen(500);
+        if (openSettings(SECOND)) {
+            if (ignoreBoss) {
+                while (detectCue(cues.get("IgnoreBoss"), SECOND) != null) {
+                    BHBot.logger.debug("Enabling Ignore Boss");
+                    clickInGame(194, 366);
+                    readScreen(500);
 
-					if (ignoreBossCnt++ > 10) {
-						BHBot.logger.error("Impossible to enable Ignore Boss");
-						return false;
-					}
-				}
-				ignoreBossSetting = true;
-				BHBot.logger.debug("Ignore Boss Enabled");
-			} else {
-				while ( detectCue(cues.get("IgnoreBoss"), SECOND) == null ) {
-					BHBot.logger.debug("Disabling Ignore Boss");
-					clickInGame(194, 366);
-					readScreen(500);
+                    if (ignoreBossCnt++ > 10) {
+                        BHBot.logger.error("Impossible to enable Ignore Boss");
+                        return false;
+                    }
+                }
+                ignoreBossSetting = true;
+                BHBot.logger.debug("Ignore Boss Enabled");
+            } else {
+                while (detectCue(cues.get("IgnoreBoss"), SECOND) == null) {
+                    BHBot.logger.debug("Disabling Ignore Boss");
+                    clickInGame(194, 366);
+                    readScreen(500);
 
-					if (ignoreBossCnt++ > 10) {
-						BHBot.logger.error("Impossible to Disable Ignore Boss");
-						return false;
-					}
-				}
-				ignoreBossSetting = false;
-				BHBot.logger.debug("Ignore Boss Disabled");
-			}
+                    if (ignoreBossCnt++ > 10) {
+                        BHBot.logger.error("Impossible to Disable Ignore Boss");
+                        return false;
+                    }
+                }
+                ignoreBossSetting = false;
+                BHBot.logger.debug("Ignore Boss Disabled");
+            }
 
-			if (ignoreShrines) {
-				while (detectCue(cues.get("IgnoreShrines"), SECOND) != null) {
-					BHBot.logger.debug("Enabling Ignore Shrine");
-					clickInGame(194, 402);
-					readScreen(500);
+            if (ignoreShrines) {
+                while (detectCue(cues.get("IgnoreShrines"), SECOND) != null) {
+                    BHBot.logger.debug("Enabling Ignore Shrine");
+                    clickInGame(194, 402);
+                    readScreen(500);
 
-					if (ignoreShrineCnt++ > 10) {
-						BHBot.logger.error("Impossible to enable Ignore Shrines");
-						return false;
-					}
-				}
-				ignoreShrinesSetting = true;
-				BHBot.logger.debug("Ignore Shrine Enabled");
-			} else {
-				while (detectCue(cues.get("IgnoreShrines"), SECOND) == null) {
-					BHBot.logger.debug("Disabling Ignore Shrine");
-					clickInGame(194, 402);
-					readScreen(500);
+                    if (ignoreShrineCnt++ > 10) {
+                        BHBot.logger.error("Impossible to enable Ignore Shrines");
+                        return false;
+                    }
+                }
+                ignoreShrinesSetting = true;
+                BHBot.logger.debug("Ignore Shrine Enabled");
+            } else {
+                while (detectCue(cues.get("IgnoreShrines"), SECOND) == null) {
+                    BHBot.logger.debug("Disabling Ignore Shrine");
+                    clickInGame(194, 402);
+                    readScreen(500);
 
-					if (ignoreShrineCnt++ > 10) {
-						BHBot.logger.error("Impossible to disable Ignore Shrines");
-						return false;
-					}
-				}
-				ignoreShrinesSetting = false;
-				BHBot.logger.debug("Ignore Shrine Disabled");
-			}
+                    if (ignoreShrineCnt++ > 10) {
+                        BHBot.logger.error("Impossible to disable Ignore Shrines");
+                        return false;
+                    }
+                }
+                ignoreShrinesSetting = false;
+                BHBot.logger.debug("Ignore Shrine Disabled");
+            }
 
-			readScreen(SECOND);
+            readScreen(SECOND);
 
-			closePopupSecurely(cues.get("Settings"), new Cue(cues.get("X"), new Bounds(608, 39, 711, 131)) );
+            closePopupSecurely(cues.get("Settings"), new Cue(cues.get("X"), new Bounds(608, 39, 711, 131)));
 
-			return true;
-		} else {
-			BHBot.logger.warn("Impossible to open settings menu!");
-			return  false;
-		}
-	}
+            return true;
+        } else {
+            BHBot.logger.warn("Impossible to open settings menu!");
+            return false;
+        }
+    }
 
-	private boolean openRunesMenu() {
+    private boolean openRunesMenu() {
         // Open character menu
         clickInGame(55, 465);
 
-        MarvinSegment seg = detectCue(cues.get("Runes"), 15*SECOND);
+        MarvinSegment seg = detectCue(cues.get("Runes"), 15 * SECOND);
         if (seg == null) {
             BHBot.logger.warn("Error: unable to detect runes button! Skipping...");
             return true;
@@ -3250,12 +3260,12 @@ public class MainThread implements Runnable {
         clickOnSeg(seg);
         sleep(500); //sleep for window animation (15s below was crashing the bot, not sure why
 
-        seg = detectCue(cues.get("RunesLayout"), 15*SECOND);
+        seg = detectCue(cues.get("RunesLayout"), 15 * SECOND);
         if (seg == null) {
             BHBot.logger.warn("Error: unable to detect rune layout! Skipping...");
-            seg = detectCue(cues.get("X"), 5*SECOND);
+            seg = detectCue(cues.get("X"), 5 * SECOND);
             if (seg != null) {
-            	clickOnSeg(seg);
+                clickOnSeg(seg);
             }
             return true;
         }
@@ -3263,7 +3273,7 @@ public class MainThread implements Runnable {
         return false;
     }
 
-	boolean detectEquippedMinorRunes(boolean enterRunesMenu, boolean exitRunesMenu) {
+    boolean detectEquippedMinorRunes(boolean enterRunesMenu, boolean exitRunesMenu) {
 
         if (enterRunesMenu && openRunesMenu())
             return false;
@@ -3274,7 +3284,7 @@ public class MainThread implements Runnable {
         readScreen();
         for (MinorRune rune : MinorRune.values()) {
             Cue runeCue = rune.getRuneCue();
-            
+
             // left rune
             MarvinSegment seg = detectCue(runeCue, 0, new Bounds(230, 245, 320, 330));
             if (seg != null)
@@ -3284,954 +3294,972 @@ public class MainThread implements Runnable {
             seg = detectCue(runeCue, 0, new Bounds(480, 245, 565, 330));
             if (seg != null)
                 rightMinorRune = rune;
-   
+
         }
 
         if (exitRunesMenu) {
-        	sleep(500);
-			closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
-			sleep(500);
-			closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
-		}
+            sleep(500);
+            closePopupSecurely(cues.get("RunesLayout"), cues.get("X"));
+            sleep(500);
+            closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
+        }
 
         boolean success = true;
         if (leftMinorRune == null) {
             BHBot.logger.warn("Error: Unable to detect left minor rune!");
             success = false;
-        } else{
-        	BHBot.logger.debug(leftMinorRune + " equipped in left slot.");
-		}
+        } else {
+            BHBot.logger.debug(leftMinorRune + " equipped in left slot.");
+        }
         if (rightMinorRune == null) {
             BHBot.logger.warn("Error: Unable to detect right minor rune!");
             success = false;
-        } else{
-        	BHBot.logger.debug(rightMinorRune + " equipped in right slot.");
-		}
+        } else {
+            BHBot.logger.debug(rightMinorRune + " equipped in right slot.");
+        }
 
-		return success;
-	}
+        return success;
+    }
 
-	/**
-	 * This form opens only seldom (haven't figured out what triggers it exactly - perhaps some cookie expired?). We need to handle it!
-	 */
-	private void detectSignInFormAndHandleIt() {
-		// close the popup "create new account" form (that hides background):
-		WebElement btnClose;
-		try {
-			btnClose = driver.findElement(By.cssSelector("#kongregate_lightbox_wrapper > div.header_bar > a"));
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		btnClose.click();
+    /**
+     * This form opens only seldom (haven't figured out what triggers it exactly - perhaps some cookie expired?). We need to handle it!
+     */
+    private void detectSignInFormAndHandleIt() {
+        // close the popup "create new account" form (that hides background):
+        WebElement btnClose;
+        try {
+            btnClose = driver.findElement(By.cssSelector("#kongregate_lightbox_wrapper > div.header_bar > a"));
+        } catch (NoSuchElementException e) {
+            return;
+        }
+        btnClose.click();
 
-		// fill in username and password:
-		WebElement weUsername;
-		try {
-			weUsername = driver.findElement(By.xpath("//*[@id='username']"));
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		weUsername.clear();
-		weUsername.sendKeys(BHBot.settings.username);
+        // fill in username and password:
+        WebElement weUsername;
+        try {
+            weUsername = driver.findElement(By.xpath("//*[@id='username']"));
+        } catch (NoSuchElementException e) {
+            return;
+        }
+        weUsername.clear();
+        weUsername.sendKeys(BHBot.settings.username);
 
-		WebElement wePassword;
-		try {
-			wePassword = driver.findElement(By.xpath("//*[@id='password']"));
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		wePassword.clear();
-		wePassword.sendKeys(BHBot.settings.password);
+        WebElement wePassword;
+        try {
+            wePassword = driver.findElement(By.xpath("//*[@id='password']"));
+        } catch (NoSuchElementException e) {
+            return;
+        }
+        wePassword.clear();
+        wePassword.sendKeys(BHBot.settings.password);
 
-		// press the "sign-in" button:
-		WebElement btnSignIn;
-		try {
-			btnSignIn = driver.findElement(By.id("sessions_new_form_spinner"));
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		btnSignIn.click();
+        // press the "sign-in" button:
+        WebElement btnSignIn;
+        try {
+            btnSignIn = driver.findElement(By.id("sessions_new_form_spinner"));
+        } catch (NoSuchElementException e) {
+            return;
+        }
+        btnSignIn.click();
 
-		BHBot.logger.info("Signed-in manually (sign-in prompt was open).");
-	}
+        BHBot.logger.info("Signed-in manually (sign-in prompt was open).");
+    }
 
-	/** Handles login screen (it shows seldom though. Perhaps because some cookie expired or something... anyway, we must handle it or else bot can't play the game anymore). */
-	private void detectLoginFormAndHandleIt() {
-		readScreen();
+    /**
+     * Handles login screen (it shows seldom though. Perhaps because some cookie expired or something... anyway, we must handle it or else bot can't play the game anymore).
+     */
+    private void detectLoginFormAndHandleIt() {
+        readScreen();
 
-		MarvinSegment seg = detectCue(cues.get("Login"));
+        MarvinSegment seg = detectCue(cues.get("Login"));
 
-		if (seg == null)
-			return;
+        if (seg == null)
+            return;
 
-		// open login popup window:
-		jsExecutor.executeScript("active_user.activateInlineLogin(); return false;"); // I found this code within page source itself (it gets triggered upon clicking on some button)
+        // open login popup window:
+        jsExecutor.executeScript("active_user.activateInlineLogin(); return false;"); // I found this code within page source itself (it gets triggered upon clicking on some button)
 
-		sleep(5000); // if we don't sleep enough, login form may still be loading and code bellow will not get executed!
+        sleep(5000); // if we don't sleep enough, login form may still be loading and code bellow will not get executed!
 
-		// fill in username:
-		WebElement weUsername;
-		try {
-			weUsername = driver.findElement(By.cssSelector("body#play > div#lightbox > div#lbContent > div#kongregate_lightbox_wrapper > div#lightbox_form > div#lightboxlogin > div#new_session_shared_form > form > dl > dd > input#username"));
-		} catch (NoSuchElementException e) {
-			BHBot.logger.warn("Problem: username field not found in the login form (perhaps it was not loaded yet?)!");
-			return;
-		}
-		weUsername.clear();
-		weUsername.sendKeys(BHBot.settings.username);
-		BHBot.logger.info("Username entered into the login form.");
+        // fill in username:
+        WebElement weUsername;
+        try {
+            weUsername = driver.findElement(By.cssSelector("body#play > div#lightbox > div#lbContent > div#kongregate_lightbox_wrapper > div#lightbox_form > div#lightboxlogin > div#new_session_shared_form > form > dl > dd > input#username"));
+        } catch (NoSuchElementException e) {
+            BHBot.logger.warn("Problem: username field not found in the login form (perhaps it was not loaded yet?)!");
+            return;
+        }
+        weUsername.clear();
+        weUsername.sendKeys(BHBot.settings.username);
+        BHBot.logger.info("Username entered into the login form.");
 
-		WebElement wePassword;
-		try {
-			wePassword = driver.findElement(By.cssSelector("body#play > div#lightbox > div#lbContent > div#kongregate_lightbox_wrapper > div#lightbox_form > div#lightboxlogin > div#new_session_shared_form > form > dl > dd > input#password"));
-		} catch (NoSuchElementException e) {
-			BHBot.logger.warn("Problem: password field not found in the login form (perhaps it was not loaded yet?)!");
-			return;
-		}
-		wePassword.clear();
-		wePassword.sendKeys(BHBot.settings.password);
-		BHBot.logger.info("Password entered into the login form.");
+        WebElement wePassword;
+        try {
+            wePassword = driver.findElement(By.cssSelector("body#play > div#lightbox > div#lbContent > div#kongregate_lightbox_wrapper > div#lightbox_form > div#lightboxlogin > div#new_session_shared_form > form > dl > dd > input#password"));
+        } catch (NoSuchElementException e) {
+            BHBot.logger.warn("Problem: password field not found in the login form (perhaps it was not loaded yet?)!");
+            return;
+        }
+        wePassword.clear();
+        wePassword.sendKeys(BHBot.settings.password);
+        BHBot.logger.info("Password entered into the login form.");
 
-		// press the "sign-in" button:
-		WebElement btnSignIn;
-		try {
-			btnSignIn = driver.findElement(By.cssSelector("body#play > div#lightbox > div#lbContent > div#kongregate_lightbox_wrapper > div#lightbox_form > div#lightboxlogin > div#new_session_shared_form > form > dl > dt#signin > input"));
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		btnSignIn.click();
+        // press the "sign-in" button:
+        WebElement btnSignIn;
+        try {
+            btnSignIn = driver.findElement(By.cssSelector("body#play > div#lightbox > div#lbContent > div#kongregate_lightbox_wrapper > div#lightbox_form > div#lightboxlogin > div#new_session_shared_form > form > dl > dt#signin > input"));
+        } catch (NoSuchElementException e) {
+            return;
+        }
+        btnSignIn.click();
 
-		BHBot.logger.info("Signed-in manually (we were signed-out).");
+        BHBot.logger.info("Signed-in manually (we were signed-out).");
 
-		scrollGameIntoView();
-	}
+        scrollGameIntoView();
+    }
 
-	/**
-	 * This will handle dialog that open up when you encounter a boss for the first time, for example, or open a raid window or trials window for the first time, etc.
-	 */
-	private void detectCharacterDialogAndHandleIt() {
-		final Color cuec1 = new Color(238, 241, 249); // white
-		final Color cuec2 = new Color(82, 90, 98); // gray
+    /**
+     * This will handle dialog that open up when you encounter a boss for the first time, for example, or open a raid window or trials window for the first time, etc.
+     */
+    private void detectCharacterDialogAndHandleIt() {
+        final Color cuec1 = new Color(238, 241, 249); // white
+        final Color cuec2 = new Color(82, 90, 98); // gray
 
-		MarvinSegment right;
-		MarvinSegment left;
-		int steps = 0;
+        MarvinSegment right;
+        MarvinSegment left;
+        int steps = 0;
 
-		while (true) {
-			readScreen();
+        while (true) {
+            readScreen();
 
-			right = detectCue(cues.get("DialogRight"));
-			left = detectCue(cues.get("DialogLeft"));
+            right = detectCue(cues.get("DialogRight"));
+            left = detectCue(cues.get("DialogLeft"));
 
-			// double check right-side dialog cue:
-			if (right != null) {
-				if (
-						!(new Color(img.getRGB(right.x2+1, right.y1+24))).equals(cuec1) ||
-						!(new Color(img.getRGB(right.x2+4, right.y1+24))).equals(cuec2)
-						)
-					right = null;
-			}
+            // double check right-side dialog cue:
+            if (right != null) {
+                if (
+                        !(new Color(img.getRGB(right.x2 + 1, right.y1 + 24))).equals(cuec1) ||
+                                !(new Color(img.getRGB(right.x2 + 4, right.y1 + 24))).equals(cuec2)
+                )
+                    right = null;
+            }
 
-			// double check left-side dialog cue:
-			if (left != null) {
-				if (
-						!(new Color(img.getRGB(left.x1-1, left.y1+24))).equals(cuec1) ||
-						!(new Color(img.getRGB(left.x1-4, left.y1+24))).equals(cuec2)
-						)
-					left = null;
-			}
+            // double check left-side dialog cue:
+            if (left != null) {
+                if (
+                        !(new Color(img.getRGB(left.x1 - 1, left.y1 + 24))).equals(cuec1) ||
+                                !(new Color(img.getRGB(left.x1 - 4, left.y1 + 24))).equals(cuec2)
+                )
+                    left = null;
+            }
 
-			if (left == null && right == null)
-				break; // dialog not detected
+            if (left == null && right == null)
+                break; // dialog not detected
 
-			// click to dismiss/progress it:
-			if (left != null)
-				clickOnSeg(left);
-			else
-				clickOnSeg(right);
+            // click to dismiss/progress it:
+            if (left != null)
+                clickOnSeg(left);
+            else
+                clickOnSeg(right);
 
-			sleep(2*SECOND);
-			steps++;
-		}
+            sleep(2 * SECOND);
+            steps++;
+        }
 
-		if (steps > 0)
-			BHBot.logger.info("Character dialog dismissed.");
-	}
+        if (steps > 0)
+            BHBot.logger.info("Character dialog dismissed.");
+    }
 
-	private BufferedImage takeScreenshot(boolean ofGame) {
-		if (ofGame)
-			return Shutterbug.shootElement(driver, game).getImage();
-		else
-			return Shutterbug.shootPage(driver).getImage();
-	}
+    private BufferedImage takeScreenshot(boolean ofGame) {
+        if (ofGame)
+            return Shutterbug.shootElement(driver, game).getImage();
+        else
+            return Shutterbug.shootPage(driver).getImage();
+    }
 
-	void readScreen() {
-		readScreen(true);
-	}
+    void readScreen() {
+        readScreen(true);
+    }
 
-	/**
-	 * @param game if true, then screenshot of a WebElement will be taken that contains the flash game. If false, then simply a screenshot of a browser will be taken.
-	 */
-	private void readScreen(boolean game) {
-		readScreen(0, game);
-	}
+    /**
+     * @param game if true, then screenshot of a WebElement will be taken that contains the flash game. If false, then simply a screenshot of a browser will be taken.
+     */
+    private void readScreen(boolean game) {
+        readScreen(0, game);
+    }
 
-	/** First sleeps 'wait' milliseconds and then reads the screen. It's a handy utility method that does two things in one command. */
-	private void readScreen(int wait) {
-		readScreen(wait, true);
-	}
+    /**
+     * First sleeps 'wait' milliseconds and then reads the screen. It's a handy utility method that does two things in one command.
+     */
+    private void readScreen(int wait) {
+        readScreen(wait, true);
+    }
 
-	/**
-	 * @param wait first sleeps 'wait' milliseconds and then reads the screen. It's a handy utility method that does two things in one command.
-	 * @param game if true, then screenshot of a WebElement will be taken that contains the flash game. If false, then simply a screenshot of a browser will be taken.
-	 */
-	private void readScreen(int wait, boolean game) {
-		if (wait != 0)
-			sleep(wait);
-		img = takeScreenshot(game);
-	}
+    /**
+     * @param wait first sleeps 'wait' milliseconds and then reads the screen. It's a handy utility method that does two things in one command.
+     * @param game if true, then screenshot of a WebElement will be taken that contains the flash game. If false, then simply a screenshot of a browser will be taken.
+     */
+    private void readScreen(int wait, boolean game) {
+        if (wait != 0)
+            sleep(wait);
+        img = takeScreenshot(game);
+    }
 
-	// https://stackoverflow.com/questions/297762/find-known-sub-image-in-larger-image
-	private static MarvinSegment findSubimage(BufferedImage src, Cue cue) {
-		long timer = Misc.getTime();
+    // https://stackoverflow.com/questions/297762/find-known-sub-image-in-larger-image
+    private static MarvinSegment findSubimage(BufferedImage src, Cue cue) {
+        long timer = Misc.getTime();
 
-		MarvinSegment seg;
+        MarvinSegment seg;
 
-		seg = FindSubimage.findImage(
-				src,
-				cue.im,
-				cue.bounds != null ? cue.bounds.x1 : 0,
-				cue.bounds != null ? cue.bounds.y1 : 0,
-				cue.bounds != null ? cue.bounds.x2 : 0,
-				cue.bounds != null ? cue.bounds.y2 : 0
-		);
+        seg = FindSubimage.findImage(
+                src,
+                cue.im,
+                cue.bounds != null ? cue.bounds.x1 : 0,
+                cue.bounds != null ? cue.bounds.y1 : 0,
+                cue.bounds != null ? cue.bounds.x2 : 0,
+                cue.bounds != null ? cue.bounds.y2 : 0
+        );
 
         //source.drawRect(seg.x1, seg.y1, seg.x2-seg.x1, seg.y2-seg.y1, Color.blue);
         //MarvinImageIO.saveImage(source, "window_out.png");
         if (BHBot.settings.debugDetectionTimes)
-        	BHBot.logger.info("cue detection time: " + (Misc.getTime() - timer) + "ms (" + cue.name + ") [" + (seg != null ? "true" : "false") + "]");
+            BHBot.logger.info("cue detection time: " + (Misc.getTime() - timer) + "ms (" + cue.name + ") [" + (seg != null ? "true" : "false") + "]");
 //        if (seg == null) {
 //        	return -1;
 //        }
         return seg;
-	}
+    }
 
-	private MarvinSegment detectCue(Cue cue) {
-		return detectCue(cue, 0, true);
-	}
+    private MarvinSegment detectCue(Cue cue) {
+        return detectCue(cue, 0, true);
+    }
 
-	private MarvinSegment detectCue(Cue cue, int timeout, Bounds bounds) {
-		return detectCue(new Cue(cue, bounds), timeout, true);
-	}
+    private MarvinSegment detectCue(Cue cue, int timeout, Bounds bounds) {
+        return detectCue(new Cue(cue, bounds), timeout, true);
+    }
 
 	/*public MarvinSegment detectCue(Cue cue, Bounds bounds) {
 		return detectCue(new Cue(cue, bounds), 0, true);
 	}*/
 
-	private MarvinSegment detectCue(Cue cue, int timeout) {
-		return detectCue(cue, timeout, true);
-	}
+    private MarvinSegment detectCue(Cue cue, int timeout) {
+        return detectCue(cue, timeout, true);
+    }
 
-	/**
-	 * Will try (and retry) to detect cue from image until timeout is reached. May return null if cue has not been detected within given 'timeout' time. If 'timeout' is 0,
-	 * then it will attempt at cue detection only once and return the result immediately.
-	 */
-	private MarvinSegment detectCue(Cue cue, int timeout, @SuppressWarnings("SameParameterValue") boolean game) {
-		long timer = Misc.getTime();
-		MarvinSegment seg = findSubimage(img, cue);
+    /**
+     * Will try (and retry) to detect cue from image until timeout is reached. May return null if cue has not been detected within given 'timeout' time. If 'timeout' is 0,
+     * then it will attempt at cue detection only once and return the result immediately.
+     */
+    private MarvinSegment detectCue(Cue cue, int timeout, @SuppressWarnings("SameParameterValue") boolean game) {
+        long timer = Misc.getTime();
+        MarvinSegment seg = findSubimage(img, cue);
 
-		while (seg == null) {
-			if ((Misc.getTime() - timer) >= timeout)
-				break;
-			readScreen(500, game);
-			seg = findSubimage(img, cue);
-		}
+        while (seg == null) {
+            if ((Misc.getTime() - timer) >= timeout)
+                break;
+            readScreen(500, game);
+            seg = findSubimage(img, cue);
+        }
 
-		if (seg == null && timeout > 0) { // segment not detected when expected (timeout>0 tells us that we probably expect to find certain cue, since we are waiting for it to appear)
-			if (handlePM()) { // perhaps PM window has opened and that is why we couldn't detect the cue?
-				sleep(3*SECOND);
-				readScreen(game);
-				seg = findSubimage(img, cue); // re-read the original segment
-			}
-		}
+        if (seg == null && timeout > 0) { // segment not detected when expected (timeout>0 tells us that we probably expect to find certain cue, since we are waiting for it to appear)
+            if (handlePM()) { // perhaps PM window has opened and that is why we couldn't detect the cue?
+                sleep(3 * SECOND);
+                readScreen(game);
+                seg = findSubimage(img, cue); // re-read the original segment
+            }
+        }
 
-		return seg;
-	}
+        return seg;
+    }
 
-	private int getSegCenterX(MarvinSegment seg) {
-		return (seg.x1 + seg.x2) / 2;
-	}
+    private int getSegCenterX(MarvinSegment seg) {
+        return (seg.x1 + seg.x2) / 2;
+    }
 
-	private int getSegCenterY(MarvinSegment seg) {
-		return (seg.y1 + seg.y2) / 2;
-	}
+    private int getSegCenterY(MarvinSegment seg) {
+        return (seg.y1 + seg.y2) / 2;
+    }
 
-	/** Moves mouse to position (0,0) in the 'game' element (so that it doesn't trigger any highlight popups or similar */
-	private void moveMouseAway() {
-		try {
-			Actions act = new Actions(driver);
-			act.moveToElement(game, 0, 0);
-			act.perform();
-		} catch(Exception e) {
-			// do nothing
-		}
-	}
+    /**
+     * Moves mouse to position (0,0) in the 'game' element (so that it doesn't trigger any highlight popups or similar
+     */
+    private void moveMouseAway() {
+        try {
+            Actions act = new Actions(driver);
+            act.moveToElement(game, 0, 0);
+            act.perform();
+        } catch (Exception e) {
+            // do nothing
+        }
+    }
 
-	/** Performs a mouse click on the center of the given segment */
-	private void clickOnSeg(MarvinSegment seg) {
-		Actions act = new Actions(driver);
-		act.moveToElement(game, getSegCenterX(seg), getSegCenterY(seg));
-		act.click();
-		act.moveToElement(game, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
-		act.perform();
-	}
+    /**
+     * Performs a mouse click on the center of the given segment
+     */
+    private void clickOnSeg(MarvinSegment seg) {
+        Actions act = new Actions(driver);
+        act.moveToElement(game, getSegCenterX(seg), getSegCenterY(seg));
+        act.click();
+        act.moveToElement(game, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
+        act.perform();
+    }
 
-	private void clickInGame(int x, int y) {
-		Actions act = new Actions(driver);
-		act.moveToElement(game, x, y);
-		act.click();
-		act.moveToElement(game, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
-		act.perform();
-	}
+    private void clickInGame(int x, int y) {
+        Actions act = new Actions(driver);
+        act.moveToElement(game, x, y);
+        act.click();
+        act.moveToElement(game, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
+        act.perform();
+    }
 
-	private void sleep(int milliseconds) {
-		try {
-			Thread.sleep(milliseconds);
-		} catch (InterruptedException e) {
-			BHBot.logger.error("Error while attempting to sleep", e);
-		}
-	}
+    private void sleep(int milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            BHBot.logger.error("Error while attempting to sleep", e);
+        }
+    }
 
-	/** Returns amount of energy in percent (0-100). Returns -1 in case it cannot read energy for some reason. */
-	private int getEnergy() {
-		MarvinSegment seg;
+    /**
+     * Returns amount of energy in percent (0-100). Returns -1 in case it cannot read energy for some reason.
+     */
+    private int getEnergy() {
+        MarvinSegment seg;
 
-		seg = detectCue(cues.get("EnergyBar"));
+        seg = detectCue(cues.get("EnergyBar"));
 
-		if (seg == null) // this should probably not happen
-			return -1;
+        if (seg == null) // this should probably not happen
+            return -1;
 
-		int left = seg.x2+1;
-		int top = seg.y1+6;
+        int left = seg.x2 + 1;
+        int top = seg.y1 + 6;
 
-		final Color full = new Color(136, 197, 44);
-		//final Color limit = new Color(87, 133, 21);
-		//final Color empty = new Color(49, 50, 51);
+        final Color full = new Color(136, 197, 44);
+        //final Color limit = new Color(87, 133, 21);
+        //final Color empty = new Color(49, 50, 51);
 
-		int value = 0;
+        int value = 0;
 
-		// energy bar is 80 pixels long (however last two pixels will have "medium" color and not full color (it's so due to shading))
-		for (int i = 0; i < 78; i++) {
-			value = i;
-			Color col = new Color(img.getRGB(left+i, top));
+        // energy bar is 80 pixels long (however last two pixels will have "medium" color and not full color (it's so due to shading))
+        for (int i = 0; i < 78; i++) {
+            value = i;
+            Color col = new Color(img.getRGB(left + i, top));
 
-			if (!col.equals(full))
-				break;
-		}
+            if (!col.equals(full))
+                break;
+        }
 
-		return Math.round(value * (100 / 77.0f)); // scale it to interval [0..100]
-	}
+        return Math.round(value * (100 / 77.0f)); // scale it to interval [0..100]
+    }
 
-	/** Returns number of tickets left (for PvP) in interval [0..10]. Returns -1 in case it cannot read number of tickets for some reason. */
-	private int getTickets() {
-		MarvinSegment seg;
+    /**
+     * Returns number of tickets left (for PvP) in interval [0..10]. Returns -1 in case it cannot read number of tickets for some reason.
+     */
+    private int getTickets() {
+        MarvinSegment seg;
 
-		seg = detectCue(cues.get("TicketBar"));
+        seg = detectCue(cues.get("TicketBar"));
 
-		if (seg == null) // this should probably not happen
-			return -1;
+        if (seg == null) // this should probably not happen
+            return -1;
 
-		int left = seg.x2+1;
-		int top = seg.y1+6;
+        int left = seg.x2 + 1;
+        int top = seg.y1 + 6;
 
-		final Color full = new Color(226, 42, 81);
+        final Color full = new Color(226, 42, 81);
 
-		int value = 0;
-		int maxTickets = BHBot.settings.maxTickets;
+        int value = 0;
+        int maxTickets = BHBot.settings.maxTickets;
 
-		// ticket bar is 80 pixels long (however last two pixels will have "medium" color and not full color (it's so due to shading))
-		for (int i = 0; i < 78; i++) {
-			value = i;
-			Color col = new Color(img.getRGB(left+i, top));
+        // ticket bar is 80 pixels long (however last two pixels will have "medium" color and not full color (it's so due to shading))
+        for (int i = 0; i < 78; i++) {
+            value = i;
+            Color col = new Color(img.getRGB(left + i, top));
 
-			if (!col.equals(full))
-				break;
-		}
+            if (!col.equals(full))
+                break;
+        }
 
-		value = value + 2; //add the last 2 pixels to get an accurate count
+        value = value + 2; //add the last 2 pixels to get an accurate count
 //		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxTickets / 77.0f)));
-		return Math.round(value * (maxTickets / 77.0f)); // scale it to interval [0..10]
-	}
+        return Math.round(value * (maxTickets / 77.0f)); // scale it to interval [0..10]
+    }
 
-	/** Returns number of shards that we have. Works only if raid popup is open. Returns -1 in case it cannot read number of shards for some reason. */
-	private int getShards() {
-		MarvinSegment seg;
+    /**
+     * Returns number of shards that we have. Works only if raid popup is open. Returns -1 in case it cannot read number of shards for some reason.
+     */
+    private int getShards() {
+        MarvinSegment seg;
 
-		seg = detectCue(cues.get("RaidPopup"));
+        seg = detectCue(cues.get("RaidPopup"));
 
-		if (seg == null) // this should probably not happen
-			return -1;
+        if (seg == null) // this should probably not happen
+            return -1;
 
-		int left = seg.x2+1;
-		int top = seg.y1+9;
+        int left = seg.x2 + 1;
+        int top = seg.y1 + 9;
 
-		final Color full = new Color(199, 79, 175);
+        final Color full = new Color(199, 79, 175);
 
-		int value = 0;
-		int maxShards = BHBot.settings.maxShards;
+        int value = 0;
+        int maxShards = BHBot.settings.maxShards;
 
-		for (int i = 0; i < 76; i++) {
-			value = i;
-			Color col = new Color(img.getRGB(left+i, top));
+        for (int i = 0; i < 76; i++) {
+            value = i;
+            Color col = new Color(img.getRGB(left + i, top));
 
-			if (!col.equals(full))
-				break;
-		}
+            if (!col.equals(full))
+                break;
+        }
 
-		value = value + 2; //add the last 2 pixels to get an accurate count
+        value = value + 2; //add the last 2 pixels to get an accurate count
 //		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxShards / 77.0f)));
-		return Math.round(value * (maxShards / 75.0f)); // round to nearest whole number
-	}
+        return Math.round(value * (maxShards / 75.0f)); // round to nearest whole number
+    }
 
-	/** Returns number of tokens we have. Works only if trials/gauntlet window is open. Returns -1 in case it cannot read number of tokens for some reason. */
-	private int getTokens() {
-		MarvinSegment seg;
+    /**
+     * Returns number of tokens we have. Works only if trials/gauntlet window is open. Returns -1 in case it cannot read number of tokens for some reason.
+     */
+    private int getTokens() {
+        MarvinSegment seg;
 
-		seg = detectCue(cues.get("TokenBar"));
+        seg = detectCue(cues.get("TokenBar"));
 
-		if (seg == null) // this should probably not happen
-			return -1;
+        if (seg == null) // this should probably not happen
+            return -1;
 
-		int left = seg.x2+1;
-		int top = seg.y1+6;
+        int left = seg.x2 + 1;
+        int top = seg.y1 + 6;
 
-		final Color full = new Color(17, 208, 226);
+        final Color full = new Color(17, 208, 226);
 
-		int value = 0;
-		int maxTokens = BHBot.settings.maxTokens;
+        int value = 0;
+        int maxTokens = BHBot.settings.maxTokens;
 
-		// tokens bar is 78 pixels wide (however last two pixels will have "medium" color and not full color (it's so due to shading))
-		for (int i = 0; i < 76; i++) {
-			value = i;
-			Color col = new Color(img.getRGB(left+i, top));
+        // tokens bar is 78 pixels wide (however last two pixels will have "medium" color and not full color (it's so due to shading))
+        for (int i = 0; i < 76; i++) {
+            value = i;
+            Color col = new Color(img.getRGB(left + i, top));
 
-			if (!col.equals(full))
-				break;
-		}
+            if (!col.equals(full))
+                break;
+        }
 
-		value = value + 2; //add the last 2 pixels to get an accurate count
+        value = value + 2; //add the last 2 pixels to get an accurate count
 //		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxTokens / 77.0f)));
-		return Math.round(value * (maxTokens / 75.0f)); // scale it to interval [0..10]
-	}
+        return Math.round(value * (maxTokens / 75.0f)); // scale it to interval [0..10]
+    }
 
-	/** Returns number of badges we have. Works only if GVG window is open. Returns -1 in case it cannot read number of badges for some reason. */
-	private int getBadges() {
-		MarvinSegment seg;
+    /**
+     * Returns number of badges we have. Works only if GVG window is open. Returns -1 in case it cannot read number of badges for some reason.
+     */
+    private int getBadges() {
+        MarvinSegment seg;
 
-		seg = detectCue(cues.get("BadgeBar"));
+        seg = detectCue(cues.get("BadgeBar"));
 
-		if (seg == null) // this should probably not happen
-			return -1;
+        if (seg == null) // this should probably not happen
+            return -1;
 
-		int left = seg.x2+1;
-		int top = seg.y1+6;
+        int left = seg.x2 + 1;
+        int top = seg.y1 + 6;
 
-		final Color full = new Color(17, 208, 226);
+        final Color full = new Color(17, 208, 226);
 
-		int value = 0;
-		int maxBadges = BHBot.settings.maxBadges;
+        int value = 0;
+        int maxBadges = BHBot.settings.maxBadges;
 
-		// badges bar is 78 pixels wide (however last two pixels will have "medium" color and not full color (it's so due to shading))
-		for (int i = 0; i < 76; i++) {
-			value = i;
-			Color col = new Color(img.getRGB(left+i, top));
+        // badges bar is 78 pixels wide (however last two pixels will have "medium" color and not full color (it's so due to shading))
+        for (int i = 0; i < 76; i++) {
+            value = i;
+            Color col = new Color(img.getRGB(left + i, top));
 
-			if (!col.equals(full))
-				break;
-		}
+            if (!col.equals(full))
+                break;
+        }
 
-		value = value + 2; //add the last 2 pixels to get an accurate count
+        value = value + 2; //add the last 2 pixels to get an accurate count
 //		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxBadges / 77.0f)));
-		return Math.round(value * (maxBadges / 75.0f)); // scale it to interval [0..10]
-	}
+        return Math.round(value * (maxBadges / 75.0f)); // scale it to interval [0..10]
+    }
 
-	/**
-	 * Processes any kind of dungeon: <br>
-	 * - normal dungeon <br>
-	 * - raid <br>
-	 * - trial <br>
-	 * - gauntlet <br>
-	 */
-	private void processDungeon() {
-		MarvinSegment seg;
-		readScreen();
+    /**
+     * Processes any kind of dungeon: <br>
+     * - normal dungeon <br>
+     * - raid <br>
+     * - trial <br>
+     * - gauntlet <br>
+     */
+    private void processDungeon() {
+        MarvinSegment seg;
+        readScreen();
 
-		if (!startTimeCheck) {
-			activityStartTime = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
-			BHBot.logger.debug("Start time: " + activityStartTime);
-			outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
-			inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
-			startTimeCheck = true;
-		}
+        if (!startTimeCheck) {
+            activityStartTime = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
+            BHBot.logger.debug("Start time: " + activityStartTime);
+            outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
+            inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
+            startTimeCheck = true;
+        }
 
-		activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
+        activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
 
-		//We use guild button visibility to determine whether we are in an encounter or not
-		MarvinSegment guildButtonSeg = detectCue(cues.get("GuildButton"));
-		if (guildButtonSeg != null) {
-			outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
-		} else {
-			inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
+        //We use guild button visibility to determine whether we are in an encounter or not
+        MarvinSegment guildButtonSeg = detectCue(cues.get("GuildButton"));
+        if (guildButtonSeg != null) {
+            outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
+        } else {
+            inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
 //			BHBot.logger.debug("Encounter detected");
-		}
-		
-		if ((outOfEncounterTimestamp - inEncounterTimestamp) > 0) {
-		BHBot.logger.debug("Seconds since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
-		}
-		
-		// handle "Not enough energy" popup:
-		if ( State.Dungeon.equals(state) && activityDuration < 30) {
-			boolean insufficientEnergy = handleNotEnoughEnergyPopup(state);
-			if (insufficientEnergy) {
-				state = State.Main; // reset state
-				return;
-			}
-			return;
-		}
-		
+        }
 
-		/*
-		 * autoRune Code
-		 */
+        if ((outOfEncounterTimestamp - inEncounterTimestamp) > 0) {
+            BHBot.logger.debug("Seconds since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
+        }
 
-		handleAutoBossRune();
+        // handle "Not enough energy" popup:
+        if (State.Dungeon.equals(state) && activityDuration < 30) {
+            boolean insufficientEnergy = handleNotEnoughEnergyPopup(state);
+            if (insufficientEnergy) {
+                state = State.Main; // reset state
+                return;
+            }
+            return;
+        }
 
-		/*
-		 * autoShrine Code
-		 */
 
-		handleAutoShrine();
+        /*
+         * autoRune Code
+         */
 
-		/*
-		 * autoRevive code
-		 */
+        handleAutoBossRune();
 
-		//trials/raid revive code + auto-off check
-		seg = detectCue(cues.get("AutoOff"));
-		if (seg != null) {
-			handleAutoRevive();
-		}
+        /*
+         * autoShrine Code
+         */
 
-		/*
-		 * autoBribe code
-		 */
+        handleAutoShrine();
 
-		// check for persuasions:
-		seg = detectCue(cues.get("Persuade"));
-		if (seg != null) {
-			handleFamiliarEncounter();
-		}
+        /*
+         * autoRevive code
+         */
 
-		/*
-		 * Skeleton key code
-		 */
+        //trials/raid revive code + auto-off check
+        seg = detectCue(cues.get("AutoOff"));
+        if (seg != null) {
+            handleAutoRevive();
+        }
 
-		seg = detectCue(cues.get("SkeletonTreasure"));
-		if (seg != null) {
-			if (handleSkeletonKey()){
-				restart();
-			}
-		}
+        /*
+         * autoBribe code
+         */
 
-		// check for merchant's offer (and decline it):
-		seg = detectCue(cues.get("Merchant"));
-		if (seg != null) {
-			seg = detectCue(cues.get("Decline"), 5*SECOND);
-			clickOnSeg(seg);
+        // check for persuasions:
+        seg = detectCue(cues.get("Persuade"));
+        if (seg != null) {
+            handleFamiliarEncounter();
+        }
 
-			readScreen(SECOND);
-			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-			clickOnSeg(seg);
-			return;
-		}
-		
-		/*
-		 * Check if we're done (victory in PVP mode) - this may also close local fights in dungeons, this is why we check if state is State.PVP and react only to that one.
-		 * There were some crashing and clicking on SHOP problems with this one in dungeons and raids (and possibly elsewhere).
-		 * Hence I fixed it by checking if state==State.PVP.
-		 */
-		if (state == State.PVP) {
-		readScreen();
-		seg = detectCue(cues.get("VictoryPopup"));
-		if (seg != null) {
+        /*
+         * Skeleton key code
+         */
 
-			handleVictory();
+        seg = detectCue(cues.get("SkeletonTreasure"));
+        if (seg != null) {
+            if (handleSkeletonKey()) {
+                restart();
+            }
+        }
 
-			closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
+        // check for merchant's offer (and decline it):
+        seg = detectCue(cues.get("Merchant"));
+        if (seg != null) {
+            seg = detectCue(cues.get("Decline"), 5 * SECOND);
+            clickOnSeg(seg);
 
-			// close the PVP window, in case it is open:
-			readScreen(2*SECOND);
+            readScreen(SECOND);
+            seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+            clickOnSeg(seg);
+            return;
+        }
 
-			seg = detectCue(cues.get("PVPWindow"), 5*SECOND);
-			if (seg != null)
-				closePopupSecurely(cues.get("PVPWindow"), cues.get("X")); // ignore failure
-			sleep(SECOND);
-			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
-			resetAppropriateTimers();
-			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
-			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
-			state = State.Main; // reset state
-			return;
-			}
-		}
+        /*
+         * Check if we're done (victory in PVP mode) - this may also close local fights in dungeons, this is why we check if state is State.PVP and react only to that one.
+         * There were some crashing and clicking on SHOP problems with this one in dungeons and raids (and possibly elsewhere).
+         * Hence I fixed it by checking if state==State.PVP.
+         */
+        if (state == State.PVP) {
+            readScreen();
+            seg = detectCue(cues.get("VictoryPopup"));
+            if (seg != null) {
 
-		// check for any character dialog:
-		/* This is nearly half of the processing time of proccessDungeon(); so trying to minimize its usage */
-		if (state == State.Dungeon || state == State.Raid) {
-		detectCharacterDialogAndHandleIt();
-		}
+                handleVictory();
 
-		// check if we're done (cleared):
-		seg = detectCue(cues.get("Cleared"));
-		if (seg != null) {
-			closePopupSecurely(cues.get("Cleared"), cues.get("YesGreen"));
+                closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
 
-			// close the raid/dungeon/trials/gauntlet window:
-			readScreen(2*SECOND);
-			detectCue(cues.get("X"), 15*SECOND);
-			sleep(2*SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
-			seg = detectCue(cues.get("X"), SECOND);
-			if (seg != null)
-				clickOnSeg(seg);
-			else
-				BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
+                // close the PVP window, in case it is open:
+                readScreen(2 * SECOND);
 
-			sleep(SECOND);
-			if (state == State.Expedition) {
-				sleep(SECOND);
+                seg = detectCue(cues.get("PVPWindow"), 5 * SECOND);
+                if (seg != null)
+                    closePopupSecurely(cues.get("PVPWindow"), cues.get("X")); // ignore failure
+                sleep(SECOND);
+                BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
+                resetAppropriateTimers();
+                if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
+                if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
+                state = State.Main; // reset state
+                return;
+            }
+        }
 
-				// Close Portal Map after expedition
-				readScreen(2*SECOND);
-				seg = detectCue(cues.get("X"));
-				clickOnSeg(seg);
-				sleep(SECOND);
+        // check for any character dialog:
+        /* This is nearly half of the processing time of proccessDungeon(); so trying to minimize its usage */
+        if (state == State.Dungeon || state == State.Raid) {
+            detectCharacterDialogAndHandleIt();
+        }
 
-				// close Expedition window after Expedition
-				readScreen(2*SECOND);
-				seg = detectCue(cues.get("X"));
-				clickOnSeg(seg);
-				sleep(SECOND);
-			}
-			if (state == State.Dungeon) {
-				dungeonCounter++;
-				BHBot.logger.info("Dungeon #" + dungeonCounter + " completed. Result: Victory");
-			} else if (state == State.Raid) {
-				raidVictoryCounter++;
-				int totalRaids = raidVictoryCounter + raidDefeatCounter;
-				BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
-				BHBot.logger.stats("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%.");
-				long runMillis = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
-				String runtime = String.format("%01dm%02ds", //format to mss
-						  TimeUnit.MILLISECONDS.toMinutes(runMillis),
-						  TimeUnit.MILLISECONDS.toSeconds(runMillis) - 
-						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
-				runMillisAvg += runMillis; //on success add runtime to runMillisAvg
-				String runtimeAvg = String.format("%01dm%02ds", //format to mss
-						  TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter), //then we divide runMillisavg by completed raids to get average time
-						  TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / raidVictoryCounter) - 
-						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter)));
-				BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
-			} else {
-			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
-			}
+        // check if we're done (cleared):
+        seg = detectCue(cues.get("Cleared"));
+        if (seg != null) {
+            closePopupSecurely(cues.get("Cleared"), cues.get("YesGreen"));
+
+            // close the raid/dungeon/trials/gauntlet window:
+            readScreen(2 * SECOND);
+            detectCue(cues.get("X"), 15 * SECOND);
+            sleep(2 * SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
+            seg = detectCue(cues.get("X"), SECOND);
+            if (seg != null)
+                clickOnSeg(seg);
+            else
+                BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
+
+            sleep(SECOND);
+            if (state == State.Expedition) {
+                sleep(SECOND);
+
+                // Close Portal Map after expedition
+                readScreen(2 * SECOND);
+                seg = detectCue(cues.get("X"));
+                clickOnSeg(seg);
+                sleep(SECOND);
+
+                // close Expedition window after Expedition
+                readScreen(2 * SECOND);
+                seg = detectCue(cues.get("X"));
+                clickOnSeg(seg);
+                sleep(SECOND);
+            }
+            if (state == State.Dungeon) {
+                dungeonCounter++;
+                BHBot.logger.info("Dungeon #" + dungeonCounter + " completed. Result: Victory");
+            } else if (state == State.Raid) {
+                raidVictoryCounter++;
+                int totalRaids = raidVictoryCounter + raidDefeatCounter;
+                BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
+                BHBot.logger.stats("Raid success rate: " + df.format(((double) raidVictoryCounter / totalRaids) * 100) + "%.");
+                long runMillis = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
+                String runtime = String.format("%01dm%02ds", //format to mss
+                        TimeUnit.MILLISECONDS.toMinutes(runMillis),
+                        TimeUnit.MILLISECONDS.toSeconds(runMillis) -
+                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
+                runMillisAvg += runMillis; //on success add runtime to runMillisAvg
+                String runtimeAvg = String.format("%01dm%02ds", //format to mss
+                        TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter), //then we divide runMillisavg by completed raids to get average time
+                        TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / raidVictoryCounter) -
+                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter)));
+                BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
+            } else {
+                BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
+            }
 //			if (state == State.Dungeon && (BHBot.settings.countActivities)) {
 //				updateActivityCounter(state.getName());
 //			}
-			resetAppropriateTimers();
-			resetRevives();
-			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
-			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
-			state = State.Main; // reset state
-			return;
-		}
+            resetAppropriateTimers();
+            resetRevives();
+            if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
+            if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
+            state = State.Main; // reset state
+            return;
+        }
 
-		// check if we're done (defeat):
-		seg = detectCue(cues.get("Defeat"));
-		if (seg != null) {
-			boolean closed = false;
-			// close button in dungeons is blue, in gauntlet it is green:
-			seg = detectCue(cues.get("Close"), 2*SECOND);
-			if (seg != null) {
-				clickOnSeg(seg);
-				closed = true;
-			}
+        // check if we're done (defeat):
+        seg = detectCue(cues.get("Defeat"));
+        if (seg != null) {
+            boolean closed = false;
+            // close button in dungeons is blue, in gauntlet it is green:
+            seg = detectCue(cues.get("Close"), 2 * SECOND);
+            if (seg != null) {
+                clickOnSeg(seg);
+                closed = true;
+            }
 
-			// close button in gauntlet:
-			seg = detectCue(cues.get("CloseGreen"), 2*SECOND);
-			if (seg != null) {
-				clickOnSeg(seg);
-				closed = true;
-			}
+            // close button in gauntlet:
+            seg = detectCue(cues.get("CloseGreen"), 2 * SECOND);
+            if (seg != null) {
+                clickOnSeg(seg);
+                closed = true;
+            }
 
-			if (!closed) {
-				BHBot.logger.warn("Problem: 'Defeat' popup detected but no 'Close' button detected. Ignoring...");
-				if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
-				if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
-				return;
-			}
+            if (!closed) {
+                BHBot.logger.warn("Problem: 'Defeat' popup detected but no 'Close' button detected. Ignoring...");
+                if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
+                if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
+                return;
+            }
 
-			// close the raid/dungeon/trials/gauntlet window:
-			readScreen(2*SECOND);
-			detectCue(cues.get("X"), 5*SECOND);
-			sleep(SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
-			seg = detectCue(cues.get("X"), SECOND);
-			if (seg != null)
-				clickOnSeg(seg);
-			else
-				BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
-			sleep(SECOND);
-			if (state == State.Expedition) {
-				sleep(SECOND);
+            // close the raid/dungeon/trials/gauntlet window:
+            readScreen(2 * SECOND);
+            detectCue(cues.get("X"), 5 * SECOND);
+            sleep(SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
+            seg = detectCue(cues.get("X"), SECOND);
+            if (seg != null)
+                clickOnSeg(seg);
+            else
+                BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
+            sleep(SECOND);
+            if (state == State.Expedition) {
+                sleep(SECOND);
 
-				// Close Portal Map after expedition
-				readScreen(2*SECOND);
-				seg = detectCue(cues.get("X"));
-				clickOnSeg(seg);
-				sleep(SECOND);
+                // Close Portal Map after expedition
+                readScreen(2 * SECOND);
+                seg = detectCue(cues.get("X"));
+                clickOnSeg(seg);
+                sleep(SECOND);
 
-				// close Expedition window after Expedition
-				readScreen(2*SECOND);
-				seg = detectCue(cues.get("X"));
-				clickOnSeg(seg);
-				sleep(SECOND);
-			}
-			if (state == State.Invasion) {
-				BHBot.logger.info("Invasion completed successfully");
-			} else if (state == State.Dungeon) {
-				dungeonCounter++;
-				BHBot.logger.warn("Dungeon #" + dungeonCounter + " completed. Result: Defeat.");
-			} else if (state == State.Raid) {
-				raidDefeatCounter++;
-				int totalRaids = raidVictoryCounter + raidDefeatCounter;
-				BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
-				BHBot.logger.stats("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
-				long runMillis = Misc.getTime() - (activityStartTime * 1000);
-				String runtime = String.format("%01dm%02ds", 
-						  TimeUnit.MILLISECONDS.toMinutes(runMillis),
-						  TimeUnit.MILLISECONDS.toSeconds(runMillis) - 
-						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
-				BHBot.logger.stats("Run time: " + runtime);
-			} else {
-			BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
-			}
-			resetAppropriateTimers();
-			resetRevives();
+                // close Expedition window after Expedition
+                readScreen(2 * SECOND);
+                seg = detectCue(cues.get("X"));
+                clickOnSeg(seg);
+                sleep(SECOND);
+            }
+            if (state == State.Invasion) {
+                BHBot.logger.info("Invasion completed successfully");
+            } else if (state == State.Dungeon) {
+                dungeonCounter++;
+                BHBot.logger.warn("Dungeon #" + dungeonCounter + " completed. Result: Defeat.");
+            } else if (state == State.Raid) {
+                raidDefeatCounter++;
+                int totalRaids = raidVictoryCounter + raidDefeatCounter;
+                BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
+                BHBot.logger.stats("Raid success rate: " + df.format(((double) raidVictoryCounter / totalRaids) * 100) + "%");
+                long runMillis = Misc.getTime() - (activityStartTime * 1000);
+                String runtime = String.format("%01dm%02ds",
+                        TimeUnit.MILLISECONDS.toMinutes(runMillis),
+                        TimeUnit.MILLISECONDS.toSeconds(runMillis) -
+                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
+                BHBot.logger.stats("Run time: " + runtime);
+            } else {
+                BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
+            }
+            resetAppropriateTimers();
+            resetRevives();
 
-			// We make sure to dress up
-			if (state == State.PVP && BHBot.settings.pvpstrip.size() > 0) {
-				dressUp(BHBot.settings.pvpstrip);
-				readScreen(SECOND*2);
-			}
-			if (state == State.GVG && BHBot.settings.gvgstrip.size() > 0) {
-				dressUp(BHBot.settings.gvgstrip);
-				readScreen(SECOND*2);
-			}
+            // We make sure to dress up
+            if (state == State.PVP && BHBot.settings.pvpstrip.size() > 0) {
+                dressUp(BHBot.settings.pvpstrip);
+                readScreen(SECOND * 2);
+            }
+            if (state == State.GVG && BHBot.settings.gvgstrip.size() > 0) {
+                dressUp(BHBot.settings.gvgstrip);
+                readScreen(SECOND * 2);
+            }
 
-			// We make sure to disable autoshrine when defeated
-			if ( state == State.Trials || state == State.Raid || state == State.Expedition) {
-				if (ignoreBossSetting && ignoreShrinesSetting) {
-					if(!checkShrineSettings(false, false)) {
-						BHBot.logger.error("Impossible to disable autoShrine after defeat! Restarting..");
-						restart();
-					}
-				}
-				autoShrined = false;
-				autoBossRuned = false;
-				readScreen(SECOND *2);
-			}
+            // We make sure to disable autoshrine when defeated
+            if (state == State.Trials || state == State.Raid || state == State.Expedition) {
+                if (ignoreBossSetting && ignoreShrinesSetting) {
+                    if (!checkShrineSettings(false, false)) {
+                        BHBot.logger.error("Impossible to disable autoShrine after defeat! Restarting..");
+                        restart();
+                    }
+                }
+                autoShrined = false;
+                autoBossRuned = false;
+                readScreen(SECOND * 2);
+            }
 
-			state = State.Main; // reset state
-			return;
-		}
+            state = State.Main; // reset state
+            return;
+        }
 
-		// check if we're done (victory - found in gauntlet, for example):
-		//Victory screen on world boss is slightly different, so we check both
-		MarvinSegment seg1 = detectCue(cues.get("Victory"));
-		MarvinSegment seg2 = detectCue(cues.get("WorldBossVictory"));
-		if (seg1 != null || (state == State.WorldBoss && seg2 != null)) { //seg2 needs state defined as otherwise the battle victory screen in dungeon-type encounters triggers it
+        // check if we're done (victory - found in gauntlet, for example):
+        //Victory screen on world boss is slightly different, so we check both
+        MarvinSegment seg1 = detectCue(cues.get("Victory"));
+        MarvinSegment seg2 = detectCue(cues.get("WorldBossVictory"));
+        if (seg1 != null || (state == State.WorldBoss && seg2 != null)) { //seg2 needs state defined as otherwise the battle victory screen in dungeon-type encounters triggers it
 
-			handleVictory();
+            handleVictory();
 
-			seg = detectCue(cues.get("CloseGreen"), 2*SECOND); // we need to wait a little bit because the popup scrolls down and the close button is semi-transparent (it stabilizes after popup scrolls down and bounces a bit)
-			if (seg != null)
-				clickOnSeg(seg);
-			else {
-				BHBot.logger.warn("Problem: 'Victory' window (as found in e.g. gauntlets) has been detected, but no 'Close' button. Ignoring...");
-				return;
-			}
+            seg = detectCue(cues.get("CloseGreen"), 2 * SECOND); // we need to wait a little bit because the popup scrolls down and the close button is semi-transparent (it stabilizes after popup scrolls down and bounces a bit)
+            if (seg != null)
+                clickOnSeg(seg);
+            else {
+                BHBot.logger.warn("Problem: 'Victory' window (as found in e.g. gauntlets) has been detected, but no 'Close' button. Ignoring...");
+                return;
+            }
 
-			// close the raid/dungeon/trial/gauntlet window:
-			readScreen(2*SECOND);
-			detectCue(cues.get("X"), 5*SECOND);
-			sleep(SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
-			seg = detectCue(cues.get("X"), SECOND);
-			if (seg != null)
-				clickOnSeg(seg);
-			else
-				BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
+            // close the raid/dungeon/trial/gauntlet window:
+            readScreen(2 * SECOND);
+            detectCue(cues.get("X"), 5 * SECOND);
+            sleep(SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
+            seg = detectCue(cues.get("X"), SECOND);
+            if (seg != null)
+                clickOnSeg(seg);
+            else
+                BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 
-			sleep(SECOND);
-			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
-			if (state == State.WorldBoss && (BHBot.settings.countActivities)) {
-				updateActivityCounter(state.getName());
-			}
-			resetAppropriateTimers();
-			resetRevives();
-			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
+            sleep(SECOND);
+            BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
+            if (state == State.WorldBoss && (BHBot.settings.countActivities)) {
+                updateActivityCounter(state.getName());
+            }
+            resetAppropriateTimers();
+            resetRevives();
+            if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
 
-			/* Sometime Bit Heroes ignores the Ignore Boss / Ignore Shrines setting and so, when we finish a dungeon,
-			*  We make sure to disable them to avoid the idle time exceeded warning. */
-			if ( state==State.Trials || state==State.Raid ||state==State.Expedition ) {
-				if (ignoreShrinesSetting || ignoreBossSetting) {
-					readScreen(SECOND);
-					checkShrineSettings(false, false);
-				}
-			}
+            /* Sometime Bit Heroes ignores the Ignore Boss / Ignore Shrines setting and so, when we finish a dungeon,
+             *  We make sure to disable them to avoid the idle time exceeded warning. */
+            if (state == State.Trials || state == State.Raid || state == State.Expedition) {
+                if (ignoreShrinesSetting || ignoreBossSetting) {
+                    readScreen(SECOND);
+                    checkShrineSettings(false, false);
+                }
+            }
 
-			state = State.Main; // reset state
-			return;
-		}
+            state = State.Main; // reset state
+            return;
+        }
 
-		//small sleep so this function isn't too taxing on performance
-		sleep(2000);
+        //small sleep so this function isn't too taxing on performance
+        sleep(2000);
 
-		// at the end of this method, revert idle time change (in order for idle detection to function properly):
-		BHBot.scheduler.restoreIdleTime();
-	}
+        // at the end of this method, revert idle time change (in order for idle detection to function properly):
+        BHBot.scheduler.restoreIdleTime();
+    }
 
-private void handleAutoBossRune() { //seperate function so we can run autoRune without autoShrine
-	MarvinSegment guildButtonSeg;
-	guildButtonSeg = detectCue(cues.get("GuildButton"));
-	
-	if ((state == State.Raid && !BHBot.settings.autoShrine.contains("r") && BHBot.settings.autoBossRune.containsKey("r")) ||
-	(state == State.Trials && !BHBot.settings.autoShrine.contains("t") && BHBot.settings.autoBossRune.containsKey("t")) || 
-	(state == State.Expedition && !BHBot.settings.autoShrine.contains("e") && BHBot.settings.autoBossRune.containsKey("e")) ||
-	(state == State.Dungeon && BHBot.settings.autoBossRune.containsKey("d")) ||
-	state == State.UnidentifiedDungeon) {
-		if (activityDuration > 60) { //if we're past 60 seconds into the activity
-			if (!autoBossRuned) {
-				if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay && guildButtonSeg != null) { //and it's been the battleDelay setting since last encounter
-					BHBot.logger.autorune("No activity for " + BHBot.settings.battleDelay + "s, changing runes for boss encounter");
+    private void handleAutoBossRune() { //seperate function so we can run autoRune without autoShrine
+        MarvinSegment guildButtonSeg;
+        guildButtonSeg = detectCue(cues.get("GuildButton"));
 
-					handleMinorBossRunes();
+        if ((state == State.Raid && !BHBot.settings.autoShrine.contains("r") && BHBot.settings.autoBossRune.containsKey("r")) ||
+                (state == State.Trials && !BHBot.settings.autoShrine.contains("t") && BHBot.settings.autoBossRune.containsKey("t")) ||
+                (state == State.Expedition && !BHBot.settings.autoShrine.contains("e") && BHBot.settings.autoBossRune.containsKey("e")) ||
+                (state == State.Dungeon && BHBot.settings.autoBossRune.containsKey("d")) ||
+                state == State.UnidentifiedDungeon) {
+            if (activityDuration > 60) { //if we're past 60 seconds into the activity
+                if (!autoBossRuned) {
+                    if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay && guildButtonSeg != null) { //and it's been the battleDelay setting since last encounter
+                        BHBot.logger.autorune("No activity for " + BHBot.settings.battleDelay + "s, changing runes for boss encounter");
 
-					if (!checkShrineSettings(false, false)) {
-						BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoBossRune!");
-						BHBot.logger.warn("Resetting encounter timer to try again in " + BHBot.settings.battleDelay + " seconds.");
-						inEncounterTimestamp = Misc.getTime() / 1000;
-						return;
-					}
+                        handleMinorBossRunes();
 
-					// We disable and re-enable the auto feature
-					while (detectCue(cues.get("AutoOn"), 500) != null) {
-						clickInGame(780, 270); //auto off
-						readScreen(500);
-					}
-					while (detectCue(cues.get("AutoOff"), 500) != null) {
-						clickInGame(780, 270); //auto on again
-						readScreen(500);
-					}
+                        if (!checkShrineSettings(false, false)) {
+                            BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoBossRune!");
+                            BHBot.logger.warn("Resetting encounter timer to try again in " + BHBot.settings.battleDelay + " seconds.");
+                            inEncounterTimestamp = Misc.getTime() / 1000;
+                            return;
+                        }
 
-					autoBossRuned = true;
-				}
-			}
-		}
-	}
-}
+                        // We disable and re-enable the auto feature
+                        while (detectCue(cues.get("AutoOn"), 500) != null) {
+                            clickInGame(780, 270); //auto off
+                            readScreen(500);
+                        }
+                        while (detectCue(cues.get("AutoOff"), 500) != null) {
+                            clickInGame(780, 270); //auto on again
+                            readScreen(500);
+                        }
 
-	private void handleAutoShrine() {
-		MarvinSegment guildButtonSeg;
-		guildButtonSeg = detectCue(cues.get("GuildButton"));
+                        autoBossRuned = true;
+                    }
+                }
+            }
+        }
+    }
 
-		if ( ( state == State.Raid && BHBot.settings.autoShrine.contains("r") ) || 
-			( state == State.Trials && BHBot.settings.autoShrine.contains("t") ) || 
-			( state == State.Expedition && BHBot.settings.autoShrine.contains("e") ) || 
-			( state == State.UnidentifiedDungeon) ) {
-			if (activityDuration > 60) { //if we're past 60 seconds into the activity
-				if (!autoShrined) {
-					if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay && guildButtonSeg != null) { //and it's been the battleDelay setting since last encounter
-						BHBot.logger.autoshrine("No activity for " + BHBot.settings.battleDelay + "s, disabling ignore shrines");
+    private void handleAutoShrine() {
+        MarvinSegment guildButtonSeg;
+        guildButtonSeg = detectCue(cues.get("GuildButton"));
 
-						if (!checkShrineSettings(true, false)) {
-							BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoShrine!");
-							return;
-						}
-						readScreen(100);
+        if ((state == State.Raid && BHBot.settings.autoShrine.contains("r")) ||
+                (state == State.Trials && BHBot.settings.autoShrine.contains("t")) ||
+                (state == State.Expedition && BHBot.settings.autoShrine.contains("e")) ||
+                (state == State.UnidentifiedDungeon)) {
+            if (activityDuration > 60) { //if we're past 60 seconds into the activity
+                if (!autoShrined) {
+                    if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay && guildButtonSeg != null) { //and it's been the battleDelay setting since last encounter
+                        BHBot.logger.autoshrine("No activity for " + BHBot.settings.battleDelay + "s, disabling ignore shrines");
 
-						// We disable and re-enable the auto feature
-						while (detectCue(cues.get("AutoOn"), 500) != null) {
-							clickInGame(780, 270); //auto off
-							readScreen(500);
-						}
-						while (detectCue(cues.get("AutoOff"), 500) != null) {
-							clickInGame(780, 270); //auto on again
-							readScreen(500);
-						}
+                        if (!checkShrineSettings(true, false)) {
+                            BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoShrine!");
+                            return;
+                        }
+                        readScreen(100);
 
-						BHBot.logger.autoshrine("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
-						handleMinorBossRunes();
-						sleep(BHBot.settings.shrineDelay * SECOND); //long sleep while we activate shrines
+                        // We disable and re-enable the auto feature
+                        while (detectCue(cues.get("AutoOn"), 500) != null) {
+                            clickInGame(780, 270); //auto off
+                            readScreen(500);
+                        }
+                        while (detectCue(cues.get("AutoOff"), 500) != null) {
+                            clickInGame(780, 270); //auto on again
+                            readScreen(500);
+                        }
 
-						if (!checkShrineSettings(false, false)) {
-							BHBot.logger.error("Impossible to disable Ignore Boss in handleAutoShrine!");
-							return;
-						}
-						readScreen(100);
+                        BHBot.logger.autoshrine("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
+                        handleMinorBossRunes();
+                        sleep(BHBot.settings.shrineDelay * SECOND); //long sleep while we activate shrines
 
-						// We disable and re-enable the auto feature
-						while (detectCue(cues.get("AutoOn"), 500) != null) {
-							clickInGame(780, 270); //auto off
-							readScreen(500);
-						}
-						while (detectCue(cues.get("AutoOff"), 500) != null) {
-							clickInGame(780, 270); //auto on again
-							readScreen(500);
-						}
+                        if (!checkShrineSettings(false, false)) {
+                            BHBot.logger.error("Impossible to disable Ignore Boss in handleAutoShrine!");
+                            return;
+                        }
+                        readScreen(100);
 
-						autoShrined = true;
-					}
-				}
-			}
-		}
-	}
+                        // We disable and re-enable the auto feature
+                        while (detectCue(cues.get("AutoOn"), 500) != null) {
+                            clickInGame(780, 270); //auto off
+                            readScreen(500);
+                        }
+                        while (detectCue(cues.get("AutoOff"), 500) != null) {
+                            clickInGame(780, 270); //auto on again
+                            readScreen(500);
+                        }
 
-	private boolean handleMinorRunes(String activity) {
+                        autoShrined = true;
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean handleMinorRunes(String activity) {
         List<String> desiredRunesAsStrs;
         String activityName = state.getNameFromShortcut(activity);
         if (BHBot.settings.autoRuneDefault.isEmpty()) {
-			BHBot.logger.debug("autoRunesDefault not defined; aborting autoRunes");
-			return false;
-		}
+            BHBot.logger.debug("autoRunesDefault not defined; aborting autoRunes");
+            return false;
+        }
 
         if (!BHBot.settings.autoRune.containsKey(activity)) {
             BHBot.logger.debug("No autoRunes assigned for " + activityName + ", using defaults.");
-			desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
+            desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
         } else {
-    		BHBot.logger.info("Configuring autoRunes for " + activityName);
-			desiredRunesAsStrs = BHBot.settings.autoRune.get(activity);
+            BHBot.logger.info("Configuring autoRunes for " + activityName);
+            desiredRunesAsStrs = BHBot.settings.autoRune.get(activity);
         }
 
-		List<MinorRuneEffect> desiredRunes = resolveDesiredRunes(desiredRunesAsStrs);
-		if (noRunesNeedSwitching(desiredRunes)) {
-			return false;
-			}
+        List<MinorRuneEffect> desiredRunes = resolveDesiredRunes(desiredRunesAsStrs);
+        if (noRunesNeedSwitching(desiredRunes)) {
+            return false;
+        }
 
-		// Back out of any raid/gauntlet/trial/GvG/etc pre-menu
-		MarvinSegment seg = detectCue(cues.get("X"), 2*SECOND);
-		if (seg != null) {
-			clickOnSeg(seg);
-			readScreen(SECOND);
-		}
+        // Back out of any raid/gauntlet/trial/GvG/etc pre-menu
+        MarvinSegment seg = detectCue(cues.get("X"), 2 * SECOND);
+        if (seg != null) {
+            clickOnSeg(seg);
+            readScreen(SECOND);
+        }
 
         if (!switchMinorRunes(desiredRunes))
             BHBot.logger.info("AutoRune failed!");
@@ -4241,109 +4269,109 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
     }
 
     private void handleMinorBossRunes() {
-		if (BHBot.settings.autoRuneDefault.isEmpty()) {
-			BHBot.logger.debug("autoRunesDefault not defined; aborting autoBossRunes");
-			return;
-		}
+        if (BHBot.settings.autoRuneDefault.isEmpty()) {
+            BHBot.logger.debug("autoRunesDefault not defined; aborting autoBossRunes");
+            return;
+        }
 
         String activity = state.getShortcut();
         // Hack to work around unknown dungeons
-		if (activity.equals("ud"))
-			activity = "d";
+        if (activity.equals("ud"))
+            activity = "d";
         if (!BHBot.settings.autoBossRune.containsKey(activity)) {
             BHBot.logger.info("No autoBossRunes assigned for " + state.getName() + ", skipping.");
             return;
         }
 
-		List<String> desiredRunesAsStrs = BHBot.settings.autoBossRune.get(activity);
-		List<MinorRuneEffect> desiredRunes = resolveDesiredRunes(desiredRunesAsStrs);
-		if (noRunesNeedSwitching(desiredRunes))
-			return;
+        List<String> desiredRunesAsStrs = BHBot.settings.autoBossRune.get(activity);
+        List<MinorRuneEffect> desiredRunes = resolveDesiredRunes(desiredRunesAsStrs);
+        if (noRunesNeedSwitching(desiredRunes))
+            return;
 
-        if(!switchMinorRunes(desiredRunes))
+        if (!switchMinorRunes(desiredRunes))
             BHBot.logger.autorune("AutoBossRune failed!");
 
     }
 
     private List<MinorRuneEffect> resolveDesiredRunes(List<String> desiredRunesAsStrs) {
-		List<MinorRuneEffect> desiredRunes = new ArrayList<>();
+        List<MinorRuneEffect> desiredRunes = new ArrayList<>();
 
-		if(desiredRunesAsStrs.size() != 2) {
-			BHBot.logger.error("Got malformed autoRunes, using defaults: " + String.join(" ", desiredRunesAsStrs));
-			desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
-		}
+        if (desiredRunesAsStrs.size() != 2) {
+            BHBot.logger.error("Got malformed autoRunes, using defaults: " + String.join(" ", desiredRunesAsStrs));
+            desiredRunesAsStrs = BHBot.settings.autoRuneDefault;
+        }
 
-		String strLeftRune = desiredRunesAsStrs.get(0);
-		MinorRuneEffect desiredLeftRune = MinorRuneEffect.getEffectFromName(strLeftRune);
-		if (desiredLeftRune == null) {
-			BHBot.logger.error("No rune type found for left rune name " + strLeftRune);
-			desiredLeftRune = leftMinorRune.getRuneEffect();
-		}
-		desiredRunes.add(desiredLeftRune);
+        String strLeftRune = desiredRunesAsStrs.get(0);
+        MinorRuneEffect desiredLeftRune = MinorRuneEffect.getEffectFromName(strLeftRune);
+        if (desiredLeftRune == null) {
+            BHBot.logger.error("No rune type found for left rune name " + strLeftRune);
+            desiredLeftRune = leftMinorRune.getRuneEffect();
+        }
+        desiredRunes.add(desiredLeftRune);
 
-		String strRightRune = desiredRunesAsStrs.get(1);
-		MinorRuneEffect desiredRightRune = MinorRuneEffect.getEffectFromName(strRightRune);
-		if (desiredRightRune == null) {
-			BHBot.logger.error("No rune type found for right rune name " + strRightRune);
-			desiredRightRune = rightMinorRune.getRuneEffect();
-		}
+        String strRightRune = desiredRunesAsStrs.get(1);
+        MinorRuneEffect desiredRightRune = MinorRuneEffect.getEffectFromName(strRightRune);
+        if (desiredRightRune == null) {
+            BHBot.logger.error("No rune type found for right rune name " + strRightRune);
+            desiredRightRune = rightMinorRune.getRuneEffect();
+        }
 
-		desiredRunes.add(desiredRightRune);
+        desiredRunes.add(desiredRightRune);
 
-		return desiredRunes;
-	}
+        return desiredRunes;
+    }
 
-	private boolean noRunesNeedSwitching(List<MinorRuneEffect> desiredRunes) {
-		MinorRuneEffect desiredLeftRune = desiredRunes.get(0);
-		MinorRuneEffect desiredRightRune = desiredRunes.get(1);
-		MinorRuneEffect currentLeftRune = leftMinorRune.getRuneEffect();
-		MinorRuneEffect currentRightRune = rightMinorRune.getRuneEffect();
+    private boolean noRunesNeedSwitching(List<MinorRuneEffect> desiredRunes) {
+        MinorRuneEffect desiredLeftRune = desiredRunes.get(0);
+        MinorRuneEffect desiredRightRune = desiredRunes.get(1);
+        MinorRuneEffect currentLeftRune = leftMinorRune.getRuneEffect();
+        MinorRuneEffect currentRightRune = rightMinorRune.getRuneEffect();
 
-		if (desiredLeftRune == currentLeftRune && desiredRightRune == currentRightRune) {
-			BHBot.logger.debug("No runes found that need switching.");
-			return true; // Nothing to do
-		}
+        if (desiredLeftRune == currentLeftRune && desiredRightRune == currentRightRune) {
+            BHBot.logger.debug("No runes found that need switching.");
+            return true; // Nothing to do
+        }
 
-		if (desiredLeftRune != currentLeftRune) {
-			BHBot.logger.debug("Left minor rune needs to be switched.");
-		}
-		if (desiredRightRune != currentRightRune) {
-			BHBot.logger.debug("Right minor rune needs to be switched.");
-		}
+        if (desiredLeftRune != currentLeftRune) {
+            BHBot.logger.debug("Left minor rune needs to be switched.");
+        }
+        if (desiredRightRune != currentRightRune) {
+            BHBot.logger.debug("Right minor rune needs to be switched.");
+        }
 
-		return false;
+        return false;
 
-	}
+    }
 
     private Boolean switchMinorRunes(List<MinorRuneEffect> desiredRunes) {
-		MinorRuneEffect desiredLeftRune = desiredRunes.get(0);
-		MinorRuneEffect desiredRightRune = desiredRunes.get(1);
+        MinorRuneEffect desiredLeftRune = desiredRunes.get(0);
+        MinorRuneEffect desiredRightRune = desiredRunes.get(1);
 
-		if (!detectEquippedMinorRunes(true, false)) {
-			BHBot.logger.error("Unable to detect runes, pre-equip.");
-			return false;
-		}
+        if (!detectEquippedMinorRunes(true, false)) {
+            BHBot.logger.error("Unable to detect runes, pre-equip.");
+            return false;
+        }
 
-		if (desiredLeftRune != leftMinorRune.getRuneEffect()) {
-			BHBot.logger.debug("Switching left minor rune.");
+        if (desiredLeftRune != leftMinorRune.getRuneEffect()) {
+            BHBot.logger.debug("Switching left minor rune.");
             clickInGame(280, 290); // Click on left rune
             if (!switchSingleMinorRune(desiredLeftRune)) {
                 BHBot.logger.error("Failed to switch left minor rune.");
                 return false;
             }
         }
-		
+
 
         if (desiredRightRune != rightMinorRune.getRuneEffect()) {
-			BHBot.logger.debug("Switching right minor rune.");
+            BHBot.logger.debug("Switching right minor rune.");
             clickInGame(520, 290); // Click on right rune
             if (!switchSingleMinorRune(desiredRightRune)) {
                 BHBot.logger.error("Failed to switch right minor rune.");
                 return false;
             }
         }
-        
-   		sleep(SECOND); //sleep while we wait for window animation
+
+        sleep(SECOND); //sleep while we wait for window animation
 
         if (!detectEquippedMinorRunes(false, true)) {
             BHBot.logger.error("Unable to detect runes, post-equip.");
@@ -4366,174 +4394,174 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
     private Boolean switchSingleMinorRune(MinorRuneEffect desiredRune) {
 
-		MarvinSegment seg = detectCue(cues.get("RunesSwitch"), 5*SECOND);
+        MarvinSegment seg = detectCue(cues.get("RunesSwitch"), 5 * SECOND);
         if (seg == null) {
             BHBot.logger.error("Failed to find rune switch button.");
             return false;
         }
-		clickOnSeg(seg);
+        clickOnSeg(seg);
 
-		seg = detectCue(cues.get("RunesPicker"), 5*SECOND);
-		if (seg == null) {
-			BHBot.logger.error("Failed to find rune picker.");
-			return false;
-		}
+        seg = detectCue(cues.get("RunesPicker"), 5 * SECOND);
+        if (seg == null) {
+            BHBot.logger.error("Failed to find rune picker.");
+            return false;
+        }
 
-		ItemGrade maxRuneGrade = MinorRune.maxGrade;
-		for (int runeGradeVal = maxRuneGrade.getValue(); runeGradeVal > 0; runeGradeVal--) {
-			ItemGrade runeGrade = ItemGrade.getGradeFromValue(runeGradeVal);
-			MinorRune thisRune = MinorRune.getRune(desiredRune, runeGrade);
+        ItemGrade maxRuneGrade = MinorRune.maxGrade;
+        for (int runeGradeVal = maxRuneGrade.getValue(); runeGradeVal > 0; runeGradeVal--) {
+            ItemGrade runeGrade = ItemGrade.getGradeFromValue(runeGradeVal);
+            MinorRune thisRune = MinorRune.getRune(desiredRune, runeGrade);
 
-			if (thisRune == null) {
-				BHBot.logger.error("Unable to getRune in switchSingleMinorRune");
-				continue;
-			}
+            if (thisRune == null) {
+                BHBot.logger.error("Unable to getRune in switchSingleMinorRune");
+                continue;
+            }
 
-			Cue runeCue = thisRune.getRuneSelectCue();
-			if (runeCue == null) {
-				BHBot.logger.error("Unable to find cue for rune " + getRuneName(thisRune.getRuneCueName()));
-				continue;
-			}
-			seg = detectCue(runeCue);
-			if (seg == null) {
-				BHBot.logger.debug("Unable to find " + getRuneName(thisRune.getRuneCueName()) + " in rune picker.");
-				continue;
-			}
-			BHBot.logger.autorune("Switched to " + getRuneName(thisRune.getRuneCueName()));
-			clickOnSeg(seg);
-			sleep(SECOND);
-			return true;
-		}
+            Cue runeCue = thisRune.getRuneSelectCue();
+            if (runeCue == null) {
+                BHBot.logger.error("Unable to find cue for rune " + getRuneName(thisRune.getRuneCueName()));
+                continue;
+            }
+            seg = detectCue(runeCue);
+            if (seg == null) {
+                BHBot.logger.debug("Unable to find " + getRuneName(thisRune.getRuneCueName()) + " in rune picker.");
+                continue;
+            }
+            BHBot.logger.autorune("Switched to " + getRuneName(thisRune.getRuneCueName()));
+            clickOnSeg(seg);
+            sleep(SECOND);
+            return true;
+        }
 
-		BHBot.logger.error("Unable to find rune of type " + desiredRune);
-		closePopupSecurely(cues.get("RunesPicker"), cues.get("X"));
-		sleep(SECOND);
-		return false;
+        BHBot.logger.error("Unable to find rune of type " + desiredRune);
+        closePopupSecurely(cues.get("RunesPicker"), cues.get("X"));
+        sleep(SECOND);
+        return false;
     }
-    
-	/**
-	 * Function to return the name of the runes for console output
-	 */
-	private String getRuneName(String runeName) {
 
-		switch (runeName) {
-				case "MinorRuneExperienceCommon":
-					return "Common Experience";
-				case "MinorRuneExperienceRare":
-					return "Rare Experience";
-				case "MinorRuneExperienceEpic":
-					return "Epic Experience";
-				case "MinorRuneExperienceLegendary":
-					return "Legendary Experience";
-				case "MinorRuneItem_FindCommon":
-					return "Common Item Find";
-				case "MinorRuneItem_FindRare":
-					return "Rare Item Find";
-				case "MinorRuneItem_FindEpic":
-					return "Epic Item Find";
-				case "MinorRuneItem_FindLegendary":
-					return "Legendary Item Find";
-				case "MinorRuneGoldCommon":
-					return "Common Gold";
-				case "MinorRuneGoldRare":
-					return "Rare Gold";
-				case "MinorRuneGoldEpic":
-					return "Epic Gold";
-				case "MinorRuneGoldLegendary":
-					return "Legendary Gold";
-				case "MinorRuneCaptureCommon":
-					return "Common Capture";
-				case "MinorRuneCaptureRare":
-					return "Rare Capture";
-				case "MinorRuneCaptureEpic":
-					return "Epic Capture";
-				case "MinorRuneCaptureLegendary":
-					return "Legendary Capture";
-				default:
-					return null;
-			}
-	}
+    /**
+     * Function to return the name of the runes for console output
+     */
+    private String getRuneName(String runeName) {
 
-	private boolean handleSkeletonKey() {
-		//TODO Add no key "Uh Oh" failsafe
-		MarvinSegment seg;
-		if (BHBot.settings.openSkeleton == 0) {
-			BHBot.logger.info("Skeleton treasure found, declining.");
-			seg = detectCue(cues.get("Decline"), 5*SECOND);
-			clickOnSeg(seg);
-			readScreen(SECOND);
-			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-			clickOnSeg(seg);
-			return false;
+        switch (runeName) {
+            case "MinorRuneExperienceCommon":
+                return "Common Experience";
+            case "MinorRuneExperienceRare":
+                return "Rare Experience";
+            case "MinorRuneExperienceEpic":
+                return "Epic Experience";
+            case "MinorRuneExperienceLegendary":
+                return "Legendary Experience";
+            case "MinorRuneItem_FindCommon":
+                return "Common Item Find";
+            case "MinorRuneItem_FindRare":
+                return "Rare Item Find";
+            case "MinorRuneItem_FindEpic":
+                return "Epic Item Find";
+            case "MinorRuneItem_FindLegendary":
+                return "Legendary Item Find";
+            case "MinorRuneGoldCommon":
+                return "Common Gold";
+            case "MinorRuneGoldRare":
+                return "Rare Gold";
+            case "MinorRuneGoldEpic":
+                return "Epic Gold";
+            case "MinorRuneGoldLegendary":
+                return "Legendary Gold";
+            case "MinorRuneCaptureCommon":
+                return "Common Capture";
+            case "MinorRuneCaptureRare":
+                return "Rare Capture";
+            case "MinorRuneCaptureEpic":
+                return "Epic Capture";
+            case "MinorRuneCaptureLegendary":
+                return "Legendary Capture";
+            default:
+                return null;
+        }
+    }
 
-		} else if (BHBot.settings.openSkeleton == 1) {
-			BHBot.logger.info("Skeleton treasure found, attemping to use key");
-			seg = detectCue(cues.get("Open"), 5*SECOND);
-			if (seg == null) {
-				BHBot.logger.error("Open button not found, restarting");
-				String STScreen = saveGameScreen("skeleton-treasure-no-open");
-				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
-					sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
-				}
-				return true;
-			}
-			clickOnSeg(seg);
-			readScreen(SECOND);
-			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-			if (seg == null) {
-				BHBot.logger.error("Yes button not found, restarting");
-				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
-					String STScreen = saveGameScreen("skeleton-treasure-no-yes");
-					sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
-				}
-				return true;
-			}
-			clickOnSeg(seg);
-			return false;
+    private boolean handleSkeletonKey() {
+        //TODO Add no key "Uh Oh" failsafe
+        MarvinSegment seg;
+        if (BHBot.settings.openSkeleton == 0) {
+            BHBot.logger.info("Skeleton treasure found, declining.");
+            seg = detectCue(cues.get("Decline"), 5 * SECOND);
+            clickOnSeg(seg);
+            readScreen(SECOND);
+            seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+            clickOnSeg(seg);
+            return false;
 
-		} else if (BHBot.settings.openSkeleton == 2 && state == State.Raid) {
-			BHBot.logger.info("Raid Skeleton treasure found, attemping to use key");
-			seg = detectCue(cues.get("Open"), 5*SECOND);
-			if (seg == null) {
-				BHBot.logger.error("Open button not found, restarting");
-				String STScreen = saveGameScreen("skeleton-treasure-no-open");
-				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
-					sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
-				}
-				return true;
-			}
-			clickOnSeg(seg);
-			readScreen(SECOND);
-			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-			if (seg == null) {
-				BHBot.logger.error("Yes button not found, restarting");
-				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
-					String STScreen = saveGameScreen("skeleton-treasure-no-yes");
-					sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
-				}
-				return true;
-			}
-			clickOnSeg(seg);
-			return false;
+        } else if (BHBot.settings.openSkeleton == 1) {
+            BHBot.logger.info("Skeleton treasure found, attemping to use key");
+            seg = detectCue(cues.get("Open"), 5 * SECOND);
+            if (seg == null) {
+                BHBot.logger.error("Open button not found, restarting");
+                String STScreen = saveGameScreen("skeleton-treasure-no-open");
+                if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                    sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                }
+                return true;
+            }
+            clickOnSeg(seg);
+            readScreen(SECOND);
+            seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+            if (seg == null) {
+                BHBot.logger.error("Yes button not found, restarting");
+                if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                    String STScreen = saveGameScreen("skeleton-treasure-no-yes");
+                    sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                }
+                return true;
+            }
+            clickOnSeg(seg);
+            return false;
 
-		} else
-			BHBot.logger.info("Skeleton treasure found, declining.");
-			seg = detectCue(cues.get("Decline"), 5*SECOND);
-			clickOnSeg(seg);
-			readScreen(SECOND);
-			seg = detectCue(cues.get("YesGreen"), 5*SECOND);
-			clickOnSeg(seg);
-			return false;
-	}
+        } else if (BHBot.settings.openSkeleton == 2 && state == State.Raid) {
+            BHBot.logger.info("Raid Skeleton treasure found, attemping to use key");
+            seg = detectCue(cues.get("Open"), 5 * SECOND);
+            if (seg == null) {
+                BHBot.logger.error("Open button not found, restarting");
+                String STScreen = saveGameScreen("skeleton-treasure-no-open");
+                if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                    sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                }
+                return true;
+            }
+            clickOnSeg(seg);
+            readScreen(SECOND);
+            seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+            if (seg == null) {
+                BHBot.logger.error("Yes button not found, restarting");
+                if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                    String STScreen = saveGameScreen("skeleton-treasure-no-yes");
+                    sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                }
+                return true;
+            }
+            clickOnSeg(seg);
+            return false;
 
-	private void handleFamiliarEncounter() {
-		MarvinSegment seg;
+        } else
+            BHBot.logger.info("Skeleton treasure found, declining.");
+        seg = detectCue(cues.get("Decline"), 5 * SECOND);
+        clickOnSeg(seg);
+        readScreen(SECOND);
+        seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+        clickOnSeg(seg);
+        return false;
+    }
 
-		BHBot.logger.autobribe("Familiar encountered");
-		readScreen(2*SECOND);
+    private void handleFamiliarEncounter() {
+        MarvinSegment seg;
 
-		FamiliarType familiarLevel;
-		if (detectCue(cues.get("CommonFamiliar")) != null) {
+        BHBot.logger.autobribe("Familiar encountered");
+        readScreen(2 * SECOND);
+
+        FamiliarType familiarLevel;
+        if (detectCue(cues.get("CommonFamiliar")) != null) {
             familiarLevel = FamiliarType.COMMON;
         } else if (detectCue(cues.get("RareFamiliar")) != null) {
             familiarLevel = FamiliarType.RARE;
@@ -4545,88 +4573,88 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             familiarLevel = FamiliarType.ERROR; // error
         }
 
-		PersuationType persuasion;
-		BribeDetails bribeInfo = new BribeDetails();
+        PersuationType persuasion;
+        BribeDetails bribeInfo = new BribeDetails();
 
-		// Checking familiars setting takes time and a lot of cues verifications. We try to minimize the number of times
-		// this is done
-		boolean skipBribeNames = false;
-		if ( (BHBot.settings.bribeLevel > 0 && familiarLevel.getValue() >= BHBot.settings.bribeLevel) ||
-				(BHBot.settings.familiars.size() == 0) ) {
-			skipBribeNames = true;
-		}
+        // Checking familiars setting takes time and a lot of cues verifications. We try to minimize the number of times
+        // this is done
+        boolean skipBribeNames = false;
+        if ((BHBot.settings.bribeLevel > 0 && familiarLevel.getValue() >= BHBot.settings.bribeLevel) ||
+                (BHBot.settings.familiars.size() == 0)) {
+            skipBribeNames = true;
+        }
 
-		if (!skipBribeNames) {
-			bribeInfo = verifyBribeNames();
-		}
+        if (!skipBribeNames) {
+            bribeInfo = verifyBribeNames();
+        }
 
-		if ( (BHBot.settings.bribeLevel > 0 && familiarLevel.getValue() >= BHBot.settings.bribeLevel) ||
-				bribeInfo.toBribeCnt > 0 ) {
-			persuasion = PersuationType.BRIBE;
-		} else if ( (BHBot.settings.persuasionLevel > 0 && familiarLevel.getValue() >= BHBot.settings.persuasionLevel) ) {
-			persuasion = PersuationType.PERSUADE;
-		} else {
-			persuasion = PersuationType.DECLINE;
-		}
+        if ((BHBot.settings.bribeLevel > 0 && familiarLevel.getValue() >= BHBot.settings.bribeLevel) ||
+                bribeInfo.toBribeCnt > 0) {
+            persuasion = PersuationType.BRIBE;
+        } else if ((BHBot.settings.persuasionLevel > 0 && familiarLevel.getValue() >= BHBot.settings.persuasionLevel)) {
+            persuasion = PersuationType.PERSUADE;
+        } else {
+            persuasion = PersuationType.DECLINE;
+        }
 
-		// If we're set to bribe and we don't have gems, we default to PERSUASION
-		if (persuasion == PersuationType.BRIBE && noGemsToBribe) {
-			persuasion = PersuationType.PERSUADE;
-		}
+        // If we're set to bribe and we don't have gems, we default to PERSUASION
+        if (persuasion == PersuationType.BRIBE && noGemsToBribe) {
+            persuasion = PersuationType.PERSUADE;
+        }
 
-		StringBuilder persuasionLog = new StringBuilder("familiar-");
-		persuasionLog.append(familiarLevel.toString().toUpperCase()).append("-");
-		persuasionLog.append(persuasion.toString().toUpperCase()).append("-");
-		persuasionLog.append("attempt");
+        StringBuilder persuasionLog = new StringBuilder("familiar-");
+        persuasionLog.append(familiarLevel.toString().toUpperCase()).append("-");
+        persuasionLog.append(persuasion.toString().toUpperCase()).append("-");
+        persuasionLog.append("attempt");
 
-		// We save all the errors and persuasions based on settings
-		if ( (familiarLevel.getValue() >= BHBot.settings.familiarScreenshot ) || familiarLevel == FamiliarType.ERROR) {
-			saveGameScreen(persuasionLog.toString());
+        // We save all the errors and persuasions based on settings
+        if ((familiarLevel.getValue() >= BHBot.settings.familiarScreenshot) || familiarLevel == FamiliarType.ERROR) {
+            saveGameScreen(persuasionLog.toString());
 
-			if (BHBot.settings.contributeFamiliars) {
-				contributeFamiliarShoot(persuasionLog.toString(), familiarLevel);
-			}
-		}
+            if (BHBot.settings.contributeFamiliars) {
+                contributeFamiliarShoot(persuasionLog.toString(), familiarLevel);
+            }
+        }
 
-		// We attempt persuasion or bribe based on settings
-		if (persuasion == PersuationType.BRIBE) {
-			if (!bribeFamiliar()) {
-				BHBot.logger.autobribe("Bribe attempt failed! Trying with persuasion...");
-				if (persuadeFamiliar()) {
-					BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
-				} else {
-					BHBot.logger.error("Impossible to persuade familiar, restarting...");
-					restart();
-				}
-			} else {
-				updateFamiliarCounter(bribeInfo.familiarName.toUpperCase());
-			}
-		} else if (persuasion == PersuationType.PERSUADE) {
-			if (persuadeFamiliar()) {
-				BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
-			} else {
-			    BHBot.logger.error("Impossible to attempt persuasion, restarting.");
-				restart();
-			}
-		} else {
-			seg = detectCue(cues.get("DeclineRed"));
-			if (seg != null) {
-				clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
-				readScreen(SECOND * 2);
-				seg = detectCue(cues.get("YesGreen"), SECOND);
-				clickOnSeg(seg);
-				BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion declined.");
-			} else {
-				BHBot.logger.error("Impossible to find the decline button, restarting...");
-				restart();
-			}
-		}
-	}
+        // We attempt persuasion or bribe based on settings
+        if (persuasion == PersuationType.BRIBE) {
+            if (!bribeFamiliar()) {
+                BHBot.logger.autobribe("Bribe attempt failed! Trying with persuasion...");
+                if (persuadeFamiliar()) {
+                    BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
+                } else {
+                    BHBot.logger.error("Impossible to persuade familiar, restarting...");
+                    restart();
+                }
+            } else {
+                updateFamiliarCounter(bribeInfo.familiarName.toUpperCase());
+            }
+        } else if (persuasion == PersuationType.PERSUADE) {
+            if (persuadeFamiliar()) {
+                BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
+            } else {
+                BHBot.logger.error("Impossible to attempt persuasion, restarting.");
+                restart();
+            }
+        } else {
+            seg = detectCue(cues.get("DeclineRed"));
+            if (seg != null) {
+                clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
+                readScreen(SECOND * 2);
+                seg = detectCue(cues.get("YesGreen"), SECOND);
+                clickOnSeg(seg);
+                BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion declined.");
+            } else {
+                BHBot.logger.error("Impossible to find the decline button, restarting...");
+                restart();
+            }
+        }
+    }
 
-	/**
-	 * Will verify if in the current persuasion screen one of the bribeNames is present
-	 */
-	private BribeDetails verifyBribeNames() {
+    /**
+     * Will verify if in the current persuasion screen one of the bribeNames is present
+     */
+    private BribeDetails verifyBribeNames() {
 
         BooleanSupplier openView = () -> {
             MarvinSegment seg;
@@ -4642,7 +4670,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
         BooleanSupplier closeView = () -> {
             MarvinSegment seg;
-            seg = detectCue(cues.get("X"), 2*SECOND);
+            seg = detectCue(cues.get("X"), 2 * SECOND);
             if (seg != null) {
                 clickOnSeg(seg);
                 readScreen(SECOND);
@@ -4652,33 +4680,33 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             }
         };
 
-		List<String> wrongNames = new ArrayList<>();
-		BribeDetails result = new BribeDetails();
-		String familiarName;
-		int toBribeCnt;
+        List<String> wrongNames = new ArrayList<>();
+        BribeDetails result = new BribeDetails();
+        String familiarName;
+        int toBribeCnt;
 
         boolean viewIsOpened = false;
 
         readScreen(SECOND);
-		for (String familiarDetails : BHBot.settings.familiars) {
-			// familiar details from settings
-			String[] details = familiarDetails.toLowerCase().split(" ");
-			familiarName = details[0];
-			toBribeCnt = Integer.parseInt(details[1]);
+        for (String familiarDetails : BHBot.settings.familiars) {
+            // familiar details from settings
+            String[] details = familiarDetails.toLowerCase().split(" ");
+            familiarName = details[0];
+            toBribeCnt = Integer.parseInt(details[1]);
 
-			// cue related stuff
-			boolean isOldFormat = false;
+            // cue related stuff
+            boolean isOldFormat = false;
 
-			Cue familiarCue = cues.getOrDefault(familiarName, null);
+            Cue familiarCue = cues.getOrDefault(familiarName, null);
 
-			if (familiarCue == null) {
-				familiarCue = cues.getOrDefault("old" + familiarName, null);
-				if (familiarCue != null) isOldFormat = true;
-			}
+            if (familiarCue == null) {
+                familiarCue = cues.getOrDefault("old" + familiarName, null);
+                if (familiarCue != null) isOldFormat = true;
+            }
 
-			if (familiarCue != null) {
-				if (toBribeCnt > 0) {
-					if (isOldFormat) { // Old style familiar
+            if (familiarCue != null) {
+                if (toBribeCnt > 0) {
+                    if (isOldFormat) { // Old style familiar
                         if (!viewIsOpened) { // we try to open the view menu if closed
                             if (openView.getAsBoolean()) {
                                 readScreen(SECOND * 2);
@@ -4689,8 +4717,8 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                             }
                         }
                     } else { // New style familiar
-					    if (viewIsOpened) { // we try to close the view menu if opened
-					        if (closeView.getAsBoolean()) {
+                        if (viewIsOpened) { // we try to close the view menu if opened
+                            if (closeView.getAsBoolean()) {
                                 readScreen(SECOND);
                                 viewIsOpened = false;
                             } else {
@@ -4700,208 +4728,208 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                         }
                     }
 
-					if (detectCue(familiarCue, SECOND * 3) != null) {
-						BHBot.logger.autobribe("Detected familiar " + familiarDetails + " as valid in familiars");
-						result.toBribeCnt = toBribeCnt;
-						result.familiarName = familiarName;
-						break;
+                    if (detectCue(familiarCue, SECOND * 3) != null) {
+                        BHBot.logger.autobribe("Detected familiar " + familiarDetails + " as valid in familiars");
+                        result.toBribeCnt = toBribeCnt;
+                        result.familiarName = familiarName;
+                        break;
 
-					}
+                    }
 
-				} else {
-					BHBot.logger.warn("Count for familiar " + familiarName + " is 0! Temporary removing it form the settings...");
-					wrongNames.add(familiarDetails);
-				}
-			} else {
-				BHBot.logger.warn("Impossible to find a cue for familiar " + familiarName + ", it will be temporary removed from settings.");
-				wrongNames.add(familiarDetails);
-			}
-		}
-
-		if (viewIsOpened) {
-		    if (!closeView.getAsBoolean()) {
-		        BHBot.logger.error("Impossible to close view menu at the end of familiar setting loop!");
-		        restart();
+                } else {
+                    BHBot.logger.warn("Count for familiar " + familiarName + " is 0! Temporary removing it form the settings...");
+                    wrongNames.add(familiarDetails);
+                }
+            } else {
+                BHBot.logger.warn("Impossible to find a cue for familiar " + familiarName + ", it will be temporary removed from settings.");
+                wrongNames.add(familiarDetails);
             }
         }
 
-		// If there is any error we update the settings
-		for (String wrongName : wrongNames) {
-			BHBot.settings.familiars.remove(wrongName);
-		}
+        if (viewIsOpened) {
+            if (!closeView.getAsBoolean()) {
+                BHBot.logger.error("Impossible to close view menu at the end of familiar setting loop!");
+                restart();
+            }
+        }
 
-		return result;
-	}
+        // If there is any error we update the settings
+        for (String wrongName : wrongNames) {
+            BHBot.settings.familiars.remove(wrongName);
+        }
 
-	private boolean bribeFamiliar() {
-		readScreen();
-		MarvinSegment seg = detectCue(cues.get("Bribe"), SECOND * 3);
-		BufferedImage tmpScreen = img;
+        return result;
+    }
 
-		if (seg != null) {
-			clickOnSeg(seg);
-			sleep(2 * SECOND);
+    private boolean bribeFamiliar() {
+        readScreen();
+        MarvinSegment seg = detectCue(cues.get("Bribe"), SECOND * 3);
+        BufferedImage tmpScreen = img;
 
-			seg = detectCue(cues.get("YesGreen"), SECOND * 5);
-			if (seg != null) {
-				clickOnSeg(seg);
-				sleep(2 * SECOND);
-			}
+        if (seg != null) {
+            clickOnSeg(seg);
+            sleep(2 * SECOND);
 
-			if (detectCue(cues.get("NotEnoughGems"), SECOND * 5) != null) {
-				BHBot.logger.warn("Not enough gems to attempt a bribe!");
-				noGemsToBribe = true;
-				if (!closePopupSecurely(cues.get("NotEnoughGems"), cues.get("No"))) {
-					BHBot.logger.error("Impossible to close the Not Enough gems pop-up. Restarting...");
-					restart();
-				}
-				return false;
-			}
-			if (BHBot.settings.enablePushover && BHBot.settings.poNotifyBribe) {
-				String bribeScreenName = saveGameScreen("bribe-screen", tmpScreen);
-				File bribeScreenFile = new File(bribeScreenName);
-				sendPushOverMessage("Creature Bribe", "A familiar has been bribed!", "bugle", MessagePriority.NORMAL, bribeScreenFile);
-				if(!bribeScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img file for bribe.");
-			}
-			return true;
-		}
+            seg = detectCue(cues.get("YesGreen"), SECOND * 5);
+            if (seg != null) {
+                clickOnSeg(seg);
+                sleep(2 * SECOND);
+            }
 
-		return false;
-	}
+            if (detectCue(cues.get("NotEnoughGems"), SECOND * 5) != null) {
+                BHBot.logger.warn("Not enough gems to attempt a bribe!");
+                noGemsToBribe = true;
+                if (!closePopupSecurely(cues.get("NotEnoughGems"), cues.get("No"))) {
+                    BHBot.logger.error("Impossible to close the Not Enough gems pop-up. Restarting...");
+                    restart();
+                }
+                return false;
+            }
+            if (BHBot.settings.enablePushover && BHBot.settings.poNotifyBribe) {
+                String bribeScreenName = saveGameScreen("bribe-screen", tmpScreen);
+                File bribeScreenFile = new File(bribeScreenName);
+                sendPushOverMessage("Creature Bribe", "A familiar has been bribed!", "bugle", MessagePriority.NORMAL, bribeScreenFile);
+                if (!bribeScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img file for bribe.");
+            }
+            return true;
+        }
 
-	private boolean persuadeFamiliar() {
+        return false;
+    }
 
-		MarvinSegment seg;
-		seg = detectCue(cues.get("Persuade"));
-		if (seg != null) {
+    private boolean persuadeFamiliar() {
 
-			clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
-			sleep(2 * SECOND);
+        MarvinSegment seg;
+        seg = detectCue(cues.get("Persuade"));
+        if (seg != null) {
 
-			readScreen();
-			seg = detectCue(cues.get("YesGreen"));
-			clickOnSeg(seg);
-			sleep(2 * SECOND);
+            clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
+            sleep(2 * SECOND);
 
-			return true;
-		}
+            readScreen();
+            seg = detectCue(cues.get("YesGreen"));
+            clickOnSeg(seg);
+            sleep(2 * SECOND);
 
-		return false;
-	}
+            return true;
+        }
 
-	private void handleAutoRevive() {
+        return false;
+    }
 
-		// We only use auto-revive for Trials, Gauntlet and Raids
+    private void handleAutoRevive() {
 
-		MarvinSegment seg;
+        // We only use auto-revive for Trials, Gauntlet and Raids
 
-		// Auto Revive is disabled, we re-enable it
-		if ( (BHBot.settings.autoRevive.size() == 0) || (state != State.Trials && state != State.Gauntlet
-				&& state != State.Raid && state != State.Expedition) ){
-			BHBot.logger.debug("AutoRevive disabled, reenabling auto.. State = '" + state + "'");
-			seg = detectCue(cues.get("AutoOff"));
-			if (seg != null) clickOnSeg(seg);
-			return;
-		}
+        MarvinSegment seg;
 
-		// if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
-		seg = detectCue(cues.get("Defeat"), SECOND);
-		if (seg != null) {
-			BHBot.logger.autorevive("Defeat screen, skipping revive check");
-			seg = detectCue(cues.get("AutoOff"), SECOND);
-			if (seg != null) clickOnSeg(seg);
-			readScreen(SECOND);
-			return;
-		}
+        // Auto Revive is disabled, we re-enable it
+        if ((BHBot.settings.autoRevive.size() == 0) || (state != State.Trials && state != State.Gauntlet
+                && state != State.Raid && state != State.Expedition)) {
+            BHBot.logger.debug("AutoRevive disabled, reenabling auto.. State = '" + state + "'");
+            seg = detectCue(cues.get("AutoOff"));
+            if (seg != null) clickOnSeg(seg);
+            return;
+        }
 
-		seg = detectCue(cues.get("VictoryPopup"),500);
-		if (seg != null) {
-			BHBot.logger.autorevive("Victory popup, skipping revive check");
-			seg = detectCue(cues.get("AutoOff"), SECOND);
-			if (seg != null) clickOnSeg(seg);
-			
-			seg = detectCue(cues.get("CloseGreen"), 2*SECOND); // after enabling auto again the bot would get stuck at the victory screen, this should close it
-			if (seg != null)
-				clickOnSeg(seg);
-			else {
-				BHBot.logger.warn("Problem: 'Victory' window has been detected, but no 'Close' button. Ignoring...");
-				return;
-			}
-			return;
-		}
+        // if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
+        seg = detectCue(cues.get("Defeat"), SECOND);
+        if (seg != null) {
+            BHBot.logger.autorevive("Defeat screen, skipping revive check");
+            seg = detectCue(cues.get("AutoOff"), SECOND);
+            if (seg != null) clickOnSeg(seg);
+            readScreen(SECOND);
+            return;
+        }
 
-		// we make sure that we stick with the limits
-		if (potionsUsed >= BHBot.settings.potionLimit) {
-			BHBot.logger.autorevive("Potion limit reached, skipping revive check");
-			seg = detectCue(cues.get("AutoOff"), SECOND);
-			if (seg != null) clickOnSeg(seg);
-			return;
-		}
+        seg = detectCue(cues.get("VictoryPopup"), 500);
+        if (seg != null) {
+            BHBot.logger.autorevive("Victory popup, skipping revive check");
+            seg = detectCue(cues.get("AutoOff"), SECOND);
+            if (seg != null) clickOnSeg(seg);
 
-		seg = detectCue(cues.get("Potions"), SECOND * 2);
-		if (seg != null) {
-			clickOnSeg(seg);
-			readScreen(SECOND);
+            seg = detectCue(cues.get("CloseGreen"), 2 * SECOND); // after enabling auto again the bot would get stuck at the victory screen, this should close it
+            if (seg != null)
+                clickOnSeg(seg);
+            else {
+                BHBot.logger.warn("Problem: 'Victory' window has been detected, but no 'Close' button. Ignoring...");
+                return;
+            }
+            return;
+        }
 
-			// If no potions are needed, we re-enable the Auto function
-			seg = detectCue(cues.get("NoPotions"), SECOND); // Everyone is Full HP
-			if (seg != null) {
-				seg = detectCue(cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400));
-				if (seg != null) {
-					BHBot.logger.autorevive("None of the team members need a consumable, exiting from autoRevive");
-					clickOnSeg(seg);
-					seg = detectCue(cues.get("AutoOff"), SECOND);
-					clickOnSeg(seg);
-				} else {
-					BHBot.logger.error("No potions cue detected, without close button, restarting!");
-					saveGameScreen("autorevive-no-potions-no-close", img);
-					restart();
-				}
-				return;
-			}
+        // we make sure that we stick with the limits
+        if (potionsUsed >= BHBot.settings.potionLimit) {
+            BHBot.logger.autorevive("Potion limit reached, skipping revive check");
+            seg = detectCue(cues.get("AutoOff"), SECOND);
+            if (seg != null) clickOnSeg(seg);
+            return;
+        }
 
-			// Based on the state we get the team size
-			HashMap<Integer, Point> revivePositions = new HashMap<>();
-			switch (state) {
-				case Trials:
-				case Gauntlet:
-				case Expedition:
-					revivePositions.put(1, new Point(290,315));
-					revivePositions.put(2, new Point(200,340));
-					revivePositions.put(3, new Point(115,285));
-					break;
-				case Raid:
-					revivePositions.put(1, new Point(305,320));
-					revivePositions.put(2, new Point(250,345));
-					revivePositions.put(3, new Point(200,267));
-					revivePositions.put(4, new Point(150,325));
-					revivePositions.put(5, new Point(90,295));
-					break;
-				default:
-					break;
-			}
+        seg = detectCue(cues.get("Potions"), SECOND * 2);
+        if (seg != null) {
+            clickOnSeg(seg);
+            readScreen(SECOND);
 
-			if ( (state==State.Trials && BHBot.settings.autoRevive.contains("t") ) ||
-					(state==State.Gauntlet && BHBot.settings.autoRevive.contains("g") ) ||
-					(state==State.Raid && BHBot.settings.autoRevive.contains("r")) ||
-					(state==State.Expedition && BHBot.settings.autoRevive.contains("e")) ) {
+            // If no potions are needed, we re-enable the Auto function
+            seg = detectCue(cues.get("NoPotions"), SECOND); // Everyone is Full HP
+            if (seg != null) {
+                seg = detectCue(cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400));
+                if (seg != null) {
+                    BHBot.logger.autorevive("None of the team members need a consumable, exiting from autoRevive");
+                    clickOnSeg(seg);
+                    seg = detectCue(cues.get("AutoOff"), SECOND);
+                    clickOnSeg(seg);
+                } else {
+                    BHBot.logger.error("No potions cue detected, without close button, restarting!");
+                    saveGameScreen("autorevive-no-potions-no-close", img);
+                    restart();
+                }
+                return;
+            }
 
-				// from char to potion name
-				HashMap<Character, String> potionTranslate = new HashMap<>();
-				potionTranslate.put('1', "Minor");
-				potionTranslate.put('2', "Average");
-				potionTranslate.put('3', "Major");
+            // Based on the state we get the team size
+            HashMap<Integer, Point> revivePositions = new HashMap<>();
+            switch (state) {
+                case Trials:
+                case Gauntlet:
+                case Expedition:
+                    revivePositions.put(1, new Point(290, 315));
+                    revivePositions.put(2, new Point(200, 340));
+                    revivePositions.put(3, new Point(115, 285));
+                    break;
+                case Raid:
+                    revivePositions.put(1, new Point(305, 320));
+                    revivePositions.put(2, new Point(250, 345));
+                    revivePositions.put(3, new Point(200, 267));
+                    revivePositions.put(4, new Point(150, 325));
+                    revivePositions.put(5, new Point(90, 295));
+                    break;
+                default:
+                    break;
+            }
+
+            if ((state == State.Trials && BHBot.settings.autoRevive.contains("t")) ||
+                    (state == State.Gauntlet && BHBot.settings.autoRevive.contains("g")) ||
+                    (state == State.Raid && BHBot.settings.autoRevive.contains("r")) ||
+                    (state == State.Expedition && BHBot.settings.autoRevive.contains("e"))) {
+
+                // from char to potion name
+                HashMap<Character, String> potionTranslate = new HashMap<>();
+                potionTranslate.put('1', "Minor");
+                potionTranslate.put('2', "Average");
+                potionTranslate.put('3', "Major");
 
                 for (Map.Entry<Integer, Point> item : revivePositions.entrySet()) {
                     Integer slotNum = item.getKey();
                     Point slotPos = item.getValue();
 
-                    if (revived[slotNum-1]) continue;
+                    if (revived[slotNum - 1]) continue;
 
                     if (potionsUsed == BHBot.settings.potionLimit) {
                         BHBot.logger.autorevive("Potion limit reached, exiting from Auto Revive");
                         seg = detectCue(cues.get("AutoOff"), SECOND);
-            			if (seg != null) clickOnSeg(seg);
+                        if (seg != null) clickOnSeg(seg);
                         break;
                     }
 
@@ -4939,7 +4967,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     MarvinSegment reviveSeg = detectCue(cues.get("Revives"), SECOND);
                     MarvinSegment restoreSeg = detectCue(cues.get("Restores"));
 
-                    if (restoreSeg!=null) { // we can use one potion, we don't know which one: revive or healing
+                    if (restoreSeg != null) { // we can use one potion, we don't know which one: revive or healing
                         if (reviveSeg == null) { // we can use a revive potion
                             BHBot.logger.debug("Slot " + slotNum + " is up for healing potions, so it does not need revive");
                             seg = detectCue(cues.get("X"));
@@ -4954,10 +4982,10 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     // If super potion is available, we skip it
                     int superPotionMaxChecks = 10, superPotionCurrentCheck = 0;
                     while (superPotionCurrentCheck < superPotionMaxChecks && detectCue(cues.get("SuperAvailable")) != null) {
-						clickInGame(656, 434);
-						readScreen(500);
-                    	superPotionCurrentCheck++;
-					}
+                        clickInGame(656, 434);
+                        readScreen(500);
+                        superPotionCurrentCheck++;
+                    }
 
                     // We check what revives are available, and we save the seg for future reuse
                     HashMap<Character, MarvinSegment> availablePotions = new HashMap<>();
@@ -4966,7 +4994,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     availablePotions.put('3', detectCue(cues.get("MajorAvailable")));
 
                     // No more potions are available
-                    if (availablePotions.get('1')== null && availablePotions.get('2')== null && availablePotions.get('3')== null) {
+                    if (availablePotions.get('1') == null && availablePotions.get('2') == null && availablePotions.get('3') == null) {
                         BHBot.logger.warn("No potions are avilable, autoRevive well be temporary disabled!");
                         BHBot.settings.autoRevive = new ArrayList<>();
                         return;
@@ -4974,11 +5002,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
                     // We manage tank priority using the best potion we have
                     if (slotNum == (BHBot.settings.tankPosition) &&
-                            ( (state==State.Trials && BHBot.settings.tankPriority.contains("t") ) ||
-                                    (state==State.Gauntlet && BHBot.settings.tankPriority.contains("g") ) ||
-                                    (state==State.Raid && BHBot.settings.tankPriority.contains("r")) ||
-                                    (state==State.Expedition && BHBot.settings.tankPriority.contains("e")) ) ) {
-                        for (char potion: "321".toCharArray()) {
+                            ((state == State.Trials && BHBot.settings.tankPriority.contains("t")) ||
+                                    (state == State.Gauntlet && BHBot.settings.tankPriority.contains("g")) ||
+                                    (state == State.Raid && BHBot.settings.tankPriority.contains("r")) ||
+                                    (state == State.Expedition && BHBot.settings.tankPriority.contains("e")))) {
+                        for (char potion : "321".toCharArray()) {
                             seg = availablePotions.get(potion);
                             if (seg != null) {
                                 BHBot.logger.autorevive("Handling tank priority (position: " + BHBot.settings.tankPosition + ") with " + potionTranslate.get(potion) + " revive.");
@@ -4994,8 +5022,8 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                         }
                     }
 
-                    if (!revived[slotNum-1]){ // This is only false when tank priory kicks in
-                        for (char potion: BHBot.settings.potionOrder.toCharArray()) {
+                    if (!revived[slotNum - 1]) { // This is only false when tank priory kicks in
+                        for (char potion : BHBot.settings.potionOrder.toCharArray()) {
                             // BHBot.logger.info("Checking potion " + potion);
                             seg = availablePotions.get(potion);
                             if (seg != null) {
@@ -5004,7 +5032,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                                 readScreen(SECOND);
                                 seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
                                 clickOnSeg(seg);
-                                revived[slotNum-1] = true;
+                                revived[slotNum - 1] = true;
                                 potionsUsed++;
                                 readScreen(SECOND);
                                 break;
@@ -5012,60 +5040,60 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                         }
                     }
                 }
-			}
-		} else { // Impossible to find the potions button
-			saveGameScreen("auto-revive-no-potions");
-			BHBot.logger.autorevive("Impossible to find the potions button!");
-		}
+            }
+        } else { // Impossible to find the potions button
+            saveGameScreen("auto-revive-no-potions");
+            BHBot.logger.autorevive("Impossible to find the potions button!");
+        }
 
-		// If the unit selection screen is still open, we need to close it
-		seg = detectCue(cues.get("UnitSelect"), SECOND);
-		if (seg != null) {
-			seg = detectCue(cues.get("X"), SECOND);
-			if (seg != null) {
-				clickOnSeg(seg);
-				readScreen(SECOND);
-			}
-		}
+        // If the unit selection screen is still open, we need to close it
+        seg = detectCue(cues.get("UnitSelect"), SECOND);
+        if (seg != null) {
+            seg = detectCue(cues.get("X"), SECOND);
+            if (seg != null) {
+                clickOnSeg(seg);
+                readScreen(SECOND);
+            }
+        }
 
-		inEncounterTimestamp = Misc.getTime() / 1000; //after reviving we update encounter timestamp as it wasn't updating from processDungeon
+        inEncounterTimestamp = Misc.getTime() / 1000; //after reviving we update encounter timestamp as it wasn't updating from processDungeon
 
-		seg = detectCue(cues.get("AutoOff"), SECOND);
-		if (seg != null) clickOnSeg(seg);
-	}
+        seg = detectCue(cues.get("AutoOff"), SECOND);
+        if (seg != null) clickOnSeg(seg);
+    }
 
-	private void closeWorldBoss() {
-		MarvinSegment seg;
+    private void closeWorldBoss() {
+        MarvinSegment seg;
 
-		sleep(SECOND);
-		seg = detectCue(cues.get("X"), 2*SECOND);
-		if (seg != null) {
-			clickOnSeg(seg);
-		} else {
-			BHBot.logger.error("first x Error returning to main screen from World Boss, restarting");
+        sleep(SECOND);
+        seg = detectCue(cues.get("X"), 2 * SECOND);
+        if (seg != null) {
+            clickOnSeg(seg);
+        } else {
+            BHBot.logger.error("first x Error returning to main screen from World Boss, restarting");
 //			return false;
-		}
+        }
 
-		sleep(SECOND);
-		seg = detectCue(cues.get("YesGreen"), 2*SECOND);
-		if (seg != null) {
-			clickOnSeg(seg);
-		} else {
-			BHBot.logger.error("yesgreen Error returning to main screen from World Boss, restarting");
+        sleep(SECOND);
+        seg = detectCue(cues.get("YesGreen"), 2 * SECOND);
+        if (seg != null) {
+            clickOnSeg(seg);
+        } else {
+            BHBot.logger.error("yesgreen Error returning to main screen from World Boss, restarting");
 //			return false;
-		}
+        }
 
-		sleep(SECOND);
-		seg = detectCue(cues.get("X"), 2*SECOND);
-		if (seg != null) {
-			clickOnSeg(seg);
-		} else {
-			BHBot.logger.error("second x Error returning to main screen from World Boss, restarting");
+        sleep(SECOND);
+        seg = detectCue(cues.get("X"), 2 * SECOND);
+        if (seg != null) {
+            clickOnSeg(seg);
+        } else {
+            BHBot.logger.error("second x Error returning to main screen from World Boss, restarting");
 //			return false;
-		}
+        }
 
 //		return true;
-	}
+    }
 
 	/*private int checkFamiliarCounter(String fam) { //returns current catch count for given familiar from the settings file
 		int catchCount = 0;
@@ -5078,491 +5106,488 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		return catchCount;
 		}*/
 
-	private void updateFamiliarCounter(String fam) {
+    private void updateFamiliarCounter(String fam) {
         String familiarToUpdate = "";
         String updatedFamiliar = "";
 
-		for (String fa : BHBot.settings.familiars) { //cycle through array
-			String fString = fa.toUpperCase().split(" ")[0]; //case sensitive for a match so convert to upper case
-			int currentCounter = Integer.parseInt(fa.split(" ")[1]); //set the bribe counter to an int
-			if (fam.equals(fString)) { //when match is found from the function
-				familiarToUpdate = fa; //write current status to String
-				currentCounter--; // decrease the counter
-				updatedFamiliar = (fString.toLowerCase() + " " + currentCounter); //update new string with familiar name and decrease counter
+        for (String fa : BHBot.settings.familiars) { //cycle through array
+            String fString = fa.toUpperCase().split(" ")[0]; //case sensitive for a match so convert to upper case
+            int currentCounter = Integer.parseInt(fa.split(" ")[1]); //set the bribe counter to an int
+            if (fam.equals(fString)) { //when match is found from the function
+                familiarToUpdate = fa; //write current status to String
+                currentCounter--; // decrease the counter
+                updatedFamiliar = (fString.toLowerCase() + " " + currentCounter); //update new string with familiar name and decrease counter
 //				BHBot.logger.info("Before: " + familiarToUpdate);
 //				BHBot.logger.info("Updated: " + updatedFamiliar);
-			}
-		}
+            }
+        }
 
-	    try {
-	        // input the file content to the StringBuffer "input"
-	        BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
-	        String line;
-	        StringBuilder inputBuffer = new StringBuilder();
+        try {
+            // input the file content to the StringBuffer "input"
+            BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
+            String line;
+            StringBuilder inputBuffer = new StringBuilder();
 
-	        //print lines to string with linebreaks
-	        while ((line = file.readLine()) != null) {
-	            inputBuffer.append(line);
-	            inputBuffer.append(System.getProperty("line.separator"));
-	        }
-	        String inputStr = inputBuffer.toString(); //load lines to string
-	        file.close();
+            //print lines to string with linebreaks
+            while ((line = file.readLine()) != null) {
+                inputBuffer.append(line);
+                inputBuffer.append(System.getProperty("line.separator"));
+            }
+            String inputStr = inputBuffer.toString(); //load lines to string
+            file.close();
 
 //	        BHBot.logger.info(inputStr); // check that it's inputted right
 
-	        //find containing string and update with the output string from the function above
-	        if (inputStr.contains(familiarToUpdate)) {
-	            inputStr = inputStr.replace(familiarToUpdate, updatedFamiliar);
-	        }
+            //find containing string and update with the output string from the function above
+            if (inputStr.contains(familiarToUpdate)) {
+                inputStr = inputStr.replace(familiarToUpdate, updatedFamiliar);
+            }
 
-	        // write the string from memory over the existing file
-	        // a bit risky for crashes
-	        FileOutputStream fileOut = new FileOutputStream("settings.ini");
-	        fileOut.write(inputStr.getBytes());
-	        fileOut.close();
+            // write the string from memory over the existing file
+            // a bit risky for crashes
+            FileOutputStream fileOut = new FileOutputStream("settings.ini");
+            fileOut.write(inputStr.getBytes());
+            fileOut.close();
 
-	        BHBot.settings.load();  //reload the new settings file so the counter will be updated for the next bribe
+            BHBot.settings.load();  //reload the new settings file so the counter will be updated for the next bribe
 
-	    } catch (Exception e) {
-	        System.out.println("Problem writing to settings file");
-	    }
-}
+        } catch (Exception e) {
+            System.out.println("Problem writing to settings file");
+        }
+    }
 
-	void updateActivityCounter(String activity) {
+    void updateActivityCounter(String activity) {
         String typeToUpdate = "";
         String updatedType = "";
 
-		if ("Dungeon".equals(activity)) {
-			String numberRun = BHBot.settings.dungeonsRun.split(" ")[0]; //case sensitive for a match so convert to upper case
-			int currentCounter = Integer.parseInt(BHBot.settings.dungeonsRun.split(" ")[1]); //set the bribe counter to an int
-			typeToUpdate = numberRun + " " + currentCounter; //write current status to String
-			currentCounter++; // decrease the counter
-			updatedType = (numberRun + " " + currentCounter); //update new string with familiar name and decrease counter
-				BHBot.logger.info("Before: " + typeToUpdate);
-				BHBot.logger.info("Updated: " + updatedType);
-		}
+        if ("Dungeon".equals(activity)) {
+            String numberRun = BHBot.settings.dungeonsRun.split(" ")[0]; //case sensitive for a match so convert to upper case
+            int currentCounter = Integer.parseInt(BHBot.settings.dungeonsRun.split(" ")[1]); //set the bribe counter to an int
+            typeToUpdate = numberRun + " " + currentCounter; //write current status to String
+            currentCounter++; // decrease the counter
+            updatedType = (numberRun + " " + currentCounter); //update new string with familiar name and decrease counter
+            BHBot.logger.info("Before: " + typeToUpdate);
+            BHBot.logger.info("Updated: " + updatedType);
+        }
 
-		if ("World Boss".equals(activity)) {
-			String numberRun = BHBot.settings.worldBossRun.split(" ")[0]; //case sensitive for a match so convert to upper case
-			int currentCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]); //set the bribe counter to an int
-			typeToUpdate = numberRun + " " + currentCounter; //write current status to String
-			currentCounter++; // decrease the counter
-			updatedType = (numberRun + " " + currentCounter); //update new string with familiar name and decrease counter
-				BHBot.logger.info("Before: " + typeToUpdate);
-				BHBot.logger.info("Updated: " + updatedType);
-		}
-
-
+        if ("World Boss".equals(activity)) {
+            String numberRun = BHBot.settings.worldBossRun.split(" ")[0]; //case sensitive for a match so convert to upper case
+            int currentCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]); //set the bribe counter to an int
+            typeToUpdate = numberRun + " " + currentCounter; //write current status to String
+            currentCounter++; // decrease the counter
+            updatedType = (numberRun + " " + currentCounter); //update new string with familiar name and decrease counter
+            BHBot.logger.info("Before: " + typeToUpdate);
+            BHBot.logger.info("Updated: " + updatedType);
+        }
 
 
-	    try {
-	        // input the file content to the StringBuffer "input"
-	        BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
-	        String line;
-	        StringBuilder inputBuffer = new StringBuilder();
+        try {
+            // input the file content to the StringBuffer "input"
+            BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
+            String line;
+            StringBuilder inputBuffer = new StringBuilder();
 
-	        //print lines to string with linebreaks
-	        while ((line = file.readLine()) != null) {
-	            inputBuffer.append(line);
-	            inputBuffer.append(System.getProperty("line.separator"));
-	        }
-	        String inputStr = inputBuffer.toString(); //load lines to string
-	        file.close();
+            //print lines to string with linebreaks
+            while ((line = file.readLine()) != null) {
+                inputBuffer.append(line);
+                inputBuffer.append(System.getProperty("line.separator"));
+            }
+            String inputStr = inputBuffer.toString(); //load lines to string
+            file.close();
 
 //	        BHBot.logger.info(inputStr); // check that it's inputted right
 
-	        //find containing string and update with the output from the function above
-	        if (inputStr.contains(typeToUpdate)) {
-	            inputStr = inputStr.replace(typeToUpdate, updatedType);
-	        }
+            //find containing string and update with the output from the function above
+            if (inputStr.contains(typeToUpdate)) {
+                inputStr = inputStr.replace(typeToUpdate, updatedType);
+            }
 
-	        // write the string from memory over the existing file
-	        // a bit risky for crashes
-	        FileOutputStream fileOut = new FileOutputStream("settings.ini");
-	        fileOut.write(inputStr.getBytes());
-	        fileOut.close();
+            // write the string from memory over the existing file
+            // a bit risky for crashes
+            FileOutputStream fileOut = new FileOutputStream("settings.ini");
+            fileOut.write(inputStr.getBytes());
+            fileOut.close();
 
-	        BHBot.settings.load();  //reload the new settings file so the counter will be updated for the next bribe
+            BHBot.settings.load();  //reload the new settings file so the counter will be updated for the next bribe
 
-	    } catch (Exception e) {
-	        System.out.println("Problem writing to settings file");
-	    }
-}
+        } catch (Exception e) {
+            System.out.println("Problem writing to settings file");
+        }
+    }
 
-	/**
-	 *
-	 * @param dungeon in standard format, e.g. "z2d4".
-	 * @return null in case dungeon parameter is malformed (can even throw an exception)
-	 */
-	private Point getDungeonIconPos(String dungeon) {
-		if (dungeon.length() != 4) return null;
-		if (dungeon.charAt(0) != 'z') return null;
-		if (dungeon.charAt(2) != 'd') return null;
-		int z = Integer.parseInt(""+dungeon.charAt(1));
-		int d = Integer.parseInt(""+dungeon.charAt(3));
-		if (z < 1 || z > 9) return null;
-		if (d < 1 || d > 4) return null;
+    /**
+     * @param dungeon in standard format, e.g. "z2d4".
+     * @return null in case dungeon parameter is malformed (can even throw an exception)
+     */
+    private Point getDungeonIconPos(String dungeon) {
+        if (dungeon.length() != 4) return null;
+        if (dungeon.charAt(0) != 'z') return null;
+        if (dungeon.charAt(2) != 'd') return null;
+        int z = Integer.parseInt("" + dungeon.charAt(1));
+        int d = Integer.parseInt("" + dungeon.charAt(3));
+        if (z < 1 || z > 9) return null;
+        if (d < 1 || d > 4) return null;
 
-		switch (z) {
-		case 1: // zone 1
-			switch (d) {
-			case 1:
-				return new Point(240, 350);
-			case 2:
-				return new Point(580, 190);
-			case 3:
-				return new Point(660, 330);
-			case 4:
-				return new Point(410, 230);
-			}
-			break;
-		case 2: // zone 2
-			switch (d) {
-			case 1:
-				return new Point(215, 270);
-			case 2:
-				return new Point(550, 150);
-			case 3:
-				return new Point(515, 380);
-			case 4:
-				return new Point(400, 270);
-			}
-			break;
-		case 3: // zone 3
-			switch (d) {
-			case 1:
-				return new Point(145, 200);
-			case 2:
-				return new Point(430, 300);
-			case 3:
-				return new Point(565, 375);
-			case 4:
-				return new Point(570, 170);
-			}
-			break;
-		case 4: // zone 4
-			switch (d) {
-			case 1:
-				return new Point(300, 400);
-			case 2:
-				return new Point(260, 200);
-			case 3:
-				return new Point(650, 200);
-			case 4:
-				return new Point(400, 270);
-			}
-			break;
-		case 5: // zone 5
-			switch (d) {
-			case 1:
-				return new Point(150, 200);
-			case 2:
-				return new Point(410, 380);
-			case 3:
-				return new Point(630, 240);
-			case 4:
-				return new Point(550, 150);
-			}
-			break;
-		case 6: // zone 6
-			switch (d) {
-			case 1:
-				return new Point(150, 220);
-			case 2:
-				return new Point(500, 400);
-			case 3:
-				return new Point(550, 120);
-			case 4:
-				return new Point(400, 270);
-			}
-			break;
-		case 7: // zone 7
-			switch (d) {
-			case 1:
-				return new Point(215, 315);
-			case 2:
-				return new Point(570, 165);
-			case 3:
-				return new Point(400, 290);
-			case 4:
-				BHBot.logger.warn("Zone 7 only has 3 dungeons, falling back to z7d2");
-				return new Point(650, 400);
-			}
-			break;
-		 case 8: // zone 8
-		 	switch (d) {
-		 	case 1:
-		 		return new Point(570, 170);
-		 	case 2:
-		 		return new Point(650, 390);
-		 	case 3:
-		 		return new Point(250, 370);
-			case 4:
-				BHBot.logger.warn("Zone 8 only has 3 dungeons, falling back to z8d2");
-				return new Point(570, 340);
-		 	}
-		 	break;
-		 case 9:
-			 switch (d) {
-			 case 1:
-				 return new Point(310, 165);
-			 case 2:
-				 return new Point(610, 190);
-			 case 3:
-				 return new Point(375, 415);
-			 case 4:
-			 	BHBot.logger.warn("Zone 9 only has 3 dungeons, falling back to z9d2");
-				return new Point(610, 190);
-			 }
-		 	break;
-		 }
+        switch (z) {
+            case 1: // zone 1
+                switch (d) {
+                    case 1:
+                        return new Point(240, 350);
+                    case 2:
+                        return new Point(580, 190);
+                    case 3:
+                        return new Point(660, 330);
+                    case 4:
+                        return new Point(410, 230);
+                }
+                break;
+            case 2: // zone 2
+                switch (d) {
+                    case 1:
+                        return new Point(215, 270);
+                    case 2:
+                        return new Point(550, 150);
+                    case 3:
+                        return new Point(515, 380);
+                    case 4:
+                        return new Point(400, 270);
+                }
+                break;
+            case 3: // zone 3
+                switch (d) {
+                    case 1:
+                        return new Point(145, 200);
+                    case 2:
+                        return new Point(430, 300);
+                    case 3:
+                        return new Point(565, 375);
+                    case 4:
+                        return new Point(570, 170);
+                }
+                break;
+            case 4: // zone 4
+                switch (d) {
+                    case 1:
+                        return new Point(300, 400);
+                    case 2:
+                        return new Point(260, 200);
+                    case 3:
+                        return new Point(650, 200);
+                    case 4:
+                        return new Point(400, 270);
+                }
+                break;
+            case 5: // zone 5
+                switch (d) {
+                    case 1:
+                        return new Point(150, 200);
+                    case 2:
+                        return new Point(410, 380);
+                    case 3:
+                        return new Point(630, 240);
+                    case 4:
+                        return new Point(550, 150);
+                }
+                break;
+            case 6: // zone 6
+                switch (d) {
+                    case 1:
+                        return new Point(150, 220);
+                    case 2:
+                        return new Point(500, 400);
+                    case 3:
+                        return new Point(550, 120);
+                    case 4:
+                        return new Point(400, 270);
+                }
+                break;
+            case 7: // zone 7
+                switch (d) {
+                    case 1:
+                        return new Point(215, 315);
+                    case 2:
+                        return new Point(570, 165);
+                    case 3:
+                        return new Point(400, 290);
+                    case 4:
+                        BHBot.logger.warn("Zone 7 only has 3 dungeons, falling back to z7d2");
+                        return new Point(650, 400);
+                }
+                break;
+            case 8: // zone 8
+                switch (d) {
+                    case 1:
+                        return new Point(570, 170);
+                    case 2:
+                        return new Point(650, 390);
+                    case 3:
+                        return new Point(250, 370);
+                    case 4:
+                        BHBot.logger.warn("Zone 8 only has 3 dungeons, falling back to z8d2");
+                        return new Point(570, 340);
+                }
+                break;
+            case 9:
+                switch (d) {
+                    case 1:
+                        return new Point(310, 165);
+                    case 2:
+                        return new Point(610, 190);
+                    case 3:
+                        return new Point(375, 415);
+                    case 4:
+                        BHBot.logger.warn("Zone 9 only has 3 dungeons, falling back to z9d2");
+                        return new Point(610, 190);
+                }
+                break;
+        }
 
 
-		return null;
-	}
+        return null;
+    }
 
-	/**
-	 * Function to return the name of the portal for console output
-	 */
-	private String getExpeditionName(int currentExpedition, String targetPortal) {
-		if (currentExpedition > 4) {
-			BHBot.logger.error("Unexpected expedition int in getExpeditionName: " + currentExpedition);
-			return null;
-		}
+    /**
+     * Function to return the name of the portal for console output
+     */
+    private String getExpeditionName(int currentExpedition, String targetPortal) {
+        if (currentExpedition > 4) {
+            BHBot.logger.error("Unexpected expedition int in getExpeditionName: " + currentExpedition);
+            return null;
+        }
 
-		if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
-				&& !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
-			BHBot.logger.error("Unexpected target portal in getExpeditionName: " + targetPortal);
-			return null;
-		}
+        if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
+                && !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
+            BHBot.logger.error("Unexpected target portal in getExpeditionName: " + targetPortal);
+            return null;
+        }
 
-		switch (currentExpedition) {
-			case 1: // Hallowed Dimension
-				switch (targetPortal) {
-					case "p1":
-						return "Googarum's";
-					case "p2":
-						return "Svord's";
-					case "p3":
-						return "Twimbos";
-					case "p4":
-						return "X5-T34M's";
-					default:
-						return null;
-				}
-			case 2: // Inferno dimension
-				switch (targetPortal) {
-					case "p1":
-						return "Raleib's";
-					case "p2":
-						return "Blemo's";
-					case "p3":
-						return "Gummy's";
-					case "p4":
-						return "Zarlocks";
-					default:
-						return null;
-				}
-			case 3:
-				switch (targetPortal) {
-					case "p1":
-						return "Zorgo Crossing";
-					case "p2":
-						return "Yackerz Tundra";
-					case "p3":
-						return "Vionot Sewer";
-					case "p4":
-						return "Grampa Hef's Heart";
-					default:
-						return null;
-				}
-			case 4: // Idol dimension
-				switch (targetPortal) {
-					case "p1":
-						return "Blublix";
-					case "p2":
-						return "Mowhi";
-					case "p3":
-						return "Wizbot";
-					case "p4":
-						return "Astamus";
-					default:
-						return null;
-				}
-			default:
-				return null;
-		}
-	}
+        switch (currentExpedition) {
+            case 1: // Hallowed Dimension
+                switch (targetPortal) {
+                    case "p1":
+                        return "Googarum's";
+                    case "p2":
+                        return "Svord's";
+                    case "p3":
+                        return "Twimbos";
+                    case "p4":
+                        return "X5-T34M's";
+                    default:
+                        return null;
+                }
+            case 2: // Inferno dimension
+                switch (targetPortal) {
+                    case "p1":
+                        return "Raleib's";
+                    case "p2":
+                        return "Blemo's";
+                    case "p3":
+                        return "Gummy's";
+                    case "p4":
+                        return "Zarlocks";
+                    default:
+                        return null;
+                }
+            case 3:
+                switch (targetPortal) {
+                    case "p1":
+                        return "Zorgo Crossing";
+                    case "p2":
+                        return "Yackerz Tundra";
+                    case "p3":
+                        return "Vionot Sewer";
+                    case "p4":
+                        return "Grampa Hef's Heart";
+                    default:
+                        return null;
+                }
+            case 4: // Idol dimension
+                switch (targetPortal) {
+                    case "p1":
+                        return "Blublix";
+                    case "p2":
+                        return "Mowhi";
+                    case "p3":
+                        return "Wizbot";
+                    case "p4":
+                        return "Astamus";
+                    default:
+                        return null;
+                }
+            default:
+                return null;
+        }
+    }
 
-	/**
-	 *
-	 * @param targetPortal in standard format, e.g. "h4/i4".
-	 * @return null in case dungeon parameter is malformed (can even throw an exception)
-	 */
-	private Point getExpeditionIconPos(int currentExpedition, String targetPortal) {
-		if (targetPortal.length() != 2) {
-			BHBot.logger.error("targetPortal length Mismatch in getExpeditionIconPos");
-			return null;
-		}
+    /**
+     * @param targetPortal in standard format, e.g. "h4/i4".
+     * @return null in case dungeon parameter is malformed (can even throw an exception)
+     */
+    private Point getExpeditionIconPos(int currentExpedition, String targetPortal) {
+        if (targetPortal.length() != 2) {
+            BHBot.logger.error("targetPortal length Mismatch in getExpeditionIconPos");
+            return null;
+        }
 
-		String portalName;
-		if (currentExpedition == 1) {
-			portalName = "Hallowed";
-		}  else if (currentExpedition == 2) {
-			portalName = "Inferno";
-		}  else if (currentExpedition == 3) {
-			portalName = "Jammie";
-		}  else if (currentExpedition == 4) {
-			portalName = "Idol";
-		} else {
-			BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
-			saveGameScreen("unknown-expedition");
-			return null;
-		}
+        String portalName;
+        if (currentExpedition == 1) {
+            portalName = "Hallowed";
+        } else if (currentExpedition == 2) {
+            portalName = "Inferno";
+        } else if (currentExpedition == 3) {
+            portalName = "Jammie";
+        } else if (currentExpedition == 4) {
+            portalName = "Idol";
+        } else {
+            BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
+            saveGameScreen("unknown-expedition");
+            return null;
+        }
 
-		if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
-				&& !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
-			BHBot.logger.error("Unexpected target portal in getExpeditionIconPos: " + targetPortal);
-			return null;
-		}
+        if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
+                && !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
+            BHBot.logger.error("Unexpected target portal in getExpeditionIconPos: " + targetPortal);
+            return null;
+        }
 
-		int portalInt;
-		switch (targetPortal) {
-			case "p1":
-				portalInt = 1;
-				break;
-			case "p2":
-				portalInt = 2;
-				break;
-			case "p3":
-				portalInt = 3;
-				break;
-			case "p4":
-				portalInt = 4;
-				break;
-			default:
-				portalInt = 0;
-				break;
-		}
+        int portalInt;
+        switch (targetPortal) {
+            case "p1":
+                portalInt = 1;
+                break;
+            case "p2":
+                portalInt = 2;
+                break;
+            case "p3":
+                portalInt = 3;
+                break;
+            case "p4":
+                portalInt = 4;
+                break;
+            default:
+                portalInt = 0;
+                break;
+        }
 
-		// we check for white border to understand if the portal is enabled
-		Point[] portalCheck = new Point[4];
-		Point[] portalPosition = new Point[4];
-		Color[] colorCheck = new Color[4];
-		boolean[] portalEnabled = new boolean[4];
+        // we check for white border to understand if the portal is enabled
+        Point[] portalCheck = new Point[4];
+        Point[] portalPosition = new Point[4];
+        Color[] colorCheck = new Color[4];
+        boolean[] portalEnabled = new boolean[4];
 
-		if (currentExpedition == 1) { // Hallowed
+        if (currentExpedition == 1) { // Hallowed
 
-			portalCheck[0] = new Point(190, 146); //Googarum
-			portalCheck[1] = new Point(484, 205); //Svord
-			portalCheck[2] = new Point(328, 339); //Twimbo
-			portalCheck[3] = new Point(641, 345); //X5-T34M
+            portalCheck[0] = new Point(190, 146); //Googarum
+            portalCheck[1] = new Point(484, 205); //Svord
+            portalCheck[2] = new Point(328, 339); //Twimbo
+            portalCheck[3] = new Point(641, 345); //X5-T34M
 
-			portalPosition[0] = new Point(200, 200); //Googarum
-			portalPosition[1] = new Point(520, 220); //Svord
-			portalPosition[2] = new Point(360, 360); //Twimbo
-			portalPosition[3] = new Point(650, 380); //X5-T34M
+            portalPosition[0] = new Point(200, 200); //Googarum
+            portalPosition[1] = new Point(520, 220); //Svord
+            portalPosition[2] = new Point(360, 360); //Twimbo
+            portalPosition[3] = new Point(650, 380); //X5-T34M
 
-			colorCheck[0] = Color.WHITE;
-			colorCheck[1] = Color.WHITE;
-			colorCheck[2] = Color.WHITE;
-			colorCheck[3] = Color.WHITE;
-		}
-		else if (currentExpedition == 2) { // Inferno
-			portalCheck[0] = new Point(185, 206); // Raleib
-			portalCheck[1] = new Point(570, 209); // Blemo
-			portalCheck[2] = new Point(383, 395); // Gummy
-			portalCheck[3] = new Point(381, 265); // Zarlock
+            colorCheck[0] = Color.WHITE;
+            colorCheck[1] = Color.WHITE;
+            colorCheck[2] = Color.WHITE;
+            colorCheck[3] = Color.WHITE;
+        } else if (currentExpedition == 2) { // Inferno
+            portalCheck[0] = new Point(185, 206); // Raleib
+            portalCheck[1] = new Point(570, 209); // Blemo
+            portalCheck[2] = new Point(383, 395); // Gummy
+            portalCheck[3] = new Point(381, 265); // Zarlock
 
-			portalPosition[0] = new Point(200, 195); // Raleib
-			portalPosition[1] = new Point(600, 195); // Blemo
-			portalPosition[2] = new Point(420, 405); // Gummy
-			portalPosition[3] = new Point(420, 270); // Zarlock
+            portalPosition[0] = new Point(200, 195); // Raleib
+            portalPosition[1] = new Point(600, 195); // Blemo
+            portalPosition[2] = new Point(420, 405); // Gummy
+            portalPosition[3] = new Point(420, 270); // Zarlock
 
-			colorCheck[0] = Color.WHITE;
-			colorCheck[1] = Color.WHITE;
-			colorCheck[2] = Color.WHITE;
-			colorCheck[3] = Color.WHITE;
-		} else if (currentExpedition == 3) { // Jammie
-			portalCheck[0] = new Point(145, 187); // Zorgo
-			portalCheck[1] = new Point(309, 289); // Yackerz
-			portalCheck[2] = new Point(474, 343); // Vionot
-			portalCheck[3] = new Point(621, 370); // Grampa
+            colorCheck[0] = Color.WHITE;
+            colorCheck[1] = Color.WHITE;
+            colorCheck[2] = Color.WHITE;
+            colorCheck[3] = Color.WHITE;
+        } else if (currentExpedition == 3) { // Jammie
+            portalCheck[0] = new Point(145, 187); // Zorgo
+            portalCheck[1] = new Point(309, 289); // Yackerz
+            portalCheck[2] = new Point(474, 343); // Vionot
+            portalCheck[3] = new Point(621, 370); // Grampa
 
-			portalPosition[0] = new Point(170, 200); // Zorgo
-			portalPosition[1] = new Point(315, 260); // Yackerz
-			portalPosition[2] = new Point(480, 360); // Vinot
-			portalPosition[3] = new Point(635, 385); // Grampa
+            portalPosition[0] = new Point(170, 200); // Zorgo
+            portalPosition[1] = new Point(315, 260); // Yackerz
+            portalPosition[2] = new Point(480, 360); // Vinot
+            portalPosition[3] = new Point(635, 385); // Grampa
 
-			colorCheck[0] = Color.WHITE;
-			colorCheck[1] = Color.WHITE;
-			colorCheck[2] = Color.WHITE;
-			colorCheck[3] = Color.WHITE;
-		} else { // Idol
-			portalCheck[0] = new Point(370, 140); // Blublix
-			portalCheck[1] = new Point(226, 369); // Mowhi
-			portalCheck[2] = new Point(534, 350); // Wizbot
-			portalCheck[3] = new Point(370, 324); // Astamus
+            colorCheck[0] = Color.WHITE;
+            colorCheck[1] = Color.WHITE;
+            colorCheck[2] = Color.WHITE;
+            colorCheck[3] = Color.WHITE;
+        } else { // Idol
+            portalCheck[0] = new Point(370, 140); // Blublix
+            portalCheck[1] = new Point(226, 369); // Mowhi
+            portalCheck[2] = new Point(534, 350); // Wizbot
+            portalCheck[3] = new Point(370, 324); // Astamus
 
-			portalPosition[0] = new Point(400, 165); // Blublix
-			portalPosition[1] = new Point(243, 385); // Mowhi
-			portalPosition[2] = new Point(562, 375); // Wizbot
-			portalPosition[3] = new Point(400, 318); // Astamus
+            portalPosition[0] = new Point(400, 165); // Blublix
+            portalPosition[1] = new Point(243, 385); // Mowhi
+            portalPosition[2] = new Point(562, 375); // Wizbot
+            portalPosition[3] = new Point(400, 318); // Astamus
 
-			colorCheck[0] = Color.WHITE;
-			colorCheck[1] = Color.WHITE;
-			colorCheck[2] = Color.WHITE;
-			colorCheck[3] = new Color(251, 201, 126);
-		}
+            colorCheck[0] = Color.WHITE;
+            colorCheck[1] = Color.WHITE;
+            colorCheck[2] = Color.WHITE;
+            colorCheck[3] = new Color(251, 201, 126);
+        }
 
-		// We check which of the portals are enabled
-		for (int i = 0; i <=3; i++){
-			Color col = new Color(img.getRGB(portalCheck[i].x, portalCheck[i].y));
-			portalEnabled[i] = col.equals(colorCheck[i]);
-		}
+        // We check which of the portals are enabled
+        for (int i = 0; i <= 3; i++) {
+            Color col = new Color(img.getRGB(portalCheck[i].x, portalCheck[i].y));
+            portalEnabled[i] = col.equals(colorCheck[i]);
+        }
 
-		if (portalEnabled[portalInt - 1]) return portalPosition[portalInt - 1];
+        if (portalEnabled[portalInt - 1]) return portalPosition[portalInt - 1];
 
-		// If the desired portal is not enabled, we try to find the first enabled one
-		int i = 3;
-		while (i >= 0){
-			if (portalEnabled[i]) {
-				BHBot.logger.warn(portalName + " is not available! Falling back on p" + (i+1) + "...");
-				return portalPosition[i];
-			}
-			i--;
-		}
+        // If the desired portal is not enabled, we try to find the first enabled one
+        int i = 3;
+        while (i >= 0) {
+            if (portalEnabled[i]) {
+                BHBot.logger.warn(portalName + " is not available! Falling back on p" + (i + 1) + "...");
+                return portalPosition[i];
+            }
+            i--;
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	/** Check world boss inputs are valid **/
+    /**
+     * Check world boss inputs are valid
+     **/
     private boolean checkWorldBossInput() {
-		boolean failed = false;
-		int passed = 0;
-		
-		String worldBossType = BHBot.settings.worldBossSettings.get(0);
-		int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
+        boolean failed = false;
+        int passed = 0;
 
-		//check name
-		if ("o".equals(worldBossType) || "n".equals(worldBossType) || "m".equals(worldBossType)
-				|| "3".equals(worldBossType)) {
-			passed++;
-		} else {
-			BHBot.logger.error("Invalid world boss name, check settings file");
-			failed = true;
-		}
+        String worldBossType = BHBot.settings.worldBossSettings.get(0);
+        int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
 
-		//check tier
-		if ("o".equals(worldBossType) || "n".equals(worldBossType)) {
-			if (worldBossTier >=1 && worldBossTier <=9) {
+        //check name
+        if ("o".equals(worldBossType) || "n".equals(worldBossType) || "m".equals(worldBossType)
+                || "3".equals(worldBossType)) {
+            passed++;
+        } else {
+            BHBot.logger.error("Invalid world boss name, check settings file");
+            failed = true;
+        }
+
+        //check tier
+        if ("o".equals(worldBossType) || "n".equals(worldBossType)) {
+            if (worldBossTier >= 1 && worldBossTier <= 9) {
                 passed++;
             } else {
                 BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 1 and 9");
                 failed = true;
             }
-        } else if ("m".equals(worldBossType) || "3".equals(worldBossType) ) {
-			if (worldBossTier == 10) {
+        } else if ("m".equals(worldBossType) || "3".equals(worldBossType)) {
+            if (worldBossTier == 10) {
                 passed++;
             } else {
                 BHBot.logger.error("Invalid world boss tier for Melvin or 3t3rmin4tion, must be equal to 10");
@@ -5570,252 +5595,258 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             }
         }
 
-		//warn user if timer is over 5 minutes
-		if (BHBot.settings.worldBossTimer <= 300) {
-			passed++;
-		} else {
-			BHBot.logger.warn("Warning: Timer longer than 5 minutes");
-		}
+        //warn user if timer is over 5 minutes
+        if (BHBot.settings.worldBossTimer <= 300) {
+            passed++;
+        } else {
+            BHBot.logger.warn("Warning: Timer longer than 5 minutes");
+        }
 
-		return !failed && passed == 3;
+        return !failed && passed == 3;
 
 
-	}
+    }
 
-	/** Returns dungeon and difficulty level, e.g. 'z2d4 2'. */
-	private String decideDungeonRandomly() {
+    /**
+     * Returns dungeon and difficulty level, e.g. 'z2d4 2'.
+     */
+    private String decideDungeonRandomly() {
 
-		if ("4".equals(new SimpleDateFormat("u").format(new Date())) &&
-				BHBot.settings.thursdayDungeons.size() > 0) { // if its thursday and thursdayRaids is not empty
-			return BHBot.settings.thursdayDungeons.next();
-		} else {
-			return BHBot.settings.dungeons.next();
-		}
-	}
+        if ("4".equals(new SimpleDateFormat("u").format(new Date())) &&
+                BHBot.settings.thursdayDungeons.size() > 0) { // if its thursday and thursdayRaids is not empty
+            return BHBot.settings.thursdayDungeons.next();
+        } else {
+            return BHBot.settings.dungeons.next();
+        }
+    }
 
-	/** Returns raid type (1, 2 or 3) and difficulty level (1, 2 or 3, which correspond to normal, hard and heroic), e.g. '1 3'. */
-	private String decideRaidRandomly() {
-		if ("4".equals(new SimpleDateFormat("u").format(new Date())) &&
-				BHBot.settings.thursdayRaids.size() > 0) { // if its thursday and thursdayRaids is not empty
-			return BHBot.settings.thursdayRaids.next();
-		} else {
-			return BHBot.settings.raids.next();
-		}
-	}
+    /**
+     * Returns raid type (1, 2 or 3) and difficulty level (1, 2 or 3, which correspond to normal, hard and heroic), e.g. '1 3'.
+     */
+    private String decideRaidRandomly() {
+        if ("4".equals(new SimpleDateFormat("u").format(new Date())) &&
+                BHBot.settings.thursdayRaids.size() > 0) { // if its thursday and thursdayRaids is not empty
+            return BHBot.settings.thursdayRaids.next();
+        } else {
+            return BHBot.settings.raids.next();
+        }
+    }
 
-	/**
-	 * Returns number of zone that is currently selected in the quest window (we need to be in the quest window for this to work).
-	 * Returns 0 in case zone could not be read (in case we are not in the quest window, for example).
-	 */
-	private int readCurrentZone() {
-		if (detectCue(cues.get("Zone1")) != null)
-			return 1;
-		else if (detectCue(cues.get("Zone2")) != null)
-			return 2;
-		else if (detectCue(cues.get("Zone3")) != null)
-			return 3;
-		else if (detectCue(cues.get("Zone4")) != null)
-			return 4;
-		else if (detectCue(cues.get("Zone5")) != null)
-			return 5;
-		else if (detectCue(cues.get("Zone6")) != null)
-			return 6;
-		else if (detectCue(cues.get("Zone7")) != null)
-			return 7;
-		else if (detectCue(cues.get("Zone8")) != null)
-			return 8;
-		else if (detectCue(cues.get("Zone9")) != null)
-			return 9;
-		else
-			return 0;
-	}
+    /**
+     * Returns number of zone that is currently selected in the quest window (we need to be in the quest window for this to work).
+     * Returns 0 in case zone could not be read (in case we are not in the quest window, for example).
+     */
+    private int readCurrentZone() {
+        if (detectCue(cues.get("Zone1")) != null)
+            return 1;
+        else if (detectCue(cues.get("Zone2")) != null)
+            return 2;
+        else if (detectCue(cues.get("Zone3")) != null)
+            return 3;
+        else if (detectCue(cues.get("Zone4")) != null)
+            return 4;
+        else if (detectCue(cues.get("Zone5")) != null)
+            return 5;
+        else if (detectCue(cues.get("Zone6")) != null)
+            return 6;
+        else if (detectCue(cues.get("Zone7")) != null)
+            return 7;
+        else if (detectCue(cues.get("Zone8")) != null)
+            return 8;
+        else if (detectCue(cues.get("Zone9")) != null)
+            return 9;
+        else
+            return 0;
+    }
 
-	void raidReadTest() {
-		int test = readUnlockedRaidTier();
-		BHBot.logger.info(Integer.toString(test));
-	}
+    void raidReadTest() {
+        int test = readUnlockedRaidTier();
+        BHBot.logger.info(Integer.toString(test));
+    }
 
-	void expeditionReadTest() {
-		String expedition = BHBot.settings.expeditions.next();
-		if (expedition != null) {
-			expedition = expedition.split(" ")[0];
-			BHBot.logger.info("Expedition chosen: " + expedition);
-		}
-	}
+    void expeditionReadTest() {
+        String expedition = BHBot.settings.expeditions.next();
+        if (expedition != null) {
+            expedition = expedition.split(" ")[0];
+            BHBot.logger.info("Expedition chosen: " + expedition);
+        }
+    }
 
-	/**
-	 * Returns the current max tier of raid the player has unlocked, so we can calculate which raid we are selecting via the dot menu
-	 * Returns 0 in case of error
-	 */
-	private int readUnlockedRaidTier() {
-		int result = 0;
+    /**
+     * Returns the current max tier of raid the player has unlocked, so we can calculate which raid we are selecting via the dot menu
+     * Returns 0 in case of error
+     */
+    private int readUnlockedRaidTier() {
+        int result = 0;
 
-		readScreen(SECOND);
-		List<MarvinSegment> list = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
-		result += list.size();
+        readScreen(SECOND);
+        List<MarvinSegment> list = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
+        result += list.size();
 
-		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
-		if (seg != null) result += 1;
+        MarvinSegment seg = detectCue(cues.get("RaidLevel"));
+        if (seg != null) result += 1;
 
-		return result;
-	}
+        return result;
+    }
 
-	/**
-	 * Returns raid type, that is value between 1 and 4 (Corresponding to the raid tiers) that is currently selected in the raid window.
-	 * Note that the raid window must be open for this method to work (or else it will simply return 0).
-	 */
-	private int readSelectedRaidTier() {
-		readScreen(SECOND);
-		if (detectCue(cues.get("Raid1Name")) != null)
-			return 1;
-		else if (detectCue(cues.get("Raid2Name")) != null)
-			return 2;
-		else if (detectCue(cues.get("Raid3Name")) != null)
-			return 3;
-		else if (detectCue(cues.get("Raid4Name")) != null)
-			return 4;
-		else if (detectCue(cues.get("Raid5Name")) != null)
-			return 5;
-		else if (detectCue(cues.get("Raid6Name")) != null)
-			return 6;
-		else if (detectCue(cues.get("Raid7Name")) != null)
-			return 7;
-		else
-			return 0; // error
-	}
+    /**
+     * Returns raid type, that is value between 1 and 4 (Corresponding to the raid tiers) that is currently selected in the raid window.
+     * Note that the raid window must be open for this method to work (or else it will simply return 0).
+     */
+    private int readSelectedRaidTier() {
+        readScreen(SECOND);
+        if (detectCue(cues.get("Raid1Name")) != null)
+            return 1;
+        else if (detectCue(cues.get("Raid2Name")) != null)
+            return 2;
+        else if (detectCue(cues.get("Raid3Name")) != null)
+            return 3;
+        else if (detectCue(cues.get("Raid4Name")) != null)
+            return 4;
+        else if (detectCue(cues.get("Raid5Name")) != null)
+            return 5;
+        else if (detectCue(cues.get("Raid6Name")) != null)
+            return 6;
+        else if (detectCue(cues.get("Raid7Name")) != null)
+            return 7;
+        else
+            return 0; // error
+    }
 
-	/** Read Selected World Boss **/
+    /**
+     * Read Selected World Boss
+     **/
 
-	private String readSelectedWorldBoss() {
-		readScreen(SECOND * 2);
-		if (detectCue(cues.get("OrlagWB"), SECOND ) != null)
-			return "o";
-		else if (detectCue(cues.get("NetherWB"), SECOND) != null)
-			return "n";
-		else if (detectCue(cues.get("MelvinWB"), SECOND) != null)
-			return "m";
-		else if (detectCue(cues.get("3t3rWB"), SECOND) != null)
-			return "3";
-		else return null;
-	}
+    private String readSelectedWorldBoss() {
+        readScreen(SECOND * 2);
+        if (detectCue(cues.get("OrlagWB"), SECOND) != null)
+            return "o";
+        else if (detectCue(cues.get("NetherWB"), SECOND) != null)
+            return "n";
+        else if (detectCue(cues.get("MelvinWB"), SECOND) != null)
+            return "m";
+        else if (detectCue(cues.get("3t3rWB"), SECOND) != null)
+            return "3";
+        else return null;
+    }
 
-	private void changeSelectedWorldBoss(String bossname) {
+    private void changeSelectedWorldBoss(String bossname) {
 
-		if ("o".equals(bossname))
-			clickInGame(363, 445);
-		else if ("n".equals(bossname))
-			clickInGame(390, 445);
-		else if ("m".equals(bossname))
-			clickInGame(414, 445);
-		else if ("3".equals(bossname))
-			clickInGame(440, 445);
-		else BHBot.logger.warn("Unknown bossname '" + bossname + "' in changeSelectedWorldBoss.");
-	}
+        if ("o".equals(bossname))
+            clickInGame(363, 445);
+        else if ("n".equals(bossname))
+            clickInGame(390, 445);
+        else if ("m".equals(bossname))
+            clickInGame(414, 445);
+        else if ("3".equals(bossname))
+            clickInGame(440, 445);
+        else BHBot.logger.warn("Unknown bossname '" + bossname + "' in changeSelectedWorldBoss.");
+    }
 
-	/**
-	 * Note: raid window must be open for this to work!
-	 *
-	 * Returns false in case it failed.
-	 */
-	private boolean setRaidType(int newType, int currentType) {
+    /**
+     * Note: raid window must be open for this to work!
+     * <p>
+     * Returns false in case it failed.
+     */
+    private boolean setRaidType(int newType, int currentType) {
 //		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
 
-		MarvinSegment seg = detectCue(cues.get("RaidLevel"));
-		if (seg == null) {
-			// error!
+        MarvinSegment seg = detectCue(cues.get("RaidLevel"));
+        if (seg == null) {
+            // error!
 //			BHBot.logger.info("Error: Changing of raid type failed - raid selection button not detected.");
-			return false;
-		}
+            return false;
+        }
 
-		Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
-		int move = newType - currentType;
+        Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
+        int move = newType - currentType;
 
-		Point pos = center.moveBy(move*26, 0);
+        Point pos = center.moveBy(move * 26, 0);
 
-		clickInGame(pos.x, pos.y);
+        clickInGame(pos.x, pos.y);
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
-	 * Takes screenshot of current game and saves it to disk to a file with a given prefix (date will be added, and optionally a number at the end of file name).
-	 * In case of failure, it will just ignore the error.
-	 *
-	 * @return name of the path in which the screenshot has been saved (successfully or not)
-	 */
-	String saveGameScreen(String prefix) {
-		Date date = new Date();
-		String name = prefix + "_" + dateFormat.format(date) + ".png";
-		int num = 0;
-		File f = new File(BHBot.screenshotPath + name);
-		while (f.exists()) {
-			num++;
-			name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
-			f = new File(BHBot.screenshotPath + name);
-		}
+    /**
+     * Takes screenshot of current game and saves it to disk to a file with a given prefix (date will be added, and optionally a number at the end of file name).
+     * In case of failure, it will just ignore the error.
+     *
+     * @return name of the path in which the screenshot has been saved (successfully or not)
+     */
+    String saveGameScreen(String prefix) {
+        Date date = new Date();
+        String name = prefix + "_" + dateFormat.format(date) + ".png";
+        int num = 0;
+        File f = new File(BHBot.screenshotPath + name);
+        while (f.exists()) {
+            num++;
+            name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
+            f = new File(BHBot.screenshotPath + name);
+        }
 
-		// save screen shot:
-		try {
-			Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length()-4)).save();
-		} catch (Exception e) {
-			BHBot.logger.error("Error while saving game screenshot", e);
-		}
+        // save screen shot:
+        try {
+            Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length() - 4)).save();
+        } catch (Exception e) {
+            BHBot.logger.error("Error while saving game screenshot", e);
+        }
 
-		return BHBot.screenshotPath + name;
-	}
+        return BHBot.screenshotPath + name;
+    }
 
-	private String saveGameScreen(String prefix, BufferedImage img) {
-		Date date = new Date();
-		String name = prefix + "_" + dateFormat.format(date) + ".png";
-		int num = 0;
-		File f = new File(BHBot.screenshotPath + name);
-		while (f.exists()) {
-			num++;
-			name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
-			f = new File(BHBot.screenshotPath + name);
-		}
+    private String saveGameScreen(String prefix, BufferedImage img) {
+        Date date = new Date();
+        String name = prefix + "_" + dateFormat.format(date) + ".png";
+        int num = 0;
+        File f = new File(BHBot.screenshotPath + name);
+        while (f.exists()) {
+            num++;
+            name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
+            f = new File(BHBot.screenshotPath + name);
+        }
 
-		// save screen shot:
-		try {
-			ImageIO.write(img, "png", f);
-		} catch (Exception e) {
-			BHBot.logger.error("Impossible to take a screenshot!");
-		}
+        // save screen shot:
+        try {
+            ImageIO.write(img, "png", f);
+        } catch (Exception e) {
+            BHBot.logger.error("Impossible to take a screenshot!");
+        }
 
-		return f.getPath();
-	}
+        return f.getPath();
+    }
 
-	private void contributeFamiliarShoot(String shootName, FamiliarType familiarType)  {
+    private void contributeFamiliarShoot(String shootName, FamiliarType familiarType) {
 
-		HttpClient httpClient = HttpClients.custom().useSystemProperties().build();
+        HttpClient httpClient = HttpClients.custom().useSystemProperties().build();
 
-		final HttpPost post = new HttpPost("https://script.google.com/macros/s/AKfycby-tCXZ6MHt_ZSUixCcNbYFjDuri6WvljomLgGy_m5lLZw1y5fZ/exec");
+        final HttpPost post = new HttpPost("https://script.google.com/macros/s/AKfycby-tCXZ6MHt_ZSUixCcNbYFjDuri6WvljomLgGy_m5lLZw1y5fZ/exec");
 
-		// we generate a sub image with just the name of the familiar
+        // we generate a sub image with just the name of the familiar
         readScreen(SECOND);
-		int familiarTxtColor;
-		switch (familiarType) {
-			case COMMON:
-				familiarTxtColor = -6881668;
-				break;
-			case RARE:
-				familiarTxtColor = -7168525;
-				break;
-			case EPIC:
-				familiarTxtColor = -98436;
-				break;
-			case LEGENDARY:
-				familiarTxtColor = -66048;
-				break;
-			case ERROR:
-			default:
-				familiarTxtColor = 0;
-				break;
-		}
+        int familiarTxtColor;
+        switch (familiarType) {
+            case COMMON:
+                familiarTxtColor = -6881668;
+                break;
+            case RARE:
+                familiarTxtColor = -7168525;
+                break;
+            case EPIC:
+                familiarTxtColor = -98436;
+                break;
+            case LEGENDARY:
+                familiarTxtColor = -66048;
+                break;
+            case ERROR:
+            default:
+                familiarTxtColor = 0;
+                break;
+        }
 
-		if (familiarTxtColor == 0) return;
+        if (familiarTxtColor == 0) return;
 
-		BufferedImage zoneImg = img.getSubimage(105, 60, 640, 105);
+        BufferedImage zoneImg = img.getSubimage(105, 60, 640, 105);
 
 		/*File zoneImgTmp = new File("tmp-NAME-ZONE.png");
 		try {
@@ -5824,166 +5855,169 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			BHBot.logger.error("", e);
 		}*/
 
-		int minX = zoneImg.getWidth();
-		int minY = zoneImg.getHeight();
-		int maxY = 0;
-		int maxX = 0;
+        int minX = zoneImg.getWidth();
+        int minY = zoneImg.getHeight();
+        int maxY = 0;
+        int maxX = 0;
 
-		int[][] pixelMatrix = Misc.convertTo2D(zoneImg);
-		for (int y = 0; y<zoneImg.getHeight(); y++){
-			for (int x = 0; x<zoneImg.getWidth(); x++){
-				if (pixelMatrix[x][y] == familiarTxtColor) {
-					if (y < minY) minY = y;
-					if (x < minX) minX = x;
-					if (y > maxY) maxY = y;
-					if (x > maxX) maxX = x;
-				} else {
-					zoneImg.setRGB(x, y, 0);
-				}
-			}
+        int[][] pixelMatrix = Misc.convertTo2D(zoneImg);
+        for (int y = 0; y < zoneImg.getHeight(); y++) {
+            for (int x = 0; x < zoneImg.getWidth(); x++) {
+                if (pixelMatrix[x][y] == familiarTxtColor) {
+                    if (y < minY) minY = y;
+                    if (x < minX) minX = x;
+                    if (y > maxY) maxY = y;
+                    if (x > maxX) maxX = x;
+                } else {
+                    zoneImg.setRGB(x, y, 0);
+                }
+            }
 
-		}
+        }
 
-		BufferedImage nameImg = zoneImg.getSubimage(minX, minY, maxX - minX, maxY - minY);
+        BufferedImage nameImg = zoneImg.getSubimage(minX, minY, maxX - minX, maxY - minY);
 //		zoneImgTmp.delete();
 
-		File nameImgFile = new File(shootName + "-ctb.png");
-		try {
-			ImageIO.write(nameImg, "png", nameImgFile);
-		} catch (IOException e) {
-			BHBot.logger.error("Error while creating contribution file", e);
-		}
+        File nameImgFile = new File(shootName + "-ctb.png");
+        try {
+            ImageIO.write(nameImg, "png", nameImgFile);
+        } catch (IOException e) {
+            BHBot.logger.error("Error while creating contribution file", e);
+        }
 
-		MimetypesFileTypeMap ftm = new MimetypesFileTypeMap();
-		ContentType ct = ContentType.create(ftm.getContentType(nameImgFile));
+        MimetypesFileTypeMap ftm = new MimetypesFileTypeMap();
+        ContentType ct = ContentType.create(ftm.getContentType(nameImgFile));
 
-		List<NameValuePair> params = new ArrayList<>(3);
-		params.add(new BasicNameValuePair("mimeType", ct.toString()));
-		params.add(new BasicNameValuePair("name", nameImgFile.getName()));
-		params.add(new BasicNameValuePair("data", Misc.encodeFileToBase64Binary(nameImgFile)));
+        List<NameValuePair> params = new ArrayList<>(3);
+        params.add(new BasicNameValuePair("mimeType", ct.toString()));
+        params.add(new BasicNameValuePair("name", nameImgFile.getName()));
+        params.add(new BasicNameValuePair("data", Misc.encodeFileToBase64Binary(nameImgFile)));
 
-		try {
-			post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			BHBot.logger.error("Error while encoding POST request in contribution", e);
-		}
+        try {
+            post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            BHBot.logger.error("Error while encoding POST request in contribution", e);
+        }
 
-		try {
-			httpClient.execute(post);
-		} catch (IOException e) {
-			BHBot.logger.error("Error while executing HTTP request in contribution", e);
-		}
+        try {
+            httpClient.execute(post);
+        } catch (IOException e) {
+            BHBot.logger.error("Error while executing HTTP request in contribution", e);
+        }
 
-		if (!nameImgFile.delete()) {
-			BHBot.logger.warn("Impossible to delete " + nameImgFile.getAbsolutePath());
-		}
+        if (!nameImgFile.delete()) {
+            BHBot.logger.warn("Impossible to delete " + nameImgFile.getAbsolutePath());
+        }
 
-	}
+    }
 
-	/** Will detect and handle (close) in-game private message (from the current screen capture). Returns true in case PM has been handled. */
-	private boolean handlePM() {
-		if (detectCue(cues.get("InGamePM")) != null) {
-			MarvinSegment seg = detectCue(cues.get("X"), 5 * SECOND);
-			if (seg == null) {
-				BHBot.logger.error("Error: in-game PM window detected, but no close button found. Restarting...");
-				restart(); //*** problem: after a call to this, it will return to the main loop. It should call "continue" inside the main loop or else there could be other exceptions!
-				return true;
-			}
+    /**
+     * Will detect and handle (close) in-game private message (from the current screen capture). Returns true in case PM has been handled.
+     */
+    private boolean handlePM() {
+        if (detectCue(cues.get("InGamePM")) != null) {
+            MarvinSegment seg = detectCue(cues.get("X"), 5 * SECOND);
+            if (seg == null) {
+                BHBot.logger.error("Error: in-game PM window detected, but no close button found. Restarting...");
+                restart(); //*** problem: after a call to this, it will return to the main loop. It should call "continue" inside the main loop or else there could be other exceptions!
+                return true;
+            }
 
-			try {
-				String pmFileName = saveGameScreen("pm");
-				if (BHBot.settings.enablePushover && BHBot.settings.poNotifyPM) {
-					sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
-				}
-				clickOnSeg(seg);
-			} catch (Exception e) {
-				// ignore it
-			}
-			return true;
-		} else {
-			return false; // no PM detected
-		}
-	}
+            try {
+                String pmFileName = saveGameScreen("pm");
+                if (BHBot.settings.enablePushover && BHBot.settings.poNotifyPM) {
+                    sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
+                }
+                clickOnSeg(seg);
+            } catch (Exception e) {
+                // ignore it
+            }
+            return true;
+        } else {
+            return false; // no PM detected
+        }
+    }
 
-	/**
-	 * Handles popup that tells you that your team is not complete. Happens when some friend left you.
-	 * This method will attempt to click on "Auto" button to refill your team.
-	 * Note that this can happen in raid and GvG only, since in other games (PvP, Gauntlet/Trials) you can use only familiars.
-	 * In GvG, on the other hand, there is additional dialog possible (which is not possible in raid): "team not ordered" dialog.
-	 *
-	 * @return true in case emergency restart is needed.
-	 */
-	private boolean handleTeamMalformedWarning() {
+    /**
+     * Handles popup that tells you that your team is not complete. Happens when some friend left you.
+     * This method will attempt to click on "Auto" button to refill your team.
+     * Note that this can happen in raid and GvG only, since in other games (PvP, Gauntlet/Trials) you can use only familiars.
+     * In GvG, on the other hand, there is additional dialog possible (which is not possible in raid): "team not ordered" dialog.
+     *
+     * @return true in case emergency restart is needed.
+     */
+    private boolean handleTeamMalformedWarning() {
 
-		// We look for the team text on top of the text pop-up
-		MarvinSegment seg = detectCue(cues.get("Team"), SECOND*3, new Bounds(330, 135, 480, 180));
-		if (seg==null) {
-			return false;
-		}
+        // We look for the team text on top of the text pop-up
+        MarvinSegment seg = detectCue(cues.get("Team"), SECOND * 3, new Bounds(330, 135, 480, 180));
+        if (seg == null) {
+            return false;
+        }
 
-		if (detectCue(cues.get("TeamNotFull"), SECOND) != null || detectCue(cues.get("TeamNotOrdered"), SECOND) != null) {
-			readScreen(SECOND);
-			seg = detectCue(cues.get("No"), 2 * SECOND);
-			if (seg == null) {
-				BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'No' button found. Restarting...");
-				return true;
-			}
-			clickOnSeg(seg);
-			readScreen();
+        if (detectCue(cues.get("TeamNotFull"), SECOND) != null || detectCue(cues.get("TeamNotOrdered"), SECOND) != null) {
+            readScreen(SECOND);
+            seg = detectCue(cues.get("No"), 2 * SECOND);
+            if (seg == null) {
+                BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'No' button found. Restarting...");
+                return true;
+            }
+            clickOnSeg(seg);
+            readScreen();
 
-			seg = detectCue(cues.get("AutoTeam"), 2 * SECOND);
-			if (seg == null) {
-				BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'Auto' button found. Restarting...");
-				return true;
-			}
-			clickOnSeg(seg);
+            seg = detectCue(cues.get("AutoTeam"), 2 * SECOND);
+            if (seg == null) {
+                BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'Auto' button found. Restarting...");
+                return true;
+            }
+            clickOnSeg(seg);
 
-			readScreen();
-			seg = detectCue(cues.get("Accept"), 2 * SECOND);
-			if (seg == null) {
-				BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'Accept' button found. Restarting...");
-				return true;
-			}
+            readScreen();
+            seg = detectCue(cues.get("Accept"), 2 * SECOND);
+            if (seg == null) {
+                BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'Accept' button found. Restarting...");
+                return true;
+            }
 
-			String message ="'Team not full/ordered' dialog detected and handled - team has been auto assigned!";
+            String message = "'Team not full/ordered' dialog detected and handled - team has been auto assigned!";
 
-			if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
-				String teamScreen = saveGameScreen("auto-team");
-				File teamFile = new File(teamScreen);
-				sendPushOverMessage("Team auto assigned", message, "siren", MessagePriority.NORMAL, teamFile);
-				if (!teamFile.delete()) BHBot.logger.warn("Impossible to delete tmp error img file for team auto assign");
-			}
+            if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                String teamScreen = saveGameScreen("auto-team");
+                File teamFile = new File(teamScreen);
+                sendPushOverMessage("Team auto assigned", message, "siren", MessagePriority.NORMAL, teamFile);
+                if (!teamFile.delete())
+                    BHBot.logger.warn("Impossible to delete tmp error img file for team auto assign");
+            }
 
-			clickOnSeg(seg);
+            clickOnSeg(seg);
 
-			BHBot.logger.info(message);
-		}
+            BHBot.logger.info(message);
+        }
 
-		return false; // all OK
-	}
+        return false; // all OK
+    }
 
-	private boolean handleGuildLeaveConfirm() {
-		readScreen();
-		if (detectCue(cues.get("GuildLeaveConfirm"), SECOND * 3) != null ) {
-			sleep(500); // in case popup is still sliding downward
-			readScreen();
-			MarvinSegment seg = detectCue(cues.get("YesGreen"), 10 * SECOND);
-			if (seg == null) {
-				BHBot.logger.error("Error: 'Guild Leave Confirm' window detected, but no 'Yes' green button found. Restarting...");
-				return true;
-			}
-			clickOnSeg(seg);
-			sleep(2 * SECOND);
+    private boolean handleGuildLeaveConfirm() {
+        readScreen();
+        if (detectCue(cues.get("GuildLeaveConfirm"), SECOND * 3) != null) {
+            sleep(500); // in case popup is still sliding downward
+            readScreen();
+            MarvinSegment seg = detectCue(cues.get("YesGreen"), 10 * SECOND);
+            if (seg == null) {
+                BHBot.logger.error("Error: 'Guild Leave Confirm' window detected, but no 'Yes' green button found. Restarting...");
+                return true;
+            }
+            clickOnSeg(seg);
+            sleep(2 * SECOND);
 
-			BHBot.logger.info("'Guild Leave' dialog detected and handled!");
-		}
+            BHBot.logger.info("'Guild Leave' dialog detected and handled!");
+        }
 
-		return false; // all ok
-	}
+        return false; // all ok
+    }
 
     private Boolean handleDisabledBattles() {
         readScreen();
-        if (detectCue(cues.get("DisabledBattles"), SECOND * 3) != null ) {
+        if (detectCue(cues.get("DisabledBattles"), SECOND * 3) != null) {
             sleep(500); // in case popup is still sliding downward
             readScreen();
             MarvinSegment seg = detectCue(cues.get("Close"), 10 * SECOND);
@@ -6001,515 +6035,520 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         return false; // all ok, battles are enabled
     }
 
-	private boolean handleNotEnoughEnergyPopup(State state) {
-		return handleNotEnoughEnergyPopup(0, state);
-	}
+    private boolean handleNotEnoughEnergyPopup(State state) {
+        return handleNotEnoughEnergyPopup(0, state);
+    }
 
-	/**
-	 * Will check if "Not enough energy" popup is open. If it is, it will automatically close it and close all other windows
-	 * until it returns to the main screen.
-	 *
-	 * @return true in case popup was detected and closed.
-	 */
-	private boolean handleNotEnoughEnergyPopup(int delay, State state) {
-		MarvinSegment seg = detectCue(cues.get("NotEnoughEnergy"), delay);
-		if (seg != null) {
-			// we don't have enough energy!
-			BHBot.logger.warn("Problem detected: insufficient energy to attempt " + state + ". Cancelling...");
-			closePopupSecurely(cues.get("NotEnoughEnergy"), cues.get("No"));
+    /**
+     * Will check if "Not enough energy" popup is open. If it is, it will automatically close it and close all other windows
+     * until it returns to the main screen.
+     *
+     * @return true in case popup was detected and closed.
+     */
+    private boolean handleNotEnoughEnergyPopup(int delay, State state) {
+        MarvinSegment seg = detectCue(cues.get("NotEnoughEnergy"), delay);
+        if (seg != null) {
+            // we don't have enough energy!
+            BHBot.logger.warn("Problem detected: insufficient energy to attempt " + state + ". Cancelling...");
+            closePopupSecurely(cues.get("NotEnoughEnergy"), cues.get("No"));
 
 
-			if (state.equals(State.WorldBoss)) {
-				closePopupSecurely(cues.get("WorldBossSummonTitle"), cues.get("X"));
+            if (state.equals(State.WorldBoss)) {
+                closePopupSecurely(cues.get("WorldBossSummonTitle"), cues.get("X"));
 
-				closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
-			} else {
-				closePopupSecurely(cues.get("AutoTeam"), cues.get("X"));
+                closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
+            } else {
+                closePopupSecurely(cues.get("AutoTeam"), cues.get("X"));
 
-				// if D4 close the dungeon info window, else close the char selection screen
-				if (specialDungeon) {
-					seg = detectCue(cues.get("X"), 5*SECOND);
-					if (seg != null)
-						clickOnSeg(seg);
-					specialDungeon = false;
-				} else {
-					// close difficulty selection screen:
-					closePopupSecurely(cues.get("Normal"), cues.get("X"));
-				}
+                // if D4 close the dungeon info window, else close the char selection screen
+                if (specialDungeon) {
+                    seg = detectCue(cues.get("X"), 5 * SECOND);
+                    if (seg != null)
+                        clickOnSeg(seg);
+                    specialDungeon = false;
+                } else {
+                    // close difficulty selection screen:
+                    closePopupSecurely(cues.get("Normal"), cues.get("X"));
+                }
 
-				// close zone view window:
-				closePopupSecurely(cues.get("ZonesButton"), cues.get("X"));
-			}
+                // close zone view window:
+                closePopupSecurely(cues.get("ZonesButton"), cues.get("X"));
+            }
 
-			return true;
-		} else {
-			return false;
-		}
-	}
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-	/**
-	 * Reads number from given image.
-	 * @return 0 in case of error.
-	 */
-	private int readNumFromImg(BufferedImage im) {
-		List<ScreenNum> nums = new ArrayList<>();
+    /**
+     * Reads number from given image.
+     *
+     * @return 0 in case of error.
+     */
+    private int readNumFromImg(BufferedImage im) {
+        List<ScreenNum> nums = new ArrayList<>();
 
-		//MarvinImageIO.saveImage(im, "difficulty_test.png");
-		//Misc.saveImage(imb, "difficulty_test2.png");
-		for (int i = 0; i < 10; i++) {
-			List<MarvinSegment> list = FindSubimage.findSubimage(im, cues.get("" + i).im, 1.0, true, false, 0, 0, 0, 0);
-			//BHBot.logger.info("DEBUG difficulty detection: " + i + " - " + list.size());
-			for (MarvinSegment s : list) {
-				nums.add(new ScreenNum(i, s.x1));
-			}
-		}
+        //MarvinImageIO.saveImage(im, "difficulty_test.png");
+        //Misc.saveImage(imb, "difficulty_test2.png");
+        for (int i = 0; i < 10; i++) {
+            List<MarvinSegment> list = FindSubimage.findSubimage(im, cues.get("" + i).im, 1.0, true, false, 0, 0, 0, 0);
+            //BHBot.logger.info("DEBUG difficulty detection: " + i + " - " + list.size());
+            for (MarvinSegment s : list) {
+                nums.add(new ScreenNum(i, s.x1));
+            }
+        }
 
-		// order list horizontally:
-		Collections.sort(nums);
+        // order list horizontally:
+        Collections.sort(nums);
 
-		if (nums.size() == 0)
-			return 0; // error
+        if (nums.size() == 0)
+            return 0; // error
 
-		int d = 0; // difficulty
-		int f = 1; // factor
-		for (int i = nums.size()-1; i >= 0; i--) {
-			d += nums.get(i).value * f;
-			f *= 10;
-		}
+        int d = 0; // difficulty
+        int f = 1; // factor
+        for (int i = nums.size() - 1; i >= 0; i--) {
+            d += nums.get(i).value * f;
+            f *= 10;
+        }
 
-		return d;
-	}
+        return d;
+    }
 
-	private void makeImageBlackWhite(MarvinImage input, Color black, Color white) {
-		int[] map = input.getIntColorArray();
-		int white_rgb = white.getRGB();
-		int black_rgb = black.getRGB();
-		for (int i = 0; i < map.length; i++) {
-			Color c = new Color(map[i], true);
-			int r = c.getRed();
-			int g = c.getGreen();
-			int b = c.getBlue();
-			int max = Misc.max(r, g, b);
-			int min = Misc.min(r, g, b);
-			//int diff = (max-r) + (max-g) + (max-b);
-			int diff = max - min;
-			if (diff >= 90 || (diff==0 && max==254)) { // it's a number color
-				map[i] = white_rgb;
-			} else { // it's a blackish background
-				map[i] = black_rgb;
-			}
-		}
-		input.setIntColorArray(map);
-		input.update(); // must be called! Or else things won't work...
-	}
+    private void makeImageBlackWhite(MarvinImage input, Color black, Color white) {
+        int[] map = input.getIntColorArray();
+        int white_rgb = white.getRGB();
+        int black_rgb = black.getRGB();
+        for (int i = 0; i < map.length; i++) {
+            Color c = new Color(map[i], true);
+            int r = c.getRed();
+            int g = c.getGreen();
+            int b = c.getBlue();
+            int max = Misc.max(r, g, b);
+            int min = Misc.min(r, g, b);
+            //int diff = (max-r) + (max-g) + (max-b);
+            int diff = max - min;
+            if (diff >= 90 || (diff == 0 && max == 254)) { // it's a number color
+                map[i] = white_rgb;
+            } else { // it's a blackish background
+                map[i] = black_rgb;
+            }
+        }
+        input.setIntColorArray(map);
+        input.update(); // must be called! Or else things won't work...
+    }
 
-	/**
-	 * Detects selected difficulty in trials/gauntlet window. <br>
-	 * NOTE: Trials/gauntlet window must be open for this to work! <br>
-	 * @return 0 in case of an error, or the selected difficulty level instead.
-	 */
-	int detectDifficulty() {
-		readScreen(2*SECOND); // note that sometimes the cue will be gray (disabled) since the game is fetching data from the server - in that case we'll have to wait a bit
+    /**
+     * Detects selected difficulty in trials/gauntlet window. <br>
+     * NOTE: Trials/gauntlet window must be open for this to work! <br>
+     *
+     * @return 0 in case of an error, or the selected difficulty level instead.
+     */
+    int detectDifficulty() {
+        readScreen(2 * SECOND); // note that sometimes the cue will be gray (disabled) since the game is fetching data from the server - in that case we'll have to wait a bit
 
-		MarvinSegment seg = detectCue(cues.get("Difficulty"));
-		if (seg == null) {
-			seg = detectCue(cues.get("DifficultyDisabled"));
-			if (seg != null) { // game is still fetching data from the server... we must wait a bit!
-				sleep(5*SECOND);
-				seg = detectCue(cues.get("Difficulty"), 20*SECOND);
-			}
-		}
-		if (seg == null) {
-			BHBot.logger.error("Error: unable to detect difficulty selection box!");
-			saveGameScreen("early_error");
-			return 0; // error
-		}
+        MarvinSegment seg = detectCue(cues.get("Difficulty"));
+        if (seg == null) {
+            seg = detectCue(cues.get("DifficultyDisabled"));
+            if (seg != null) { // game is still fetching data from the server... we must wait a bit!
+                sleep(5 * SECOND);
+                seg = detectCue(cues.get("Difficulty"), 20 * SECOND);
+            }
+        }
+        if (seg == null) {
+            BHBot.logger.error("Error: unable to detect difficulty selection box!");
+            saveGameScreen("early_error");
+            return 0; // error
+        }
 
-		MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 35, seg.y1 + 30, 55, 19));
+        MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 35, seg.y1 + 30, 55, 19));
 
-		// make it white-gray (to facilitate cue recognition):
-		makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
+        // make it white-gray (to facilitate cue recognition):
+        makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
 
-		BufferedImage imb = im.getBufferedImage();
+        BufferedImage imb = im.getBufferedImage();
 
-		return readNumFromImg(imb);
-	}
+        return readNumFromImg(imb);
+    }
 
-	/* World boss reading and changing section */
-	private int detectWorldBossTier() {
+    /* World boss reading and changing section */
+    private int detectWorldBossTier() {
 
-		//Melvins only available in T10 so we don't need to read the image
-		if ("m".equals(BHBot.settings.worldBossSettings.get(0))) return 10;
+        //Melvins only available in T10 so we don't need to read the image
+        if ("m".equals(BHBot.settings.worldBossSettings.get(0))) return 10;
 
-		readScreen(SECOND);
-		MarvinSegment seg;
-		int xOffset = 99, yOffset = 11, w = 17, h = 19;
+        readScreen(SECOND);
+        MarvinSegment seg;
+        int xOffset = 99, yOffset = 11, w = 17, h = 19;
 
-		seg = detectCue(cues.get("WorldBossTier1"),SECOND); // For tier 1 to 9
-		if (seg == null) {
-			seg = detectCue(cues.get("WorldBossTier2"),SECOND);
-			if (seg == null) {
-				BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
-				saveGameScreen("early_error");
-				return 0; // error
-			}
+        seg = detectCue(cues.get("WorldBossTier1"), SECOND); // For tier 1 to 9
+        if (seg == null) {
+            seg = detectCue(cues.get("WorldBossTier2"), SECOND);
+            if (seg == null) {
+                BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
+                saveGameScreen("early_error");
+                return 0; // error
+            }
 
-			xOffset = 97;
-			yOffset = 11;
-			w = 21;
-			h = 19;
-		}
+            xOffset = 97;
+            yOffset = 11;
+            w = 21;
+            h = 19;
+        }
 
-		MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + xOffset, seg.y1 + yOffset, w, h));
+        MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + xOffset, seg.y1 + yOffset, w, h));
 
-		// make it white-gray (to facilitate cue recognition):
-		makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
+        // make it white-gray (to facilitate cue recognition):
+        makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
 
-		BufferedImage imb = im.getBufferedImage();
+        BufferedImage imb = im.getBufferedImage();
 
-		return readNumFromImg(imb);
-	}
+        return readNumFromImg(imb);
+    }
 
-	private void changeWorldBossTier(int target) {
-		MarvinSegment seg;
-		seg = detectCue(cues.get("WorldBossTier1"),SECOND);
-		if (seg == null) seg = detectCue(cues.get("WorldBossTier2"),SECOND);
+    private void changeWorldBossTier(int target) {
+        MarvinSegment seg;
+        seg = detectCue(cues.get("WorldBossTier1"), SECOND);
+        if (seg == null) seg = detectCue(cues.get("WorldBossTier2"), SECOND);
 
-		if (seg == null) {
-			BHBot.logger.error("Error: unable to detect world boss difficulty selection box in changeWorldBossTier!");
-			saveGameScreen("early_error");
-			restart();
-		}
-		clickOnSeg(seg);
-		readScreen(2*SECOND); //wait for screen to stabilize
-		//get known screen position for difficulty screen selection
-		if (target >= 5) { //top most
-			readScreen();
-			MarvinSegment up = detectCue(cues.get("DropDownUp"),SECOND);
-			if (seg != null) {
-				clickOnSeg(up);
-				clickOnSeg(up);
-			}
-		} else { //bottom most
-			readScreen();
-			MarvinSegment down = detectCue(cues.get("DropDownDown"),SECOND);
-			if (seg != null) {
-				clickOnSeg(down);
-				clickOnSeg(down);
-			}
-		}
-		readScreen(SECOND); //wait for screen to stabilize
-		Point diff = getDifficultyButtonXY(target);
-		if (diff != null) {
-			//noinspection SuspiciousNameCombination
-			clickInGame(diff.y, diff.x);
-		}
-	}
+        if (seg == null) {
+            BHBot.logger.error("Error: unable to detect world boss difficulty selection box in changeWorldBossTier!");
+            saveGameScreen("early_error");
+            restart();
+        }
+        clickOnSeg(seg);
+        readScreen(2 * SECOND); //wait for screen to stabilize
+        //get known screen position for difficulty screen selection
+        if (target >= 5) { //top most
+            readScreen();
+            MarvinSegment up = detectCue(cues.get("DropDownUp"), SECOND);
+            if (seg != null) {
+                clickOnSeg(up);
+                clickOnSeg(up);
+            }
+        } else { //bottom most
+            readScreen();
+            MarvinSegment down = detectCue(cues.get("DropDownDown"), SECOND);
+            if (seg != null) {
+                clickOnSeg(down);
+                clickOnSeg(down);
+            }
+        }
+        readScreen(SECOND); //wait for screen to stabilize
+        Point diff = getDifficultyButtonXY(target);
+        if (diff != null) {
+            //noinspection SuspiciousNameCombination
+            clickInGame(diff.y, diff.x);
+        }
+    }
 
-	private Point getDifficultyButtonXY(int target) {
-		switch (target) {
-		case 3:
-		case 5: // top 5 buttons after we scroll to the top
-			return new Point(410, 390);
-		case 4: // bottom 2 buttons after we scroll to the bottom
-		case 6:
-			return new Point(350, 390);
-		case 7:
-			return new Point(290, 390);
-		case 8:
-			return new Point(230, 390);
-		case 9:
-			return new Point(170, 390);
-		}
-		return null;
-	}
+    private Point getDifficultyButtonXY(int target) {
+        switch (target) {
+            case 3:
+            case 5: // top 5 buttons after we scroll to the top
+                return new Point(410, 390);
+            case 4: // bottom 2 buttons after we scroll to the bottom
+            case 6:
+                return new Point(350, 390);
+            case 7:
+                return new Point(290, 390);
+            case 8:
+                return new Point(230, 390);
+            case 9:
+                return new Point(170, 390);
+        }
+        return null;
+    }
 
-	private int detectWorldBossDifficulty() {
-		readScreen();
+    private int detectWorldBossDifficulty() {
+        readScreen();
 
-		if (detectCue(cues.get("WorldBossDifficultyNormal"),SECOND) != null) {
-			return 1;
-		} else if (detectCue(cues.get("WorldBossDifficultyHard"),SECOND) != null) {
-			return 2;
-		} else if (detectCue(cues.get("WorldBossDifficultyHeroic"),SECOND) != null) {
-			return 3;
-		}
-		else return 0;
-	}
+        if (detectCue(cues.get("WorldBossDifficultyNormal"), SECOND) != null) {
+            return 1;
+        } else if (detectCue(cues.get("WorldBossDifficultyHard"), SECOND) != null) {
+            return 2;
+        } else if (detectCue(cues.get("WorldBossDifficultyHeroic"), SECOND) != null) {
+            return 3;
+        } else return 0;
+    }
 
-	private void changeWorldBossDifficulty(int target) {
+    private void changeWorldBossDifficulty(int target) {
 
-		readScreen(SECOND); //screen stabilising
-		clickInGame(480,300); //difficulty button
-		readScreen(SECOND); //screen stabilising
+        readScreen(SECOND); //screen stabilising
+        clickInGame(480, 300); //difficulty button
+        readScreen(SECOND); //screen stabilising
 
-		Cue difficultySelection;
+        Cue difficultySelection;
 
-		if (target == 1) {
-			difficultySelection = cues.get("cueWBSelectNormal");
-		} else if (target == 2) {
-			difficultySelection = cues.get("cueWBSelectHard");
-		} else if (target == 3) {
-			difficultySelection = cues.get("cueWBSelectHeroic");
-		} else {
-			BHBot.logger.error("Wrong target value in changeWorldBossDifficulty, defult to normal!");
-			difficultySelection = cues.get("cueWBSelectNormal");
-		}
+        if (target == 1) {
+            difficultySelection = cues.get("cueWBSelectNormal");
+        } else if (target == 2) {
+            difficultySelection = cues.get("cueWBSelectHard");
+        } else if (target == 3) {
+            difficultySelection = cues.get("cueWBSelectHeroic");
+        } else {
+            BHBot.logger.error("Wrong target value in changeWorldBossDifficulty, defult to normal!");
+            difficultySelection = cues.get("cueWBSelectNormal");
+        }
 
-		MarvinSegment seg = detectCue(difficultySelection, SECOND * 2);
-		if (seg != null) {
-			clickOnSeg(seg);
-		} else {
-			BHBot.logger.error("Impossible to detect desired difficulty in changeWorldBossDifficulty!");
-			restart();
-		}
-	}
+        MarvinSegment seg = detectCue(difficultySelection, SECOND * 2);
+        if (seg != null) {
+            clickOnSeg(seg);
+        } else {
+            BHBot.logger.error("Impossible to detect desired difficulty in changeWorldBossDifficulty!");
+            restart();
+        }
+    }
 
-	/**
-	 * Detects selected difficulty in expedition window. <br>
-	 * @return 0 in case of an error, or the selected difficulty level instead.
-	 */
-	private int detectDifficultyExpedition() {
-		sleep(2*SECOND); // note that sometimes the cue will be gray (disabled) since the game is fetching data from the server - in that case we'll have to wait a bit
-		readScreen();
+    /**
+     * Detects selected difficulty in expedition window. <br>
+     *
+     * @return 0 in case of an error, or the selected difficulty level instead.
+     */
+    private int detectDifficultyExpedition() {
+        sleep(2 * SECOND); // note that sometimes the cue will be gray (disabled) since the game is fetching data from the server - in that case we'll have to wait a bit
+        readScreen();
 
-		MarvinSegment seg = detectCue(cues.get("DifficultyExpedition"));
-		if (seg == null) {
-			seg = detectCue(cues.get("DifficultyDisabled"));
-			if (seg != null) { // game is still fetching data from the server... we must wait a bit!
-				sleep(5*SECOND);
-				seg = detectCue(cues.get("DifficultyExpedition"), 20*SECOND);
-			}
-		}
-		if (seg == null) {
-			BHBot.logger.error("Error: unable to detect difficulty selection box!");
-			saveGameScreen("early_error");
-			return 0; // error
-		}
+        MarvinSegment seg = detectCue(cues.get("DifficultyExpedition"));
+        if (seg == null) {
+            seg = detectCue(cues.get("DifficultyDisabled"));
+            if (seg != null) { // game is still fetching data from the server... we must wait a bit!
+                sleep(5 * SECOND);
+                seg = detectCue(cues.get("DifficultyExpedition"), 20 * SECOND);
+            }
+        }
+        if (seg == null) {
+            BHBot.logger.error("Error: unable to detect difficulty selection box!");
+            saveGameScreen("early_error");
+            return 0; // error
+        }
 
-		MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 35, seg.y1 + 30, 55, 19));
+        MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 35, seg.y1 + 30, 55, 19));
 
-		// make it white-gray (to facilitate cue recognition):
-		makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
+        // make it white-gray (to facilitate cue recognition):
+        makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
 
-		BufferedImage imb = im.getBufferedImage();
+        BufferedImage imb = im.getBufferedImage();
 
-		return readNumFromImg(imb);
-	}
+        return readNumFromImg(imb);
+    }
 
-	/**
-	 * Changes difficulty level in trials/gauntlet window. <br>
-	 * Note: for this to work, trials/gauntlet window must be open!
-	 *
-	 * @return false in case of an error (unable to change difficulty).
-	 */
-	boolean selectDifficulty(int oldDifficulty, int newDifficulty) {
-		if (oldDifficulty == newDifficulty)
-			return true; // no change
+    /**
+     * Changes difficulty level in trials/gauntlet window. <br>
+     * Note: for this to work, trials/gauntlet window must be open!
+     *
+     * @return false in case of an error (unable to change difficulty).
+     */
+    boolean selectDifficulty(int oldDifficulty, int newDifficulty) {
+        if (oldDifficulty == newDifficulty)
+            return true; // no change
 
-		MarvinSegment seg = detectCue(cues.get("SelectDifficulty"), 2*SECOND);
-		if (seg == null) {
-			BHBot.logger.error("Error: unable to detect 'select difficulty' button while trying to change difficulty level!");
-			return false; // error
-			}
+        MarvinSegment seg = detectCue(cues.get("SelectDifficulty"), 2 * SECOND);
+        if (seg == null) {
+            BHBot.logger.error("Error: unable to detect 'select difficulty' button while trying to change difficulty level!");
+            return false; // error
+        }
 
-		clickOnSeg(seg);
+        clickOnSeg(seg);
 
-		readScreen(5*SECOND);
+        readScreen(5 * SECOND);
 
-		return selectDifficultyFromDropDown(newDifficulty);
-	}
+        return selectDifficultyFromDropDown(newDifficulty);
+    }
 
-	private boolean selectDifficultyExpedition(int oldDifficulty, int newDifficulty) {
-		if (oldDifficulty == newDifficulty)
-			return true; // no change
+    private boolean selectDifficultyExpedition(int oldDifficulty, int newDifficulty) {
+        if (oldDifficulty == newDifficulty)
+            return true; // no change
 
-		MarvinSegment seg = detectCue(cues.get("SelectDifficultyExpedition"), 2*SECOND);
-		if (seg == null) {
-			BHBot.logger.error("Error: unable to detect 'select difficulty' button while trying to change difficulty level!");
-			return false; // error
-		}
+        MarvinSegment seg = detectCue(cues.get("SelectDifficultyExpedition"), 2 * SECOND);
+        if (seg == null) {
+            BHBot.logger.error("Error: unable to detect 'select difficulty' button while trying to change difficulty level!");
+            return false; // error
+        }
 
-		clickOnSeg(seg);
+        clickOnSeg(seg);
 
-		readScreen(5*SECOND);
+        readScreen(5 * SECOND);
 
-		return selectDifficultyFromDropDownExpedition(newDifficulty);
-	}
+        return selectDifficultyFromDropDownExpedition(newDifficulty);
+    }
 
-	/**
-	 * Internal routine. Difficulty drop down must be open for this to work!
-	 * Note that it closes the drop-down when it is done (except if an error occurred). However there is a close
-	 * animation and the caller must wait for it to finish.
-	 * @return false in case of an error.
-	 */
-	private boolean selectDifficultyFromDropDown(int newDifficulty) {
-		return selectDifficultyFromDropDown(newDifficulty, 0);
-	}
+    /**
+     * Internal routine. Difficulty drop down must be open for this to work!
+     * Note that it closes the drop-down when it is done (except if an error occurred). However there is a close
+     * animation and the caller must wait for it to finish.
+     *
+     * @return false in case of an error.
+     */
+    private boolean selectDifficultyFromDropDown(int newDifficulty) {
+        return selectDifficultyFromDropDown(newDifficulty, 0);
+    }
 
-	/**
-	 * Internal routine - do not use it manually! <br>
-	 * @return false on error (caller must do restart() if he gets false as a result from this method)
-	 */
-	private boolean selectDifficultyFromDropDown(int newDifficulty, int recursionDepth) {
-		// horizontal position of the 5 buttons:
-		final int posx = 390;
-		// vertical positions of the 5 buttons:
-		final int[] posy = new int[]{170, 230, 290, 350, 410};
+    /**
+     * Internal routine - do not use it manually! <br>
+     *
+     * @return false on error (caller must do restart() if he gets false as a result from this method)
+     */
+    private boolean selectDifficultyFromDropDown(int newDifficulty, int recursionDepth) {
+        // horizontal position of the 5 buttons:
+        final int posx = 390;
+        // vertical positions of the 5 buttons:
+        final int[] posy = new int[]{170, 230, 290, 350, 410};
 
-		if (recursionDepth > 5) {
-			BHBot.logger.error("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
-			saveGameScreen("early_error");
-			tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
-			return false;
-		}
+        if (recursionDepth > 5) {
+            BHBot.logger.error("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
+            saveGameScreen("early_error");
+            tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
+            return false;
+        }
 
-		MarvinSegment seg;
+        MarvinSegment seg;
 
-		MarvinImage subm = new MarvinImage(img.getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu. Note that every while a "tier x" is written bellow it, so text is higher up (hence we need to scan a larger area)
-		makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
-		BufferedImage sub = subm.getBufferedImage();
-		int num = readNumFromImg(sub);
+        MarvinImage subm = new MarvinImage(img.getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu. Note that every while a "tier x" is written bellow it, so text is higher up (hence we need to scan a larger area)
+        makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
+        BufferedImage sub = subm.getBufferedImage();
+        int num = readNumFromImg(sub);
 //		BHBot.logger.info("num = " + Integer.toString(num));
-		if (num == 0) {
-			BHBot.logger.error("Error: unable to read difficulty level from a drop-down menu!");
-			saveGameScreen("early_error");
-			tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
-			return false;
-		}
+        if (num == 0) {
+            BHBot.logger.error("Error: unable to read difficulty level from a drop-down menu!");
+            saveGameScreen("early_error");
+            tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
+            return false;
+        }
 
-		int move = newDifficulty - num; // if negative, we have to move down (in dropdown/numbers), or else up
+        int move = newDifficulty - num; // if negative, we have to move down (in dropdown/numbers), or else up
 //		BHBot.logger.info("move = " + Integer.toString(move));
 
-		if (move >= -4 && move <= 0) {
-			// we have it on screen. Let's select it!
-			clickInGame(posx, posy[Math.abs(move)]); // will auto-close the drop down (but it takes a second or so, since it's animated)
-			return true;
-		}
+        if (move >= -4 && move <= 0) {
+            // we have it on screen. Let's select it!
+            clickInGame(posx, posy[Math.abs(move)]); // will auto-close the drop down (but it takes a second or so, since it's animated)
+            return true;
+        }
 
-		// scroll the drop-down until we reach our position:
-		if (move > 0) {
-			// move up
-			seg = detectCue(cues.get("DropDownUp"));
-			if (seg == null) {
-				BHBot.logger.error("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
-				saveGameScreen("early_error");
-				clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
-				return false;
-			}
-			for (int i = 0; i < move; i++) {
-				clickOnSeg(seg);
-			}
-			// OK, we should have a target value on screen now, in the first spot. Let's click it!
-			readScreen(5*SECOND); //*** should we increase this time?
-			return selectDifficultyFromDropDown(newDifficulty, recursionDepth+1); // recursively select new difficulty
-		} else {
-			// move down
-			seg = detectCue(cues.get("DropDownDown"));
-			if (seg == null) {
-				BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty drop-down menu!");
-				saveGameScreen("early_error");
-				clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
-				return false;
-			}
-			int moves = Math.abs(move)-4;
+        // scroll the drop-down until we reach our position:
+        if (move > 0) {
+            // move up
+            seg = detectCue(cues.get("DropDownUp"));
+            if (seg == null) {
+                BHBot.logger.error("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
+                saveGameScreen("early_error");
+                clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
+                return false;
+            }
+            for (int i = 0; i < move; i++) {
+                clickOnSeg(seg);
+            }
+            // OK, we should have a target value on screen now, in the first spot. Let's click it!
+            readScreen(5 * SECOND); //*** should we increase this time?
+            return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1); // recursively select new difficulty
+        } else {
+            // move down
+            seg = detectCue(cues.get("DropDownDown"));
+            if (seg == null) {
+                BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty drop-down menu!");
+                saveGameScreen("early_error");
+                clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
+                return false;
+            }
+            int moves = Math.abs(move) - 4;
 //			BHBot.logger.info("Scrolls to 60 = " + Integer.toString(moves));
-			for (int i = 0; i < moves; i++) {
-				clickOnSeg(seg);
-			}
-			// OK, we should have a target value on screen now, in the first spot. Let's click it!
-			readScreen(5*SECOND); //*** should we increase this time?
-			return selectDifficultyFromDropDown(newDifficulty, recursionDepth+1); // recursively select new difficulty
-		}
-	}
+            for (int i = 0; i < moves; i++) {
+                clickOnSeg(seg);
+            }
+            // OK, we should have a target value on screen now, in the first spot. Let's click it!
+            readScreen(5 * SECOND); //*** should we increase this time?
+            return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1); // recursively select new difficulty
+        }
+    }
 
-	/**
-	 * Quickfix Copy for Expedition as it moves 5 at a time not 1
-	 */
-	private boolean selectDifficultyFromDropDownExpedition(int newDifficulty) {
-		return selectDifficultyFromDropDownExpedition(newDifficulty, 0);
-	}
+    /**
+     * Quickfix Copy for Expedition as it moves 5 at a time not 1
+     */
+    private boolean selectDifficultyFromDropDownExpedition(int newDifficulty) {
+        return selectDifficultyFromDropDownExpedition(newDifficulty, 0);
+    }
 
-	/**
-	 * Quickfix Copy for Expedition as it moves 5 at a time not 1
-	 * Internal routine - do not use it manually! <br>
-	 * @return false on error (caller must do restart() if he gets false as a result from this method)
-	 */
-	private boolean selectDifficultyFromDropDownExpedition(int newDifficulty,
-														   @SuppressWarnings("SameParameterValue") int recursionDepth) {
-		// horizontal position of the 5 buttons:
-		final int posx = 390;
-		// vertical positions of the 5 buttons:
-		final int[] posy = new int[]{170, 230, 290, 350, 410};
+    /**
+     * Quickfix Copy for Expedition as it moves 5 at a time not 1
+     * Internal routine - do not use it manually! <br>
+     *
+     * @return false on error (caller must do restart() if he gets false as a result from this method)
+     */
+    private boolean selectDifficultyFromDropDownExpedition(int newDifficulty,
+                                                           @SuppressWarnings("SameParameterValue") int recursionDepth) {
+        // horizontal position of the 5 buttons:
+        final int posx = 390;
+        // vertical positions of the 5 buttons:
+        final int[] posy = new int[]{170, 230, 290, 350, 410};
 
-		if (recursionDepth > 5) {
-			BHBot.logger.error("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
-			saveGameScreen("early_error");
-			tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
-			return false;
-		}
+        if (recursionDepth > 5) {
+            BHBot.logger.error("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
+            saveGameScreen("early_error");
+            tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
+            return false;
+        }
 
-		MarvinSegment seg;
+        MarvinSegment seg;
 
-		MarvinImage subm = new MarvinImage(img.getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu. Note that every while a "tier x" is written bellow it, so text is higher up (hence we need to scan a larger area)
-		makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
-		BufferedImage sub = subm.getBufferedImage();
-		int num = readNumFromImg(sub);
+        MarvinImage subm = new MarvinImage(img.getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu. Note that every while a "tier x" is written bellow it, so text is higher up (hence we need to scan a larger area)
+        makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
+        BufferedImage sub = subm.getBufferedImage();
+        int num = readNumFromImg(sub);
 //		BHBot.logger.info("num = " + Integer.toString(num));
-		if (num == 0) {
-			BHBot.logger.error("Error: unable to read difficulty level from a drop-down menu!");
-			saveGameScreen("early_error");
-			tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
-			return false;
-		}
+        if (num == 0) {
+            BHBot.logger.error("Error: unable to read difficulty level from a drop-down menu!");
+            saveGameScreen("early_error");
+            tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
+            return false;
+        }
 
-		int move = (newDifficulty - num)/5; // divided by 5 as each click moves the levels by 5 in Expeditions
+        int move = (newDifficulty - num) / 5; // divided by 5 as each click moves the levels by 5 in Expeditions
 //		BHBot.logger.info("move = " + Integer.toString(move));
 
-		if (move >= -4 && move <= 0) {
-			// we have it on screen. Let's select it!
-			clickInGame(posx, posy[Math.abs(move)]); // will auto-close the drop down (but it takes a second or so, since it's animated)
-			return true;
-		}
+        if (move >= -4 && move <= 0) {
+            // we have it on screen. Let's select it!
+            clickInGame(posx, posy[Math.abs(move)]); // will auto-close the drop down (but it takes a second or so, since it's animated)
+            return true;
+        }
 
-		// scroll the drop-down until we reach our position:
-		if (move > 0) {
-			// move up
-			seg = detectCue(cues.get("DropDownUp"));
-			if (seg == null) {
-				BHBot.logger.error("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
-				saveGameScreen("early_error");
-				clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
-				return false;
-			}
+        // scroll the drop-down until we reach our position:
+        if (move > 0) {
+            // move up
+            seg = detectCue(cues.get("DropDownUp"));
+            if (seg == null) {
+                BHBot.logger.error("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
+                saveGameScreen("early_error");
+                clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
+                return false;
+            }
 //			BHBot.logger.info("Scrolls up = " + Integer.toString(move));
-			for (int i = 0; i < move; i++) {
-				clickOnSeg(seg);
-			}
-			// OK, we should have a target value on screen now, in the first spot. Let's click it!
-			readScreen(5*SECOND); //*** should we increase this time?
-			return selectDifficultyFromDropDown(newDifficulty, recursionDepth+1); // recursively select new difficulty
-		} else {
-			// move down
-			seg = detectCue(cues.get("DropDownDown"));
-			if (seg == null) {
-				BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty drop-down menu!");
-				saveGameScreen("early_error");
-				clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
-				return false;
-			}
-			int moves = Math.abs(move);
+            for (int i = 0; i < move; i++) {
+                clickOnSeg(seg);
+            }
+            // OK, we should have a target value on screen now, in the first spot. Let's click it!
+            readScreen(5 * SECOND); //*** should we increase this time?
+            return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1); // recursively select new difficulty
+        } else {
+            // move down
+            seg = detectCue(cues.get("DropDownDown"));
+            if (seg == null) {
+                BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty drop-down menu!");
+                saveGameScreen("early_error");
+                clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
+                return false;
+            }
+            int moves = Math.abs(move);
 //			BHBot.logger.info("Scrolls down = " + Integer.toString(moves));
-			for (int i = 0; i < moves; i++) {
-				clickOnSeg(seg);
-			}
-			// OK, we should have a target value on screen now, in the first spot. Let's click it!
-			readScreen(5*SECOND); //*** should we increase this time?
-			return selectDifficultyFromDropDown(newDifficulty, recursionDepth+1); // recursively select new difficulty
-		}
-	}
+            for (int i = 0; i < moves; i++) {
+                clickOnSeg(seg);
+            }
+            // OK, we should have a target value on screen now, in the first spot. Let's click it!
+            readScreen(5 * SECOND); //*** should we increase this time?
+            return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1); // recursively select new difficulty
+        }
+    }
 
-	//*** for DEBUG only!
+    //*** for DEBUG only!
 	/*public void numTest() {
 		MarvinSegment seg;
 
@@ -6536,274 +6575,273 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 	}*/
 
-	/**
-	 * This method detects the select cost in PvP/GvG/Trials/Gauntlet window. <p>
-	 *
-	 * Note: PvP cost has different position from GvG/Gauntlet/Trials. <br>
-	 * Note: PvP/GvG/Trials/Gauntlet window must be open in order for this to work!
-	 *
-	 * @return 0 in case of an error, or cost value in interval [1..5]
-	 */
-	int detectCost() {
-		MarvinSegment seg = detectCue(cues.get("Cost"), 15*SECOND);
-		if (seg == null) {
-			BHBot.logger.error("Error: unable to detect cost selection box!");
-			saveGameScreen("early_error");
-			return 0; // error
-		}
+    /**
+     * This method detects the select cost in PvP/GvG/Trials/Gauntlet window. <p>
+     * <p>
+     * Note: PvP cost has different position from GvG/Gauntlet/Trials. <br>
+     * Note: PvP/GvG/Trials/Gauntlet window must be open in order for this to work!
+     *
+     * @return 0 in case of an error, or cost value in interval [1..5]
+     */
+    int detectCost() {
+        MarvinSegment seg = detectCue(cues.get("Cost"), 15 * SECOND);
+        if (seg == null) {
+            BHBot.logger.error("Error: unable to detect cost selection box!");
+            saveGameScreen("early_error");
+            return 0; // error
+        }
 
-		// because the popup may still be sliding down and hence cue could be changing position, we try to read cost in a loop (until a certain timeout):
-		int d;
-		int counter = 0;
-		boolean success = true;
-		while (true) {
-			MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 2, seg.y1 + 20, 35, 24));
-			makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
-			BufferedImage imb = im.getBufferedImage();
-			d = readNumFromImg(imb);
-			if (d != 0)
-				break; // success
+        // because the popup may still be sliding down and hence cue could be changing position, we try to read cost in a loop (until a certain timeout):
+        int d;
+        int counter = 0;
+        boolean success = true;
+        while (true) {
+            MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 2, seg.y1 + 20, 35, 24));
+            makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
+            BufferedImage imb = im.getBufferedImage();
+            d = readNumFromImg(imb);
+            if (d != 0)
+                break; // success
 
-			counter++;
-			if (counter > 10) {
-				success = false;
-				break;
-			}
-			sleep(SECOND); // sleep a bit in order for the popup to slide down
-			readScreen();
-			seg = detectCue(cues.get("Cost"));
-		}
+            counter++;
+            if (counter > 10) {
+                success = false;
+                break;
+            }
+            sleep(SECOND); // sleep a bit in order for the popup to slide down
+            readScreen();
+            seg = detectCue(cues.get("Cost"));
+        }
 
-		if (!success) {
-			BHBot.logger.error("Error: unable to detect cost selection box value!");
-			saveGameScreen("early_error");
-			return 0;
-		}
+        if (!success) {
+            BHBot.logger.error("Error: unable to detect cost selection box value!");
+            saveGameScreen("early_error");
+            return 0;
+        }
 
-		return d;
-	}
+        return d;
+    }
 
-	/**
-	 * Changes cost in PvP, GvG, or Trials/Gauntlet window. <br>
-	 * Note: for this to work, PvP/GvG/Trials/Gauntlet window must be open!
-	 *
-	 * @return false in case of an error (unable to change cost).
-	 */
-	boolean selectCost(int oldCost, int newCost) {
-		if (oldCost == newCost)
-			return true; // no change
+    /**
+     * Changes cost in PvP, GvG, or Trials/Gauntlet window. <br>
+     * Note: for this to work, PvP/GvG/Trials/Gauntlet window must be open!
+     *
+     * @return false in case of an error (unable to change cost).
+     */
+    boolean selectCost(int oldCost, int newCost) {
+        if (oldCost == newCost)
+            return true; // no change
 
-		MarvinSegment seg = detectCue(cues.get("SelectCost"), 5*SECOND);
-		if (seg == null) {
-			BHBot.logger.error("Error: unable to detect 'select cost' button while trying to change cost!");
-			return false; // error
-		}
+        MarvinSegment seg = detectCue(cues.get("SelectCost"), 5 * SECOND);
+        if (seg == null) {
+            BHBot.logger.error("Error: unable to detect 'select cost' button while trying to change cost!");
+            return false; // error
+        }
 
-		clickOnSeg(seg);
+        clickOnSeg(seg);
 
-		readScreen(5*SECOND); // wait for the cost selection popup window to open
+        readScreen(5 * SECOND); // wait for the cost selection popup window to open
 
-		// horizontal position of the 5 buttons:
-		final int posx = 390;
-		// vertical positions of the 5 buttons:
-		final int[] posy = new int[]{170, 230, 290, 350, 410};
+        // horizontal position of the 5 buttons:
+        final int posx = 390;
+        // vertical positions of the 5 buttons:
+        final int[] posy = new int[]{170, 230, 290, 350, 410};
 
-		clickInGame(posx, posy[newCost-1]); // will auto-close the drop down (but it takes a second or so, since it's animated)
-		sleep(2*SECOND);
+        clickInGame(posx, posy[newCost - 1]); // will auto-close the drop down (but it takes a second or so, since it's animated)
+        sleep(2 * SECOND);
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
-	 * Will try to click on "X" button of the currently open popup window. On error, it will ignore it. <br>
-	 * NOTE: This method does not re-read screen before (or after) cue detection!
-	 */
-	private void tryClosingWindow() {
-		tryClosingWindow(null);
-	}
+    /**
+     * Will try to click on "X" button of the currently open popup window. On error, it will ignore it. <br>
+     * NOTE: This method does not re-read screen before (or after) cue detection!
+     */
+    private void tryClosingWindow() {
+        tryClosingWindow(null);
+    }
 
-	/**
-	 * Will try to click on "X" button of the currently open popup window that is identified by the 'windowCue'. It will ignore any errors. <br>
-	 * NOTE: This method does not re-read screen before (or after) cue detection!
-	 */
-	private void tryClosingWindow(Cue windowCue) {
-		try {
-			MarvinSegment seg;
-			if (windowCue != null) {
-				seg = detectCue(windowCue);
-				if (seg == null)
-					return;
-			}
-			seg = detectCue(cues.get("X"));
-			if (seg != null)
-				clickOnSeg(seg);
-		} catch (Exception e) {
-			BHBot.logger.error("Error in tryClosingWindow", e);
-		}
-	}
+    /**
+     * Will try to click on "X" button of the currently open popup window that is identified by the 'windowCue'. It will ignore any errors. <br>
+     * NOTE: This method does not re-read screen before (or after) cue detection!
+     */
+    private void tryClosingWindow(Cue windowCue) {
+        try {
+            MarvinSegment seg;
+            if (windowCue != null) {
+                seg = detectCue(windowCue);
+                if (seg == null)
+                    return;
+            }
+            seg = detectCue(cues.get("X"));
+            if (seg != null)
+                clickOnSeg(seg);
+        } catch (Exception e) {
+            BHBot.logger.error("Error in tryClosingWindow", e);
+        }
+    }
 
-	/**
-	 * Will close the popup by clicking on the 'close' cue and checking that 'popup' cue is gone. It will repeat this operation
-	 * until either 'popup' cue is gone or timeout is reached. This method ensures that the popup is closed. Sometimes just clicking once
-	 * on the close button ('close' cue) doesn't work, since popup is still sliding down and we miss the button, this is why we need to
-	 * check if it is actually closed. This is what this method does.
-	 * <p>
-	 * Note that before entering into this method, caller had probably already detected the 'popup' cue (but not necessarily). <br>
-	 * Note: in case of failure, it will print it out.
-	 *
-	 * @return false in case it failed to close it (timed out).
-	 */
-	private boolean closePopupSecurely(Cue popup, Cue close) {
-		MarvinSegment seg1, seg2;
-		int counter;
-		seg1 = detectCue(close);
-		seg2 = detectCue(popup);
+    /**
+     * Will close the popup by clicking on the 'close' cue and checking that 'popup' cue is gone. It will repeat this operation
+     * until either 'popup' cue is gone or timeout is reached. This method ensures that the popup is closed. Sometimes just clicking once
+     * on the close button ('close' cue) doesn't work, since popup is still sliding down and we miss the button, this is why we need to
+     * check if it is actually closed. This is what this method does.
+     * <p>
+     * Note that before entering into this method, caller had probably already detected the 'popup' cue (but not necessarily). <br>
+     * Note: in case of failure, it will print it out.
+     *
+     * @return false in case it failed to close it (timed out).
+     */
+    private boolean closePopupSecurely(Cue popup, Cue close) {
+        MarvinSegment seg1, seg2;
+        int counter;
+        seg1 = detectCue(close);
+        seg2 = detectCue(popup);
 
-		// make sure popup window is on the screen (or else wait until it appears):
-		counter = 0;
-		while (seg2 == null) {
-			counter++;
-			if (counter > 10) {
-				BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: popup cue not detected!");
-				return false;
-			}
-			readScreen(SECOND);
-			seg2 = detectCue(popup);
-		}
+        // make sure popup window is on the screen (or else wait until it appears):
+        counter = 0;
+        while (seg2 == null) {
+            counter++;
+            if (counter > 10) {
+                BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: popup cue not detected!");
+                return false;
+            }
+            readScreen(SECOND);
+            seg2 = detectCue(popup);
+        }
 
-		counter = 0;
-		// there is no more popup window, so we're finished!
-		while (seg2 != null) {
-			if (seg1 != null)
-				clickOnSeg(seg1);
+        counter = 0;
+        // there is no more popup window, so we're finished!
+        while (seg2 != null) {
+            if (seg1 != null)
+                clickOnSeg(seg1);
 
-			counter++;
-			if (counter > 10) {
-				BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: either close button has not been detected or popup would not close!");
-				return false;
-			}
+            counter++;
+            if (counter > 10) {
+                BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: either close button has not been detected or popup would not close!");
+                return false;
+            }
 
-			readScreen(SECOND);
-			seg1 = detectCue(close);
-			seg2 = detectCue(popup);
-		}
+            readScreen(SECOND);
+            seg1 = detectCue(close);
+            seg2 = detectCue(popup);
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
-	 *
-	 * @return -1 on error
-	 */
-	private int detectEquipmentFilterScrollerPos() {
-		final int[] yScrollerPositions = {146, 164, 181, 199, 217, 235, 252, 270, 288, 306, 323, 341}; // top scroller positions
+    /**
+     * @return -1 on error
+     */
+    private int detectEquipmentFilterScrollerPos() {
+        final int[] yScrollerPositions = {146, 164, 181, 199, 217, 235, 252, 270, 288, 306, 323, 341}; // top scroller positions
 
-		MarvinSegment seg = detectCue(cues.get("StripScrollerTopPos"), 2*SECOND);
-		if (seg == null) {
-			return -1;
-		}
-		int pos = seg.y1;
+        MarvinSegment seg = detectCue(cues.get("StripScrollerTopPos"), 2 * SECOND);
+        if (seg == null) {
+            return -1;
+        }
+        int pos = seg.y1;
 
-		return Misc.findClosestMatch(yScrollerPositions, pos);
-	}
+        return Misc.findClosestMatch(yScrollerPositions, pos);
+    }
 
-	/**
-	 * Will strip character down (as a preparation for the PvP battle) of items passed as parameters to this method.
-	 * Note that before calling this method, game must be in the main method!
-	 *
-	 * @param type which item type should we equip/unequip
-	 * @param dir direction - either strip down or dress up
-	 */
-	private void strip(EquipmentType type, StripDirection dir) {
-		MarvinSegment seg;
+    /**
+     * Will strip character down (as a preparation for the PvP battle) of items passed as parameters to this method.
+     * Note that before calling this method, game must be in the main method!
+     *
+     * @param type which item type should we equip/unequip
+     * @param dir  direction - either strip down or dress up
+     */
+    private void strip(EquipmentType type, StripDirection dir) {
+        MarvinSegment seg;
 
-		// click on the character menu button (it's a bottom-left button with your character image on it):
-		clickInGame(55, 465);
+        // click on the character menu button (it's a bottom-left button with your character image on it):
+        clickInGame(55, 465);
 
-		seg = detectCue(cues.get("StripSelectorButton"), 10*SECOND);
-		if (seg == null) {
-			BHBot.logger.error("Error: unable to detect equipment filter button! Skipping...");
-			return ;
-		}
+        seg = detectCue(cues.get("StripSelectorButton"), 10 * SECOND);
+        if (seg == null) {
+            BHBot.logger.error("Error: unable to detect equipment filter button! Skipping...");
+            return;
+        }
 
-		// now lets see if the right category is already selected:
-		seg = detectCue(type.getCue(), 500);
-		if (seg == null) {
-			// OK we need to manually select the correct category!
-			seg = detectCue(cues.get("StripSelectorButton"));
-			clickOnSeg(seg);
+        // now lets see if the right category is already selected:
+        seg = detectCue(type.getCue(), 500);
+        if (seg == null) {
+            // OK we need to manually select the correct category!
+            seg = detectCue(cues.get("StripSelectorButton"));
+            clickOnSeg(seg);
 
-			detectCue(cues.get("StripItemsTitle"), 10*SECOND); // waits until "Items" popup is detected
-			readScreen(500); // to stabilize sliding popup a bit
+            detectCue(cues.get("StripItemsTitle"), 10 * SECOND); // waits until "Items" popup is detected
+            readScreen(500); // to stabilize sliding popup a bit
 
-			int scrollerPos = detectEquipmentFilterScrollerPos();
+            int scrollerPos = detectEquipmentFilterScrollerPos();
 //			BHBot.logger.info("Scroller Pos = " + Integer.toString(scrollerPos));
-			if (scrollerPos == -1) {
-				BHBot.logger.warn("Problem detected: unable to detect scroller position in the character window (location #1)! Skipping strip down/up...");
-				return ;
-			}
+            if (scrollerPos == -1) {
+                BHBot.logger.warn("Problem detected: unable to detect scroller position in the character window (location #1)! Skipping strip down/up...");
+                return;
+            }
 
-			int[] yButtonPositions = {170, 230, 290, 350, 410}; // center y positions of the 5 buttons
-			int xButtonPosition = 390;
+            int[] yButtonPositions = {170, 230, 290, 350, 410}; // center y positions of the 5 buttons
+            int xButtonPosition = 390;
 
-			if (scrollerPos < type.minPos()) {
-				// we must scroll down!
-				int move = type.minPos() - scrollerPos;
-				seg = detectCue(cues.get("DropDownDown"), 5*SECOND);
-				for (int i = 0; i < move; i++) {
-					clickOnSeg(seg);
-					scrollerPos++;
-				}
-			} else { // bestIndex > type.maxPos
-				// we must scroll up!
-				int move = scrollerPos - type.minPos();
-				seg = detectCue(cues.get("DropDownUp"), 5*SECOND);
-				for (int i = 0; i < move; i++) {
-					clickOnSeg(seg);
-					scrollerPos--;
-				}
-			}
+            if (scrollerPos < type.minPos()) {
+                // we must scroll down!
+                int move = type.minPos() - scrollerPos;
+                seg = detectCue(cues.get("DropDownDown"), 5 * SECOND);
+                for (int i = 0; i < move; i++) {
+                    clickOnSeg(seg);
+                    scrollerPos++;
+                }
+            } else { // bestIndex > type.maxPos
+                // we must scroll up!
+                int move = scrollerPos - type.minPos();
+                seg = detectCue(cues.get("DropDownUp"), 5 * SECOND);
+                for (int i = 0; i < move; i++) {
+                    clickOnSeg(seg);
+                    scrollerPos--;
+                }
+            }
 
-			// make sure scroller is in correct position now:
-			readScreen(500); // so that the scroller stabilizes a bit
-			int newScrollerPos = detectEquipmentFilterScrollerPos();
-			int counter = 0;
-			while (newScrollerPos != scrollerPos) {
-				if (counter > 3) {
-					BHBot.logger.warn("Problem detected: unable to adjust scroller position in the character window (scroller position: " + newScrollerPos + ", should be: " + scrollerPos + ")! Skipping strip down/up...");
-					return ;
-				}
-				readScreen(SECOND);
-				newScrollerPos = detectEquipmentFilterScrollerPos();
-				counter++;
-			}
-			clickInGame(xButtonPosition, yButtonPositions[type.getButtonPos() - scrollerPos]);
-			// clicking on the button will close the window automatically... we just need to wait a bit for it to close
-			detectCue(cues.get("StripSelectorButton"), 5*SECOND); // we do this just in order to wait for the previous menu to reappear
-		}
+            // make sure scroller is in correct position now:
+            readScreen(500); // so that the scroller stabilizes a bit
+            int newScrollerPos = detectEquipmentFilterScrollerPos();
+            int counter = 0;
+            while (newScrollerPos != scrollerPos) {
+                if (counter > 3) {
+                    BHBot.logger.warn("Problem detected: unable to adjust scroller position in the character window (scroller position: " + newScrollerPos + ", should be: " + scrollerPos + ")! Skipping strip down/up...");
+                    return;
+                }
+                readScreen(SECOND);
+                newScrollerPos = detectEquipmentFilterScrollerPos();
+                counter++;
+            }
+            clickInGame(xButtonPosition, yButtonPositions[type.getButtonPos() - scrollerPos]);
+            // clicking on the button will close the window automatically... we just need to wait a bit for it to close
+            detectCue(cues.get("StripSelectorButton"), 5 * SECOND); // we do this just in order to wait for the previous menu to reappear
+        }
 
-		waitForInventoryIconsToLoad(); // first of all, lets make sure that all icons are loaded
+        waitForInventoryIconsToLoad(); // first of all, lets make sure that all icons are loaded
 
-		// now deselect/select the strongest equipment in the menu:
+        // now deselect/select the strongest equipment in the menu:
 
-		seg = detectCue(cues.get("StripEquipped"), 500); // if "E" icon is not found, that means that some other item is equipped or that no item is equipped
-		boolean equipped = seg != null; // is strongest item equipped already?
+        seg = detectCue(cues.get("StripEquipped"), 500); // if "E" icon is not found, that means that some other item is equipped or that no item is equipped
+        boolean equipped = seg != null; // is strongest item equipped already?
 
-		// position of top-left item (which is the strongest) is (490, 210)
-		if (dir == StripDirection.StripDown) {
-			clickInGame(490, 210);
-			if (!equipped) // in case item was not equipped, we must click on it twice, first time to equip it, second to unequip it. This could happen for example when we had some weaker item equipped (or no item equipped).
-				clickInGame(490, 210);
-		} else {
-			if (!equipped)
-				clickInGame(490, 210);
-		}
+        // position of top-left item (which is the strongest) is (490, 210)
+        if (dir == StripDirection.StripDown) {
+            clickInGame(490, 210);
+            if (!equipped) // in case item was not equipped, we must click on it twice, first time to equip it, second to unequip it. This could happen for example when we had some weaker item equipped (or no item equipped).
+                clickInGame(490, 210);
+        } else {
+            if (!equipped)
+                clickInGame(490, 210);
+        }
 
-		// OK, we're done, lets close the character menu window:
-		closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
-	}
+        // OK, we're done, lets close the character menu window:
+        closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
+    }
 
-	private void stripDown(List<String> striplist) {
+    private void stripDown(List<String> striplist) {
         if (striplist.size() == 0)
             return;
 
@@ -6817,9 +6855,9 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         for (String type : striplist) {
             strip(EquipmentType.letterToType(type), StripDirection.StripDown);
         }
-	}
+    }
 
-	private void dressUp(List<String> striplist) {
+    private void dressUp(List<String> striplist) {
         if (striplist.size() == 0)
             return;
 
@@ -6836,12 +6874,12 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
             strip(EquipmentType.letterToType(type), StripDirection.DressUp);
         }
         Collections.reverse(striplist);
-	}
+    }
 
     /**
      * Daily collection of fishing baits!
      */
-	void handleFishingBaits() {
+    void handleFishingBaits() {
         MarvinSegment seg;
 
         seg = detectCue(cues.get("Fishing"), SECOND * 5);
@@ -6866,396 +6904,408 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                 }
             }
 
-			if (BHBot.settings.doFishing) {
-				BHBot.logger.debug("Handling fishing...");
-				handleFishing();
-				sleep(SECOND);
-				if (enterGuildHall()) { //the fishing island is a silly place, lets not stay there
-		        	BHBot.logger.debug("Entered Guild Hall");
-				} else BHBot.logger.warn("Failed to enter guild hall");
-				sleep(SECOND);
-			}
+            if (BHBot.settings.doFishing) {
+                BHBot.logger.debug("Handling fishing...");
+                handleFishing();
+                sleep(SECOND);
+                if (enterGuildHall()) { //the fishing island is a silly place, lets not stay there
+                    BHBot.logger.debug("Entered Guild Hall");
+                } else BHBot.logger.warn("Failed to enter guild hall");
+                sleep(SECOND);
+            }
 
             readScreen();
-			seg = detectCue(cues.get("X"), 5 * SECOND);
+            seg = detectCue(cues.get("X"), 5 * SECOND);
             if (seg != null) {
                 clickOnSeg(seg);
                 sleep(SECOND);
                 readScreen();
             } else {
-            	if (!BHBot.settings.doFishing) {
-					BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
-					saveGameScreen("fishing-error-closing");
-					restart();
-            	}
+                if (!BHBot.settings.doFishing) {
+                    BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
+                    saveGameScreen("fishing-error-closing");
+                    restart();
+                }
             }
 
         } else {
             BHBot.logger.warn("Impossible to find the fishing button");
         }
-        readScreen(SECOND *2);
+        readScreen(SECOND * 2);
     }
 
-	/**
-	 * Let's collect any finished bounty!
-	 */
-	private void handleBounties() {
-		BHBot.logger.debug("Attempting bounties collection.");
-		MarvinSegment seg;
+    /**
+     * Let's collect any finished bounty!
+     */
+    private void handleBounties() {
+        BHBot.logger.debug("Attempting bounties collection.");
+        MarvinSegment seg;
 
-		clickInGame(130, 440);
+        clickInGame(130, 440);
 
-		seg = detectCue(cues.get("Bounties"), SECOND * 5);
-		if (seg != null) {
-			readScreen();
-			seg = detectCue(cues.get("Loot"), SECOND * 5, new Bounds(505, 245, 585, 275));
-			while (seg != null) {
-				clickOnSeg(seg);
-				seg = detectCue(cues.get("WeeklyRewards"), SECOND * 5, new Bounds(190, 100, 615, 400));
-				if (seg != null) {
-					seg = detectCue(cues.get("X"), 5 * SECOND);
-					if (seg != null) {
-						saveGameScreen("bounty-loot");
-						clickOnSeg(seg);
-						BHBot.logger.info("Collected bounties");
-						sleep(SECOND * 2);
-					} else {
-						BHBot.logger.error("Error when collecting bounty items, restarting...");
-						saveGameScreen("bounties-error-collect");
-						restart();
-					}
-				} else {
-					BHBot.logger.error("Error finding bounty item dialog, restarting...");
-					saveGameScreen("bounties-error-item");
-					restart();
-				}
+        seg = detectCue(cues.get("Bounties"), SECOND * 5);
+        if (seg != null) {
+            readScreen();
+            seg = detectCue(cues.get("Loot"), SECOND * 5, new Bounds(505, 245, 585, 275));
+            while (seg != null) {
+                clickOnSeg(seg);
+                seg = detectCue(cues.get("WeeklyRewards"), SECOND * 5, new Bounds(190, 100, 615, 400));
+                if (seg != null) {
+                    seg = detectCue(cues.get("X"), 5 * SECOND);
+                    if (seg != null) {
+                        saveGameScreen("bounty-loot");
+                        clickOnSeg(seg);
+                        BHBot.logger.info("Collected bounties");
+                        sleep(SECOND * 2);
+                    } else {
+                        BHBot.logger.error("Error when collecting bounty items, restarting...");
+                        saveGameScreen("bounties-error-collect");
+                        restart();
+                    }
+                } else {
+                    BHBot.logger.error("Error finding bounty item dialog, restarting...");
+                    saveGameScreen("bounties-error-item");
+                    restart();
+                }
 
-				seg = detectCue(cues.get("Loot"), SECOND * 5, new Bounds(505, 245, 585, 275));
-			}
+                seg = detectCue(cues.get("Loot"), SECOND * 5, new Bounds(505, 245, 585, 275));
+            }
 
-			seg = detectCue(cues.get("X"), 5 * SECOND);
-			if (seg != null) {
-				clickOnSeg(seg);
-				readScreen();
-			} else {
-				BHBot.logger.error("Impossible to close the bounties dialog, restarting...");
-				saveGameScreen("bounties-error-closing");
-				restart();
-			}
-		} else {
-			BHBot.logger.error("Impossible to detect the Bounties dialog, restarting...");
-			saveGameScreen("bounties-error-dialog");
-			restart();
-		}
-		readScreen(SECOND *2);
-	}
+            seg = detectCue(cues.get("X"), 5 * SECOND);
+            if (seg != null) {
+                clickOnSeg(seg);
+                readScreen();
+            } else {
+                BHBot.logger.error("Impossible to close the bounties dialog, restarting...");
+                saveGameScreen("bounties-error-closing");
+                restart();
+            }
+        } else {
+            BHBot.logger.error("Impossible to detect the Bounties dialog, restarting...");
+            saveGameScreen("bounties-error-dialog");
+            restart();
+        }
+        readScreen(SECOND * 2);
+    }
 
-	/**
-	 * We must be in main menu for this to work!
-	 */
-	private void handleConsumables() {
-		if (!BHBot.settings.autoConsume || BHBot.settings.consumables.size() == 0) // consumables management is turned off!
-			return ;
+    /**
+     * We must be in main menu for this to work!
+     */
+    private void handleConsumables() {
+        if (!BHBot.settings.autoConsume || BHBot.settings.consumables.size() == 0) // consumables management is turned off!
+            return;
 
-		MarvinSegment seg;
+        MarvinSegment seg;
 
-		boolean exp = detectCue(cues.get("BonusExp")) != null;
-		boolean item = detectCue(cues.get("BonusItem")) != null;
-		boolean speed = detectCue(cues.get("BonusSpeed")) != null;
-		boolean gold = detectCue(cues.get("BonusGold")) != null;
+        boolean exp = detectCue(cues.get("BonusExp")) != null;
+        boolean item = detectCue(cues.get("BonusItem")) != null;
+        boolean speed = detectCue(cues.get("BonusSpeed")) != null;
+        boolean gold = detectCue(cues.get("BonusGold")) != null;
 
         // Special consumables
         // TODO Manage super scroll
         if (detectCue(cues.get("ConsumablePumkgor")) != null || detectCue(cues.get("ConsumableBroccoli")) != null
                 || detectCue(cues.get("ConsumableGreatFeast")) != null || detectCue(cues.get("ConsumableGingernaut")) != null
                 || detectCue(cues.get("ConsumableCoco")) != null) {
-            exp = true; item = true; speed = true; gold = true;
+            exp = true;
+            item = true;
+            speed = true;
+            gold = true;
             // BHBot.logger.info("Special consumable detected, skipping all the rest...");
         }
 
-		EnumSet<ConsumableType> duplicateConsumables = EnumSet.noneOf(ConsumableType.class); // here we store consumables that we wanted to consume now but we have detected they are already active, so we skipped them (used for error reporting)
-		EnumSet<ConsumableType> consumables = EnumSet.noneOf(ConsumableType.class); // here we store consumables that we want to consume now
-		for (String s : BHBot.settings.consumables)
-			consumables.add(ConsumableType.getTypeFromName(s));
-		//BHBot.logger.info("Testing for following consumables: " + Misc.listToString(consumables));
+        EnumSet<ConsumableType> duplicateConsumables = EnumSet.noneOf(ConsumableType.class); // here we store consumables that we wanted to consume now but we have detected they are already active, so we skipped them (used for error reporting)
+        EnumSet<ConsumableType> consumables = EnumSet.noneOf(ConsumableType.class); // here we store consumables that we want to consume now
+        for (String s : BHBot.settings.consumables)
+            consumables.add(ConsumableType.getTypeFromName(s));
+        //BHBot.logger.info("Testing for following consumables: " + Misc.listToString(consumables));
 
-		if (exp) {
-			consumables.remove(ConsumableType.EXP_MINOR);
-			consumables.remove(ConsumableType.EXP_AVERAGE);
-			consumables.remove(ConsumableType.EXP_MAJOR);
-		}
+        if (exp) {
+            consumables.remove(ConsumableType.EXP_MINOR);
+            consumables.remove(ConsumableType.EXP_AVERAGE);
+            consumables.remove(ConsumableType.EXP_MAJOR);
+        }
 
-		if (item) {
-			consumables.remove(ConsumableType.ITEM_MINOR);
-			consumables.remove(ConsumableType.ITEM_AVERAGE);
-			consumables.remove(ConsumableType.ITEM_MAJOR);
-		}
+        if (item) {
+            consumables.remove(ConsumableType.ITEM_MINOR);
+            consumables.remove(ConsumableType.ITEM_AVERAGE);
+            consumables.remove(ConsumableType.ITEM_MAJOR);
+        }
 
-		if (speed) {
-			consumables.remove(ConsumableType.SPEED_MINOR);
-			consumables.remove(ConsumableType.SPEED_AVERAGE);
-			consumables.remove(ConsumableType.SPEED_MAJOR);
-		}
+        if (speed) {
+            consumables.remove(ConsumableType.SPEED_MINOR);
+            consumables.remove(ConsumableType.SPEED_AVERAGE);
+            consumables.remove(ConsumableType.SPEED_MAJOR);
+        }
 
-		if (gold) {
-			consumables.remove(ConsumableType.GOLD_MINOR);
-			consumables.remove(ConsumableType.GOLD_AVERAGE);
-			consumables.remove(ConsumableType.GOLD_MAJOR);
-		}
+        if (gold) {
+            consumables.remove(ConsumableType.GOLD_MINOR);
+            consumables.remove(ConsumableType.GOLD_AVERAGE);
+            consumables.remove(ConsumableType.GOLD_MAJOR);
+        }
 
-		// so now we have only those consumables in the 'consumables' list that we actually need to consume right now!
+        // so now we have only those consumables in the 'consumables' list that we actually need to consume right now!
 
-		if (consumables.isEmpty()) // we don't need to do anything!
-			return ;
+        if (consumables.isEmpty()) // we don't need to do anything!
+            return;
 
-		// OK, try to consume some consumables!
-		BHBot.logger.info("Trying to consume some consumables (" + Misc.listToString(consumables) + ")...");
+        // OK, try to consume some consumables!
+        BHBot.logger.info("Trying to consume some consumables (" + Misc.listToString(consumables) + ")...");
 
-		// click on the character menu button (it's a bottom-left button with your character image on it):
-		clickInGame(55, 465);
+        // click on the character menu button (it's a bottom-left button with your character image on it):
+        clickInGame(55, 465);
 
-		seg = detectCue(cues.get("StripSelectorButton"), 15*SECOND);
-		if (seg == null) {
-			BHBot.logger.warn("Error: unable to detect equipment filter button! Skipping...");
-			return ;
-		}
+        seg = detectCue(cues.get("StripSelectorButton"), 15 * SECOND);
+        if (seg == null) {
+            BHBot.logger.warn("Error: unable to detect equipment filter button! Skipping...");
+            return;
+        }
 
-		// now lets select the <Consumables> category (if it is not already selected):
-		seg = detectCue(cues.get("FilterConsumables"), 500);
-		if (seg == null) { // if not, right category (<Consumables>) is already selected!
-			// OK we need to manually select the <Consumables> category!
-			seg = detectCue(cues.get("StripSelectorButton"));
-			clickOnSeg(seg);
+        // now lets select the <Consumables> category (if it is not already selected):
+        seg = detectCue(cues.get("FilterConsumables"), 500);
+        if (seg == null) { // if not, right category (<Consumables>) is already selected!
+            // OK we need to manually select the <Consumables> category!
+            seg = detectCue(cues.get("StripSelectorButton"));
+            clickOnSeg(seg);
 
-			detectCue(cues.get("StripItemsTitle"), 10*SECOND); // waits until "Items" popup is detected
-			readScreen(500); // to stabilize sliding popup a bit
+            detectCue(cues.get("StripItemsTitle"), 10 * SECOND); // waits until "Items" popup is detected
+            readScreen(500); // to stabilize sliding popup a bit
 
-			int scrollerPos = detectEquipmentFilterScrollerPos();
-			if (scrollerPos == -1) {
-				BHBot.logger.warn("Problem detected: unable to detect scroller position in the character window (location #1)! Skipping consumption of consumables...");
-				return ;
-			}
+            int scrollerPos = detectEquipmentFilterScrollerPos();
+            if (scrollerPos == -1) {
+                BHBot.logger.warn("Problem detected: unable to detect scroller position in the character window (location #1)! Skipping consumption of consumables...");
+                return;
+            }
 
-			int[] yButtonPositions = {170, 230, 290, 350, 410}; // center y positions of the 5 buttons
-			int xButtonPosition = 390;
+            int[] yButtonPositions = {170, 230, 290, 350, 410}; // center y positions of the 5 buttons
+            int xButtonPosition = 390;
 
-			if (scrollerPos != 0) {
-				// we must scroll up!
-				int move = scrollerPos;
-				seg = detectCue(cues.get("DropDownUp"), 5*SECOND);
-				for (int i = 0; i < move; i++) {
-					clickOnSeg(seg);
-					scrollerPos--;
-				}
-			}
+            if (scrollerPos != 0) {
+                // we must scroll up!
+                int move = scrollerPos;
+                seg = detectCue(cues.get("DropDownUp"), 5 * SECOND);
+                for (int i = 0; i < move; i++) {
+                    clickOnSeg(seg);
+                    scrollerPos--;
+                }
+            }
 
-			// make sure scroller is in correct position now:
-			readScreen(2000); // so that the scroller stabilizes a bit //Quick Fix slow down
-			int newScrollerPos = detectEquipmentFilterScrollerPos();
-			int counter = 0;
-			while (newScrollerPos != scrollerPos) {
-				if (counter > 3) {
-					BHBot.logger.warn("Problem detected: unable to adjust scroller position in the character window (scroller position: " + newScrollerPos + ", should be: " + scrollerPos + ")! Skipping consumption of consumables...");
-					return ;
-				}
-				readScreen(SECOND);
-				newScrollerPos = detectEquipmentFilterScrollerPos();
-				counter++;
-			}
-			clickInGame(xButtonPosition, yButtonPositions[1]);
-			// clicking on the button will close the window automatically... we just need to wait a bit for it to close
-			detectCue(cues.get("StripSelectorButton"), 5*SECOND); // we do this just in order to wait for the previous menu to reappear
-		}
+            // make sure scroller is in correct position now:
+            readScreen(2000); // so that the scroller stabilizes a bit //Quick Fix slow down
+            int newScrollerPos = detectEquipmentFilterScrollerPos();
+            int counter = 0;
+            while (newScrollerPos != scrollerPos) {
+                if (counter > 3) {
+                    BHBot.logger.warn("Problem detected: unable to adjust scroller position in the character window (scroller position: " + newScrollerPos + ", should be: " + scrollerPos + ")! Skipping consumption of consumables...");
+                    return;
+                }
+                readScreen(SECOND);
+                newScrollerPos = detectEquipmentFilterScrollerPos();
+                counter++;
+            }
+            clickInGame(xButtonPosition, yButtonPositions[1]);
+            // clicking on the button will close the window automatically... we just need to wait a bit for it to close
+            detectCue(cues.get("StripSelectorButton"), 5 * SECOND); // we do this just in order to wait for the previous menu to reappear
+        }
 
-		// now consume the consumable(s):
+        // now consume the consumable(s):
 
-		readScreen(500); // to stabilize window a bit
-		Bounds bounds = new Bounds(450, 165, 670, 460); // detection area (where consumables icons are visible)
+        readScreen(500); // to stabilize window a bit
+        Bounds bounds = new Bounds(450, 165, 670, 460); // detection area (where consumables icons are visible)
 
-		while (!consumables.isEmpty()) {
-			waitForInventoryIconsToLoad(); // first of all, lets make sure that all icons are loaded
-			for (Iterator<ConsumableType> i = consumables.iterator(); i.hasNext();) {
-				ConsumableType c = i.next();
-				seg = detectCue(new Cue(c.getInventoryCue(), bounds));
-				if (seg != null) {
-					// OK we found the consumable icon! Lets click it...
-					clickOnSeg(seg);
-					detectCue(cues.get("ConsumableTitle"), 5*SECOND); // wait for the consumable popup window to appear
-					readScreen(500); // wait for sliding popup to stabilize a bit
+        while (!consumables.isEmpty()) {
+            waitForInventoryIconsToLoad(); // first of all, lets make sure that all icons are loaded
+            for (Iterator<ConsumableType> i = consumables.iterator(); i.hasNext(); ) {
+                ConsumableType c = i.next();
+                seg = detectCue(new Cue(c.getInventoryCue(), bounds));
+                if (seg != null) {
+                    // OK we found the consumable icon! Lets click it...
+                    clickOnSeg(seg);
+                    detectCue(cues.get("ConsumableTitle"), 5 * SECOND); // wait for the consumable popup window to appear
+                    readScreen(500); // wait for sliding popup to stabilize a bit
 
-					/*
-					 *  Measure distance between "Consumable" (popup title) and "Yes" (green yes button).
-					 *  This seems to be the safest way to distinguish the two window types. Because text
-					 *  inside windows change and sometimes letters are wider apart and sometimes no, so it
-					 *  is not possible to detect cue like "replace" wording, or any other (I've tried that
-					 *  and failed).
-					 */
-					int dist;
-					seg = detectCue(cues.get("ConsumableTitle"));
-					dist = seg.y1;
-					seg = detectCue(cues.get("YesGreen"));
-					dist = seg.y1 - dist;
-					// distance for the big window should be 262 pixels, for the small one it should be 212.
+                    /*
+                     *  Measure distance between "Consumable" (popup title) and "Yes" (green yes button).
+                     *  This seems to be the safest way to distinguish the two window types. Because text
+                     *  inside windows change and sometimes letters are wider apart and sometimes no, so it
+                     *  is not possible to detect cue like "replace" wording, or any other (I've tried that
+                     *  and failed).
+                     */
+                    int dist;
+                    seg = detectCue(cues.get("ConsumableTitle"));
+                    dist = seg.y1;
+                    seg = detectCue(cues.get("YesGreen"));
+                    dist = seg.y1 - dist;
+                    // distance for the big window should be 262 pixels, for the small one it should be 212.
 
-					if (dist > 250) {
-						// don't consume the consumable... it's already in use!
-						BHBot.logger.warn("Error: \"Replace consumable\" dialog detected, meaning consumable is already in use (" + c.getName() + "). Skipping...");
-						duplicateConsumables.add(c);
-						closePopupSecurely(cues.get("ConsumableTitle"), cues.get("No"));
-					} else {
-						// consume the consumable:
-						closePopupSecurely(cues.get("ConsumableTitle"), cues.get("YesGreen"));
-					}
-					detectCue(cues.get("StripSelectorButton"), 5*SECOND); // we do this just in order to wait for the previous menu to reappear
-					i.remove();
-				}
-			}
+                    if (dist > 250) {
+                        // don't consume the consumable... it's already in use!
+                        BHBot.logger.warn("Error: \"Replace consumable\" dialog detected, meaning consumable is already in use (" + c.getName() + "). Skipping...");
+                        duplicateConsumables.add(c);
+                        closePopupSecurely(cues.get("ConsumableTitle"), cues.get("No"));
+                    } else {
+                        // consume the consumable:
+                        closePopupSecurely(cues.get("ConsumableTitle"), cues.get("YesGreen"));
+                    }
+                    detectCue(cues.get("StripSelectorButton"), 5 * SECOND); // we do this just in order to wait for the previous menu to reappear
+                    i.remove();
+                }
+            }
 
-			if (!consumables.isEmpty()) {
-				seg = detectCue(cues.get("ScrollerAtBottom"), 500);
-				if (seg != null)
-					break; // there is nothing we can do anymore... we've scrolled to the bottom and haven't found the icon(s). We obviously don't have the required consumable(s)!
+            if (!consumables.isEmpty()) {
+                seg = detectCue(cues.get("ScrollerAtBottom"), 500);
+                if (seg != null)
+                    break; // there is nothing we can do anymore... we've scrolled to the bottom and haven't found the icon(s). We obviously don't have the required consumable(s)!
 
-				// lets scroll down:
-				seg = detectCue(cues.get("DropDownDown"), 5*SECOND);
-				clickOnSeg(seg);
+                // lets scroll down:
+                seg = detectCue(cues.get("DropDownDown"), 5 * SECOND);
+                clickOnSeg(seg);
 
-				readScreen(SECOND); // so that the scroller stabilizes a bit
-			}
-		}
+                readScreen(SECOND); // so that the scroller stabilizes a bit
+            }
+        }
 
-		// OK, we're done, lets close the character menu window:
-		boolean result = closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
-		if (!result) {
-			BHBot.logger.warn("Done. Error detected while trying to close character window. Ignoring...");
-			return ;
-		}
+        // OK, we're done, lets close the character menu window:
+        boolean result = closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
+        if (!result) {
+            BHBot.logger.warn("Done. Error detected while trying to close character window. Ignoring...");
+            return;
+        }
 
-		if (!consumables.isEmpty()) {
-			BHBot.logger.warn("Some consumables were not found (out of stock?) so were not consumed. These are: " + Misc.listToString(consumables) + ".");
+        if (!consumables.isEmpty()) {
+            BHBot.logger.warn("Some consumables were not found (out of stock?) so were not consumed. These are: " + Misc.listToString(consumables) + ".");
 
-			for (ConsumableType c : consumables) {
-				BHBot.settings.consumables.remove(c.getName());
-			}
+            for (ConsumableType c : consumables) {
+                BHBot.settings.consumables.remove(c.getName());
+            }
 
-			BHBot.logger.warn("The following consumables have been removed from auto-consume list: " + Misc.listToString(consumables) + ". In order to reactivate them, reload your settings.ini file using 'reload' command.");
-		} else {
-			if (!duplicateConsumables.isEmpty())
-				BHBot.logger.info("Done. Some of the consumables have been skipped since they are already in use: " + Misc.listToString(duplicateConsumables));
-			else
-				BHBot.logger.info("Done. Desired consumables have been successfully consumed.");
-		}
-	}
+            BHBot.logger.warn("The following consumables have been removed from auto-consume list: " + Misc.listToString(consumables) + ". In order to reactivate them, reload your settings.ini file using 'reload' command.");
+        } else {
+            if (!duplicateConsumables.isEmpty())
+                BHBot.logger.info("Done. Some of the consumables have been skipped since they are already in use: " + Misc.listToString(duplicateConsumables));
+            else
+                BHBot.logger.info("Done. Desired consumables have been successfully consumed.");
+        }
+    }
 
-	/**
-	 * Will make sure all the icons in the inventory have been loaded.
-	 */
-	private void waitForInventoryIconsToLoad() {
-		Bounds bounds = new Bounds(450, 165, 670, 460); // detection area (where inventory icons are visible)
-		MarvinSegment seg;
-		Cue cue = new Cue(cues.get("LoadingInventoryIcon"), bounds);
+    /**
+     * Will make sure all the icons in the inventory have been loaded.
+     */
+    private void waitForInventoryIconsToLoad() {
+        Bounds bounds = new Bounds(450, 165, 670, 460); // detection area (where inventory icons are visible)
+        MarvinSegment seg;
+        Cue cue = new Cue(cues.get("LoadingInventoryIcon"), bounds);
 
-		int counter = 0;
-		seg = detectCue(cue);
-		while (seg != null) {
-			readScreen(SECOND);
+        int counter = 0;
+        seg = detectCue(cue);
+        while (seg != null) {
+            readScreen(SECOND);
 
-			seg = detectCue(cues.get("StripSelectorButton"));
-			if (seg == null) {
-				BHBot.logger.error("Error: while detecting possible loading of inventory icons, inventory cue has not been detected! Ignoring...");
-				return ;
-			}
+            seg = detectCue(cues.get("StripSelectorButton"));
+            if (seg == null) {
+                BHBot.logger.error("Error: while detecting possible loading of inventory icons, inventory cue has not been detected! Ignoring...");
+                return;
+            }
 
-			seg = detectCue(cue);
-			counter++;
-			if (counter > 100) {
-				BHBot.logger.error("Error: loading of icons has been detected in the inventory screen, but it didn't finish in time. Ignoring...");
-				return ;
-			}
-		}
-	}
+            seg = detectCue(cue);
+            counter++;
+            if (counter > 100) {
+                BHBot.logger.error("Error: loading of icons has been detected in the inventory screen, but it didn't finish in time. Ignoring...");
+                return;
+            }
+        }
+    }
 
-	/** Will reset readout timers. */
-	void resetTimers() {
-		timeLastExpBadgesCheck = 0;
-		timeLastInvBadgesCheck = 0;
-		timeLastGVGBadgesCheck = 0;
-		timeLastEnergyCheck = 0;
-		timeLastShardsCheck = 0;
-		timeLastTicketsCheck = 0;
-		timeLastTrialsTokensCheck = 0;
-		timeLastGauntletTokensCheck = 0;
-		timeLastBonusCheck = 0;
-	}
+    /**
+     * Will reset readout timers.
+     */
+    void resetTimers() {
+        timeLastExpBadgesCheck = 0;
+        timeLastInvBadgesCheck = 0;
+        timeLastGVGBadgesCheck = 0;
+        timeLastEnergyCheck = 0;
+        timeLastShardsCheck = 0;
+        timeLastTicketsCheck = 0;
+        timeLastTrialsTokensCheck = 0;
+        timeLastGauntletTokensCheck = 0;
+        timeLastBonusCheck = 0;
+    }
 
-	/* This will only reset timers for activities we still have resources to run */
-	/* This saves cycling through the list of all activities to run every time we finish one */
-	/* It's also useful for other related settings to be reset on activity finish */
-	private void resetAppropriateTimers() {
-		startTimeCheck = false;
-		specialDungeon = false;
-		potionsUsed = 0;
+    /* This will only reset timers for activities we still have resources to run */
+    /* This saves cycling through the list of all activities to run every time we finish one */
+    /* It's also useful for other related settings to be reset on activity finish */
+    private void resetAppropriateTimers() {
+        startTimeCheck = false;
+        specialDungeon = false;
+        potionsUsed = 0;
 
-		if ( (globalShards - 1) > BHBot.settings.minShards && state == State.Raid ) timeLastShardsCheck = 0;
+        if ((globalShards - 1) > BHBot.settings.minShards && state == State.Raid) timeLastShardsCheck = 0;
 
-		if ( (globalBadges - BHBot.settings.costExpedition) > BHBot.settings.minBadges && (state == State.Expedition) ) timeLastExpBadgesCheck = 0;
+        if ((globalBadges - BHBot.settings.costExpedition) > BHBot.settings.minBadges && (state == State.Expedition))
+            timeLastExpBadgesCheck = 0;
 
-		if ( (globalBadges - BHBot.settings.costInvasion) > BHBot.settings.minBadges && (state == State.Invasion ) ) timeLastInvBadgesCheck = 0;
+        if ((globalBadges - BHBot.settings.costInvasion) > BHBot.settings.minBadges && (state == State.Invasion))
+            timeLastInvBadgesCheck = 0;
 
-		if ( (globalBadges - BHBot.settings.costGVG) > BHBot.settings.minBadges && (state == State.GVG) ) timeLastGVGBadgesCheck = 0;
+        if ((globalBadges - BHBot.settings.costGVG) > BHBot.settings.minBadges && (state == State.GVG))
+            timeLastGVGBadgesCheck = 0;
 
-		if ( (globalEnergy - 10) > BHBot.settings.minEnergyPercentage && (state == State.Dungeon || state == State.WorldBoss) ) timeLastEnergyCheck = 0;
+        if ((globalEnergy - 10) > BHBot.settings.minEnergyPercentage && (state == State.Dungeon || state == State.WorldBoss))
+            timeLastEnergyCheck = 0;
 
-		if ( (globalTickets - BHBot.settings.costPVP) > BHBot.settings.minTickets && state == State.PVP ) timeLastTicketsCheck = 0;
+        if ((globalTickets - BHBot.settings.costPVP) > BHBot.settings.minTickets && state == State.PVP)
+            timeLastTicketsCheck = 0;
 
-		if ( (globalTokens - BHBot.settings.costTrials) > BHBot.settings.minTokens && (state == State.Trials) ) timeLastTrialsTokensCheck = 0;
+        if ((globalTokens - BHBot.settings.costTrials) > BHBot.settings.minTokens && (state == State.Trials))
+            timeLastTrialsTokensCheck = 0;
 
-		if ( (globalTokens - BHBot.settings.costGauntlet) > BHBot.settings.minTokens && (state == State.Gauntlet) ) timeLastGauntletTokensCheck = 0;
-	}
+        if ((globalTokens - BHBot.settings.costGauntlet) > BHBot.settings.minTokens && (state == State.Gauntlet))
+            timeLastGauntletTokensCheck = 0;
+    }
 
-	private void resetRevives() {
-		revived[0] = false;
-		revived[1] = false;
-		revived[2] = false;
-		revived[3] = false;
-		revived[4] = false;
-	}
+    private void resetRevives() {
+        revived[0] = false;
+        revived[1] = false;
+        revived[2] = false;
+        revived[3] = false;
+        revived[4] = false;
+    }
 
-	void sendPushOverMessage(String title, String msg, MessagePriority priority, File attachment) {
-		sendPushOverMessage(title, msg, "pushover", priority, attachment);
-	}
+    void sendPushOverMessage(String title, String msg, MessagePriority priority, File attachment) {
+        sendPushOverMessage(title, msg, "pushover", priority, attachment);
+    }
 
-	private void sendPushOverMessage(String title, String msg, @SuppressWarnings("SameParameterValue") String sound) {
-		sendPushOverMessage(title, msg, sound, MessagePriority.NORMAL, null);
-	}
+    private void sendPushOverMessage(String title, String msg, @SuppressWarnings("SameParameterValue") String sound) {
+        sendPushOverMessage(title, msg, sound, MessagePriority.NORMAL, null);
+    }
 
-	private void sendPushOverMessage(String title, String msg, String sound, MessagePriority priority, File attachment) {
-		if (BHBot.settings.enablePushover) {
-			try {
-				BHBot.poClient.pushMessage(
-						PushoverMessage.builderWithApiToken(BHBot.settings.poAppToken)
-								.setUserId(BHBot.settings.poUserToken)
-								.setTitle(title)
-								.setMessage(msg)
-								.setPriority(priority)
-								.setSound(sound)
-								.setAttachment(attachment)
-								.build());
-			} catch (PushoverException e) {
-				BHBot.logger.error("Error while sending Pushover message", e);
-			}
-		}
-	}
+    private void sendPushOverMessage(String title, String msg, String sound, MessagePriority priority, File attachment) {
+        if (BHBot.settings.enablePushover) {
+            try {
+                BHBot.poClient.pushMessage(
+                        PushoverMessage.builderWithApiToken(BHBot.settings.poAppToken)
+                                .setUserId(BHBot.settings.poUserToken)
+                                .setTitle(title)
+                                .setMessage(msg)
+                                .setPriority(priority)
+                                .setSound(sound)
+                                .setAttachment(attachment)
+                                .build());
+            } catch (PushoverException e) {
+                BHBot.logger.error("Error while sending Pushover message", e);
+            }
+        }
+    }
 
-	static void printFamiliars () {
+    static void printFamiliars() {
 
-		List<String> folders = new ArrayList<>();
-		folders.add("cues/familiars/old_format");
-		folders.add("cues/familiars/new_format");
+        List<String> folders = new ArrayList<>();
+        folders.add("cues/familiars/old_format");
+        folders.add("cues/familiars/new_format");
 
-		Set<String> uniqueFamiliars = new TreeSet<>();
+        Set<String> uniqueFamiliars = new TreeSet<>();
 
-		for (String cuesPath : folders) {
+        for (String cuesPath : folders) {
             // We make sure that the last char of the path is a folder separator
             if (!"/".equals(cuesPath.substring(cuesPath.length() - 1))) cuesPath += "/";
 
@@ -7268,7 +7318,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     InputStream in = classLoader.getResourceAsStream(cuesPath);
                     if (in == null) {
                         BHBot.logger.error("Impossible to create InputStream in printFamiliars");
-                        return ;
+                        return;
                     }
 
                     BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -7323,7 +7373,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                             if (resource == null) continue;
 
                             String resourcePath = resource.toString();
-                            BHBot.logger.trace("resourcePath: " +  resourcePath);
+                            BHBot.logger.trace("resourcePath: " + resourcePath);
                             if (!resourcePath.contains("!")) {
                                 BHBot.logger.warn("Unexpected resource filename in load printFamiliars");
                                 continue;
@@ -7331,7 +7381,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
                             String[] fileDetails = resourcePath.split("!");
                             String resourceRelativePath = fileDetails[1];
-                            BHBot.logger.trace("resourceRelativePath : " +  resourceRelativePath );
+                            BHBot.logger.trace("resourceRelativePath : " + resourceRelativePath);
                             int lastSlashPosition = resourceRelativePath.lastIndexOf('/');
                             String fileName = resourceRelativePath.substring(lastSlashPosition + 1);
 
@@ -7351,59 +7401,59 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
                 }
             }
-		}
+        }
 
-		StringBuilder familiarString = new StringBuilder();
-		int currentFamiliar = 1;
+        StringBuilder familiarString = new StringBuilder();
+        int currentFamiliar = 1;
 
-		for (String familiar : uniqueFamiliars) {
-			if (familiarString.length() >0) familiarString.append(", ");
-			if (currentFamiliar % 5 == 0) familiarString.append("\n");
-			familiarString.append(familiar);
-			currentFamiliar++;
-		}
+        for (String familiar : uniqueFamiliars) {
+            if (familiarString.length() > 0) familiarString.append(", ");
+            if (currentFamiliar % 5 == 0) familiarString.append("\n");
+            familiarString.append(familiar);
+            currentFamiliar++;
+        }
 
-		BHBot.logger.info(familiarString.toString());
-	}
+        BHBot.logger.info(familiarString.toString());
+    }
 
-	private Bounds opponentSelector(int opponent) {
+    private Bounds opponentSelector(int opponent) {
 
-		if ( BHBot.settings.pvpOpponent < 1 || BHBot.settings.pvpOpponent > 4 ) {
-			//if setting outside 1-4th opponents we default to 1st
-			BHBot.logger.warn("pvpOpponent must be between 1 and 4, defaulting to first opponent");
-			BHBot.settings.pvpOpponent = 1;
-			return new Bounds(544, 188, 661, 225); //1st opponent
-		}
+        if (BHBot.settings.pvpOpponent < 1 || BHBot.settings.pvpOpponent > 4) {
+            //if setting outside 1-4th opponents we default to 1st
+            BHBot.logger.warn("pvpOpponent must be between 1 and 4, defaulting to first opponent");
+            BHBot.settings.pvpOpponent = 1;
+            return new Bounds(544, 188, 661, 225); //1st opponent
+        }
 
-		if ( BHBot.settings.gvgOpponent < 1 || BHBot.settings.gvgOpponent > 4 ) {
-			//if setting outside 1-4th opponents we default to 1st
-			BHBot.logger.warn("gvgOpponent must be between 1 and 4, defaulting to first opponent");
-			BHBot.settings.gvgOpponent = 1;
-			return new Bounds(544, 188, 661, 225); //1st opponent
-		}
+        if (BHBot.settings.gvgOpponent < 1 || BHBot.settings.gvgOpponent > 4) {
+            //if setting outside 1-4th opponents we default to 1st
+            BHBot.logger.warn("gvgOpponent must be between 1 and 4, defaulting to first opponent");
+            BHBot.settings.gvgOpponent = 1;
+            return new Bounds(544, 188, 661, 225); //1st opponent
+        }
 
-		switch (opponent) {
-		case 1:
-			return new Bounds(545, 188, 660, 225); //1st opponent
-		case 2:
-			return new Bounds(545, 243, 660, 279); //2nd opponent
-		case 3:
-			return new Bounds(544, 296, 660, 335); //1st opponent
-		case 4:
-			return new Bounds(544, 351, 660, 388); //1st opponent
-		}
-		return null;
-	}
+        switch (opponent) {
+            case 1:
+                return new Bounds(545, 188, 660, 225); //1st opponent
+            case 2:
+                return new Bounds(545, 243, 660, 279); //2nd opponent
+            case 3:
+                return new Bounds(544, 296, 660, 335); //1st opponent
+            case 4:
+                return new Bounds(544, 351, 660, 388); //1st opponent
+        }
+        return null;
+    }
 
-	void softReset() {
-		state = State.Main;
-	}
-	
-	private void handleFishing() {
-		MarvinSegment seg;
-		int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 sconds per bait used, plus 10 seconds buffer
+    void softReset() {
+        state = State.Main;
+    }
 
-		readScreen();
+    private void handleFishing() {
+        MarvinSegment seg;
+        int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 sconds per bait used, plus 10 seconds buffer
+
+        readScreen();
 
         seg = detectCue(cues.get("Fishing"), SECOND * 5);
         if (seg != null) {
@@ -7412,28 +7462,28 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         }
 
         detectCharacterDialogAndHandleIt();
-        
+
         seg = detectCue(cues.get("Play"), SECOND * 5);
         if (seg != null) {
             clickOnSeg(seg);
         }
-        
+
         seg = detectCue(cues.get("Start"), SECOND * 20);
         if (seg != null) {
-			try{
-			    BHBot.logger.info("Pausing for " + fishingTime + " seconds to fish");
-				BHBot.scheduler.pause();
+            try {
+                BHBot.logger.info("Pausing for " + fishingTime + " seconds to fish");
+                BHBot.scheduler.pause();
 
-				Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fishing.exe\" " + BHBot.settings.rodType + " " + BHBot.settings.baitAmount);
-				if (!fisher.waitFor(fishingTime, TimeUnit.SECONDS)) { //run and wait for fishingTime seconds
-					BHBot.scheduler.resume();
-				}
-				Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisher-v1.2.4.exe\"\"");
-				fisherClose.waitFor(1, TimeUnit.SECONDS);
+                Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fishing.exe\" " + BHBot.settings.rodType + " " + BHBot.settings.baitAmount);
+                if (!fisher.waitFor(fishingTime, TimeUnit.SECONDS)) { //run and wait for fishingTime seconds
+                    BHBot.scheduler.resume();
+                }
+                Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisher-v1.2.4.exe\"\"");
+                fisherClose.waitFor(1, TimeUnit.SECONDS);
 
-			}catch( IOException | InterruptedException ex ){
-			    BHBot.logger.error("Can't start fisher.exe");
-			}
+            } catch (IOException | InterruptedException ex) {
+                BHBot.logger.error("Can't start fisher.exe");
+            }
 
 //			try{
 //				Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisher-v1.2.4.exe\"\"");
@@ -7442,96 +7492,97 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 //			}catch( IOException ex ){
 //			}catch( InterruptedException ex ){
 //			}
-            
-		} else BHBot.logger.info("start not found");
-        
-       if (!closeFishingSafely()) {
-    	   BHBot.logger.error("Error closing fishing, restarting..");
-    	   restart();
-       }
-        
-	}
-	
-	private boolean closeFishingSafely() {
-		MarvinSegment seg;
-		readScreen();
-		
+
+        } else BHBot.logger.info("start not found");
+
+        if (!closeFishingSafely()) {
+            BHBot.logger.error("Error closing fishing, restarting..");
+            restart();
+        }
+
+    }
+
+    private boolean closeFishingSafely() {
+        MarvinSegment seg;
+        readScreen();
+
         seg = detectCue(cues.get("Trade"), SECOND * 3);
         if (seg != null) {
             clickOnSeg(seg);
         }
-        
+
         seg = detectCue(cues.get("X"), SECOND * 3);
         if (seg != null) {
             clickOnSeg(seg);
         }
-        
+
         seg = detectCue(cues.get("FishingClose"), 3 * SECOND);
         if (seg != null) {
             clickOnSeg(seg);
         }
-        
+
         seg = detectCue(cues.get("GuildButton"), SECOND * 5);
         //else not
         return seg != null; //if we can see the guild button we are successful
- 
-	}
-	
-	private boolean enterGuildHall() {
-		MarvinSegment seg;
-		
+
+    }
+
+    private boolean enterGuildHall() {
+        MarvinSegment seg;
+
         seg = detectCue(cues.get("GuildButton"), SECOND * 5);
         if (seg != null) {
             clickOnSeg(seg);
         }
-        
+
         seg = detectCue(cues.get("Hall"), SECOND * 5);
         if (seg != null) {
             clickOnSeg(seg);
         }
-        
+
         readScreen();
         seg = detectCue(cues.get("GuildHallC"), SECOND * 10); //long search time as the bot can take a while to load the assets
         return seg != null;
     }
 
-	private void handleVictory() {
+    private void handleVictory() {
 
-		BufferedImage victoryPopUpImg = img;
+        BufferedImage victoryPopUpImg = img;
 
-		if (BHBot.settings.victoryScreenshot) {
-			saveGameScreen("victory-" + state, img);
-		}
+        if (BHBot.settings.victoryScreenshot) {
+            saveGameScreen("victory-" + state, img);
+        }
 
-		if (BHBot.settings.enablePushover) {
-			readScreen();
+        if (BHBot.settings.enablePushover) {
+            readScreen();
 
-			String DroppedItem = "";
-			Bounds victoryDropArea = new Bounds(175, 340, 625, 425);
+            String DroppedItem = "";
+            Bounds victoryDropArea = new Bounds(175, 340, 625, 425);
 
-			if (BHBot.settings.poNotifyDrop.contains("l") &&
-					detectCue(cues.get("ItemLeg"), 0, victoryDropArea) != null ) {
-				DroppedItem += "Legendary Item dropped";
-			}
-			if (BHBot.settings.poNotifyDrop.contains("s") &&
-					detectCue(cues.get("ItemSet"), 0, victoryDropArea) != null ) {
-				if (DroppedItem.length() > 0) DroppedItem += "\n";
-				DroppedItem += "Set Item dropped";
-			}
-			if (BHBot.settings.poNotifyDrop.contains("m") &&
-					detectCue(cues.get("ItemMyt"), 0, victoryDropArea) != null ) {
-				if (DroppedItem.length() > 0) DroppedItem += "\n";
-				DroppedItem += "Mythical Item dropped";
-			}
+            if (BHBot.settings.poNotifyDrop.contains("l") &&
+                    detectCue(cues.get("ItemLeg"), 0, victoryDropArea) != null) {
+                DroppedItem += "Legendary Item dropped";
+            }
+            if (BHBot.settings.poNotifyDrop.contains("s") &&
+                    detectCue(cues.get("ItemSet"), 0, victoryDropArea) != null) {
+                if (DroppedItem.length() > 0) DroppedItem += "\n";
+                DroppedItem += "Set Item dropped";
+            }
+            if (BHBot.settings.poNotifyDrop.contains("m") &&
+                    detectCue(cues.get("ItemMyt"), 0, victoryDropArea) != null) {
+                if (DroppedItem.length() > 0) DroppedItem += "\n";
+                DroppedItem += "Mythical Item dropped";
+            }
 
-			if (DroppedItem.length() > 0) {
-				String victoryScreenName = saveGameScreen("victory-screen", victoryPopUpImg);
-				File victoryScreenFile = new File(victoryScreenName);
-				sendPushOverMessage(state + " item Drop", DroppedItem, "magic", MessagePriority.HIGH, victoryScreenFile);
-				if(!victoryScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img file for victory drop.");
-			}
-		}
+            if (DroppedItem.length() > 0) {
+                String victoryScreenName = saveGameScreen("victory-screen", victoryPopUpImg);
+                File victoryScreenFile = new File(victoryScreenName);
+                sendPushOverMessage(state + " item Drop", DroppedItem, "magic", MessagePriority.HIGH, victoryScreenFile);
+                if (!victoryScreenFile.delete())
+                    BHBot.logger.warn("Impossible to delete tmp img file for victory drop.");
+            }
+        }
 
-	}
+    }
 
 }
