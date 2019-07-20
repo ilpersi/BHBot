@@ -3790,7 +3790,7 @@ public class MainThread implements Runnable {
 		}
 		
 		// handle "Not enough energy" popup:
-		if (activityDuration < 30) {
+		if ( State.Dungeon.equals(state) && activityDuration < 30) {
 			boolean insufficientEnergy = handleNotEnoughEnergyPopup(state);
 			if (insufficientEnergy) {
 				state = State.Main; // reset state
