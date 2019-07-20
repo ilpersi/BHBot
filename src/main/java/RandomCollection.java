@@ -28,11 +28,11 @@ public class RandomCollection<T> {
         return map.ceilingEntry(value).getValue();
     }
 
-    public int size () {
+    public int size() {
         return map.size();
     }
 
-    public void clear () {
+    public void clear() {
         map.clear();
         total = 0;
     }
@@ -40,7 +40,7 @@ public class RandomCollection<T> {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        for (Map.Entry<Double,T> entry : map.entrySet()) {
+        for (Map.Entry<Double, T> entry : map.entrySet()) {
             String value = entry.getValue().toString();
             int key = entry.getKey().intValue();
             result.append(value);
