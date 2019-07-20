@@ -14,6 +14,7 @@ import org.apache.logging.log4j.util.Supplier;
  * the STATS, READOUT, AUTOSHRINE, AUTOREVIVE and AUTORUNE custom log levels.
  * <p>Compatible with Log4j 2.6 or higher.</p>
  */
+@SuppressWarnings({"unused", "RedundantCast"})
 public final class BHBotLogger extends ExtendedLoggerWrapper {
     private static final long serialVersionUID = 918354644352989L;
     private static final String FQCN = BHBotLogger.class.getName();
