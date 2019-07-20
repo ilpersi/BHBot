@@ -3078,7 +3078,7 @@ public class MainThread implements Runnable {
 			numConsecutiveException = 0; // reset exception counter
 			BHBot.scheduler.restoreIdleTime(); // revert changes to idle time
 			if (finished) break; // skip sleeping if finished flag has been set!
-			sleep(3 * SECOND);
+			sleep(SECOND);
 		} // main while loop
 
 		BHBot.logger.info("Stopping main thread...");
