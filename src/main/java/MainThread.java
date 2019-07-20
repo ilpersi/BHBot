@@ -421,6 +421,8 @@ public class MainThread implements Runnable {
 	private long activityDuration;
 	private long outOfEncounterTimestamp = 0;
 	private long inEncounterTimestamp = 0;
+	
+	private long runMillisAvg;
 
 	private boolean specialDungeon; //d4 check for closing properly when no energy
 
@@ -3761,7 +3763,7 @@ public class MainThread implements Runnable {
 						  TimeUnit.MILLISECONDS.toMinutes(runMillis),
 						  TimeUnit.MILLISECONDS.toSeconds(runMillis) -
 						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
-				long runMillisAvg =+ runMillis; //on success add runtime to runMillisAvg
+				runMillisAvg =+ runMillis; //on success add runtime to runMillisAvg
 				String runtimeAvg = String.format("%01dm%02ds", //format to mss
 						  TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter), //then we divide runMillisavg by completed raids to get average time
 						  TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / raidVictoryCounter) -
@@ -5211,7 +5213,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 					case "p3":
 						return "Portal 3";
 					case "p4":
-						return "Portal 4";
+						return "Astamus";
 					default:
 						return null;
 				}
@@ -5328,12 +5330,12 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			portalCheck[0] = new Point(370, 140); // Blublix
 			portalCheck[1] = new Point(226, 369); // Mowhi
 			portalCheck[2] = new Point(534, 350); // Wizbot
-			portalCheck[3] = new Point(370, 324); //
+			portalCheck[3] = new Point(370, 324); // Astamus
 
 			portalPosition[0] = new Point(400, 165); // Blublix
 			portalPosition[1] = new Point(243, 385); // Mowhi
 			portalPosition[2] = new Point(562, 375); // Wizbot
-			portalPosition[3] = new Point(400, 318); //
+			portalPosition[3] = new Point(400, 318); // Astamus
 
 			colorCheck[0] = Color.WHITE;
 			colorCheck[1] = Color.WHITE;
