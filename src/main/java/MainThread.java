@@ -5435,9 +5435,9 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
 		// we check for white border to understand if the portal is enabled
-		final Color enabledPortal = Color.WHITE;
 		Point[] portalCheck = new Point[4];
 		Point[] portalPosition = new Point[4];
+		Color[] colorCheck = new Color[4];
 		boolean[] portalEnabled = new boolean[4];
 
 		if (currentExpedition == 1) { // Hallowed
@@ -5451,6 +5451,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			portalPosition[1] = new Point(520, 220); //Svord
 			portalPosition[2] = new Point(360, 360); //Twimbo
 			portalPosition[3] = new Point(650, 380); //X5-T34M
+
+			colorCheck[0] = Color.WHITE;
+			colorCheck[1] = Color.WHITE;
+			colorCheck[2] = Color.WHITE;
+			colorCheck[3] = Color.WHITE;
 		}
 		else if (currentExpedition == 2) { // Inferno
 			portalCheck[0] = new Point(185, 206); // Raleib
@@ -5462,6 +5467,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			portalPosition[1] = new Point(600, 195); // Blemo
 			portalPosition[2] = new Point(420, 405); // Gummy
 			portalPosition[3] = new Point(420, 270); // Zarlock
+
+			colorCheck[0] = Color.WHITE;
+			colorCheck[1] = Color.WHITE;
+			colorCheck[2] = Color.WHITE;
+			colorCheck[3] = Color.WHITE;
 		} else if (currentExpedition == 3) { // Jammie
 			portalCheck[0] = new Point(145, 187); // Zorgo
 			portalCheck[1] = new Point(309, 289); // Yackerz
@@ -5472,22 +5482,32 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			portalPosition[1] = new Point(315, 260); // Yackerz
 			portalPosition[2] = new Point(480, 360); // Vinot
 			portalPosition[3] = new Point(635, 385); // Grampa
+
+			colorCheck[0] = Color.WHITE;
+			colorCheck[1] = Color.WHITE;
+			colorCheck[2] = Color.WHITE;
+			colorCheck[3] = Color.WHITE;
 		} else { // Idol
 			portalCheck[0] = new Point(370, 140); // Blublix
 			portalCheck[1] = new Point(226, 369); // Mowhi
 			portalCheck[2] = new Point(534, 350); // Wizbot
-			portalCheck[3] = new Point(4, 4); // 
+			portalCheck[3] = new Point(370, 324); //
 
 			portalPosition[0] = new Point(400, 165); // Blublix
 			portalPosition[1] = new Point(243, 385); // Mowhi
 			portalPosition[2] = new Point(562, 375); // Wizbot
 			portalPosition[3] = new Point(400, 318); //
+
+			colorCheck[0] = Color.WHITE;
+			colorCheck[1] = Color.WHITE;
+			colorCheck[2] = Color.WHITE;
+			colorCheck[3] = new Color(251, 201, 126);
 		}
 
 		// We check which of the portals are enabled
 		for (int i = 0; i <=3; i++){
 			Color col = new Color(img.getRGB(portalCheck[i].x, portalCheck[i].y));
-			portalEnabled[i] = col.equals(enabledPortal);
+			portalEnabled[i] = col.equals(colorCheck[i]);
 		}
 
 		if (portalEnabled[portalInt - 1]) return portalPosition[portalInt - 1];
