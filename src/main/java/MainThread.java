@@ -870,7 +870,7 @@ public class MainThread implements Runnable {
 		addCue("Expedition1", loadImage("cues/expedition/cueExpedition1Hallowed.png"), new Bounds(168, 34, 628, 108)); // Hallowed Expedtion Title
 		addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"), new Bounds(200, 40, 600, 100)); //Inferno Expedition
 		addCue("Expedition3", loadImage("cues/expedition/cueExpedition3Jammie.png"), new Bounds(230, 40, 565, 100)); //Jammie Dimension
-		addCue("Expedition4", loadImage("cues/expedition/cueExpedition4PLACEHOLDER.png"), new Bounds(230, 40, 565, 100)); //New Dimension
+		addCue("Expedition4", loadImage("cues/expedition/cueExpedition4Idol.png"), new Bounds(230, 40, 565, 100)); //Idol Dimension
 
 		//WorldBoss Related
 		addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"),  null);
@@ -2602,7 +2602,7 @@ public class MainThread implements Runnable {
 
 								seg = detectCue(cues.get("Play"), 2*SECOND);
 								clickOnSeg(seg);
-								sleep(2*SECOND);
+								readScreen(2*SECOND);
 
 								//Select Expedition and write portal to a variable
 								String randomExpedition = BHBot.settings.expeditions.next();
@@ -5376,14 +5376,14 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 					default:
 						return null;
 				}
-			case 4:
+			case 4: // Idol dimension
 				switch (targetPortal) {
 					case "p1":
-						return "Portal 1";
+						return "Blublix";
 					case "p2":
-						return "Portal 2";
+						return "Mowhi";
 					case "p3":
-						return "Portal 3";
+						return "Wizbot";
 					case "p4":
 						return "Portal 4";
 					default:
@@ -5413,7 +5413,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}  else if (currentExpedition == 3) {
 			portalName = "Jammie";
 		}  else if (currentExpedition == 4) {
-			portalName = "Placeholder Expedition";
+			portalName = "Idol";
 		} else {
 			BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
 			saveGameScreen("unknown-expedition");
@@ -5483,16 +5483,16 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			portalPosition[1] = new Point(315, 260); // Yackerz
 			portalPosition[2] = new Point(480, 360); // Vinot
 			portalPosition[3] = new Point(635, 385); // Grampa
-		} else { // Placeholder Expedition
-			portalCheck[0] = new Point(1, 1); // 
-			portalCheck[1] = new Point(2, 2); // 
-			portalCheck[2] = new Point(3, 3); // 
+		} else { // Idol
+			portalCheck[0] = new Point(370, 140); // Blublix
+			portalCheck[1] = new Point(226, 369); // Mowhi
+			portalCheck[2] = new Point(534, 350); // Wizbot
 			portalCheck[3] = new Point(4, 4); // 
 
-			portalPosition[0] = new Point(1, 1); // 
-			portalPosition[1] = new Point(2, 2); // 
-			portalPosition[2] = new Point(3, 3); // 
-			portalPosition[3] = new Point(4, 4); // 
+			portalPosition[0] = new Point(400, 165); // Blublix
+			portalPosition[1] = new Point(243, 385); // Mowhi
+			portalPosition[2] = new Point(562, 375); // Wizbot
+			portalPosition[3] = new Point(400, 318); //
 		}
 
 		// We check which of the portals are enabled
