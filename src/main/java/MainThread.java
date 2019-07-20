@@ -5204,14 +5204,14 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 					default:
 						return null;
 				}
-			case 4:
+			case 4: // Idol dimension
 				switch (targetPortal) {
 					case "p1":
-						return "Portal 1";
+						return "Blublix";
 					case "p2":
-						return "Portal 2";
+						return "Mowhi";
 					case "p3":
-						return "Portal 3";
+						return "Wizbot";
 					case "p4":
 						return "Astamus";
 					default:
