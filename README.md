@@ -1,5 +1,6 @@
 # BHBot
 
+[![Paypal Donate](https://img.shields.io/badge/donate-paypal-informational.svg?logo=paypal&style=popout)](https://www.paypal.me/ilpersi)
 [![Gitter chat](https://img.shields.io/gitter/room/ilpersi/BHBot.svg?color=red&style=popout)](https://gitter.im/BHBot/community)
 [![GitHub release](https://img.shields.io/github/release/ilpersi/BHBot.svg?label=last%20release&style=popout) ![GitHub Release Date](https://img.shields.io/github/release-date/ilpersi/BHBot.svg?label=released&style=popout)](https://github.com/ilpersi/BHBot/releases/latest)
 [![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=popout)](https://github.com/ilpersi/BHBot/labels/bug)
@@ -79,6 +80,9 @@ command input box):
 - `shot [prefix]`: takes a screenshot of the game and saves it to 'shot.png'. If a _prefix_ is specified it will be used instead of the default _shot_ one.
 - `show`: shows Chromium window again after it has been hidden.
 - `stop`: stops the bot execution (may take a few seconds. Once it is stopped, the console will close automatically).
+  
+## Donate
+BHBot is free and it will always be so. If you like to, we accept spontaneous donations through our [paypal link](https://www.paypal.me/ilpersi).
   
 ## Authors
 BHBot is an original idea by [Betalord](https://github.com/Betalord) and he used it until his character achieved level 165. On 29th of September 2017 (a 1st year anniversary of the Bit Heroes game) he quit the game and released the bot to the public. In december 2018 [Fortigate](https://github.com/Fortigate) decided to pick on the development and from march 2019 [ilpersi](https://github.com/ilpersi) joined him to make the bot what it is today. Starting from june 2019 ilpersi is the new owner of the project.
