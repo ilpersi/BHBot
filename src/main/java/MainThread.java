@@ -15,7 +15,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.concurrent.TimeUnit ;
+import java.util.concurrent.TimeUnit;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
@@ -875,7 +875,7 @@ public class MainThread implements Runnable {
 		addCue("Expedition1", loadImage("cues/expedition/cueExpedition1Hallowed.png"), new Bounds(168, 34, 628, 108)); // Hallowed Expedtion Title
 		addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"), new Bounds(200, 40, 600, 100)); //Inferno Expedition
 		addCue("Expedition3", loadImage("cues/expedition/cueExpedition3Jammie.png"), new Bounds(230, 40, 565, 100)); //Jammie Dimension
-		addCue("Expedition4", loadImage("cues/expedition/cueExpedition4PLACEHOLDER.png"), new Bounds(230, 40, 565, 100)); //Jammie Dimension
+		addCue("Expedition4", loadImage("cues/expedition/cueExpedition4Idol.png"), new Bounds(230, 40, 565, 100)); //Idol Dimension
 
 		//WorldBoss Related
 		addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"),  null);
@@ -915,6 +915,9 @@ public class MainThread implements Runnable {
 		addCue("Exit", loadImage("cues/cueExit.png"),  null);
 		addCue("Fishing", loadImage("cues/cueSteamFishing.png"), new Bounds(725, 425, 790, 510));
 		addCue("FishingClose", loadImage("cues/fishingClose.png"),  null);
+		addCue("Trade", loadImage("cues/cueTrade.png"), new Bounds(360, 443, 441, 468));
+		addCue("Hall", loadImage("cues/cueHall.png"), new Bounds(575, 455, 645, 480));
+		addCue("GuildHallC", loadImage("cues/cueGuildHallC.png"), new Bounds(750, 55, 792, 13));
 
 		//Familiar bribing cues
 		addCue("NotEnoughGems", loadImage("cues/cueNotEnoughGems.png"), null); // used when not enough gems are available
@@ -931,6 +934,7 @@ public class MainThread implements Runnable {
 		addCue("MinorAvailable", loadImage("cues/autorevive/cueMinorAvailable.png"), new Bounds(170, 205, 270, 300));
 		addCue("AverageAvailable", loadImage("cues/autorevive/cueAverageAvailable.png"), new Bounds(350, 205, 450, 300));
 		addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable.png"), new Bounds(535, 205, 635, 300));
+		addCue("SuperAvailable", loadImage("cues/autorevive/cueSuperAvailable.png"), new Bounds(140, 150, 300, 200));
 		addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
 
 		//Items related cues
@@ -1118,7 +1122,16 @@ public class MainThread implements Runnable {
 //		BHBot.logger.info(Integer.toString(BHBot.settings.shrineDelay));
 
 
-//		BHBot.logger.info(BHBot.settings.activitiesEnabled);
+////		BHBot.logger.info(BHBot.settings.activitiesEnabled);
+//		long firstTime = Misc.getTime();
+////		BHBot.logger.info(long.toString(firstTime));
+//		sleep(10 * SECOND);
+//		long secondTime = Misc.getTime();
+//		String runtime = String.format("%01dm %02ds",
+//				  TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime),
+//				  TimeUnit.MILLISECONDS.toSeconds(secondTime - firstTime) -
+//				  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime)));
+//		BHBot.logger.info(runtime);
 
 		//End debugging section
 
@@ -2221,7 +2234,7 @@ public class MainThread implements Runnable {
 								}
 								clickOnSeg(seg);
 								readScreen();
-								sleep(1*SECOND);
+								sleep(SECOND);
 								
 								seg = detectCue(cues.get("Accept"), 2*SECOND);
 								if (seg == null) {
@@ -2230,7 +2243,7 @@ public class MainThread implements Runnable {
 									continue;
 								}
 								clickOnSeg(seg);
-								sleep(1*SECOND);
+								sleep(SECOND);
 
 								handleTeamMalformedWarning();
 								if (handleTeamMalformedWarning()) {
@@ -2341,42 +2354,39 @@ public class MainThread implements Runnable {
 								if (BHBot.scheduler.doExpeditionImmediately)
 									BHBot.scheduler.doExpeditionImmediately = false; // reset it
 
+                                if (BHBot.settings.costExpedition > badges) {
+                                    BHBot.logger.info("Target cost " + BHBot.settings.costExpedition + " is higher than available badges " + badges + ". Expedition will be skipped.");
+                                    seg = detectCue(cues.get("X"));
+                                    clickOnSeg(seg);
+                                    sleep(2*SECOND);
+                                    continue;
+                                }
+
 								// One time check for Autoshrine
-								if (BHBot.settings.autoShrine.contains("e")) {
+								if (BHBot.settings.autoShrine.contains("e") || BHBot.settings.autoBossRune.containsKey("e")) {
 									seg = detectCue(cues.get("X"));
 									clickOnSeg(seg);
 									readScreen(2 * SECOND);
 
-									BHBot.logger.info("Configuring autoShrine for Expedition");
-									if(!checkShrineSettings(true, true)) {
-										BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
-									}
 
-									readScreen(SECOND);
+                                    if (BHBot.settings.autoShrine.contains("e")) {
+                                        BHBot.logger.info("Configuring autoShrine for Expedition");
+                                        if(!checkShrineSettings(true, true)) {
+                                            BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
+                                        }
+                                    }
+
+                                    if (BHBot.settings.autoBossRune.containsKey("e")) {
+                                        //configure activity runes
+                                        handleMinorRunes("e");
+                                        readScreen(SECOND);
+                                        clickOnSeg(badgeBtn);
+                                    }
+
+                                    readScreen(SECOND);
 									clickOnSeg(badgeBtn);
 									readScreen(SECOND * 2);
 								}
-
-								//configure activity runes
-								handleMinorRunes("e");
-								readScreen(SECOND);
-								clickOnSeg(badgeBtn);
-								
-								//configure boss runes if no autoshrine
-								if (BHBot.settings.autoBossRune.containsKey("e") && !BHBot.settings.autoShrine.contains("e")) { //if autoshrine disabled but autorune enabled
-									seg = detectCue(cues.get("X"),SECOND);
-									clickOnSeg(seg);
-									readScreen(SECOND);
-
-									BHBot.logger.info("Configuring autoBossRune for Expedition");
-									if (!checkShrineSettings(true, false)) {
-										BHBot.logger.error("Impossible to configure autoBossRune for Expedition!");
-									}
-								}
-								
-								readScreen(SECOND);
-								clickOnSeg(badgeBtn);
-								sleep(SECOND); //wait for window animation
 
 								BHBot.logger.info("Attempting expedition...");
 
@@ -2385,14 +2395,6 @@ public class MainThread implements Runnable {
 								if (cost == 0) { // error!
 									BHBot.logger.error("Due to an error#1 in cost detection, Expedition cost will be skipped.");
 									closePopupSecurely(cues.get("ExpeditionWindow"), cues.get("X"));
-									continue;
-								}
-
-								if (cost > badges) {
-									BHBot.logger.info("Detected cost " + cost + " is higher than available badges " + badges + ". Expedition will be skipped.");
-									seg = detectCue(cues.get("X"));
-									clickOnSeg(seg);
-									sleep(2*SECOND);
 									continue;
 								}
 
@@ -2415,7 +2417,7 @@ public class MainThread implements Runnable {
 
 								seg = detectCue(cues.get("Play"), 2*SECOND);
 								clickOnSeg(seg);
-								sleep(2*SECOND);
+								readScreen(2*SECOND);
 
 								//Select Expedition and write portal to a variable
 								String randomExpedition = BHBot.settings.expeditions.next();
@@ -2884,7 +2886,7 @@ public class MainThread implements Runnable {
 			numConsecutiveException = 0; // reset exception counter
 			BHBot.scheduler.restoreIdleTime(); // revert changes to idle time
 			if (finished) break; // skip sleeping if finished flag has been set!
-			sleep(3 * SECOND);
+			sleep(SECOND);
 		} // main while loop
 
 		BHBot.logger.info("Stopping main thread...");
@@ -3591,26 +3593,26 @@ public class MainThread implements Runnable {
 		readScreen();
 
 		if (!startTimeCheck) {
-			activityStartTime = (System.currentTimeMillis() / 1000L);
+			activityStartTime = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
 			BHBot.logger.debug("Start time: " + activityStartTime);
-			outOfEncounterTimestamp = Misc.getTime() / 1000;
-			inEncounterTimestamp = Misc.getTime() / 1000;
+			outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
+			inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
 			startTimeCheck = true;
 		}
 
-		activityDuration = ((System.currentTimeMillis() / 1000L) - activityStartTime);
+		activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
 
 		//We use guild button visibility to determine whether we are in an encounter or not
 		MarvinSegment guildButtonSeg = detectCue(cues.get("GuildButton"));
 		if (guildButtonSeg != null) {
-			outOfEncounterTimestamp = Misc.getTime() / 1000;
+			outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
 		} else {
-			inEncounterTimestamp = Misc.getTime() / 1000;
+			inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
 //			BHBot.logger.debug("Encounter detected");
 		}
 		
 		if ((outOfEncounterTimestamp - inEncounterTimestamp) > 0) {
-		BHBot.logger.debug("Time since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
+		BHBot.logger.debug("Seconds since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
 		}
 		
 		// handle "Not enough energy" popup:
@@ -3679,6 +3681,36 @@ public class MainThread implements Runnable {
 			return;
 		}
 
+		/*
+		 * Check if we're done (victory in PVP mode) - this may also close local fights in dungeons, this is why we check if state is State.PVP and react only to that one.
+		 * There were some crashing and clicking on SHOP problems with this one in dungeons and raids (and possibly elsewhere).
+		 * Hence I fixed it by checking if state==State.PVP.
+		 */
+		if (state == State.PVP) {
+		readScreen();
+		seg = detectCue(cues.get("VictoryPopup"));
+		if (seg != null) {
+
+			handleVictory();
+
+			closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
+
+			// close the PVP window, in case it is open:
+			readScreen(2*SECOND);
+
+			seg = detectCue(cues.get("PVPWindow"), 5*SECOND);
+			if (seg != null)
+				closePopupSecurely(cues.get("PVPWindow"), cues.get("X")); // ignore failure
+			sleep(SECOND);
+			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
+			resetAppropriateTimers();
+			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
+			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
+			state = State.Main; // reset state
+			return;
+			}
+		}
+
 		// check for any character dialog:
 		/* This is nearly half of the processing time of proccessDungeon(); so trying to minimize its usage */
 		if (state == State.Dungeon || state == State.Raid) {
@@ -3723,7 +3755,18 @@ public class MainThread implements Runnable {
 				raidVictoryCounter++;
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
-				BHBot.logger.stats("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
+				BHBot.logger.stats("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%.");
+				long runMillis = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
+				String runtime = String.format("%01dm%02ds", //format to mss
+						  TimeUnit.MILLISECONDS.toMinutes(runMillis),
+						  TimeUnit.MILLISECONDS.toSeconds(runMillis) -
+						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
+				long runMillisAvg =+ runMillis; //on success add runtime to runMillisAvg
+				String runtimeAvg = String.format("%01dm%02ds", //format to mss
+						  TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter), //then we divide runMillisavg by completed raids to get average time
+						  TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / raidVictoryCounter) -
+						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter)));
+				BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
 			} else {
 			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
 			}
@@ -3798,7 +3841,12 @@ public class MainThread implements Runnable {
 				int totalRaids = raidVictoryCounter + raidDefeatCounter;
 				BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
 				BHBot.logger.stats("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%");
-
+				long runMillis = Misc.getTime() - (activityStartTime * 1000);
+				String runtime = String.format("%01dm%02ds",
+						  TimeUnit.MILLISECONDS.toMinutes(runMillis),
+						  TimeUnit.MILLISECONDS.toSeconds(runMillis) -
+						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
+				BHBot.logger.stats("Run time: " + runtime);
 			} else {
 			BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
 			}
@@ -3878,36 +3926,6 @@ public class MainThread implements Runnable {
 
 			state = State.Main; // reset state
 			return;
-		}
-
-		/*
-		 * Check if we're done (victory in PVP mode) - this may also close local fights in dungeons, this is why we check if state is State.PVP and react only to that one.
-		 * There were some crashing and clicking on SHOP problems with this one in dungeons and raids (and possibly elsewhere).
-		 * Hence I fixed it by checking if state==State.PVP.
-		 */
-		if (state == State.PVP) {
-//		seg = detectCue(cues.get("VictoryPopup"),500);
-		seg = detectCue(cues.get("VictoryPopup"));
-		if (seg != null) {
-
-			handleVictory();
-
-			closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
-
-			// close the PVP window, in case it is open:
-			readScreen(2*SECOND);
-
-			seg = detectCue(cues.get("PVPWindow"), 5*SECOND);
-			if (seg != null)
-				closePopupSecurely(cues.get("PVPWindow"), cues.get("X")); // ignore failure
-			sleep(SECOND);
-			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
-			resetAppropriateTimers();
-			if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
-			if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
-			state = State.Main; // reset state
-			return;
-			}
 		}
 
 		//small sleep so this function isn't too taxing on performance
@@ -4215,6 +4233,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 		BHBot.logger.error("Unable to find rune of type " + desiredRune);
 		closePopupSecurely(cues.get("RunesPicker"), cues.get("X"));
+		sleep(SECOND);
 		return false;
     }
     
@@ -4758,6 +4777,14 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                         continue;
                     }
 
+                    // If super potion is available, we skip it
+                    int superPotionMaxChecks = 10, superPotionCurrentCheck = 0;
+                    while (superPotionCurrentCheck < superPotionMaxChecks && detectCue(cues.get("SuperAvailable")) != null) {
+						clickInGame(656, 434);
+						readScreen(500);
+                    	superPotionCurrentCheck++;
+					}
+
                     // We check what revives are available, and we save the seg for future reuse
                     HashMap<Character, MarvinSegment> availablePotions = new HashMap<>();
                     availablePotions.put('1', detectCue(cues.get("MinorAvailable")));
@@ -5212,7 +5239,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}  else if (currentExpedition == 3) {
 			portalName = "Jammie";
 		}  else if (currentExpedition == 4) {
-			portalName = "Placeholder Expedition";
+			portalName = "Idol";
 		} else {
 			BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
 			saveGameScreen("unknown-expedition");
@@ -5245,9 +5272,9 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 		}
 
 		// we check for white border to understand if the portal is enabled
-		final Color enabledPortal = Color.WHITE;
 		Point[] portalCheck = new Point[4];
 		Point[] portalPosition = new Point[4];
+		Color[] colorCheck = new Color[4];
 		boolean[] portalEnabled = new boolean[4];
 
 		if (currentExpedition == 1) { // Hallowed
@@ -5261,6 +5288,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			portalPosition[1] = new Point(520, 220); //Svord
 			portalPosition[2] = new Point(360, 360); //Twimbo
 			portalPosition[3] = new Point(650, 380); //X5-T34M
+
+			colorCheck[0] = Color.WHITE;
+			colorCheck[1] = Color.WHITE;
+			colorCheck[2] = Color.WHITE;
+			colorCheck[3] = Color.WHITE;
 		}
 		else if (currentExpedition == 2) { // Inferno
 			portalCheck[0] = new Point(185, 206); // Raleib
@@ -5272,6 +5304,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			portalPosition[1] = new Point(600, 195); // Blemo
 			portalPosition[2] = new Point(420, 405); // Gummy
 			portalPosition[3] = new Point(420, 270); // Zarlock
+
+			colorCheck[0] = Color.WHITE;
+			colorCheck[1] = Color.WHITE;
+			colorCheck[2] = Color.WHITE;
+			colorCheck[3] = Color.WHITE;
 		} else if (currentExpedition == 3) { // Jammie
 			portalCheck[0] = new Point(145, 187); // Zorgo
 			portalCheck[1] = new Point(309, 289); // Yackerz
@@ -5282,22 +5319,32 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			portalPosition[1] = new Point(315, 260); // Yackerz
 			portalPosition[2] = new Point(480, 360); // Vinot
 			portalPosition[3] = new Point(635, 385); // Grampa
-		} else { // Placeholder Expedition
-			portalCheck[0] = new Point(1, 1); // 
-			portalCheck[1] = new Point(2, 2); // 
-			portalCheck[2] = new Point(3, 3); // 
-			portalCheck[3] = new Point(4, 4); // 
 
-			portalPosition[0] = new Point(1, 1); // 
-			portalPosition[1] = new Point(2, 2); // 
-			portalPosition[2] = new Point(3, 3); // 
-			portalPosition[3] = new Point(4, 4); // 
+			colorCheck[0] = Color.WHITE;
+			colorCheck[1] = Color.WHITE;
+			colorCheck[2] = Color.WHITE;
+			colorCheck[3] = Color.WHITE;
+		} else { // Idol
+			portalCheck[0] = new Point(370, 140); // Blublix
+			portalCheck[1] = new Point(226, 369); // Mowhi
+			portalCheck[2] = new Point(534, 350); // Wizbot
+			portalCheck[3] = new Point(370, 324); //
+
+			portalPosition[0] = new Point(400, 165); // Blublix
+			portalPosition[1] = new Point(243, 385); // Mowhi
+			portalPosition[2] = new Point(562, 375); // Wizbot
+			portalPosition[3] = new Point(400, 318); //
+
+			colorCheck[0] = Color.WHITE;
+			colorCheck[1] = Color.WHITE;
+			colorCheck[2] = Color.WHITE;
+			colorCheck[3] = new Color(251, 201, 126);
 		}
 
 		// We check which of the portals are enabled
 		for (int i = 0; i <=3; i++){
 			Color col = new Color(img.getRGB(portalCheck[i].x, portalCheck[i].y));
-			portalEnabled[i] = col.equals(enabledPortal);
+			portalEnabled[i] = col.equals(colorCheck[i]);
 		}
 
 		if (portalEnabled[portalInt - 1]) return portalPosition[portalInt - 1];
@@ -6634,6 +6681,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			if (BHBot.settings.doFishing) {
 				BHBot.logger.debug("Handling fishing...");
 				handleFishing();
+				sleep(SECOND);
+				if (enterGuildHall()) { //the fishing island is a silly place, lets not stay there
+		        	BHBot.logger.debug("Entered Guild Hall");
+				} else BHBot.logger.warn("Failed to enter guild hall");
+				sleep(SECOND);
 			}
 
             readScreen();
@@ -7204,13 +7256,56 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 //			}
 
 		} else BHBot.logger.info("start not found");
+        
+       if (!closeFishingSafely()) {
+    	   BHBot.logger.error("Error closing fishing, restarting..");
+    	   restart();
+       }
 
-        seg = detectCue(cues.get("FishingClose"), 5 * SECOND);
+	}
+
+	private boolean closeFishingSafely() {
+		MarvinSegment seg;
+		readScreen();
+
+        seg = detectCue(cues.get("Trade"), SECOND * 3);
         if (seg != null) {
             clickOnSeg(seg);
         }
 
+        seg = detectCue(cues.get("X"), SECOND * 3);
+        if (seg != null) {
+            clickOnSeg(seg);
+        }
+
+        seg = detectCue(cues.get("FishingClose"), 3 * SECOND);
+        if (seg != null) {
+            clickOnSeg(seg);
+        }
+
+        seg = detectCue(cues.get("GuildButton"), SECOND * 5);
+        //else not
+        return seg != null; //if we can see the guild button we are successful
+
 	}
+
+	private boolean enterGuildHall() {
+		MarvinSegment seg;
+
+        seg = detectCue(cues.get("GuildButton"), SECOND * 5);
+        if (seg != null) {
+            clickOnSeg(seg);
+        }
+
+        seg = detectCue(cues.get("Hall"), SECOND * 5);
+        if (seg != null) {
+            clickOnSeg(seg);
+        }
+
+        readScreen();
+        seg = detectCue(cues.get("GuildHallC"), SECOND * 10); //long search time as the bot can take a while to load the assets
+        return seg != null;
+    }
 
 	private void handleVictory() {
 
