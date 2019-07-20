@@ -1,10 +1,10 @@
 # BHBot
 
 [![Paypal Donate](https://img.shields.io/badge/donate-paypal-informational.svg?logo=paypal&style=popout)](https://www.paypal.me/ilpersi)
-[![Gitter chat](https://img.shields.io/gitter/room/ilpersi/BHBot.svg?color=red&style=popout)](https://gitter.im/BHBot/community)
-[![GitHub release](https://img.shields.io/github/release/ilpersi/BHBot.svg?label=last%20release&style=popout) ![GitHub Release Date](https://img.shields.io/github/release-date/ilpersi/BHBot.svg?label=released&style=popout)](https://github.com/ilpersi/BHBot/releases/latest)
-[![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=popout)](https://github.com/ilpersi/BHBot/labels/bug)
-[![GitHub last commit](https://img.shields.io/github/last-commit/ilpersi/BHBot.svg?style=popout)](https://github.com/ilpersi/BHBot/commits)
+[![Gitter chat](https://img.shields.io/gitter/room/ilpersi/BHBot.svg?color=red&style=popout&logo=gitter)](https://gitter.im/BHBot/community)
+[![GitHub release](https://img.shields.io/github/release/ilpersi/BHBot.svg?label=last%20release&style=popout&logo=docusign) ![GitHub Release Date](https://img.shields.io/github/release-date/ilpersi/BHBot.svg?label=released&style=popout)](https://github.com/ilpersi/BHBot/releases/latest)
+[![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=popout&logo=hackaday)](https://github.com/ilpersi/BHBot/labels/bug)
+[![GitHub last commit](https://img.shields.io/github/last-commit/ilpersi/BHBot.svg?style=popout&logo=github)](https://github.com/ilpersi/BHBot/commits)
 ![GitHub All Releases](https://img.shields.io/github/downloads/ilpersi/BHBot/total.svg?label=total%20downloads&style=popout)
 ![GitHub top language](https://img.shields.io/github/languages/top/ilpersi/BHBot.svg?style=popout)
 
