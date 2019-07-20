@@ -79,7 +79,13 @@ command input box):
 - `shot [prefix]`: takes a screenshot of the game and saves it to 'shot.png'. If a _prefix_ is specified it will be used instead of the default _shot_ one.
 - `show`: shows Chromium window again after it has been hidden.
 - `stop`: stops the bot execution (may take a few seconds. Once it is stopped, the console will close automatically).
+  
+## Authors
+BHBot is an original idea by [Betalord](https://github.com/Betalord) and he used it until his character achieved level 165. On 29th of September 2017 (a 1st year anniversary of the Bit Heroes game) he quit the game and released the bot to the public. In december 2018 [Fortigate](https://github.com/Fortigate) decided to pick on the development and from march 2019 [ilpersi](https://github.com/ilpersi) joined him to make the bot what it is today. Starting from june 2019 ilpersi is the new owner of the project.
+
+## Special thanks
+This bot would not exit without all the people that use it or that contribuited to it. A special mention goes to the [JProfiler team](https://www.ej-technologies.com/products/jprofiler/overview.html), a Java profiler tool, that granted us a free open-source license to help make this tool even better.  
 
 ## Finally
 
-Hopefully this bot will prove useful to you, if you have any questions just raise an issue! Enjoy :-)
+Hopefully this bot will prove useful to you, if you have any questions just raise an issue or join our gitter room in which you can talk directly with the developers! Enjoy :-)
