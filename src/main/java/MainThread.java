@@ -929,6 +929,7 @@ public class MainThread implements Runnable {
 		addCue("MinorAvailable", loadImage("cues/autorevive/cueMinorAvailable.png"), new Bounds(170, 205, 270, 300));
 		addCue("AverageAvailable", loadImage("cues/autorevive/cueAverageAvailable.png"), new Bounds(350, 205, 450, 300));
 		addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable.png"), new Bounds(535, 205, 635, 300));
+		addCue("SuperAvailable", loadImage("cues/autorevive/cueSuperAvailable.png"), new Bounds(140, 150, 300, 200));
 		addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
 
 		//Items related cues
@@ -4947,6 +4948,14 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
                     } else {
                         continue;
                     }
+
+                    // If super potion is available, we skip it
+                    int superPotionMaxChecks = 10, superPotionCurrentCheck = 0;
+                    while (superPotionCurrentCheck < superPotionMaxChecks && detectCue(cues.get("SuperAvailable")) != null) {
+						clickInGame(656, 434);
+						readScreen(500);
+                    	superPotionCurrentCheck++;
+					}
 
                     // We check what revives are available, and we save the seg for future reuse
                     HashMap<Character, MarvinSegment> availablePotions = new HashMap<>();
