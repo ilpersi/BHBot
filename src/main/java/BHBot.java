@@ -23,33 +23,26 @@ import java.util.*;
 public class BHBot {
 
     private static final String PROGRAM_NAME = "BHBot";
-    private static String BHBotVersion;
-
-    private static Thread mainThread;
     static MainThread main;
-    /**
-     * Set it to true to end main loop and end program gracefully
-     */
-    private static boolean finished = false;
-
     static Settings settings = new Settings().setDebug();
     static Scheduler scheduler = new Scheduler();
-
     static PushoverClient poClient = new PushoverRestClient();
-
     static String chromeDriverAddress = "127.0.0.1:9515";
-
     static String chromiumExePath = "C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Local\\Chromium\\Application\\chrome.exe";
     static String chromeDriverExePath = "./chromedriver.exe";
-    @SuppressWarnings("FieldCanBeLocal")
-    private static String cuesPath = "./cues/";
     static String screenshotPath = "./screenshots/";
-
     /**
      * log4j logger
      */
     static BHBotLogger logger;
-
+    private static String BHBotVersion;
+    private static Thread mainThread;
+    /**
+     * Set it to true to end main loop and end program gracefully
+     */
+    private static boolean finished = false;
+    @SuppressWarnings("FieldCanBeLocal")
+    private static String cuesPath = "./cues/";
     private static Properties gitPropertis;
 
     public static void main(String[] args) {

@@ -17,8 +17,6 @@ import org.apache.logging.log4j.util.Supplier;
 @SuppressWarnings({"unused", "RedundantCast"})
 public final class BHBotLogger extends ExtendedLoggerWrapper {
     private static final long serialVersionUID = 918354644352989L;
-    private final ExtendedLoggerWrapper logger;
-
     private static final String FQCN = BHBotLogger.class.getName();
     private static final Level STATS = Level.forName("STATS", 390);
     private static final Level READOUT = Level.forName("READOUT", 395);
@@ -26,6 +24,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
     private static final Level AUTOREVIVE = Level.forName("AUTOREVIVE", 399);
     private static final Level AUTOBRIBE = Level.forName("AUTOBRIBE", 399);
     private static final Level AUTORUNE = Level.forName("AUTORUNE", 399);
+    private final ExtendedLoggerWrapper logger;
 
     private BHBotLogger(final Logger logger) {
         super((AbstractLogger) logger, logger.getName(), logger.getMessageFactory());
