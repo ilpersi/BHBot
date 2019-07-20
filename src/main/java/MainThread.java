@@ -78,15 +78,15 @@ public class MainThread implements Runnable {
     private boolean[] revived = {false, false, false, false, false};
     private int potionsUsed = 0;
 
-    private boolean startTimeCheck = false;
-    private boolean oneTimeshrineCheck = false;
-    private boolean autoShrined = false;
-    private long activityStartTime;
-    private long activityDuration;
-    private long outOfEncounterTimestamp = 0;
-    private long inEncounterTimestamp = 0;
+	private boolean startTimeCheck = false;
+	private boolean oneTimeshrineCheck = false;
+	private boolean autoShrined = false;
+	private long activityStartTime;
+	private long activityDuration;
+	private long outOfEncounterTimestamp = 0;
+	private long inEncounterTimestamp = 0;
 
-    private long runMillisAvg;
+	private long runMillisAvg = 0;
 
     private boolean specialDungeon; //d4 check for closing properly when no energy
 
@@ -3527,34 +3527,34 @@ public class MainThread implements Runnable {
                 clickOnSeg(seg);
                 sleep(SECOND);
 
-                // close Expedition window after Expedition
-                readScreen(2 * SECOND);
-                seg = detectCue(cues.get("X"));
-                clickOnSeg(seg);
-                sleep(SECOND);
-            }
-            if (state == State.Dungeon) {
-                dungeonCounter++;
-                BHBot.logger.info("Dungeon #" + dungeonCounter + " completed. Result: Victory");
-            } else if (state == State.Raid) {
-                raidVictoryCounter++;
-                int totalRaids = raidVictoryCounter + raidDefeatCounter;
-                BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
-                BHBot.logger.stats("Raid success rate: " + df.format(((double) raidVictoryCounter / totalRaids) * 100) + "%.");
-                long runMillis = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
-                String runtime = String.format("%01dm%02ds", //format to mss
-                        TimeUnit.MILLISECONDS.toMinutes(runMillis),
-                        TimeUnit.MILLISECONDS.toSeconds(runMillis) -
-                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
-                runMillisAvg = +runMillis; //on success add runtime to runMillisAvg
-                String runtimeAvg = String.format("%01dm%02ds", //format to mss
-                        TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter), //then we divide runMillisavg by completed raids to get average time
-                        TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / raidVictoryCounter) -
-                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter)));
-                BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
-            } else {
-                BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
-            }
+				// close Expedition window after Expedition
+				readScreen(2*SECOND);
+				seg = detectCue(cues.get("X"));
+				clickOnSeg(seg);
+				sleep(SECOND);
+			}
+			if (state == State.Dungeon) {
+				dungeonCounter++;
+				BHBot.logger.info("Dungeon #" + dungeonCounter + " completed. Result: Victory");
+			} else if (state == State.Raid) {
+				raidVictoryCounter++;
+				int totalRaids = raidVictoryCounter + raidDefeatCounter;
+				BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
+				BHBot.logger.stats("Raid success rate: " + df.format( ((double) raidVictoryCounter / totalRaids) * 100 ) + "%.");
+				long runMillis = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
+				String runtime = String.format("%01dm%02ds", //format to mss
+						  TimeUnit.MILLISECONDS.toMinutes(runMillis),
+						  TimeUnit.MILLISECONDS.toSeconds(runMillis) - 
+						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
+				runMillisAvg += runMillis; //on success add runtime to runMillisAvg
+				String runtimeAvg = String.format("%01dm%02ds", //format to mss
+						  TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter), //then we divide runMillisavg by completed raids to get average time
+						  TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / raidVictoryCounter) - 
+						  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter)));
+				BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
+			} else {
+			BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
+			}
 //			if (state == State.Dungeon && (BHBot.settings.countActivities)) {
 //				updateActivityCounter(state.getName());
 //			}
