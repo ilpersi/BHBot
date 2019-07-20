@@ -2408,7 +2408,7 @@ public class MainThread implements Runnable {
 								}
 								clickOnSeg(seg);
 								readScreen();
-								sleep(1*SECOND);
+								sleep(SECOND);
 								
 								seg = detectCue(cues.get("Accept"), 2*SECOND);
 								if (seg == null) {
@@ -2417,7 +2417,7 @@ public class MainThread implements Runnable {
 									continue;
 								}
 								clickOnSeg(seg);
-								sleep(1*SECOND);
+								sleep(SECOND);
 
 								handleTeamMalformedWarning();
 								if (handleTeamMalformedWarning()) {
@@ -4404,7 +4404,7 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 
 		BHBot.logger.error("Unable to find rune of type " + desiredRune);
 		closePopupSecurely(cues.get("RunesPicker"), cues.get("X"));
-		sleep(1 * SECOND);
+		sleep(SECOND);
 		return false;
     }
     
@@ -6838,11 +6838,11 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
 			if (BHBot.settings.doFishing) {
 				BHBot.logger.debug("Handling fishing...");
 				handleFishing();
-				sleep(1 * SECOND);
+				sleep(SECOND);
 				if (enterGuildHall()) { //the fishing island is a silly place, lets not stay there
 		        	BHBot.logger.debug("Entered Guild Hall");
 				} else BHBot.logger.warn("Failed to enter guild hall");
-				sleep(1 * SECOND);
+				sleep(SECOND);
 			}
 
             readScreen();
@@ -7441,9 +7441,8 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         }
         
         seg = detectCue(cues.get("GuildButton"), SECOND * 5);
-        if (seg != null) {
-            return true; //if we can see the guild button we are successful
-        } else return false; //else not
+        //else not
+        return seg != null; //if we can see the guild button we are successful
  
 	}
 	
@@ -7462,11 +7461,8 @@ private void handleAutoBossRune() { //seperate function so we can run autoRune w
         
         readScreen();
         seg = detectCue(cues.get("GuildHallC"), SECOND * 10); //long search time as the bot can take a while to load the assets
-        if (seg != null) {
-            return true;
-        }
-		return false;	
-	}
+        return seg != null;
+    }
 
 	private void handleVictory() {
 
