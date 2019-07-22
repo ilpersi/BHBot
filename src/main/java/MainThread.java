@@ -4718,7 +4718,7 @@ public class MainThread implements Runnable {
                         }
                     } else {
                         if (detectCue(cues.get("SuperAvailable")) != null) {
-                            BHBot.logger.debug("Slot " + slotNum + " is up for super potion detected, closing revive window.");
+                            BHBot.logger.debug("Slot " + slotNum + " is up for super potion, closing revive window.");
                             seg = detectCue(cues.get("X"));
                             clickOnSeg(seg);
                             readScreen(SECOND);
