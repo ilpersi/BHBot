@@ -2460,8 +2460,14 @@ public class MainThread implements Runnable {
                                 clickOnSeg(seg);
 
                                 //click enter
-                                seg = detectCue(cues.get("Accept"), 2 * SECOND);
-                                clickOnSeg(seg);
+                                seg = detectCue(cues.get("Accept"), 3 * SECOND);
+                                if (seg != null) {
+                                    clickOnSeg(seg);
+                                } else {
+                                    BHBot.logger.error("No accept button for expedition team!");
+                                    saveGameScreen("expedtion-no-accept", img);
+                                    restart();
+                                }
 
                                 handleTeamMalformedWarning();
                                 if (handleTeamMalformedWarning()) {
