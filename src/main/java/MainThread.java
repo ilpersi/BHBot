@@ -1712,50 +1712,47 @@ public class MainThread implements Runnable {
                             /* Solo-for-bounty code */
                             int soloThreshold = Character.getNumericValue(dungeon.charAt(1)); //convert the zone char to int so we can compare
                             if (soloThreshold <= BHBot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
-                                BHBot.logger.info("Selected zone under dungeon solo threshold, attempting solo");
                                 readScreen(SECOND);
                                 seg = detectCue(cues.get("Clear"), SECOND * 2);
-                                clickOnSeg(seg);
-                                readScreen();
-                                seg = detectCue(cues.get("Accept"), SECOND * 2);
-                                clickOnSeg(seg);
-                                readScreen(2 * SECOND); //wait for dropdown animation to finish
+                                if (seg != null) {
+                                    BHBot.logger.info("Selected zone under dungeon solo threshold, attempting solo");
+                                    clickOnSeg(seg);
+                                } else {
+                                    BHBot.logger.error("Impossible to find clear button in Dungeon Team!");
+                                    restart();
+                                    continue;
+                                }
+                            }
+
+                            readScreen();
+                            seg = detectCue(cues.get("Accept"), SECOND * 2);
+                            clickOnSeg(seg);
+
+                            if (soloThreshold <= BHBot.settings.minSolo) {
+                                readScreen(3 * SECOND); //wait for dropdown animation to finish
                                 seg = detectCue(cues.get("YesGreen"), 2 * SECOND);
-                                if (seg == null) {
-                                    sleep(500);
-                                    clickInGame(330, 360); //yesgreen cue has issues so we use pos to click on Yes as a backup
-                                } else {
-                                    clickOnSeg(seg);
-                                    clickInGame(330, 360); //click anyway this cue has issues
-                                }
-
-                                state = State.Dungeon;
-                                BHBot.logger.info("Dungeon <" + dungeon + "> initiated solo!");
-                                autoShrined = false;
-                                autoBossRuned = false;
-                                continue;
-
-                            } else { // d1-d3
-                                readScreen(SECOND);
-                                seg = detectCue(cues.get("D4Accept"), SECOND); //D4's accept button is a few pixels different for reasons
-                                if (seg == null) {
-                                    seg = detectCue(cues.get("Accept"), SECOND); //standard accept button
+                                if (seg != null) {
                                     clickOnSeg(seg);
                                 } else {
-                                    clickOnSeg(seg);
+                                    BHBot.logger.error("Impossible to find Yes button in Dungeon Team!");
+                                    restart();
                                 }
-                            }
-
-                            if (handleTeamMalformedWarning()) {
-                                BHBot.logger.error("Team incomplete, doing emergency restart..");
-                                restart();
-                                continue;
                             } else {
-                                state = State.Dungeon;
-                                BHBot.logger.info("Dungeon <" + dungeon + "> initiated!");
-                                autoShrined = false;
-                                autoBossRuned = false;
+                                if(handleTeamMalformedWarning()){
+                                    restart();
+                                    continue;
+                                }
                             }
+
+                            if (handleNotEnoughEnergyPopup(3 * SECOND, State.Dungeon)) {
+                                continue;
+                            }
+
+                            state = State.Dungeon;
+                            autoShrined = false;
+                            autoBossRuned = false;
+
+                            BHBot.logger.info("Dungeon <" + dungeon + "> " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic")  + " initiated!");
                         }
                         continue;
                     } // energy
@@ -2307,8 +2304,14 @@ public class MainThread implements Runnable {
                                 clickOnSeg(seg);
 
                                 //click enter
-                                seg = detectCue(cues.get("Accept"), 2 * SECOND);
-                                clickOnSeg(seg);
+                                seg = detectCue(cues.get("Accept"), 3 * SECOND);
+                                if (seg != null) {
+                                    clickOnSeg(seg);
+                                } else {
+                                    BHBot.logger.error("No accept button for expedition team!");
+                                    saveGameScreen("expedtion-no-accept", img);
+                                    restart();
+                                }
 
                                 handleTeamMalformedWarning();
                                 if (handleTeamMalformedWarning()) {
@@ -3399,17 +3402,6 @@ public class MainThread implements Runnable {
         if (State.Dungeon.equals(state) && activityDuration < 30) {
             BHBot.logger.debug("Seconds since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
         }
-
-        // handle "Not enough energy" popup:
-        if (activityDuration < 30) {
-            boolean insufficientEnergy = handleNotEnoughEnergyPopup(state);
-            if (insufficientEnergy) {
-                state = State.Main; // reset state
-                return;
-            }
-            return;
-        }
-
 
         /*
          * autoRune Code
@@ -4559,6 +4551,12 @@ public class MainThread implements Runnable {
                             continue;
                         }
                     } else {
+                        if (detectCue(cues.get("SuperAvailable")) != null) {
+                            BHBot.logger.debug("Slot " + slotNum + " is up for super potion, closing revive window.");
+                            seg = detectCue(cues.get("X"));
+                            clickOnSeg(seg);
+                            readScreen(SECOND);
+                        }
                         continue;
                     }
 
@@ -6572,7 +6570,6 @@ public class MainThread implements Runnable {
         boolean gold = detectCue(cues.get("BonusGold")) != null;
 
         // Special consumables
-        // TODO Manage super scroll
         if (detectCue(cues.get("ConsumablePumkgor")) != null || detectCue(cues.get("ConsumableBroccoli")) != null
                 || detectCue(cues.get("ConsumableGreatFeast")) != null || detectCue(cues.get("ConsumableGingernaut")) != null
                 || detectCue(cues.get("ConsumableCoco")) != null) {

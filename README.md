@@ -1,11 +1,13 @@
 # BHBot
 
-[![Gitter chat](https://img.shields.io/gitter/room/ilpersi/BHBot.svg?color=red&style=popout)](https://gitter.im/BHBot/community)
-[![GitHub release](https://img.shields.io/github/release/ilpersi/BHBot.svg?label=last%20release&style=popout) ![GitHub Release Date](https://img.shields.io/github/release-date/ilpersi/BHBot.svg?label=released&style=popout)](https://github.com/ilpersi/BHBot/releases/latest)
-[![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=popout)](https://github.com/ilpersi/BHBot/labels/bug)
-[![GitHub last commit](https://img.shields.io/github/last-commit/ilpersi/BHBot.svg?style=popout)](https://github.com/ilpersi/BHBot/commits)
-![GitHub All Releases](https://img.shields.io/github/downloads/ilpersi/BHBot/total.svg?label=total%20downloads&style=popout)
-![GitHub top language](https://img.shields.io/github/languages/top/ilpersi/BHBot.svg?style=popout)
+[![Paypal Donate](https://img.shields.io/badge/donate-paypal-informational.svg?logo=paypal&style=plastic)](https://www.paypal.me/ilpersi)
+[![Liberapay receiving](https://img.shields.io/liberapay/receives/BHBot.svg?logo=liberapay&style=plastic)](https://liberapay.com/BHBot/donate)
+[![Gitter chat](https://img.shields.io/gitter/room/ilpersi/BHBot.svg?color=red&style=plastic&logo=gitter)](https://gitter.im/BHBot/community)
+[![GitHub release](https://img.shields.io/github/release/ilpersi/BHBot.svg?label=last%20release&style=plastic&logo=docusign) ![GitHub Release Date](https://img.shields.io/github/release-date/ilpersi/BHBot.svg?label=released&style=plastic)](https://github.com/ilpersi/BHBot/releases/latest)
+[![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=plastic&logo=hackaday)](https://github.com/ilpersi/BHBot/labels/bug)
+[![GitHub last commit](https://img.shields.io/github/last-commit/ilpersi/BHBot.svg?style=plastic&logo=github)](https://github.com/ilpersi/BHBot/commits)
+![GitHub All Releases](https://img.shields.io/github/downloads/ilpersi/BHBot/total.svg?label=total%20downloads&style=plastic)
+![GitHub top language](https://img.shields.io/github/languages/top/ilpersi/BHBot.svg?style=plastic&logo=java)
 
 ## What is BHBot?
 BHBot is a program that automates the [Bit Heroes](http://www.kongregate.com/games/juppiomenz/bit-heroes) game.
@@ -79,7 +81,16 @@ command input box):
 - `shot [prefix]`: takes a screenshot of the game and saves it to 'shot.png'. If a _prefix_ is specified it will be used instead of the default _shot_ one.
 - `show`: shows Chromium window again after it has been hidden.
 - `stop`: stops the bot execution (may take a few seconds. Once it is stopped, the console will close automatically).
+  
+## Donate
+BHBot is free and it will always be so. If you like to, we accept spontaneous donations through our [paypal link](https://www.paypal.me/ilpersi) or supporting us using [Liberapay](https://liberapay.com/BHBot/donate).
+  
+## Authors
+BHBot is an original idea by [Betalord](https://github.com/Betalord) and he used it until his character achieved level 165. On 29th of September 2017 (a 1st year anniversary of the Bit Heroes game) he quit the game and released the bot to the public. In december 2018 [Fortigate](https://github.com/Fortigate) decided to pick on the development and from march 2019 [ilpersi](https://github.com/ilpersi) joined him to make the bot what it is today. Starting from june 2019 ilpersi is the new owner of the project.
+
+## Special thanks
+This bot would not exit without all the people that use it or that contribuited to it. A special mention goes to the <a href="https://www.ej-technologies.com/products/jprofiler/overview.html" rel="external">JProfiler team</a>, a Java profiler tool, that granted us a free open-source license to help make this tool even better.  
 
 ## Finally
 
-Hopefully this bot will prove useful to you, if you have any questions just raise an issue! Enjoy :-)
+Hopefully this bot will prove useful to you, if you have any questions just raise an issue or join our gitter room in which you can talk directly with the developers! Enjoy :-)
