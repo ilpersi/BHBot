@@ -9,6 +9,9 @@
 ![GitHub All Releases](https://img.shields.io/github/downloads/ilpersi/BHBot/total.svg?label=total%20downloads&style=plastic)
 ![GitHub top language](https://img.shields.io/github/languages/top/ilpersi/BHBot.svg?style=plastic&logo=java)
 
+
+Made with love using [![IntelliJ](https://drive.google.com/uc?export=view&id=1DxGuLJD9hpkZ2ZWrAohwL2ePIMynRUqa)](https://www.jetbrains.com/?from=BHBot) and [![JProfiler](https://drive.google.com/uc?export=view&id=1O3bBvTXWRGuNJ8xdpDsp9lHfDQ4NCTnW)](https://www.ej-technologies.com/products/jprofiler/overview.html)
+
 ## What is BHBot?
 BHBot is a program that automates the [Bit Heroes](http://www.kongregate.com/games/juppiomenz/bit-heroes) game.
 It is a non intrusive program that works by opening up a Chromium window and controls the game by taking a screenshot every few seconds, detecting cues from the screenshot and
@@ -89,7 +92,10 @@ BHBot is free and it will always be so. If you like to, we accept spontaneous do
 BHBot is an original idea by [Betalord](https://github.com/Betalord) and he used it until his character achieved level 165. On 29th of September 2017 (a 1st year anniversary of the Bit Heroes game) he quit the game and released the bot to the public. In december 2018 [Fortigate](https://github.com/Fortigate) decided to pick on the development and from march 2019 [ilpersi](https://github.com/ilpersi) joined him to make the bot what it is today. Starting from june 2019 ilpersi is the new owner of the project.
 
 ## Special thanks
-This bot would not exit without all the people that use it or that contribuited to it. A special mention goes to the <a href="https://www.ej-technologies.com/products/jprofiler/overview.html" rel="external">JProfiler team</a>, a Java profiler tool, that granted us a free open-source license to help make this tool even better.  
+This bot would not exit without all the people that use it or that contribuited to it.
+A special mention goes to the teams that created two amzing products:
+- the [IntelliJ one](https://www.jetbrains.com/?from=BHBot) that granted us a free open-source IntelliJ Ultimate license that we use to create this bot
+- the <a href="https://www.ej-technologies.com/products/jprofiler/overview.html" rel="external">JProfiler one</a>, a Java profiler tool, that granted us a free open-source license to help make this tool even better.  
 
 ## Finally
 
