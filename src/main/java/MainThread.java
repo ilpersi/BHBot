@@ -1382,8 +1382,7 @@ public class MainThread implements Runnable {
                             seg = detectCue(cues.get("Accept"), 5 * SECOND);
                             clickOnSeg(seg);
                             readScreen(2 * SECOND);
-
-                            handleTeamMalformedWarning();
+                            
                             if (handleTeamMalformedWarning()) {
                                 BHBot.logger.error("Team incomplete, doing emergency restart..");
                                 restart();
