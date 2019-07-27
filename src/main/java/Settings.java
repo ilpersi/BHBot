@@ -409,11 +409,12 @@ public class Settings {
     private void setAutoRuneDefault(String... runes) {
         this.autoRuneDefault.clear();
 
-        this.autoRuneDefault.add(runes[0]);
+        if (!runes[0].equals("")) this.autoRuneDefault.add(runes[0]);
+
         if (runes.length == 2) {
-            this.autoRuneDefault.add(runes[1]);
+            if (!runes[1].equals("")) this.autoRuneDefault.add(runes[1]);
         } else {
-            this.autoRuneDefault.add(runes[0]);
+            if (!runes[0].equals("")) this.autoRuneDefault.add(runes[0]);
         }
     }
 
