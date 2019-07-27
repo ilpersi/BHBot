@@ -376,8 +376,8 @@ public class MainThread implements Runnable {
         addCue("AutoTeam", loadImage("cues/cueSteamAutoTeam.png"), null); // "Auto" button that automatically assigns team (in raid, GvG, ...)
         addCue("Clear", loadImage("cues/cueClear.png"), null); //clear team button
 
-        addCue("AutoOn", loadImage("cues/cueAutoOn.png"), new Bounds(740, 180, 785, 220)); // cue for auto pilot on
-        addCue("AutoOff", loadImage("cues/cueAutoOff.png"), new Bounds(740, 180, 785, 220)); // cue for auto pilot off
+        addCue("AutoOn", loadImage("cues/cueSteamAutoOn.png"), new Bounds(760, 230, 793, 310)); // cue for auto pilot on
+        addCue("AutoOff", loadImage("cues/cueSteamAutoOff.png"), new Bounds(760, 230, 793, 310)); // cue for auto pilot off
 
         addCue("Trials", loadImage("cues/cueTrials.png"), new Bounds(0, 0, 40, 400)); // cue for trials button (note that as of 23.9.2017 they changed the button position to the right side of the screen and modified the glyph)
         addCue("Trials2", loadImage("cues/cueTrials2.png"), new Bounds(720, 0, 770, 400)); // an alternative cue for trials (flipped horizontally, located on the right side of the screen). Used since 23.9.2017.
