@@ -812,9 +812,10 @@ public class MainThread implements Runnable {
         }
 
         if (BHBot.settings.enablePushover && BHBot.settings.poNotifyCrash) {
+            File poCrashScreen = new File(file);
             sendPushOverMessage("BHbot CRASH!",
                     "BHBot has crashed and a driver emergency restart has been performed!\n\n" + Misc.getStackTrace(), "falling",
-                    MessagePriority.HIGH, new File(file));
+                    MessagePriority.HIGH, poCrashScreen.exists() ? poCrashScreen : null);
         }
     }
 
@@ -5602,17 +5603,13 @@ public class MainThread implements Runnable {
         return false; // all ok, battles are enabled
     }
 
-    private boolean handleNotEnoughEnergyPopup(State state) {
-        return handleNotEnoughEnergyPopup(0, state);
-    }
-
     /**
      * Will check if "Not enough energy" popup is open. If it is, it will automatically close it and close all other windows
      * until it returns to the main screen.
      *
      * @return true in case popup was detected and closed.
      */
-    private boolean handleNotEnoughEnergyPopup(int delay, State state) {
+    private boolean handleNotEnoughEnergyPopup(@SuppressWarnings("SameParameterValue") int delay, State state) {
         MarvinSegment seg = detectCue(cues.get("NotEnoughEnergy"), delay);
         if (seg != null) {
             // we don't have enough energy!
