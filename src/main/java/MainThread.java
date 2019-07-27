@@ -1370,8 +1370,7 @@ public class MainThread implements Runnable {
 
                             seg = detectCue(cues.get("RaidSummon"), 2 * SECOND);
                             clickOnSeg(seg);
-                            //sleep(2*SECOND);
-                            readScreen();
+                            readScreen(2*SECOND);
 
                             // dismiss character dialog if it pops up:
                             readScreen();
