@@ -182,6 +182,9 @@ public class Settings {
     Level logLevel = Level.INFO;
     // How many days of logs do we store?
     int logMaxDays = 30;
+    // Do we want to output the status messages? See: http://logging.apache.org/log4j/2.x/manual/configuration.html#StatusMessages
+    boolean logPringStatusMessages = false;
+
     /**
      * Experimental feature. Better use 'false' for now.
      */
@@ -892,6 +895,7 @@ public class Settings {
         logMaxDays = Integer.parseInt(lastUsedMap.getOrDefault("logMaxDays", "" + logMaxDays));
         logBaseDir = lastUsedMap.getOrDefault("logBaseDir", logBaseDir);
         setLogLevelFromString(lastUsedMap.getOrDefault("logLevel", getLogLevelAsString()));
+        logPringStatusMessages = lastUsedMap.getOrDefault("logPringStatusMessages", logPringStatusMessages ? "1" : "0").equals("1");
     }
 
     /**

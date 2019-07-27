@@ -22,6 +22,9 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
         builder.setConfigurationName(name);
         builder.setStatusLevel(Level.ERROR);
 
+        // baseDir for logs
+        builder.addProperty("baseDir", BHBot.settings.logBaseDir);
+
         // STD OUT
         AppenderComponentBuilder stdOutBuilder = builder.newAppender("StdOut", "CONSOLE")
                 .addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT);
@@ -47,13 +50,20 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
                         .addAttribute("size", "32M"))
                 .addComponent(builder.newComponent("TimeBasedTriggeringPolicy"));
 
+
+        // Delete Component to manage old log deletion
+        ComponentBuilder delete = builder.newComponent("Delete")
+                .addAttribute("basePath", "${baseDir}")
+                .addAttribute("maxDepth", "2")
+                //.addAttribute("testMode", true)
+                .addComponent(builder.newComponent("IfLastModified")
+                        .addAttribute("age", "" + BHBot.settings.logMaxDays + "d"));
+
         // DefaultRolloverStrategy Component
         ComponentBuilder defaulRolloverStrategy = builder.newComponent("DefaultRolloverStrategy")
                 .addAttribute("max", BHBot.settings.logMaxDays)
-                .addAttribute("compressionLevel", 9);
-
-        // baseDir for logs
-        builder.addProperty("baseDir", BHBot.settings.logBaseDir);
+                .addAttribute("compressionLevel", 9)
+                .addComponent(delete);
 
         AppenderComponentBuilder rollingBuilder = builder.newAppender("Rolling", "RollingFile")
                 .addAttribute("filePattern", "${baseDir}/$${date:yyyy-MM}/BHBot-%d{yyyy-MM-dd}-%i.log.zip")
