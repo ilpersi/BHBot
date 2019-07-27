@@ -349,7 +349,7 @@ public class MainThread implements Runnable {
         addCue("Hard", loadImage("cues/raid/cueSteamRaidHard.png"), null);
         addCue("Heroic", loadImage("cues/raid/cueSteamRaidHeroic.png"), null);
 
-        addCue("Accept", loadImage("cues/cueAccept.png"), null);
+        addCue("Accept", loadImage("cues/cueSteamAccept.png"), null);
         addCue("D4Accept", loadImage("cues/cueD4Accept.png"), null);
         addCue("Cleared", loadImage("cues/cueCleared.png"), null); // used for example when raid has been finished
         addCue("Defeat", loadImage("cues/cueDefeat.png"), null); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
@@ -366,14 +366,14 @@ public class MainThread implements Runnable {
         addCue("SettingsGear", loadImage("cues/cueSettingsGear.png"), new Bounds(655, 450, 730, 515)); // settings button
         addCue("Settings", loadImage("cues/cueSteamSettings.png"), new Bounds(245, 84, 554, 125)); // settings menu
 
-        addCue("Team", loadImage("cues/cueTeam.png"), null); // Team text part of pop-ups about teams
-        addCue("TeamNotFull", loadImage("cues/cueTeamNotFull.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
+        addCue("Team", loadImage("cues/cueSteamTeam.png"), null); // Team text part of pop-ups about teams
+        addCue("TeamNotFull", loadImage("cues/cueSteamTeamNotFull.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
         addCue("TeamNotOrdered", loadImage("cues/cueTeamNotOrdered.png"), new Bounds(230, 190, 350, 250)); // warning popup when some guild member left and your GvG team is not complete anymore
         addCue("GuildLeaveConfirm", loadImage("cues/cueGuildLeaveConfirm.png"), new Bounds(195, 105, 605, 395)); // GVG confirm
         addCue("DisabledBattles", loadImage("cues/cueDisabledBattles.png"), new Bounds(240, 210, 560, 330)); // Disabled Battles Poppup
 
-        addCue("No", loadImage("cues/cueNo.png"), null); // cue for a blue "No" button used for example with "Your team is not full" dialog, or for "Replace consumable" dialog, etc. This is why we can't put concrete borders as position varies a lot.
-        addCue("AutoTeam", loadImage("cues/cueAutoTeam.png"), null); // "Auto" button that automatically assigns team (in raid, GvG, ...)
+        addCue("No", loadImage("cues/cueSteamNo.png"), null); // cue for a blue "No" button used for example with "Your team is not full" dialog, or for "Replace consumable" dialog, etc. This is why we can't put concrete borders as position varies a lot.
+        addCue("AutoTeam", loadImage("cues/cueSteamAutoTeam.png"), null); // "Auto" button that automatically assigns team (in raid, GvG, ...)
         addCue("Clear", loadImage("cues/cueClear.png"), null); //clear team button
 
         addCue("AutoOn", loadImage("cues/cueAutoOn.png"), new Bounds(740, 180, 785, 220)); // cue for auto pilot on
