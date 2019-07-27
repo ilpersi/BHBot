@@ -904,9 +904,10 @@ public class MainThread implements Runnable {
         }
 
         if (BHBot.settings.enablePushover && BHBot.settings.poNotifyCrash) {
+            File poCrashScreen = new File(file);
             sendPushOverMessage("BHbot CRASH!",
                     "BHBot has crashed and a driver emergency restart has been performed!\n\n" + Misc.getStackTrace(), "falling",
-                    MessagePriority.HIGH, new File(file));
+                    MessagePriority.HIGH, poCrashScreen.exists() ? poCrashScreen : null);
         }
     }
 
