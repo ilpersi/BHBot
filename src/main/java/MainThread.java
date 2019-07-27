@@ -3244,10 +3244,15 @@ public class MainThread implements Runnable {
     }
 
     private BufferedImage takeScreenshot(boolean ofGame) {
-        if (ofGame)
-            return Shutterbug.shootElement(driver, game).getImage();
-        else
-            return Shutterbug.shootPage(driver).getImage();
+        try {
+            if (ofGame)
+                return Shutterbug.shootElement(driver, game).getImage();
+            else
+                return Shutterbug.shootPage(driver).getImage();
+        } catch (org.openqa.selenium.StaleElementReferenceException e) {
+            // sometimes the game element is not available, if this happen we just return an empty image
+            return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+        }
     }
 
     void readScreen() {
