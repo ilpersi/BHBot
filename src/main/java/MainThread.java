@@ -330,26 +330,25 @@ public class MainThread implements Runnable {
         addCue("EnergyBar", loadImage("cues/cueEnergyBar.png"), new Bounds(390, 0, 420, 20));
         addCue("TicketBar", loadImage("cues/cueTicketBar.png"), new Bounds(540, 0, 770, 20));
 
-        addCue("RaidButton", loadImage("cues/cueRaidButton.png"), new Bounds(0, 200, 40, 400));
-        addCue("RaidPopup", loadImage("cues/cueRaidPopup.png"), new Bounds(300, 35, 340, 70));
-        addCue("RaidSummon", loadImage("cues/cueRaidSummon.png"), new Bounds(480, 360, 540, 380));
-        addCue("RaidLevel", loadImage("cues/cueRaidLevel.png"), new Bounds(300, 435, 510, 455)); // selected raid type button cue
-        addCue("cueRaidLevelEmpty", loadImage("cues/cueRaidLevelEmpty.png"), new Bounds(300, 435, 510, 455)); // selected raid type button cue
+        addCue("RaidButton", loadImage("cues/raid/cueSteamRaidButton.png"), new Bounds(10, 280, 70, 365));
+        addCue("RaidPopup", loadImage("cues/raid/cueSteamRaidPopup.png"), new Bounds(300, 70, 370, 120));
+        addCue("RaidSummon", loadImage("cues/raid/cueSteamRaidSummon.png"), new Bounds(480, 380, 590, 4200));
+        addCue("RaidLevel", loadImage("cues/raid/cueSteamRaidLevel.png"), new Bounds(300, 450, 490, 480)); // selected raid type button cue
+        addCue("cueRaidLevelEmpty", loadImage("cues/raid/cueSteamRaidLevelEmpty.png"), new Bounds(300, 450, 490, 480)); // available raid buttons
 
         // New Raid level detection logic
-        addCue("Raid1Name", loadImage("cues/raid/r1Name.png"), new Bounds(185, 340, 485, 395));// Raid 1 Name
-        addCue("Raid2Name", loadImage("cues/raid/r2Name.png"), new Bounds(185, 340, 485, 395));// Raid 2 Name
-        addCue("Raid3Name", loadImage("cues/raid/r3Name.png"), new Bounds(185, 340, 485, 395));// Raid 3 Name
-        addCue("Raid4Name", loadImage("cues/raid/r4Name.png"), new Bounds(185, 340, 485, 395));// Raid 4 Name
-        addCue("Raid5Name", loadImage("cues/raid/r5Name.png"), new Bounds(185, 340, 485, 395));// Raid 5 Name
-        addCue("Raid6Name", loadImage("cues/raid/r6Name.png"), new Bounds(185, 340, 485, 395));// Raid 6 Name
-        addCue("Raid7Name", loadImage("cues/raid/r7Name.png"), new Bounds(185, 340, 485, 395));// Raid 7 Name
+        addCue("Raid1Name", loadImage("cues/raid/cueSteamr1Name.png"), new Bounds(190, 375, 480, 430));// Raid 1 Name
+        addCue("Raid2Name", loadImage("cues/raid/cueSteamr2Name.png"), new Bounds(190, 375, 480, 430));// Raid 2 Name
+        addCue("Raid3Name", loadImage("cues/raid/cueSteamr3Name.png"), new Bounds(190, 375, 480, 430));// Raid 3 Name
+        addCue("Raid4Name", loadImage("cues/raid/cueSteamr4Name.png"), new Bounds(190, 375, 480, 430));// Raid 4 Name
+        addCue("Raid5Name", loadImage("cues/raid/cueSteamr5Name.png"), new Bounds(190, 375, 480, 430));// Raid 5 Name
+        addCue("Raid6Name", loadImage("cues/raid/cueSteamr6Name.png"), new Bounds(190, 375, 480, 430));// Raid 6 Name
+        addCue("Raid7Name", loadImage("cues/raid/cueSteamr7Name.png"), new Bounds(190, 375, 480, 430));// Raid 7 Name
 
-        addCue("R1Only", loadImage("cues/cueR1Only.png"), null); // cue for R1 type selected when R2 (and R3) is not open yet (in that case it won't show raid type selection buttons)
+        addCue("Normal", loadImage("cues/raid/cueSteamRaidNormal.png"), null);
+        addCue("Hard", loadImage("cues/raid/cueSteamRaidHard.png"), null);
+        addCue("Heroic", loadImage("cues/raid/cueSteamRaidHeroic.png"), null);
 
-        addCue("Normal", loadImage("cues/cueNormal.png"), null);
-        addCue("Hard", loadImage("cues/cueHard.png"), null);
-        addCue("Heroic", loadImage("cues/cueHeroic.png"), null);
         addCue("Accept", loadImage("cues/cueAccept.png"), null);
         addCue("D4Accept", loadImage("cues/cueD4Accept.png"), null);
         addCue("Cleared", loadImage("cues/cueCleared.png"), null); // used for example when raid has been finished
@@ -5342,11 +5341,9 @@ public class MainThread implements Runnable {
 
         Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
         int move = newType - currentType;
+        int xDiff = 25 * move;
 
-        // TODO Fix moveBy
-//		Point pos = center.moveBy(move*26, 0);
-
-//		clickInGame(pos.x, pos.y);
+		clickInGame(center.x + xDiff, center.y);
 
         return true;
     }
