@@ -1,10 +1,11 @@
 # BHBot
 
-[![Paypal Donate](https://img.shields.io/badge/donate-paypal-informational.svg?logo=paypal&style=plastic)](https://www.paypal.me/ilpersi)
 [![Gitter chat](https://img.shields.io/gitter/room/ilpersi/BHBot.svg?color=red&style=plastic&logo=gitter)](https://gitter.im/BHBot/community)
+![GitHub release](https://img.shields.io/github/release/ilpersi/BHBot.svg?label=last%20release&style=plastic&logo=docusign) 
 [![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=plastic&logo=hackaday)](https://github.com/ilpersi/BHBot/labels/bug)
 ![GitHub All Releases](https://img.shields.io/github/downloads/ilpersi/BHBot/total.svg?label=total%20downloads&style=plastic)
 ![GitHub top language](https://img.shields.io/github/languages/top/ilpersi/BHBot.svg?style=plastic&logo=java)
+[![Paypal Donate](https://img.shields.io/badge/donate-paypal-informational.svg?logo=paypal&style=plastic)](https://www.paypal.me/ilpersi)
 
 ## What is BHBot?
 BHBot is a program that automates the [Bit Heroes](http://www.kongregate.com/games/juppiomenz/bit-heroes) game.
@@ -86,7 +87,7 @@ BHBot is free and always will be. If you would like to make a donation towards t
 BHBot was originally created by [Betalord](https://github.com/Betalord). On 29th of September 2017 (the 1st year anniversary of the Bit Heroes game) he quit the game and released the bot to the public. In December 2018 [Fortigate](https://github.com/Fortigate) picked up the development and from March 2019 [ilpersi](https://github.com/ilpersi) joined him to make the bot what it is today. In June 2019 the project ownership was tranferred to ilpersi, granting autonomy moving forwards.
 
 ## Special thanks
-The bot would not exist without all the people that use it or that contributed to it.
+The bot would not exist without everybody who uses or contributes to it.
 
 A special mention goes to the teams that created two amzing products:
 - the [IntelliJ team](https://www.jetbrains.com/?from=BHBot) who granted us a free open-source IntelliJ Ultimate license that we use to code the bot.
