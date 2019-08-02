@@ -52,6 +52,8 @@ public class BHBot {
 
         // We make sure that our configurationFactory is added to the list of configuration factories.
         System.setProperty("log4j.configurationFactory", "BHBotConfigurationFactory");
+        // We enable the log4j2 debug output if we need to
+        if (settings.logPringStatusMessages) System.setProperty("log4j2.debug", "true");
 
         for (int i = 0; i < args.length; i++) { //select settings file to load
             switch (args[i]) {
