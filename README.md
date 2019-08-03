@@ -5,7 +5,7 @@
 [![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=plastic&logo=hackaday)](https://github.com/ilpersi/BHBot/labels/bug)
 ![GitHub All Releases](https://img.shields.io/github/downloads/ilpersi/BHBot/total.svg?label=total%20downloads&style=plastic)
 [![Paypal Donate](https://img.shields.io/badge/donate-paypal-informational.svg?logo=paypal&style=plastic)](https://www.paypal.me/ilpersi)
-[![Liberapay receiving](https://img.shields.io/liberapay/receives/BHBot.svg?logo=liberapay&style=plastic)](https://liberapay.com/BHBot/donate)
+[![Liberapay Goal](https://img.shields.io/liberapay/goal/BHBot.svg?logo=liberapay&style=plastic)](https://liberapay.com/BHBot/donate)
 
 ## What is BHBot?
 BHBot is a program that automates the [Bit Heroes](http://www.kongregate.com/games/juppiomenz/bit-heroes) game.

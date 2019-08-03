@@ -323,9 +323,6 @@ public class MainThread implements Runnable {
         addCue("AdInProgress", loadImage("cues/cueAdInProgress.png"), null); // we currently don't really need this cue
         addCue("AdFinished", loadImage("cues/cueAdFinished.png"), null); // we currently don't really need this cue
         addCue("Skip", loadImage("cues/cueSkip.png"), null);
-//		addCue("adRead", loadImage("cues/cueAdRead.png"), null); testing for new ad engine
-//		addCue("adClose", loadImage("cues/cueAdClose.png"), null); testing for new ad engine
-
 
         addCue("EnergyBar", loadImage("cues/cueEnergyBar.png"), new Bounds(390, 0, 420, 20));
         addCue("TicketBar", loadImage("cues/cueTicketBar.png"), new Bounds(540, 0, 770, 20));
@@ -358,6 +355,7 @@ public class MainThread implements Runnable {
         addCue("View", loadImage("cues/cueView.png"), new Bounds(390, 415, 600, 486));
         addCue("Bribe", loadImage("cues/cueBribe.png"), new Bounds(505, 305, 684, 375));
         addCue("SkeletonTreasure", loadImage("cues/cueSkeletonTreasure.png"), new Bounds(185, 165, 295, 280)); // skeleton treasure found in dungeons (it's a dialog/popup cue)
+        addCue("SkeletonNoKeys", loadImage("cues/cueSkeletonNoKeys.png"), new Bounds(478, 318, 500, 348)); // red 0
         addCue("Open", loadImage("cues/cueOpen.png"), null); // skeleton treasure open button
         addCue("AdTreasure", loadImage("cues/cueAdTreasure.png"), null); // ad treasure found in dungeons (it's a dialog/popup cue)
         addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
@@ -550,7 +548,7 @@ public class MainThread implements Runnable {
         addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(190, 355, 400, 390));
         addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(190, 355, 400, 390));
         addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(190, 355, 400, 390));
-        addCue("3t3rWB", loadImage("cues/worldboss/3xt3rmin4tion.png"), new Bounds(190, 355, 400, 390));
+        addCue("3xt3rWB", loadImage("cues/worldboss/3xt3rmin4tion.png"), new Bounds(190, 355, 400, 390));
         addCue("WorldBossTitle", loadImage("cues/worldboss/cueWorldBossTitle.png"), new Bounds(280, 90, 515, 140));
         addCue("WorldBossSummonTitle", loadImage("cues/worldboss/cueWorldBossSummonTitle.png"), new Bounds(325, 100, 480, 150));
 
@@ -1504,18 +1502,21 @@ public class MainThread implements Runnable {
                                 readScreen(SECOND); //wait for window animation
                             }
 
-                            BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + BHBot.settings.difficulty + "...");
+                            // apply gauntletOffset if gauntlet is active
+                            int targetDifficulty = BHBot.settings.difficulty;
+                            if (!trials) targetDifficulty = BHBot.settings.difficulty - BHBot.settings.gauntletOffset; //if gauntlet apply offset
 
-                            // select difficulty if needed:
+                            BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + targetDifficulty + "...");
+
                             int difficulty = detectDifficulty();
                             if (difficulty == 0) { // error!
                                 BHBot.logger.error("Due to an error#1 in difficulty detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
                                 closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"));
                                 continue;
                             }
-                            if (difficulty != BHBot.settings.difficulty) {
-                                BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + BHBot.settings.difficulty + ". Changing..");
-                                boolean result = selectDifficulty(difficulty, BHBot.settings.difficulty);
+                            if (difficulty != targetDifficulty) {
+                                BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + targetDifficulty + ". Changing..");
+                                boolean result = selectDifficulty(difficulty, targetDifficulty);
                                 if (!result) { // error!
                                     // see if drop down menu is still open and close it:
                                     readScreen(SECOND);
@@ -2169,6 +2170,7 @@ public class MainThread implements Runnable {
 
                                     if (BHBot.settings.autoBossRune.containsKey("e")) {
                                         //configure activity runes
+                                        BHBot.logger.info("Configuring autoBossRune for Expedition");
                                         handleMinorRunes("e");
                                         readScreen(SECOND);
                                         clickOnSeg(badgeBtn);
@@ -2411,7 +2413,7 @@ public class MainThread implements Runnable {
                             wbNameDecode.put("o", "Orlang Clan");
                             wbNameDecode.put("n", "Netherworld");
                             wbNameDecode.put("m", "Melvin");
-                            wbNameDecode.put("3", "3t3rmin4tion");
+                            wbNameDecode.put("3", "3xt3rmin4tion");
 
                             String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
 
@@ -2529,7 +2531,7 @@ public class MainThread implements Runnable {
                                             break;
                                         case "n":
                                         case "3":
-                                            seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether and 3t3rmin4tion
+                                            seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether and 3xt3rmin4tion
                                             break;
                                         case "m":
                                             seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
@@ -2546,6 +2548,7 @@ public class MainThread implements Runnable {
                                                 BHBot.logger.info("Lobby timed out, running dungeon instead");
                                                 closeWorldBoss();
                                                 sleep(4 * SECOND); //make sure we're stable on the main screen
+                                                currentActivity = "d";
                                                 BHBot.scheduler.doDungeonImmediately = true;
                                             } else {
                                                 BHBot.logger.info("Lobby timed out, returning to main screen.");
@@ -2591,13 +2594,13 @@ public class MainThread implements Runnable {
                                             BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + " started!");
                                             state = State.WorldBoss;
                                             sleep(6 * SECOND); //long wait to make sure we are in the world boss dungeon
-                                            readScreen();
-                                            seg = detectCue(cues.get("AutoOff")); // takes processDungeon too long so we do it manually
-                                            if (seg != null) {
-                                                clickOnSeg(seg);
-                                                BHBot.logger.info("Auto-pilot is disabled. Enabling...");
-                                            }
-                                            sleep(4 * SECOND);
+//                                            readScreen();
+//                                            seg = detectCue(cues.get("AutoOff")); // takes processDungeon too long so we do it manually
+//                                            if (seg != null) {
+//                                                clickOnSeg(seg);
+//                                                BHBot.logger.info("Auto-pilot is disabled. Enabling...");
+//                                            }
+//                                            sleep(4 * SECOND);
                                             readScreen();
                                             MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
                                             if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
@@ -2689,10 +2692,10 @@ public class MainThread implements Runnable {
         BHBot.logger.info("Main thread stopped.");
     }
 
-    // World boss invite button debugging
-    void wbTest() {
-        int t = detectWorldBossTier();
-        BHBot.logger.info(Integer.toString(t));
+    void settingsTest() {
+        String original = "difficulty " + (BHBot.settings.difficulty);
+        String updated = "difficulty " + (BHBot.settings.difficulty - 5);
+        settingsUpdate(original, updated);
     }
 
     private String activitySelector() {
@@ -3622,6 +3625,10 @@ public class MainThread implements Runnable {
                         TimeUnit.MILLISECONDS.toSeconds(runMillis) -
                                 TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
                 BHBot.logger.stats("Run time: " + runtime);
+            } else if ((state == State.Trials || state == State.Gauntlet) && BHBot.settings.difficultyFailsafe) {
+                String original = "difficulty " + (BHBot.settings.difficulty);
+                String updated = "difficulty " + (BHBot.settings.difficulty - 5);
+                settingsUpdate(original, updated);
             } else {
                 BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
             }
@@ -4056,8 +4063,19 @@ public class MainThread implements Runnable {
     }
 
     private boolean handleSkeletonKey() {
-        //TODO Add no key "Uh Oh" failsafe
         MarvinSegment seg;
+
+        seg = detectCue(cues.get("SkeletonNoKeys"), 2 * SECOND);
+        if (seg != null) {
+            BHBot.logger.warn("No skeleton keys, skipping..");
+            seg = detectCue(cues.get("Decline"), 5 * SECOND);
+            clickOnSeg(seg);
+            readScreen(SECOND);
+            seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+            clickOnSeg(seg);
+            return false;
+        }
+
         if (BHBot.settings.openSkeleton == 0) {
             BHBot.logger.info("Skeleton treasure found, declining.");
             seg = detectCue(cues.get("Decline"), 5 * SECOND);
@@ -4724,6 +4742,42 @@ public class MainThread implements Runnable {
         }
     }
 
+    private void settingsUpdate(String string, String updatedString) {
+
+        try {
+            // input the file content to the StringBuffer "input"
+            BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
+            String line;
+            StringBuilder inputBuffer = new StringBuilder();
+
+            //print lines to string with linebreaks
+            while ((line = file.readLine()) != null) {
+                inputBuffer.append(line);
+                inputBuffer.append(System.getProperty("line.separator"));
+            }
+            String inputStr = inputBuffer.toString(); //load lines to string
+            file.close();
+
+//	        BHBot.logger.info(inputStr); // check that it's inputted right
+
+            //find containing string and update with the output string from the function above
+            if (inputStr.contains(string)) {
+                inputStr = inputStr.replace(string, updatedString);
+            }
+
+            // write the string from memory over the existing file
+            // a bit risky for crashes
+            FileOutputStream fileOut = new FileOutputStream("settings.ini");
+            fileOut.write(inputStr.getBytes());
+            fileOut.close();
+
+            BHBot.settings.load();  //reload the new settings file so the counter will be updated for the next bribe
+
+        } catch (Exception e) {
+            System.out.println("Problem writing to settings file");
+        }
+    }
+
     void updateActivityCounter(String activity) {
         String typeToUpdate = "";
         String updatedType = "";
@@ -5158,7 +5212,7 @@ public class MainThread implements Runnable {
             if (worldBossTier == 10) {
                 passed++;
             } else {
-                BHBot.logger.error("Invalid world boss tier for Melvin or 3t3rmin4tion, must be equal to 10");
+                BHBot.logger.error("Invalid world boss tier for Melvin or 3xt3rmin4tion, must be equal to 10");
                 failed = true;
             }
         }
@@ -5304,7 +5358,7 @@ public class MainThread implements Runnable {
             return "n";
         else if (detectCue(cues.get("MelvinWB"), SECOND) != null)
             return "m";
-        else if (detectCue(cues.get("3t3rWB"), SECOND) != null)
+        else if (detectCue(cues.get("3xt3rWB"), SECOND) != null)
             return "3";
         else return null;
     }
@@ -6469,7 +6523,7 @@ public class MainThread implements Runnable {
                 sleep(SECOND);
                 if (enterGuildHall()) { //the fishing island is a silly place, lets not stay there
                     BHBot.logger.debug("Entered Guild Hall");
-                } else BHBot.logger.warn("Failed to enter guild hall");
+                } else BHBot.logger.debug("Failed to enter guild hall");
                 sleep(SECOND);
             }
 
@@ -6890,7 +6944,7 @@ public class MainThread implements Runnable {
 
     private void handleFishing() {
         MarvinSegment seg;
-        int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 sconds per bait used, plus 10 seconds buffer
+        int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 seconds per bait used, plus 10 seconds buffer
 
         readScreen();
 
@@ -6913,11 +6967,11 @@ public class MainThread implements Runnable {
                 BHBot.logger.info("Pausing for " + fishingTime + " seconds to fish");
                 BHBot.scheduler.pause();
 
-                Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fishing.exe\" " + BHBot.settings.rodType + " " + BHBot.settings.baitAmount);
+                Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fisherCLI.exe\" " + BHBot.settings.baitAmount);
                 if (!fisher.waitFor(fishingTime, TimeUnit.SECONDS)) { //run and wait for fishingTime seconds
                     BHBot.scheduler.resume();
                 }
-                Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisher-v1.2.4.exe\"\"");
+                Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisherCLI.exe\"\"");
                 fisherClose.waitFor(1, TimeUnit.SECONDS);
 
             } catch (IOException | InterruptedException ex) {
@@ -6981,7 +7035,9 @@ public class MainThread implements Runnable {
 
         readScreen();
         seg = detectCue(cues.get("GuildHallC"), SECOND * 10); //long search time as the bot can take a while to load the assets
-        return seg != null;
+        if (seg != null) {
+            return true;
+        } return false;
     }
 
     private void handleVictory() {
