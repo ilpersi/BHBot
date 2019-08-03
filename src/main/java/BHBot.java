@@ -442,12 +442,8 @@ public class BHBot {
                     case "expeditionread":
                         main.expeditionReadTest();
                         break;
-                    case "wb":
-                    case "worldboss":
-                        main.wbTest();
-                        break;
-                    case "d":
-                        main.updateActivityCounter("World Boss");
+                    case "settings":
+                        main.settingsTest();
                         break;
                     case "softreset":
                         main.softReset();

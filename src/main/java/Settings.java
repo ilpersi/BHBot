@@ -24,6 +24,7 @@ public class Settings {
     boolean collectFishingBaits = false;
     boolean dungeonOnTimeout = true;
     boolean countActivities = false;
+    boolean difficultyFailsafe = false;
     //activity settings alpha
     LinkedHashSet<String> activitiesEnabled;
     boolean activitiesRoundRobin = true;
@@ -802,6 +803,7 @@ public class Settings {
         resetTimersOnBattleEnd = lastUsedMap.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("1");
         autoStartChromeDriver = lastUsedMap.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
         reconnectTimer = Integer.parseInt(lastUsedMap.getOrDefault("reconnectTimer", "" + reconnectTimer));
+        difficultyFailsafe = lastUsedMap.getOrDefault("difficultyFailsafe", difficultyFailsafe ? "1" : "0").equals("1");
 
         setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()));
         activitiesRoundRobin = lastUsedMap.getOrDefault("activitiesRoundRobin", activitiesRoundRobin ? "1" : "0").equals("1");
@@ -883,10 +885,6 @@ public class Settings {
 
         persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", "" + persuasionLevel));
         bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", "" + bribeLevel));
-
-        doFishing = lastUsedMap.getOrDefault("doFishing", doFishing ? "1" : "0").equals("1");
-        rodType = Integer.parseInt(lastUsedMap.getOrDefault("rodType", "" + rodType));
-        baitAmount = Integer.parseInt(lastUsedMap.getOrDefault("baitAmount", "" + baitAmount));
 
         doFishing = lastUsedMap.getOrDefault("doFishing", doFishing ? "1" : "0").equals("1");
         rodType = Integer.parseInt(lastUsedMap.getOrDefault("rodType", "" + rodType));

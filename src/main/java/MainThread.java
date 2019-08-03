@@ -536,7 +536,7 @@ public class MainThread implements Runnable {
         addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(190, 355, 400, 390));
         addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(190, 355, 400, 390));
         addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(190, 355, 400, 390));
-        addCue("3t3rWB", loadImage("cues/worldboss/3xt3rmin4tion.png"), new Bounds(190, 355, 400, 390));
+        addCue("3xt3rWB", loadImage("cues/worldboss/3xt3rmin4tion.png"), new Bounds(190, 355, 400, 390));
         addCue("WorldBossTitle", loadImage("cues/worldboss/cueWorldBossTitle.png"), new Bounds(280, 90, 515, 140));
         addCue("WorldBossSummonTitle", loadImage("cues/worldboss/cueWorldBossSummonTitle.png"), new Bounds(325, 100, 480, 150));
 
@@ -2567,7 +2567,7 @@ public class MainThread implements Runnable {
                             wbNameDecode.put("o", "Orlang Clan");
                             wbNameDecode.put("n", "Netherworld");
                             wbNameDecode.put("m", "Melvin");
-                            wbNameDecode.put("3", "3t3rmin4tion");
+                            wbNameDecode.put("3", "3xt3rmin4tion");
 
                             String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
 
@@ -2685,7 +2685,7 @@ public class MainThread implements Runnable {
                                             break;
                                         case "n":
                                         case "3":
-                                            seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether and 3t3rmin4tion
+                                            seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether and 3xt3rmin4tion
                                             break;
                                         case "m":
                                             seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
@@ -2702,6 +2702,7 @@ public class MainThread implements Runnable {
                                                 BHBot.logger.info("Lobby timed out, running dungeon instead");
                                                 closeWorldBoss();
                                                 sleep(4 * SECOND); //make sure we're stable on the main screen
+                                                currentActivity = "d";
                                                 BHBot.scheduler.doDungeonImmediately = true;
                                             } else {
                                                 BHBot.logger.info("Lobby timed out, returning to main screen.");
@@ -2747,13 +2748,13 @@ public class MainThread implements Runnable {
                                             BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + " started!");
                                             state = State.WorldBoss;
                                             sleep(6 * SECOND); //long wait to make sure we are in the world boss dungeon
-                                            readScreen();
-                                            seg = detectCue(cues.get("AutoOff")); // takes processDungeon too long so we do it manually
-                                            if (seg != null) {
-                                                clickOnSeg(seg);
-                                                BHBot.logger.info("Auto-pilot is disabled. Enabling...");
-                                            }
-                                            sleep(4 * SECOND);
+//                                            readScreen();
+//                                            seg = detectCue(cues.get("AutoOff")); // takes processDungeon too long so we do it manually
+//                                            if (seg != null) {
+//                                                clickOnSeg(seg);
+//                                                BHBot.logger.info("Auto-pilot is disabled. Enabling...");
+//                                            }
+//                                            sleep(4 * SECOND);
                                             readScreen();
                                             MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
                                             if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
@@ -2864,10 +2865,10 @@ public class MainThread implements Runnable {
         BHBot.logger.info("Main thread stopped.");
     }
 
-    // World boss invite button debugging
-    void wbTest() {
-        int t = detectWorldBossTier();
-        BHBot.logger.info(Integer.toString(t));
+    void settingsTest() {
+        String original = "difficulty " + (BHBot.settings.difficulty);
+        String updated = "difficulty " + (BHBot.settings.difficulty - 5);
+        settingsUpdate(original, updated);
     }
 
     private String activitySelector() {
@@ -3788,6 +3789,10 @@ public class MainThread implements Runnable {
                         TimeUnit.MILLISECONDS.toSeconds(runMillis) -
                                 TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
                 BHBot.logger.stats("Run time: " + runtime);
+            } else if ((state == State.Trials || state == State.Gauntlet) && BHBot.settings.difficultyFailsafe) {
+                String original = "difficulty " + (BHBot.settings.difficulty);
+                String updated = "difficulty " + (BHBot.settings.difficulty - 5);
+                settingsUpdate(original, updated);
             } else {
                 BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
             }
@@ -4901,6 +4906,42 @@ public class MainThread implements Runnable {
         }
     }
 
+    private void settingsUpdate(String string, String updatedString) {
+
+        try {
+            // input the file content to the StringBuffer "input"
+            BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
+            String line;
+            StringBuilder inputBuffer = new StringBuilder();
+
+            //print lines to string with linebreaks
+            while ((line = file.readLine()) != null) {
+                inputBuffer.append(line);
+                inputBuffer.append(System.getProperty("line.separator"));
+            }
+            String inputStr = inputBuffer.toString(); //load lines to string
+            file.close();
+
+//	        BHBot.logger.info(inputStr); // check that it's inputted right
+
+            //find containing string and update with the output string from the function above
+            if (inputStr.contains(string)) {
+                inputStr = inputStr.replace(string, updatedString);
+            }
+
+            // write the string from memory over the existing file
+            // a bit risky for crashes
+            FileOutputStream fileOut = new FileOutputStream("settings.ini");
+            fileOut.write(inputStr.getBytes());
+            fileOut.close();
+
+            BHBot.settings.load();  //reload the new settings file so the counter will be updated for the next bribe
+
+        } catch (Exception e) {
+            System.out.println("Problem writing to settings file");
+        }
+    }
+
     void updateActivityCounter(String activity) {
         String typeToUpdate = "";
         String updatedType = "";
@@ -5335,7 +5376,7 @@ public class MainThread implements Runnable {
             if (worldBossTier == 10) {
                 passed++;
             } else {
-                BHBot.logger.error("Invalid world boss tier for Melvin or 3t3rmin4tion, must be equal to 10");
+                BHBot.logger.error("Invalid world boss tier for Melvin or 3xt3rmin4tion, must be equal to 10");
                 failed = true;
             }
         }
@@ -5481,7 +5522,7 @@ public class MainThread implements Runnable {
             return "n";
         else if (detectCue(cues.get("MelvinWB"), SECOND) != null)
             return "m";
-        else if (detectCue(cues.get("3t3rWB"), SECOND) != null)
+        else if (detectCue(cues.get("3xt3rWB"), SECOND) != null)
             return "3";
         else return null;
     }
