@@ -1661,16 +1661,19 @@ public class MainThread implements Runnable {
 
                             BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + BHBot.settings.difficulty + "...");
 
-                            // select difficulty if needed:
+                            // apply gauntletOffset if gauntlet is active
+                            int targetDifficulty = BHBot.settings.difficulty;
+                            if (!trials) targetDifficulty = BHBot.settings.difficulty - BHBot.settings.gauntletOffset; //if gauntlet apply offset
+
                             int difficulty = detectDifficulty();
                             if (difficulty == 0) { // error!
                                 BHBot.logger.error("Due to an error#1 in difficulty detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
                                 closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"));
                                 continue;
                             }
-                            if (difficulty != BHBot.settings.difficulty) {
+                            if (difficulty != targetDifficulty) {
                                 BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + BHBot.settings.difficulty + ". Changing..");
-                                boolean result = selectDifficulty(difficulty, BHBot.settings.difficulty);
+                                boolean result = selectDifficulty(difficulty, targetDifficulty);
                                 if (!result) { // error!
                                     // see if drop down menu is still open and close it:
                                     readScreen(SECOND);

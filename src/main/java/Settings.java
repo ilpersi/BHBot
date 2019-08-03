@@ -25,6 +25,7 @@ public class Settings {
     boolean dungeonOnTimeout = true;
     boolean countActivities = false;
     boolean difficultyFailsafe = false;
+    int gauntletOffset = 0;
     //activity settings alpha
     LinkedHashSet<String> activitiesEnabled;
     boolean activitiesRoundRobin = true;
@@ -804,6 +805,7 @@ public class Settings {
         autoStartChromeDriver = lastUsedMap.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
         reconnectTimer = Integer.parseInt(lastUsedMap.getOrDefault("reconnectTimer", "" + reconnectTimer));
         difficultyFailsafe = lastUsedMap.getOrDefault("difficultyFailsafe", difficultyFailsafe ? "1" : "0").equals("1");
+        gauntletOffset = Integer.parseInt(lastUsedMap.getOrDefault("gauntletOffset", "" + gauntletOffset));
 
         setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()));
         activitiesRoundRobin = lastUsedMap.getOrDefault("activitiesRoundRobin", activitiesRoundRobin ? "1" : "0").equals("1");
