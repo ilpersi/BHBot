@@ -310,9 +310,6 @@ public class MainThread implements Runnable {
         addCue("AdInProgress", loadImage("cues/cueAdInProgress.png"), null); // we currently don't really need this cue
         addCue("AdFinished", loadImage("cues/cueAdFinished.png"), null); // we currently don't really need this cue
         addCue("Skip", loadImage("cues/cueSkip.png"), null);
-//		addCue("adRead", loadImage("cues/cueAdRead.png"), null); testing for new ad engine
-//		addCue("adClose", loadImage("cues/cueAdClose.png"), null); testing for new ad engine
-
 
         addCue("EnergyBar", loadImage("cues/cueEnergyBar.png"), new Bounds(390, 0, 420, 20));
         addCue("TicketBar", loadImage("cues/cueTicketBar.png"), new Bounds(540, 0, 770, 20));
@@ -346,6 +343,7 @@ public class MainThread implements Runnable {
         addCue("View", loadImage("cues/cueView.png"), new Bounds(390, 415, 600, 486));
         addCue("Bribe", loadImage("cues/cueBribe.png"), new Bounds(505, 305, 684, 375));
         addCue("SkeletonTreasure", loadImage("cues/cueSkeletonTreasure.png"), new Bounds(185, 165, 295, 280)); // skeleton treasure found in dungeons (it's a dialog/popup cue)
+        addCue("SkeletonNoKeys", loadImage("cues/cueSkeletonNoKeys.png"), new Bounds(478, 318, 500, 348)); // red 0
         addCue("Open", loadImage("cues/cueOpen.png"), null); // skeleton treasure open button
         addCue("AdTreasure", loadImage("cues/cueAdTreasure.png"), null); // ad treasure found in dungeons (it's a dialog/popup cue)
         addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
@@ -2326,6 +2324,7 @@ public class MainThread implements Runnable {
 
                                     if (BHBot.settings.autoBossRune.containsKey("e")) {
                                         //configure activity runes
+                                        BHBot.logger.info("Configuring autoBossRune for Expedition");
                                         handleMinorRunes("e");
                                         readScreen(SECOND);
                                         clickOnSeg(badgeBtn);
@@ -4223,8 +4222,19 @@ public class MainThread implements Runnable {
     }
 
     private boolean handleSkeletonKey() {
-        //TODO Add no key "Uh Oh" failsafe
         MarvinSegment seg;
+
+        seg = detectCue(cues.get("SkeletonNoKeys"), 2 * SECOND);
+        if (seg != null) {
+            BHBot.logger.warn("No skeleton keys, skipping..");
+            seg = detectCue(cues.get("Decline"), 5 * SECOND);
+            clickOnSeg(seg);
+            readScreen(SECOND);
+            seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+            clickOnSeg(seg);
+            return false;
+        }
+
         if (BHBot.settings.openSkeleton == 0) {
             BHBot.logger.info("Skeleton treasure found, declining.");
             seg = detectCue(cues.get("Decline"), 5 * SECOND);
