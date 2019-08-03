@@ -1659,11 +1659,11 @@ public class MainThread implements Runnable {
                                 readScreen(SECOND); //wait for window animation
                             }
 
-                            BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + BHBot.settings.difficulty + "...");
-
                             // apply gauntletOffset if gauntlet is active
                             int targetDifficulty = BHBot.settings.difficulty;
                             if (!trials) targetDifficulty = BHBot.settings.difficulty - BHBot.settings.gauntletOffset; //if gauntlet apply offset
+
+                            BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + targetDifficulty + "...");
 
                             int difficulty = detectDifficulty();
                             if (difficulty == 0) { // error!
@@ -1672,7 +1672,7 @@ public class MainThread implements Runnable {
                                 continue;
                             }
                             if (difficulty != targetDifficulty) {
-                                BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + BHBot.settings.difficulty + ". Changing..");
+                                BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + targetDifficulty + ". Changing..");
                                 boolean result = selectDifficulty(difficulty, targetDifficulty);
                                 if (!result) { // error!
                                     // see if drop down menu is still open and close it:
@@ -6706,7 +6706,7 @@ public class MainThread implements Runnable {
                 sleep(SECOND);
                 if (enterGuildHall()) { //the fishing island is a silly place, lets not stay there
                     BHBot.logger.debug("Entered Guild Hall");
-                } else BHBot.logger.warn("Failed to enter guild hall");
+                } else BHBot.logger.debug("Failed to enter guild hall");
                 sleep(SECOND);
             }
 
@@ -7127,7 +7127,7 @@ public class MainThread implements Runnable {
 
     private void handleFishing() {
         MarvinSegment seg;
-        int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 sconds per bait used, plus 10 seconds buffer
+        int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 seconds per bait used, plus 10 seconds buffer
 
         readScreen();
 
@@ -7150,11 +7150,11 @@ public class MainThread implements Runnable {
                 BHBot.logger.info("Pausing for " + fishingTime + " seconds to fish");
                 BHBot.scheduler.pause();
 
-                Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fishing.exe\" " + BHBot.settings.rodType + " " + BHBot.settings.baitAmount);
+                Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fisherCLI.exe\" " + BHBot.settings.baitAmount);
                 if (!fisher.waitFor(fishingTime, TimeUnit.SECONDS)) { //run and wait for fishingTime seconds
                     BHBot.scheduler.resume();
                 }
-                Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisher-v1.2.4.exe\"\"");
+                Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisherCLI.exe\"\"");
                 fisherClose.waitFor(1, TimeUnit.SECONDS);
 
             } catch (IOException | InterruptedException ex) {
@@ -7218,7 +7218,9 @@ public class MainThread implements Runnable {
 
         readScreen();
         seg = detectCue(cues.get("GuildHallC"), SECOND * 10); //long search time as the bot can take a while to load the assets
-        return seg != null;
+        if (seg != null) {
+            return true;
+        } return false;
     }
 
     private void handleVictory() {
