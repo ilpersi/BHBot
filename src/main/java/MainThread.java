@@ -4932,6 +4932,7 @@ public class MainThread implements Runnable {
             //find containing string and update with the output string from the function above
             if (inputStr.contains(string)) {
                 inputStr = inputStr.replace(string, updatedString);
+                BHBot.logger.info("Replaced '" + string + "' with '" + updatedString + "' in " + Settings.configurationFile);
             }
 
             // write the string from memory over the existing file
