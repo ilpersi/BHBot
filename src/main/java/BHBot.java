@@ -442,9 +442,6 @@ public class BHBot {
                     case "expeditionread":
                         main.expeditionReadTest();
                         break;
-                    case "settings":
-                        main.settingsTest();
-                        break;
                     case "softreset":
                         main.softReset();
                         break;

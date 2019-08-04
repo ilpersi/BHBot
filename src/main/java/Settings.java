@@ -25,7 +25,6 @@ public class Settings {
     boolean dungeonOnTimeout = true;
     boolean countActivities = false;
     boolean difficultyFailsafe = false;
-    int gauntletOffset = 0;
     //activity settings alpha
     LinkedHashSet<String> activitiesEnabled;
     boolean activitiesRoundRobin = true;
@@ -71,7 +70,8 @@ public class Settings {
     /**
      * The trials/gauntlet difficulty
      */
-    int difficulty = 60;
+    int difficultyTrials = 60;
+    int difficultyGauntlet = 60;
     /**
      * PvP/GvG Opponent
      */
@@ -230,7 +230,8 @@ public class Settings {
         activitiesEnabled.add("v"); // GVG
         activitiesEnabled.add("i"); // Invasion
 
-        difficulty = 60;
+        difficultyTrials = 60;
+        difficultyGauntlet = 60;
         setDungeons("z2d1 3 50", "z2d2 3 50");
         setRaids("1 3 100");
 
@@ -805,7 +806,6 @@ public class Settings {
         autoStartChromeDriver = lastUsedMap.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
         reconnectTimer = Integer.parseInt(lastUsedMap.getOrDefault("reconnectTimer", "" + reconnectTimer));
         difficultyFailsafe = lastUsedMap.getOrDefault("difficultyFailsafe", difficultyFailsafe ? "1" : "0").equals("1");
-        gauntletOffset = Integer.parseInt(lastUsedMap.getOrDefault("gauntletOffset", "" + gauntletOffset));
 
         setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()));
         activitiesRoundRobin = lastUsedMap.getOrDefault("activitiesRoundRobin", activitiesRoundRobin ? "1" : "0").equals("1");
@@ -850,7 +850,8 @@ public class Settings {
 
         pvpOpponent = Integer.parseInt(lastUsedMap.getOrDefault("pvpOpponent", "" + pvpOpponent));
         gvgOpponent = Integer.parseInt(lastUsedMap.getOrDefault("gvgOpponent", "" + gvgOpponent));
-        difficulty = Integer.parseInt(lastUsedMap.getOrDefault("difficulty", "" + difficulty));
+        difficultyTrials = Integer.parseInt(lastUsedMap.getOrDefault("difficultyTrials", "" + difficultyTrials));
+        difficultyGauntlet = Integer.parseInt(lastUsedMap.getOrDefault("difficultyGauntlet", "" + difficultyGauntlet));
         minSolo = Integer.parseInt(lastUsedMap.getOrDefault("minSolo", "" + minSolo));
 
         setDungeonsFromString(lastUsedMap.getOrDefault("dungeons", getDungeonsAsString()));
@@ -938,6 +939,9 @@ public class Settings {
         }
         if (lastUsedMap.getOrDefault("worldBossDifficulty", null) != null) {
             BHBot.logger.warn("Deprecated setting detected: worldBossDifficulty. Use the new World Boss format instead.");
+        }
+        if (lastUsedMap.getOrDefault("difficulty", null) != null) {
+            BHBot.logger.warn("Deprecated setting detected: difficulty. Use the new difficultyTrials and difficultyGauntlet.");
         }
         if (lastUsedMap.getOrDefault("worldBossTier", null) != null) {
             BHBot.logger.warn("Deprecated setting detected: worldBossTier. Use the new World Boss format instead.");

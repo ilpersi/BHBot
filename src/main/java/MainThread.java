@@ -1659,9 +1659,8 @@ public class MainThread implements Runnable {
                                 readScreen(SECOND); //wait for window animation
                             }
 
-                            // apply gauntletOffset if gauntlet is active
-                            int targetDifficulty = BHBot.settings.difficulty;
-                            if (!trials) targetDifficulty = BHBot.settings.difficulty - BHBot.settings.gauntletOffset; //if gauntlet apply offset
+                            // apply the correct difficulty
+                            int targetDifficulty = trials ? BHBot.settings.difficultyTrials : BHBot.settings.difficultyGauntlet;
 
                             BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + targetDifficulty + "...");
 
@@ -2868,12 +2867,6 @@ public class MainThread implements Runnable {
         BHBot.logger.info("Main thread stopped.");
     }
 
-    void settingsTest() {
-        String original = "difficulty " + (BHBot.settings.difficulty);
-        String updated = "difficulty " + (BHBot.settings.difficulty - 5);
-        settingsUpdate(original, updated);
-    }
-
     private String activitySelector() {
 
         if (BHBot.settings.activitiesEnabled.isEmpty()) {
@@ -3792,11 +3785,11 @@ public class MainThread implements Runnable {
                         TimeUnit.MILLISECONDS.toSeconds(runMillis) -
                                 TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
                 BHBot.logger.stats("Run time: " + runtime);
-            } else if ((state == State.Trials || state == State.Gauntlet) && BHBot.settings.difficultyFailsafe) {
+            } /*else if ((state == State.Trials || state == State.Gauntlet) && BHBot.settings.difficultyFailsafe) {
                 String original = "difficulty " + (BHBot.settings.difficulty);
                 String updated = "difficulty " + (BHBot.settings.difficulty - 5);
                 settingsUpdate(original, updated);
-            } else {
+            }*/ else {
                 BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
             }
             resetAppropriateTimers();
