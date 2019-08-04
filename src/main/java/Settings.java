@@ -1,9 +1,11 @@
 import org.apache.logging.log4j.Level;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Settings {
-    static final String DEFAULT_SETTINGS_FILE = "settings.ini";
+    static String configurationFile = "settings.ini";
 
     String username = "";
     String password = "";
@@ -24,8 +26,7 @@ public class Settings {
     boolean collectFishingBaits = false;
     boolean dungeonOnTimeout = true;
     boolean countActivities = false;
-    boolean difficultyFailsafe = false;
-    int gauntletOffset = 0;
+
     //activity settings alpha
     LinkedHashSet<String> activitiesEnabled;
     boolean activitiesRoundRobin = true;
@@ -71,7 +72,9 @@ public class Settings {
     /**
      * The trials/gauntlet difficulty
      */
-    int difficulty = 60;
+    int difficultyTrials = 60;
+    int difficultyGauntlet = 60;
+    HashMap<String, Integer> difficultyFailsafe = new HashMap<>();
     /**
      * PvP/GvG Opponent
      */
@@ -173,7 +176,7 @@ public class Settings {
      * Fishing Settings
      **/
     boolean doFishing = false;
-    int rodType = 4;
+    private int rodType = 4;
     int baitAmount = 5;
     /**
      * log4j settings
@@ -218,6 +221,7 @@ public class Settings {
         autoShrine = new ArrayList<>();
         autoRuneDefault = new ArrayList<>();
         poNotifyDrop = new ArrayList<>();
+        setDifficultyFailsafeFromString("t:0 g:0");
     }
 
     // a handy shortcut for some debug settings:
@@ -230,7 +234,8 @@ public class Settings {
         activitiesEnabled.add("v"); // GVG
         activitiesEnabled.add("i"); // Invasion
 
-        difficulty = 60;
+        difficultyTrials = 60;
+        difficultyGauntlet = 60;
         setDungeons("z2d1 3 50", "z2d2 3 50");
         setRaids("1 3 100");
 
@@ -423,45 +428,61 @@ public class Settings {
         }
     }
 
+    private void setDifficultyFailsafe(String... failSafes) {
+        this.difficultyFailsafe.clear();
+        // We only support Trial and Gauntlets, so we do sanity checks here only settings the right letters t,g
+        String pattern = "([tg]):([0-9])";
+        Pattern r = Pattern.compile(pattern);
+
+        for (String f : failSafes) {
+            f = f.trim();
+
+            Matcher m = r.matcher(f);
+            if (m.find()) {
+                difficultyFailsafe.put(m.group(1), Integer.parseInt(m.group(2)));
+            }
+        }
+    }
+
     private void setAutoRune(String... runeSets) {
         this.autoRune.clear();
-        String activity;
-        String[] config;
+        String activityAutoRune;
+        String[] configAutoRune;
 
         for (String d : runeSets) {
-            config = d.split(" +");
-            if (config.length < 2)
+            configAutoRune = d.split(" +");
+            if (configAutoRune.length < 2)
                 continue;
-            activity = config[0];
+            activityAutoRune = configAutoRune[0];
             List<String> runes = new ArrayList<>();
-            runes.add(config[1]);
-            if (config.length == 3) {
-                runes.add(config[2]);
+            runes.add(configAutoRune[1]);
+            if (configAutoRune.length == 3) {
+                runes.add(configAutoRune[2]);
             } else {
-                runes.add(config[1]);
+                runes.add(configAutoRune[1]);
             }
-            this.autoRune.put(activity, runes);
+            this.autoRune.put(activityAutoRune, runes);
         }
     }
 
     private void setAutoBossRune(String... runeSets) {
         this.autoBossRune.clear();
-        String activity;
-        String[] config;
+        String activityAutoBossRune;
+        String[] configAutoBossRune;
 
         for (String d : runeSets) {
-            config = d.split(" +");
-            if (config.length < 2)
+            configAutoBossRune = d.split(" +");
+            if (configAutoBossRune.length < 2)
                 continue;
-            activity = config[0];
+            activityAutoBossRune = configAutoBossRune[0];
             List<String> runes = new ArrayList<>();
-            runes.add(config[1]);
-            if (config.length == 3) {
-                runes.add(config[2]);
+            runes.add(configAutoBossRune[1]);
+            if (configAutoBossRune.length == 3) {
+                runes.add(configAutoBossRune[2]);
             } else {
-                runes.add(config[1]);
+                runes.add(configAutoBossRune[1]);
             }
-            this.autoBossRune.put(activity, runes);
+            this.autoBossRune.put(activityAutoBossRune, runes);
         }
     }
 
@@ -606,6 +627,16 @@ public class Settings {
         return String.join("; ", actionList);
     }
 
+    private String getDifficultyFailsafeAsString(){
+        StringBuilder dfsBuilder = new StringBuilder();
+        for (Map.Entry<String, Integer> entry: difficultyFailsafe.entrySet()){
+            if (dfsBuilder.length() > 0) dfsBuilder.append(" ");
+            dfsBuilder.append(entry.getKey()).append(entry.getValue());
+        }
+
+        return dfsBuilder.toString();
+    }
+
     private String getGVGStripsAsString() {
         StringBuilder result = new StringBuilder();
         for (String s : gvgstrip)
@@ -735,6 +766,10 @@ public class Settings {
         setAutoBossRune(s.trim().split(" *; *"));
     }
 
+    private void setDifficultyFailsafeFromString(String s) {
+        setDifficultyFailsafe(s.trim().split(" "));
+    }
+
     private void setGVGStripsFromString(String s) {
         setGVGStrips(s.split(" "));
         // clean up (trailing spaces and remove if empty):
@@ -804,8 +839,6 @@ public class Settings {
         resetTimersOnBattleEnd = lastUsedMap.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("1");
         autoStartChromeDriver = lastUsedMap.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
         reconnectTimer = Integer.parseInt(lastUsedMap.getOrDefault("reconnectTimer", "" + reconnectTimer));
-        difficultyFailsafe = lastUsedMap.getOrDefault("difficultyFailsafe", difficultyFailsafe ? "1" : "0").equals("1");
-        gauntletOffset = Integer.parseInt(lastUsedMap.getOrDefault("gauntletOffset", "" + gauntletOffset));
 
         setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()));
         activitiesRoundRobin = lastUsedMap.getOrDefault("activitiesRoundRobin", activitiesRoundRobin ? "1" : "0").equals("1");
@@ -850,7 +883,8 @@ public class Settings {
 
         pvpOpponent = Integer.parseInt(lastUsedMap.getOrDefault("pvpOpponent", "" + pvpOpponent));
         gvgOpponent = Integer.parseInt(lastUsedMap.getOrDefault("gvgOpponent", "" + gvgOpponent));
-        difficulty = Integer.parseInt(lastUsedMap.getOrDefault("difficulty", "" + difficulty));
+        difficultyTrials = Integer.parseInt(lastUsedMap.getOrDefault("difficultyTrials", "" + difficultyTrials));
+        difficultyGauntlet = Integer.parseInt(lastUsedMap.getOrDefault("difficultyGauntlet", "" + difficultyGauntlet));
         minSolo = Integer.parseInt(lastUsedMap.getOrDefault("minSolo", "" + minSolo));
 
         setDungeonsFromString(lastUsedMap.getOrDefault("dungeons", getDungeonsAsString()));
@@ -885,6 +919,8 @@ public class Settings {
         setAutoRuneFromString(lastUsedMap.getOrDefault("autoRune", getAutoRuneAsString()));
         setAutoBossRuneFromString(lastUsedMap.getOrDefault("autoBossRune", getAutoBossRuneAsString()));
 
+        setDifficultyFailsafeFromString(lastUsedMap.getOrDefault("difficultyFailsafe", getDifficultyFailsafeAsString()));
+
         persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", "" + persuasionLevel));
         bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", "" + bribeLevel));
 
@@ -902,7 +938,7 @@ public class Settings {
      * Loads settings from disk.
      */
     void load() {
-        load(DEFAULT_SETTINGS_FILE);
+        load(configurationFile);
         checkDeprecatedSettings();
         sanitizeSetting();
     }
@@ -938,6 +974,9 @@ public class Settings {
         }
         if (lastUsedMap.getOrDefault("worldBossDifficulty", null) != null) {
             BHBot.logger.warn("Deprecated setting detected: worldBossDifficulty. Use the new World Boss format instead.");
+        }
+        if (lastUsedMap.getOrDefault("difficulty", null) != null) {
+            BHBot.logger.warn("Deprecated setting detected: difficulty. Use the new difficultyTrials and difficultyGauntlet.");
         }
         if (lastUsedMap.getOrDefault("worldBossTier", null) != null) {
             BHBot.logger.warn("Deprecated setting detected: worldBossTier. Use the new World Boss format instead.");

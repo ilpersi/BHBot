@@ -1502,9 +1502,8 @@ public class MainThread implements Runnable {
                                 readScreen(SECOND); //wait for window animation
                             }
 
-                            // apply gauntletOffset if gauntlet is active
-                            int targetDifficulty = BHBot.settings.difficulty;
-                            if (!trials) targetDifficulty = BHBot.settings.difficulty - BHBot.settings.gauntletOffset; //if gauntlet apply offset
+                            // apply the correct difficulty
+                            int targetDifficulty = trials ? BHBot.settings.difficultyTrials : BHBot.settings.difficultyGauntlet;
 
                             BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + targetDifficulty + "...");
 
@@ -2548,7 +2547,6 @@ public class MainThread implements Runnable {
                                                 BHBot.logger.info("Lobby timed out, running dungeon instead");
                                                 closeWorldBoss();
                                                 sleep(4 * SECOND); //make sure we're stable on the main screen
-                                                currentActivity = "d";
                                                 BHBot.scheduler.doDungeonImmediately = true;
                                             } else {
                                                 BHBot.logger.info("Lobby timed out, returning to main screen.");
@@ -2690,12 +2688,6 @@ public class MainThread implements Runnable {
         BHBot.logger.info("Stopping main thread...");
         closeBHWindow();
         BHBot.logger.info("Main thread stopped.");
-    }
-
-    void settingsTest() {
-        String original = "difficulty " + (BHBot.settings.difficulty);
-        String updated = "difficulty " + (BHBot.settings.difficulty - 5);
-        settingsUpdate(original, updated);
     }
 
     private String activitySelector() {
@@ -3609,12 +3601,12 @@ public class MainThread implements Runnable {
                 clickOnSeg(seg);
                 sleep(SECOND);
             }
-            if (state == State.Invasion) {
-                BHBot.logger.info("Invasion completed successfully");
+            if (state.equals(State.Invasion)) {
+                BHBot.logger.info("Invasion completed.");
             } else if (state == State.Dungeon) {
                 dungeonCounter++;
                 BHBot.logger.warn("Dungeon #" + dungeonCounter + " completed. Result: Defeat.");
-            } else if (state == State.Raid) {
+            } else if (state.equals(State.Raid)) {
                 raidDefeatCounter++;
                 int totalRaids = raidVictoryCounter + raidDefeatCounter;
                 BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
@@ -3625,10 +3617,20 @@ public class MainThread implements Runnable {
                         TimeUnit.MILLISECONDS.toSeconds(runMillis) -
                                 TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
                 BHBot.logger.stats("Run time: " + runtime);
-            } else if ((state == State.Trials || state == State.Gauntlet) && BHBot.settings.difficultyFailsafe) {
-                String original = "difficulty " + (BHBot.settings.difficulty);
-                String updated = "difficulty " + (BHBot.settings.difficulty - 5);
-                settingsUpdate(original, updated);
+            } else if (state.equals(State.Trials)) {
+                if (BHBot.settings.difficultyFailsafe.containsKey("t")) {
+                    String original = "difficultyTrials " + (BHBot.settings.difficultyTrials);
+                    String updated = "difficultyTrials " + (BHBot.settings.difficultyTrials - BHBot.settings.difficultyFailsafe.get("t"));
+                    settingsUpdate(original, updated);
+                }
+                BHBot.logger.warn("Trials completed. Result: Defeat.");
+            } else if (state.equals(State.Gauntlet)) {
+                if (BHBot.settings.difficultyFailsafe.containsKey("g")) {
+                    String original = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet);
+                    String updated = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet - BHBot.settings.difficultyFailsafe.get("g"));
+                    settingsUpdate(original, updated);
+                }
+                BHBot.logger.warn("Gauntlet completed. Result: Defeat.");
             } else {
                 BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
             }
@@ -4746,7 +4748,7 @@ public class MainThread implements Runnable {
 
         try {
             // input the file content to the StringBuffer "input"
-            BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
+            BufferedReader file = new BufferedReader(new FileReader(Settings.configurationFile));
             String line;
             StringBuilder inputBuffer = new StringBuilder();
 
@@ -4763,11 +4765,12 @@ public class MainThread implements Runnable {
             //find containing string and update with the output string from the function above
             if (inputStr.contains(string)) {
                 inputStr = inputStr.replace(string, updatedString);
+                BHBot.logger.info("Replaced '" + string + "' with '" + updatedString + "' in " + Settings.configurationFile);
             }
 
             // write the string from memory over the existing file
             // a bit risky for crashes
-            FileOutputStream fileOut = new FileOutputStream("settings.ini");
+            FileOutputStream fileOut = new FileOutputStream(Settings.configurationFile);
             fileOut.write(inputStr.getBytes());
             fileOut.close();
 
@@ -4778,7 +4781,7 @@ public class MainThread implements Runnable {
         }
     }
 
-    void updateActivityCounter(String activity) {
+    private void updateActivityCounter(String activity) {
         String typeToUpdate = "";
         String updatedType = "";
 
@@ -7035,9 +7038,7 @@ public class MainThread implements Runnable {
 
         readScreen();
         seg = detectCue(cues.get("GuildHallC"), SECOND * 10); //long search time as the bot can take a while to load the assets
-        if (seg != null) {
-            return true;
-        } return false;
+        return seg != null;
     }
 
     private void handleVictory() {

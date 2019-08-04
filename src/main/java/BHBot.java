@@ -47,9 +47,6 @@ public class BHBot {
 
     public static void main(String[] args) {
 
-        // process launch arguments
-        String file = Settings.DEFAULT_SETTINGS_FILE;
-
         // We make sure that our configurationFactory is added to the list of configuration factories.
         System.setProperty("log4j.configurationFactory", "BHBotConfigurationFactory");
         // We enable the log4j2 debug output if we need to
@@ -58,12 +55,12 @@ public class BHBot {
         for (int i = 0; i < args.length; i++) { //select settings file to load
             switch (args[i]) {
                 case "settings":
-                    file = args[i + 1];
+                    Settings.configurationFile = args[i + 1];
                     i++;
                     break;
                 case "init":  //start bot in idle mode
                 case "idle":  //start bot in idle mode
-                    file = "LOAD_IDLE_SETTINGS";
+                    Settings.configurationFile = "LOAD_IDLE_SETTINGS";
                     i++;
                     break;
                 case "chromium":
@@ -81,10 +78,10 @@ public class BHBot {
             }
         }
 
-        if ("LOAD_IDLE_SETTINGS".equals(file)) {
+        if ("LOAD_IDLE_SETTINGS".equals(Settings.configurationFile)) {
             settings.setIdle();
         } else {
-            settings.load(file);
+            settings.load(Settings.configurationFile);
         }
 
         logger = BHBotLogger.create();
@@ -263,7 +260,7 @@ public class BHBot {
                 settings.hideWindowOnRestart = true;
                 break;
             case "loadsettings":
-                String file = Settings.DEFAULT_SETTINGS_FILE;
+                String file = Settings.configurationFile;
                 if (params.length > 1)
                     file = params[1];
                 settings.load(file);
@@ -435,9 +432,6 @@ public class BHBot {
                     case "e":
                     case "expeditionread":
                         main.expeditionReadTest();
-                        break;
-                    case "settings":
-                        main.settingsTest();
                         break;
                     case "softreset":
                         main.softReset();
