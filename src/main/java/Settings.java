@@ -221,6 +221,7 @@ public class Settings {
         autoShrine = new ArrayList<>();
         autoRuneDefault = new ArrayList<>();
         poNotifyDrop = new ArrayList<>();
+        setDifficultyFailsafeFromString("t:0 g:0");
     }
 
     // a handy shortcut for some debug settings:
