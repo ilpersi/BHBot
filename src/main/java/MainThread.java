@@ -4913,7 +4913,7 @@ public class MainThread implements Runnable {
 
         try {
             // input the file content to the StringBuffer "input"
-            BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
+            BufferedReader file = new BufferedReader(new FileReader(Settings.configurationFile));
             String line;
             StringBuilder inputBuffer = new StringBuilder();
 
@@ -4934,7 +4934,7 @@ public class MainThread implements Runnable {
 
             // write the string from memory over the existing file
             // a bit risky for crashes
-            FileOutputStream fileOut = new FileOutputStream("settings.ini");
+            FileOutputStream fileOut = new FileOutputStream(Settings.configurationFile);
             fileOut.write(inputStr.getBytes());
             fileOut.close();
 

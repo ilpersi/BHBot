@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Settings {
-    static final String DEFAULT_SETTINGS_FILE = "settings.ini";
+    static String configurationFile = "settings.ini";
 
     String username = "";
     String password = "";
@@ -937,7 +937,7 @@ public class Settings {
      * Loads settings from disk.
      */
     void load() {
-        load(DEFAULT_SETTINGS_FILE);
+        load(configurationFile);
         checkDeprecatedSettings();
         sanitizeSetting();
     }
