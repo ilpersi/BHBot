@@ -3768,12 +3768,12 @@ public class MainThread implements Runnable {
                 clickOnSeg(seg);
                 sleep(SECOND);
             }
-            if (state == State.Invasion) {
-                BHBot.logger.info("Invasion completed successfully");
+            if (state.equals(State.Invasion)) {
+                BHBot.logger.info("Invasion completed.");
             } else if (state == State.Dungeon) {
                 dungeonCounter++;
                 BHBot.logger.warn("Dungeon #" + dungeonCounter + " completed. Result: Defeat.");
-            } else if (state == State.Raid) {
+            } else if (state.equals(State.Raid)) {
                 raidDefeatCounter++;
                 int totalRaids = raidVictoryCounter + raidDefeatCounter;
                 BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
@@ -3790,12 +3790,14 @@ public class MainThread implements Runnable {
                     String updated = "difficultyTrials " + (BHBot.settings.difficultyTrials - BHBot.settings.difficultyFailsafe.get("t"));
                     settingsUpdate(original, updated);
                 }
+                BHBot.logger.warn("Trials completed. Result: Defeat.");
             } else if (state.equals(State.Gauntlet)) {
                 if (BHBot.settings.difficultyFailsafe.containsKey("g")) {
                     String original = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet);
                     String updated = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet - BHBot.settings.difficultyFailsafe.get("g"));
                     settingsUpdate(original, updated);
                 }
+                BHBot.logger.warn("Gauntlet completed. Result: Defeat.");
             } else {
                 BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
             }
