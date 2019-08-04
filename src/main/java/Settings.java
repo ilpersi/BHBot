@@ -24,7 +24,7 @@ public class Settings {
     boolean collectFishingBaits = false;
     boolean dungeonOnTimeout = true;
     boolean countActivities = false;
-    boolean difficultyFailsafe = false;
+    private boolean difficultyFailsafe = false;
     //activity settings alpha
     LinkedHashSet<String> activitiesEnabled;
     boolean activitiesRoundRobin = true;
@@ -173,7 +173,7 @@ public class Settings {
      * Fishing Settings
      **/
     boolean doFishing = false;
-    int rodType = 4;
+    private int rodType = 4;
     int baitAmount = 5;
     /**
      * log4j settings
@@ -426,43 +426,43 @@ public class Settings {
 
     private void setAutoRune(String... runeSets) {
         this.autoRune.clear();
-        String activity;
-        String[] config;
+        String activityAutoRune;
+        String[] configAutoRune;
 
         for (String d : runeSets) {
-            config = d.split(" +");
-            if (config.length < 2)
+            configAutoRune = d.split(" +");
+            if (configAutoRune.length < 2)
                 continue;
-            activity = config[0];
+            activityAutoRune = configAutoRune[0];
             List<String> runes = new ArrayList<>();
-            runes.add(config[1]);
-            if (config.length == 3) {
-                runes.add(config[2]);
+            runes.add(configAutoRune[1]);
+            if (configAutoRune.length == 3) {
+                runes.add(configAutoRune[2]);
             } else {
-                runes.add(config[1]);
+                runes.add(configAutoRune[1]);
             }
-            this.autoRune.put(activity, runes);
+            this.autoRune.put(activityAutoRune, runes);
         }
     }
 
     private void setAutoBossRune(String... runeSets) {
         this.autoBossRune.clear();
-        String activity;
-        String[] config;
+        String activityAutoBossRune;
+        String[] configAutoBossRune;
 
         for (String d : runeSets) {
-            config = d.split(" +");
-            if (config.length < 2)
+            configAutoBossRune = d.split(" +");
+            if (configAutoBossRune.length < 2)
                 continue;
-            activity = config[0];
+            activityAutoBossRune = configAutoBossRune[0];
             List<String> runes = new ArrayList<>();
-            runes.add(config[1]);
-            if (config.length == 3) {
-                runes.add(config[2]);
+            runes.add(configAutoBossRune[1]);
+            if (configAutoBossRune.length == 3) {
+                runes.add(configAutoBossRune[2]);
             } else {
-                runes.add(config[1]);
+                runes.add(configAutoBossRune[1]);
             }
-            this.autoBossRune.put(activity, runes);
+            this.autoBossRune.put(activityAutoBossRune, runes);
         }
     }
 

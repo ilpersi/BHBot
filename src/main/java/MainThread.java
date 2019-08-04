@@ -2704,7 +2704,6 @@ public class MainThread implements Runnable {
                                                 BHBot.logger.info("Lobby timed out, running dungeon instead");
                                                 closeWorldBoss();
                                                 sleep(4 * SECOND); //make sure we're stable on the main screen
-                                                currentActivity = "d";
                                                 BHBot.scheduler.doDungeonImmediately = true;
                                             } else {
                                                 BHBot.logger.info("Lobby timed out, returning to main screen.");
@@ -4902,6 +4901,7 @@ public class MainThread implements Runnable {
         }
     }
 
+    @SuppressWarnings("unused")
     private void settingsUpdate(String string, String updatedString) {
 
         try {
@@ -4938,7 +4938,7 @@ public class MainThread implements Runnable {
         }
     }
 
-    void updateActivityCounter(String activity) {
+    private void updateActivityCounter(String activity) {
         String typeToUpdate = "";
         String updatedType = "";
 
@@ -7211,9 +7211,7 @@ public class MainThread implements Runnable {
 
         readScreen();
         seg = detectCue(cues.get("GuildHallC"), SECOND * 10); //long search time as the bot can take a while to load the assets
-        if (seg != null) {
-            return true;
-        } return false;
+        return seg != null;
     }
 
     private void handleVictory() {
