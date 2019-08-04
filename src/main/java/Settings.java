@@ -1,6 +1,8 @@
 import org.apache.logging.log4j.Level;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Settings {
     static final String DEFAULT_SETTINGS_FILE = "settings.ini";
@@ -24,7 +26,7 @@ public class Settings {
     boolean collectFishingBaits = false;
     boolean dungeonOnTimeout = true;
     boolean countActivities = false;
-    private boolean difficultyFailsafe = false;
+
     //activity settings alpha
     LinkedHashSet<String> activitiesEnabled;
     boolean activitiesRoundRobin = true;
@@ -72,6 +74,7 @@ public class Settings {
      */
     int difficultyTrials = 60;
     int difficultyGauntlet = 60;
+    HashMap<String, Integer> difficultyFailsafe = new HashMap<>();
     /**
      * PvP/GvG Opponent
      */
@@ -424,6 +427,22 @@ public class Settings {
         }
     }
 
+    private void setDifficultyFailsafe(String... failSafes) {
+        this.difficultyFailsafe.clear();
+        // We only support Trial and Gauntlets, so we do sanity checks here only settings the right letters t,g
+        String pattern = "([tg])([0-9])";
+        Pattern r = Pattern.compile(pattern);
+
+        for (String f : failSafes) {
+            f = f.trim();
+
+            Matcher m = r.matcher(f);
+            if (m.find()) {
+                difficultyFailsafe.put(m.group(1), Integer.parseInt(m.group(2)));
+            }
+        }
+    }
+
     private void setAutoRune(String... runeSets) {
         this.autoRune.clear();
         String activityAutoRune;
@@ -607,6 +626,16 @@ public class Settings {
         return String.join("; ", actionList);
     }
 
+    private String getDifficultyFailsafeAsString(){
+        StringBuilder dfsBuilder = new StringBuilder();
+        for (Map.Entry<String, Integer> entry: difficultyFailsafe.entrySet()){
+            if (dfsBuilder.length() > 0) dfsBuilder.append(" ");
+            dfsBuilder.append(entry.getKey()).append(entry.getValue());
+        }
+
+        return dfsBuilder.toString();
+    }
+
     private String getGVGStripsAsString() {
         StringBuilder result = new StringBuilder();
         for (String s : gvgstrip)
@@ -736,6 +765,10 @@ public class Settings {
         setAutoBossRune(s.trim().split(" *; *"));
     }
 
+    private void setDifficultyFailsafeFromString(String s) {
+        setDifficultyFailsafe(s.trim().split(" "));
+    }
+
     private void setGVGStripsFromString(String s) {
         setGVGStrips(s.split(" "));
         // clean up (trailing spaces and remove if empty):
@@ -805,7 +838,6 @@ public class Settings {
         resetTimersOnBattleEnd = lastUsedMap.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("1");
         autoStartChromeDriver = lastUsedMap.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
         reconnectTimer = Integer.parseInt(lastUsedMap.getOrDefault("reconnectTimer", "" + reconnectTimer));
-        difficultyFailsafe = lastUsedMap.getOrDefault("difficultyFailsafe", difficultyFailsafe ? "1" : "0").equals("1");
 
         setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()));
         activitiesRoundRobin = lastUsedMap.getOrDefault("activitiesRoundRobin", activitiesRoundRobin ? "1" : "0").equals("1");
@@ -885,6 +917,8 @@ public class Settings {
         setAutoRuneDefaultFromString(lastUsedMap.getOrDefault("autoRuneDefault", getAutoRuneDefaultAsString()));
         setAutoRuneFromString(lastUsedMap.getOrDefault("autoRune", getAutoRuneAsString()));
         setAutoBossRuneFromString(lastUsedMap.getOrDefault("autoBossRune", getAutoBossRuneAsString()));
+
+        setDifficultyFailsafeFromString(lastUsedMap.getOrDefault("difficultyFailsafe", getDifficultyFailsafeAsString()));
 
         persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", "" + persuasionLevel));
         bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", "" + bribeLevel));

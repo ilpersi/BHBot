@@ -3784,11 +3784,19 @@ public class MainThread implements Runnable {
                         TimeUnit.MILLISECONDS.toSeconds(runMillis) -
                                 TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
                 BHBot.logger.stats("Run time: " + runtime);
-            } /*else if ((state == State.Trials || state == State.Gauntlet) && BHBot.settings.difficultyFailsafe) {
-                String original = "difficulty " + (BHBot.settings.difficulty);
-                String updated = "difficulty " + (BHBot.settings.difficulty - 5);
-                settingsUpdate(original, updated);
-            }*/ else {
+            } else if (state.equals(State.Trials)) {
+                if (BHBot.settings.difficultyFailsafe.containsKey("t")) {
+                    String original = "difficultyTrials " + (BHBot.settings.difficultyTrials);
+                    String updated = "difficultyTrials " + (BHBot.settings.difficultyTrials - BHBot.settings.difficultyFailsafe.get("t"));
+                    settingsUpdate(original, updated);
+                }
+            } else if (state.equals(State.Gauntlet)) {
+                if (BHBot.settings.difficultyFailsafe.containsKey("g")) {
+                    String original = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet);
+                    String updated = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet - BHBot.settings.difficultyFailsafe.get("g"));
+                    settingsUpdate(original, updated);
+                }
+            } else {
                 BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
             }
             resetAppropriateTimers();
@@ -4901,7 +4909,6 @@ public class MainThread implements Runnable {
         }
     }
 
-    @SuppressWarnings("unused")
     private void settingsUpdate(String string, String updatedString) {
 
         try {
