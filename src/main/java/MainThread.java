@@ -445,8 +445,10 @@ public class MainThread implements Runnable {
 //		addCue("DifficultyDisabled", loadImage("cues/cueDifficultyDisabled.png"), new Bounds(450, 330, 640, 450)); // selected difficulty in trials/gauntlet window (disabled - because game is still fetching data from server)
         addCue("SelectDifficultyExpedition", loadImage("cues/cueSelectDifficultyExpedition.png"), null);
 //		addCue("DifficultyDropDown", loadImage("cues/cueDifficultyDropDown.png"), new Bounds(260, 50, 550, 125)); // difficulty drop down menu cue
-        addCue("DropDownUp", loadImage("cues/cueDropDownUp.png"), null); // up arrow in difficulty drop down menu (found in trials/gauntlet, for example)
-        addCue("DropDownDown", loadImage("cues/cueSteamDropDownDown.png"), null); // down arrow in difficulty drop down menu (found in trials/gauntlet, for example)
+        addCue("DropDownUpSettings", loadImage("cues/DropDownUpSettings_Steam.png"), null); // up arrow in settings menu
+        addCue("DropDownDownSettings", loadImage("cues/DropDownDownSettings_Steam.png"), null); // down arrow in settings menu
+        addCue("DropDownUp", loadImage("cues/DropDownUpDifficulty_Steam.png"), null); // up arrow in difficulty drop down menu (found in trials/gauntlet, for example)
+        addCue("DropDownDown", loadImage("cues/DropDownDownDifficulty_Steam.png"), null); // down arrow in difficulty drop down menu (found in trials/gauntlet, for example)
         addCue("Cost", loadImage("cues/cueCost.png"), new Bounds(400, 150, 580, 240)); // used both for PvP and Gauntlet/Trials costs. Note that bounds are very wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
         addCue("SelectCost", loadImage("cues/cueSelectCost.png"), new Bounds(555, 170, 595, 205)); // cue for select cost found in both PvP and Gauntlet/Trials windows. Note that bounds are wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
         addCue("CostDropDown", loadImage("cues/cueCostDropDown.png"), new Bounds(260, 45, 320, 70)); // cue for cost selection drop down window
@@ -531,8 +533,8 @@ public class MainThread implements Runnable {
         addCue("Invite4th", loadImage("cues/cueInviteAny.png"), new Bounds(330, 330, 460, 380)); //bounds defined 4th invite button for Melvin
         addCue("Private", loadImage("cues/worldboss/Private_Steam.png"), new Bounds(313, 349, 359, 395));
         addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
-        addCue("WorldBossTier1", loadImage("cues/cueWorldBossTier1.png"), new Bounds(300, 180, 500, 250));
-        addCue("WorldBossTier2", loadImage("cues/cueWorldBossTier2.png"), new Bounds(300, 180, 500, 250));
+        addCue("WorldBossTier1", loadImage("cues/worldboss/WorldBossTier1_Steam.png"), new Bounds(296, 218, 495, 268));
+        addCue("WorldBossTier2", loadImage("cues/worldboss/WorldBossTier2_Steam.png"), new Bounds(296, 218, 495, 268));
         addCue("WorldBossDetectNormal", loadImage("cues/worldboss/WBSelectNomal_Steam.png"), new Bounds(333, 307, 423, 330));
         addCue("WorldBossDetectHard", loadImage("cues/worldboss/WBSelectHard_Steam.png"), new Bounds(333, 307, 423, 330));
         addCue("WorldBossDetectHeroic", loadImage("cues/worldboss/WBSelectHeroic_Steam.png"), new Bounds(333, 307, 423, 330));
@@ -2761,7 +2763,7 @@ public class MainThread implements Runnable {
 
         if (openSettings(SECOND)) {
 
-            seg = detectCue(cues.get("DropDownDown"), SECOND, new Bounds(605, 415, 628, 435));
+            seg = detectCue(cues.get("DropDownDownSettings"), SECOND, new Bounds(605, 415, 628, 435));
             if (seg != null) {
                 for (int i = 1; i <= 3; i++) {
                     clickOnSeg(seg);
@@ -5364,13 +5366,13 @@ public class MainThread implements Runnable {
     private void changeSelectedWorldBoss(String bossname) {
 
         if ("o".equals(bossname))
-            clickInGame(363, 445);
+            clickInGame(360, 465);
         else if ("n".equals(bossname))
-            clickInGame(390, 445);
+            clickInGame(385, 465);
         else if ("m".equals(bossname))
-            clickInGame(414, 445);
+            clickInGame(410, 465);
         else if ("3".equals(bossname))
-            clickInGame(440, 445);
+            clickInGame(435, 465);
         else BHBot.logger.warn("Unknown bossname '" + bossname + "' in changeSelectedWorldBoss.");
     }
 
@@ -5700,11 +5702,9 @@ public class MainThread implements Runnable {
     private int readNumFromImg(BufferedImage im) {
         List<ScreenNum> nums = new ArrayList<>();
 
-        //MarvinImageIO.saveImage(im, "difficulty_test.png");
-        //Misc.saveImage(imb, "difficulty_test2.png");
         for (int i = 0; i < 10; i++) {
-            List<MarvinSegment> list = FindSubimage.findSubimage(im, cues.get("" + i).im, 1.0, true, false, 0, 0, 0, 0);
-            //BHBot.logger.info("DEBUG difficulty detection: " + i + " - " + list.size());
+            List<MarvinSegment> list = FindSubimage.findSubimage(im, cues.get("" + i).im, 1, true, false, 0, 0, 0, 0);
+//            BHBot.logger.debug("DEBUG difficulty detection: " + i + " - " + list.size());
             for (MarvinSegment s : list) {
                 nums.add(new ScreenNum(i, s.x1));
             }
@@ -5785,13 +5785,9 @@ public class MainThread implements Runnable {
     /* World boss reading and changing section */
     private int detectWorldBossTier() {
 
-        //Melvins/3xt only available in T10 so we don't need to read the image
-        if ("m".equals(BHBot.settings.worldBossSettings.get(0))) return 10;
-        if ("3".equals(BHBot.settings.worldBossSettings.get(0))) return 10;
-
         readScreen(SECOND);
         MarvinSegment seg;
-        int xOffset = 99, yOffset = 11, w = 17, h = 19;
+        int x1 = 97, y1 = 12, x2 = 17, y2 = 18;
 
         seg = detectCue(cues.get("WorldBossTier1"), SECOND); // For tier 1 to 9
         if (seg == null) {
@@ -5801,14 +5797,13 @@ public class MainThread implements Runnable {
                 saveGameScreen("early_error");
                 return 0; // error
             }
-
-            xOffset = 97;
-            yOffset = 11;
-            w = 21;
-            h = 19;
+            x1 = 96;
+            y1 = 11;
+            x2 = 20;
+            y2 = 18;
         }
 
-        MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + xOffset, seg.y1 + yOffset, w, h));
+        MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + x1, seg.y1 + y1, x2, y2));
 
         // make it white-gray (to facilitate cue recognition):
         makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
@@ -5888,10 +5883,10 @@ public class MainThread implements Runnable {
 
         readScreen(SECOND); //screen stabilising
         clickInGame(470, 320); //difficulty button
+        sleep(1000);
         readScreen(SECOND); //screen stabilising
 
         Cue difficultySelection;
-
         if (target == 1) {
             difficultySelection = cues.get("WorldBossSelectNormal");
         } else if (target == 2) {
