@@ -339,6 +339,8 @@ public class MainThread implements Runnable {
         addCue("Fight", loadImage("cues/buttons/Fight_Steam.png"), null); // fight button in PVP window
         addCue("GreenClose", loadImage("cues/buttons/CloseGreen_Steam.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
         addCue("Invite", loadImage("cues/buttons/Invite_Steam.png"), null);
+        addCue("Invite3rd", loadImage("cues/buttons/Invite_Steam.png"), new Bounds(356, 308, 426, 330));
+        addCue("Invite4th", loadImage("cues/buttons/Invite_Steam.png"), new Bounds(356, 363, 426, 385));
         addCue("LargeGreenSummon", loadImage("cues/buttons/LargeGreenSummon_Steam.png"), new Bounds(486, 386, 587, 415));
         addCue("Normal", loadImage("cues/buttons/Normal_Steam.png"), new Bounds(157, 253, 637, 280));
         addCue("Hard", loadImage("cues/buttons/Hard_Steam.png"), new Bounds(157, 253, 637, 280));
@@ -529,8 +531,6 @@ public class MainThread implements Runnable {
 
         //WorldBoss Related
         addCue("WorldBossSelector", loadImage("cues/cueWorldBossSelector.png"), null);
-        addCue("Invite3rd", loadImage("cues/cueInviteAny.png"), new Bounds(334, 275, 456, 323)); //bounds defined 3rd invite button for Nether
-        addCue("Invite4th", loadImage("cues/cueInviteAny.png"), new Bounds(330, 330, 460, 380)); //bounds defined 4th invite button for Melvin
         addCue("Private", loadImage("cues/worldboss/Private_Steam.png"), new Bounds(313, 349, 359, 395));
         addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
         addCue("WorldBossTier1", loadImage("cues/worldboss/WorldBossTier1_Steam.png"), new Bounds(296, 218, 495, 268));
