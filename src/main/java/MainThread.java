@@ -290,12 +290,12 @@ public class MainThread implements Runnable {
     }
 
     static void loadCues() {
-        addCue("Main", loadImage("cues/cueSteamMainScreen.png"), new Bounds(90, 5, 100, 10));
+        addCue("Main", loadImage("cues/MainScreen_Steam.png"), new Bounds(90, 5, 100, 10));
         addCue("Login", loadImage("cues/cueLogin.png"), new Bounds(270, 260, 330, 300)); // login window (happens seldom)
-        addCue("AreYouThere", loadImage("cues/cueSteamAreYouThere.png"), new Bounds(235, 260, 557, 314));
+        addCue("AreYouThere", loadImage("cues/AreYouThere_Steam.png"), new Bounds(235, 260, 557, 314));
         addCue("Yes", loadImage("cues/cueYes.png"), null);
-        addCue("Disconnected", loadImage("cues/cueSteamDisconnected.png"), new Bounds(290, 255, 503, 325)); // cue for "You have been disconnected" popup
-        addCue("Reconnect", loadImage("cues/cueSteamReconnectButton.png"), new Bounds(330, 370, 460, 405)); // used with "You have been disconnected" dialog and also with the "maintenance" dialog
+        addCue("Disconnected", loadImage("cues/Disconnected_Steam.png"), new Bounds(290, 255, 503, 325)); // cue for "You have been disconnected" popup
+        addCue("Reconnect", loadImage("cues/ReconnectButton_Steam.png"), new Bounds(330, 370, 460, 405)); // used with "You have been disconnected" dialog and also with the "maintenance" dialog
         addCue("Reload", loadImage("cues/cueReload.png"), new Bounds(320, 330, 360, 360)); // used in "There is a new update required to play" dialog (happens on Friday night)
         addCue("Maintenance", loadImage("cues/cueMaintenance.png"), new Bounds(230, 200, 320, 250)); // cue for "Bit Heroes is currently down for maintenance. Please check back shortly!"
         addCue("Loading", loadImage("cues/cueLoading.png"), new Bounds(315, 210, 330, 225)); // cue for "Loading" superimposed screen
@@ -305,7 +305,7 @@ public class MainThread implements Runnable {
         addCue("DailyRewards", loadImage("cues/cueDailyRewards.png"), new Bounds(260, 45, 285, 75));
         addCue("Claim", loadImage("cues/cueClaim.png"), null); // claim button, when daily rewards popup is open
         addCue("Items", loadImage("cues/cueItems.png"), null); // used when we clicked "claim" on daily rewards popup. Used also with main menu ads.
-        addCue("WeeklyRewards", loadImage("cues/cueSteamWeeklyRewards.png"), new Bounds(170, 130, 630, 435)); // used with reward for GVG/PVP/Gauntlet/Trial on Friday night (when day changes into Saturday)
+        addCue("WeeklyRewards", loadImage("cues/WeeklyRewards_Steam.png"), new Bounds(170, 130, 630, 435)); // used with reward for GVG/PVP/Gauntlet/Trial on Friday night (when day changes into Saturday)
         addCue("Loot", loadImage("cues/cueLoot.png"), null);
 
         //Mainscreen Cues
@@ -361,19 +361,19 @@ public class MainThread implements Runnable {
         addCue("TicketBar", loadImage("cues/cueTicketBar.png"), new Bounds(540, 0, 770, 20));
 
 
-        addCue("RaidPopup", loadImage("cues/raid/cueSteamRaidPopup.png"), new Bounds(300, 70, 370, 120));
-        addCue("RaidSummon", loadImage("cues/raid/cueSteamRaidSummon.png"), new Bounds(480, 380, 590, 4200));
-        addCue("RaidLevel", loadImage("cues/raid/cueSteamRaidLevel.png"), new Bounds(300, 450, 490, 480)); // selected raid type button cue
-        addCue("cueRaidLevelEmpty", loadImage("cues/raid/cueSteamRaidLevelEmpty.png"), new Bounds(300, 450, 490, 480)); // available raid buttons
+        addCue("RaidPopup", loadImage("cues/raid/RaidPopup_Steam.png"), new Bounds(300, 70, 370, 120));
+        addCue("RaidSummon", loadImage("cues/raid/RaidSummon_Steam.png"), new Bounds(480, 380, 590, 4200));
+        addCue("RaidLevel", loadImage("cues/raid/RaidLevel_Steam.png"), new Bounds(300, 450, 490, 480)); // selected raid type button cue
+        addCue("cueRaidLevelEmpty", loadImage("cues/raid/RaidLevelEmpty_Steam.png"), new Bounds(300, 450, 490, 480)); // available raid buttons
 
         // New Raid level detection logic
-        addCue("Raid1Name", loadImage("cues/raid/cueSteamr1Name.png"), new Bounds(190, 375, 480, 430));// Raid 1 Name
-        addCue("Raid2Name", loadImage("cues/raid/cueSteamr2Name.png"), new Bounds(190, 375, 480, 430));// Raid 2 Name
-        addCue("Raid3Name", loadImage("cues/raid/cueSteamr3Name.png"), new Bounds(190, 375, 480, 430));// Raid 3 Name
-        addCue("Raid4Name", loadImage("cues/raid/cueSteamr4Name.png"), new Bounds(190, 375, 480, 430));// Raid 4 Name
-        addCue("Raid5Name", loadImage("cues/raid/cueSteamr5Name.png"), new Bounds(190, 375, 480, 430));// Raid 5 Name
-        addCue("Raid6Name", loadImage("cues/raid/cueSteamr6Name.png"), new Bounds(190, 375, 480, 430));// Raid 6 Name
-        addCue("Raid7Name", loadImage("cues/raid/cueSteamr7Name.png"), new Bounds(190, 375, 480, 430));// Raid 7 Name
+        addCue("Raid1Name", loadImage("cues/raid/r1Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 1 Name
+        addCue("Raid2Name", loadImage("cues/raid/r2Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 2 Name
+        addCue("Raid3Name", loadImage("cues/raid/r3Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 3 Name
+        addCue("Raid4Name", loadImage("cues/raid/r4Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 4 Name
+        addCue("Raid5Name", loadImage("cues/raid/r5Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 5 Name
+        addCue("Raid6Name", loadImage("cues/raid/r6Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 6 Name
+        addCue("Raid7Name", loadImage("cues/raid/r7Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 7 Name
 
 
         addCue("Cleared", loadImage("cues/cueCleared.png"), null); // used for example when raid has been finished
@@ -388,10 +388,10 @@ public class MainThread implements Runnable {
         addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
         addCue("DeclineRed", loadImage("cues/cueDeclineRed.png"), null); // decline persuation attempts
         addCue("Merchant", loadImage("cues/cueMerchant.png"), null); // cue for merchant dialog/popup
-        addCue("Settings", loadImage("cues/cueSteamSettings.png"), new Bounds(245, 84, 554, 125)); // settings menu
+        addCue("Settings", loadImage("cues/Settings_Steam.png"), new Bounds(245, 84, 554, 125)); // settings menu
 
-        addCue("Team", loadImage("cues/cueSteamTeam.png"), null); // Team text part of pop-ups about teams
-        addCue("TeamNotFull", loadImage("cues/cueSteamTeamNotFull.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
+        addCue("Team", loadImage("cues/Team_Steam.png"), null); // Team text part of pop-ups about teams
+        addCue("TeamNotFull", loadImage("cues/TeamNotFull_Steam.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
         addCue("TeamNotOrdered", loadImage("cues/cueTeamNotOrdered.png"), new Bounds(230, 190, 350, 250)); // warning popup when some guild member left and your GvG team is not complete anymore
         addCue("GuildLeaveConfirm", loadImage("cues/cueGuildLeaveConfirm.png"), new Bounds(195, 105, 605, 395)); // GVG confirm
         addCue("DisabledBattles", loadImage("cues/cueDisabledBattles.png"), new Bounds(240, 210, 560, 330)); // Disabled Battles Popup
@@ -403,8 +403,8 @@ public class MainThread implements Runnable {
         addCue("ReviveAverage", loadImage("cues/cueReviveAverage.png"), null);
         addCue("Purchase", loadImage("cues/cuePurchase.png"), new Bounds(240, 240, 390, 280));
 
-        addCue("IgnoreShrines", loadImage("cues/cueSteamIgnoreShrines.png"), new Bounds(165, 370, 410, 420));
-        addCue("IgnoreBoss", loadImage("cues/cueSteamIgnoreBoss.png"), new Bounds(165, 330, 380, 375));
+        addCue("IgnoreShrines", loadImage("cues/IgnoreShrines_Steam.png"), new Bounds(165, 370, 410, 420));
+        addCue("IgnoreBoss", loadImage("cues/IgnoreBoss_Steam.png"), new Bounds(165, 330, 380, 375));
 
 
 
@@ -426,8 +426,8 @@ public class MainThread implements Runnable {
 
         addCue("PVPWindow", loadImage("cues/cuePVPWindow.png"), null); // PVP window cue
 
-        addCue("DialogRight", loadImage("cues/cueSteamDialogRight.png"), null); // cue for the dialog window (when arrow is at the right side of the window)
-        addCue("DialogLeft", loadImage("cues/cueSteamDialogLeft.png"), null); // cue for the dialog window (when arrow is at the left side of the window)
+        addCue("DialogRight", loadImage("cues/DialogRight_Steam.png"), null); // cue for the dialog window (when arrow is at the right side of the window)
+        addCue("DialogLeft", loadImage("cues/DialogLeft_Steam.png"), null); // cue for the dialog window (when arrow is at the left side of the window)
 
         addCue("SpeedCheck", loadImage("cues/cueSpeedCheck.png"), new Bounds(0, 450, 100, 520));
         addCue("Switch", loadImage("cues/cueSwitch.png"), new Bounds(0, 450, 100, 520)); //unused
