@@ -305,14 +305,8 @@ public class MainThread implements Runnable {
         addCue("DailyRewards", loadImage("cues/cueDailyRewards.png"), new Bounds(260, 45, 285, 75));
         addCue("Claim", loadImage("cues/cueClaim.png"), null); // claim button, when daily rewards popup is open
         addCue("Items", loadImage("cues/cueItems.png"), null); // used when we clicked "claim" on daily rewards popup. Used also with main menu ads.
-        addCue("X", loadImage("cues/cueSteamX.png"), null); // "X" close button used with claimed daily rewards popup
         addCue("WeeklyRewards", loadImage("cues/cueSteamWeeklyRewards.png"), new Bounds(170, 130, 630, 435)); // used with reward for GVG/PVP/Gauntlet/Trial on Friday night (when day changes into Saturday)
-        addCue("Bounties", loadImage("cues/cueBounties.png"), new Bounds(320, 63, 480, 103));
         addCue("Loot", loadImage("cues/cueLoot.png"), null);
-        addCue("News", loadImage("cues/cueSteamNewsPopup.png"), new Bounds(350, 90, 445, 140)); // news popup
-        addCue("Close", loadImage("cues/cueSteamClose.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
-
-        addCue("Skip", loadImage("cues/cueSkip.png"), null);
 
         //Mainscreen Cues
         addCue("Quest", loadImage("cues/mainscreen/Quest_Steam.png"), new Bounds(0, 0, 75, 75)); // cue for quest (dungeons) button
@@ -320,7 +314,7 @@ public class MainThread implements Runnable {
         addCue("WorldBoss", loadImage("cues/mainscreen/WorldBoss_Steam.png"), new Bounds(0, 220, 73, 288));
         addCue("RaidButton", loadImage("cues/mainscreen/Raid_Steam.png"), new Bounds(10, 280, 70, 365));
         addCue("GVG", loadImage("cues/mainscreen/cueGVG.png"), null);
-        addCue("Invasion", loadImage("cues/mainscreen/cueInvasion.png"), null);
+        addCue("Invasion", loadImage("cues/mainscreen/Invasion_Steam.png"), null);
         addCue("ExpeditionButton", loadImage("cues/mainscreen/cueExpedition.png"), null);
         addCue("Trials", loadImage("cues/mainscreen/cueTrials.png"), new Bounds(719, 211, 789, 425));
         addCue("Trials2", loadImage("cues/mainscreen/cueTrials2.png"), new Bounds(719, 211, 789, 425));
@@ -330,6 +324,35 @@ public class MainThread implements Runnable {
         addCue("SettingsGear", loadImage("cues/mainscreen/Settings_Steam.png"), new Bounds(655, 450, 730, 515));
         addCue("GuildButton", loadImage("cues/mainscreen/Guild_Steam.png"), new Bounds(510, 497, 572, 567));
 
+        //Buttons
+        addCue("Accept", loadImage("cues/buttons/Accept_Steam.png"), null);
+        addCue("AutoOn", loadImage("cues/buttons/AutoOn_Steam.png"), new Bounds(760, 230, 793, 310)); // cue for auto pilot on
+        addCue("AutoOff", loadImage("cues/buttons/AutoOff_Steam.png"), new Bounds(760, 230, 793, 310)); // cue for auto pilot off
+        addCue("AutoTeam", loadImage("cues/buttons/AutoTeam_Steam.png"), null); // "Auto" button that automatically assigns team (in raid, GvG, ...)
+        addCue("Close", loadImage("cues/buttons/Close_Steam.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
+        addCue("GreenSummon", loadImage("cues/buttons/GreenSummon_Steam.png"), new Bounds(400, 414, 495, 443));
+        addCue("BlueSummon", loadImage("cues/buttons/BlueSummon_Steam.png"), new Bounds(450, 471, 550, 500)); //blue summon button for world boss
+        addCue("Clear", loadImage("cues/buttons/Clear_Steam.png"), new Bounds(321, 471, 410, 502)); //clear team button
+        addCue("D4Accept", loadImage("cues/buttons/D4Accept_Steam.png"), new Bounds(467, 476, 561, 501));
+        addCue("Enter", loadImage("cues/buttons/Enter_Steam.png"), new Bounds(418, 461, 498, 497)); // "Enter" button found on d4 window
+        addCue("X", loadImage("cues/buttons/X_Steam.png"), null); // "X" close button used with claimed daily rewards popup
+        addCue("Fight", loadImage("cues/buttons/Fight_Steam.png"), null); // fight button in PVP window
+        addCue("GreenClose", loadImage("cues/buttons/GreenClose_Steam.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
+        addCue("Invite", loadImage("cues/buttons/Invite_Steam.png"), null);
+        addCue("LargeGreenSummon", loadImage("cues/buttons/LargeGreenSummon_Steam.png"), new Bounds(486, 386, 587, 415));
+        addCue("Normal", loadImage("cues/buttons/Normal_Steam.png"), new Bounds(157, 253, 637, 280));
+        addCue("Hard", loadImage("cues/buttons/Hard_Steam.png"), new Bounds(157, 253, 637, 280));
+        addCue("Heroic", loadImage("cues/buttons/Heroic_Steam.png"), new Bounds(157, 253, 637, 280));
+        addCue("Exit", loadImage("cues/buttons/Exit_Steam.png"), new Bounds(359, 422, 427, 449));
+        addCue("Start", loadImage("cues/buttons/Start_Steam.png"), new Bounds(335, 480, 420, 510));
+        addCue("No", loadImage("cues/buttons/No_Steam.png"), null); // cue for a blue "No" button used for example with "Your team is not full" dialog, or for "Replace consumable" dialog, etc. This is why we can't put concrete borders as position varies a lot.
+
+
+        //Labels
+        addCue("Bounties", loadImage("cues/labels/Bounties_Steam.png"), new Bounds(317, 91, 472, 122));
+        addCue("WorldBossVictory", loadImage("cues/labels/WorldBossVictory_Steam.png"), new Bounds(314, 150, 477, 185));
+        addCue("Victory", loadImage("cues/labels/Victory_Steam.png"), new Bounds(314, 150, 477, 185)); // victory window cue found upon completing gauntlet / PvP
+        addCue("News", loadImage("cues/label/NewsPopup_Steam.png"), new Bounds(350, 90, 445, 140)); // news popup
 
         addCue("EnergyBar", loadImage("cues/cueEnergyBar.png"), new Bounds(390, 0, 420, 20));
         addCue("TicketBar", loadImage("cues/cueTicketBar.png"), new Bounds(540, 0, 770, 20));
@@ -349,12 +372,7 @@ public class MainThread implements Runnable {
         addCue("Raid6Name", loadImage("cues/raid/cueSteamr6Name.png"), new Bounds(190, 375, 480, 430));// Raid 6 Name
         addCue("Raid7Name", loadImage("cues/raid/cueSteamr7Name.png"), new Bounds(190, 375, 480, 430));// Raid 7 Name
 
-        addCue("Normal", loadImage("cues/raid/cueSteamRaidNormal.png"), null);
-        addCue("Hard", loadImage("cues/raid/cueSteamRaidHard.png"), null);
-        addCue("Heroic", loadImage("cues/raid/cueSteamRaidHeroic.png"), null);
 
-        addCue("Accept", loadImage("cues/cueSteamAccept.png"), null);
-        addCue("D4Accept", loadImage("cues/cueD4Accept.png"), null);
         addCue("Cleared", loadImage("cues/cueCleared.png"), null); // used for example when raid has been finished
         addCue("Defeat", loadImage("cues/cueDefeat.png"), null); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
         addCue("YesGreen", loadImage("cues/cueYesGreen.png"), null); // used for example when raid has been finished ("Cleared" popup)
@@ -374,20 +392,10 @@ public class MainThread implements Runnable {
         addCue("TeamNotFull", loadImage("cues/cueSteamTeamNotFull.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
         addCue("TeamNotOrdered", loadImage("cues/cueTeamNotOrdered.png"), new Bounds(230, 190, 350, 250)); // warning popup when some guild member left and your GvG team is not complete anymore
         addCue("GuildLeaveConfirm", loadImage("cues/cueGuildLeaveConfirm.png"), new Bounds(195, 105, 605, 395)); // GVG confirm
-        addCue("DisabledBattles", loadImage("cues/cueDisabledBattles.png"), new Bounds(240, 210, 560, 330)); // Disabled Battles Poppup
-
-        addCue("No", loadImage("cues/cueSteamNo.png"), null); // cue for a blue "No" button used for example with "Your team is not full" dialog, or for "Replace consumable" dialog, etc. This is why we can't put concrete borders as position varies a lot.
-        addCue("AutoTeam", loadImage("cues/cueSteamAutoTeam.png"), null); // "Auto" button that automatically assigns team (in raid, GvG, ...)
-        addCue("Clear", loadImage("cues/cueClear.png"), null); //clear team button
-
-        addCue("AutoOn", loadImage("cues/cueSteamAutoOn.png"), new Bounds(760, 230, 793, 310)); // cue for auto pilot on
-        addCue("AutoOff", loadImage("cues/cueSteamAutoOff.png"), new Bounds(760, 230, 793, 310)); // cue for auto pilot off
-
+        addCue("DisabledBattles", loadImage("cues/cueDisabledBattles.png"), new Bounds(240, 210, 560, 330)); // Disabled Battles Popup
 
         addCue("Play", loadImage("cues/cuePlay.png"), null); // cue for play button in trials/gauntlet window
         addCue("TokenBar", loadImage("cues/cueTokenBar.png"), null);
-        addCue("CloseGreen", loadImage("cues/cueCloseGreen.png"), null); // close button used with "You have been defeated" popup in gauntlet and also "Victory" window in gauntlet
-        addCue("Victory", loadImage("cues/cueVictory.png"), null); // victory window cue found upon completing gauntlet / PvP
 
         addCue("UhOh", loadImage("cues/cueUhoh.png"), new Bounds(319, 122, 526, 184));
         addCue("ReviveAverage", loadImage("cues/cueReviveAverage.png"), null);
@@ -410,13 +418,10 @@ public class MainThread implements Runnable {
         addCue("Zone9", loadImage("cues/zones/cueZone9.png"), null);
         addCue("RightArrow", loadImage("cues/cueRightArrow.png"), null); // arrow used in quest screen to change zone
         addCue("LeftArrow", loadImage("cues/cueLeftArrow.png"), null); // arrow used in quest screen to change zone
-        addCue("Enter", loadImage("cues/cueEnter.png"), null); // "Enter" button found on d4 window
 //		addCue("EnterExpedition", loadImage("cues/cueEnter.png"),null ); // "Enter" for Expeditions
         addCue("NotEnoughEnergy", loadImage("cues/cueNotEnoughEnergy.png"), new Bounds(260, 210, 290, 235)); // "Not enough Energy" popup cue
 
 
-        addCue("Fight", loadImage("cues/cueFight.png"), null); // fight button in PVP window
-        addCue("VictoryPopup", loadImage("cues/cueVictoryPopup.png"), null); // victory popup that appears in PVP after you have successfully completed it (needs to be closed). Also found in dungeons after you've completed an encounter (and hence probably also in trials, but not in gauntlet - that one has a different 'Victory' window!)
         addCue("PVPWindow", loadImage("cues/cuePVPWindow.png"), null); // PVP window cue
 
         addCue("DialogRight", loadImage("cues/cueSteamDialogRight.png"), null); // cue for the dialog window (when arrow is at the right side of the window)
@@ -469,7 +474,7 @@ public class MainThread implements Runnable {
         addCue("StripTypeNeck", loadImage("cues/strip/cueStripTypeNeck.png"), new Bounds(460, 125, 550, 140));
         addCue("StripTypeRing", loadImage("cues/strip/cueStripTypeRing.png"), new Bounds(460, 125, 550, 140));
 
-        // consumables management related:
+        //Consumables
         addCue("BonusExp", loadImage("cues/consumables/cueBonusExp.png"), new Bounds(100, 455, 370, 485)); // consumable icon in the main menu (when it's being used)
         addCue("BonusItem", loadImage("cues/consumables/cueBonusItem.png"), new Bounds(100, 455, 370, 485));
         addCue("BonusGold", loadImage("cues/consumables/cueBonusGold.png"), new Bounds(100, 455, 370, 485));
@@ -522,21 +527,15 @@ public class MainThread implements Runnable {
 
         //WorldBoss Related
         addCue("WorldBossSelector", loadImage("cues/cueWorldBossSelector.png"), null);
-        addCue("BlueSummon", loadImage("cues/cueBlueSummon.png"), null);
-        addCue("LargeGreenSummon", loadImage("cues/cueLargeGreenSummon.png"), null);
-        addCue("SmallGreenSummon", loadImage("cues/cueSmallGreenSummon.png"), null);
         addCue("Invite3rd", loadImage("cues/cueInviteAny.png"), new Bounds(334, 275, 456, 323)); //bounds defined 3rd invite button for Nether
         addCue("Invite4th", loadImage("cues/cueInviteAny.png"), new Bounds(330, 330, 460, 380)); //bounds defined 4th invite button for Melvin
-        addCue("Invite", loadImage("cues/cueInvite.png"), new Bounds(336, 387, 452, 422)); //bounds defined 5th invite button for Orlag
-        addCue("Start", loadImage("cues/cueStart.png"), null);
-        addCue("WorldBossVictory", loadImage("cues/cueWorldBossVictory.png"), null);
         addCue("Private", loadImage("cues/cuePrivate.png"), new Bounds(310, 320, 370, 380));
         addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
         addCue("WorldBossTier1", loadImage("cues/cueWorldBossTier1.png"), new Bounds(300, 180, 500, 250));
         addCue("WorldBossTier2", loadImage("cues/cueWorldBossTier2.png"), new Bounds(300, 180, 500, 250));
-        addCue("WorldBossDifficultyNormal", loadImage("cues/cueWorldBossDifficultyNormal.png"), new Bounds(300, 275, 500, 325));
-        addCue("WorldBossDifficultyHard", loadImage("cues/cueWorldBossDifficultyHard.png"), new Bounds(300, 275, 500, 325));
-        addCue("WorldBossDifficultyHeroic", loadImage("cues/cueWorldBossDifficultyHeroic.png"), new Bounds(300, 275, 500, 325));
+        addCue("WorldBossDifficultyNormal", loadImage("cues/worldboss/cueWorldBossDifficultyNormal.png"), new Bounds(300, 275, 500, 325));
+        addCue("WorldBossDifficultyHard", loadImage("cues/worldboss/cueWorldBossDifficultyHard.png"), new Bounds(300, 275, 500, 325));
+        addCue("WorldBossDifficultyHeroic", loadImage("cues/worldboss/cueWorldBossDifficultyHeroic.png"), new Bounds(300, 275, 500, 325));
 
         addCue("cueWBSelectNormal", loadImage("cues/worldboss/cueWBSelectNormal.png"), new Bounds(260, 140, 510, 320));
         addCue("cueWBSelectHard", loadImage("cues/worldboss/cueWBSelectHard.png"), new Bounds(260, 140, 510, 320));
@@ -551,8 +550,6 @@ public class MainThread implements Runnable {
 
 
         //fishing related
-        addCue("Exit", loadImage("cues/cueExit.png"), null);
-        addCue("Fishing", loadImage("cues/cueSteamFishing.png"), new Bounds(725, 425, 790, 510));
         addCue("FishingClose", loadImage("cues/fishingClose.png"), null);
         addCue("Trade", loadImage("cues/cueTrade.png"), new Bounds(360, 443, 441, 468));
         addCue("Hall", loadImage("cues/cueHall.png"), new Bounds(575, 455, 645, 480));
@@ -864,7 +861,7 @@ public class MainThread implements Runnable {
             }
         }
 
-        BHBot.logger.info("Game element found. Starting to run bot..");
+        BHBot.logger.info("Game window found. Starting to run bot..");
 
         //Code under is all debugging
 
@@ -6553,7 +6550,7 @@ public class MainThread implements Runnable {
         BHBot.logger.debug("Attempting bounties collection.");
         MarvinSegment seg;
 
-        clickInGame(130, 440);
+        clickInGame(130, 490);
 
         seg = detectCue(cues.get("Bounties"), SECOND * 5);
         if (seg != null) {
