@@ -3207,7 +3207,7 @@ public class MainThread implements Runnable {
         if (seg == null) // this should probably not happen
             return -1;
 
-        int left = seg.x2 + 1;
+        int left = seg.x2;
         int top = seg.y1 + 6;
 
         final Color full = new Color(136, 197, 44);
@@ -3217,7 +3217,7 @@ public class MainThread implements Runnable {
         int value = 0;
 
         // energy bar is 80 pixels long (however last two pixels will have "medium" color and not full color (it's so due to shading))
-        for (int i = 0; i < 78; i++) {
+        for (int i = 0; i <= 79; i++) {
             value = i;
             Color col = new Color(img.getRGB(left + i, top));
 
@@ -3225,7 +3225,7 @@ public class MainThread implements Runnable {
                 break;
         }
 
-        return Math.round(value * (100 / 77.0f)); // scale it to interval [0..100]
+        return Math.round(value * (100 / 80.0f)); // scale it to interval [0..100]
     }
 
     /**
