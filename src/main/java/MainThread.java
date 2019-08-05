@@ -329,15 +329,15 @@ public class MainThread implements Runnable {
         addCue("AutoOn", loadImage("cues/buttons/AutoOn_Steam.png"), new Bounds(760, 230, 793, 310)); // cue for auto pilot on
         addCue("AutoOff", loadImage("cues/buttons/AutoOff_Steam.png"), new Bounds(760, 230, 793, 310)); // cue for auto pilot off
         addCue("AutoTeam", loadImage("cues/buttons/AutoTeam_Steam.png"), null); // "Auto" button that automatically assigns team (in raid, GvG, ...)
-        addCue("Close", loadImage("cues/buttons/Close_Steam.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
+        addCue("Close", loadImage("cues/buttons/CloseBlue_Steam.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
         addCue("GreenSummon", loadImage("cues/buttons/GreenSummon_Steam.png"), new Bounds(400, 414, 495, 443));
-        addCue("BlueSummon", loadImage("cues/buttons/BlueSummon_Steam.png"), new Bounds(450, 471, 550, 500)); //blue summon button for world boss
+        addCue("BlueSummon", loadImage("cues/buttons/BlueSummon_Steam.png"), new Bounds(425, 458, 570, 509)); //blue summon button for world boss
         addCue("Clear", loadImage("cues/buttons/Clear_Steam.png"), new Bounds(321, 471, 410, 502)); //clear team button
         addCue("D4Accept", loadImage("cues/buttons/D4Accept_Steam.png"), new Bounds(467, 476, 561, 501));
         addCue("Enter", loadImage("cues/buttons/Enter_Steam.png"), new Bounds(418, 461, 498, 497)); // "Enter" button found on d4 window
         addCue("X", loadImage("cues/buttons/X_Steam.png"), null); // "X" close button used with claimed daily rewards popup
         addCue("Fight", loadImage("cues/buttons/Fight_Steam.png"), null); // fight button in PVP window
-        addCue("GreenClose", loadImage("cues/buttons/GreenClose_Steam.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
+        addCue("GreenClose", loadImage("cues/buttons/CloseGreen_Steam.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
         addCue("Invite", loadImage("cues/buttons/Invite_Steam.png"), null);
         addCue("LargeGreenSummon", loadImage("cues/buttons/LargeGreenSummon_Steam.png"), new Bounds(486, 386, 587, 415));
         addCue("Normal", loadImage("cues/buttons/Normal_Steam.png"), new Bounds(157, 253, 637, 280));
@@ -346,15 +346,16 @@ public class MainThread implements Runnable {
         addCue("Exit", loadImage("cues/buttons/Exit_Steam.png"), new Bounds(359, 422, 427, 449));
         addCue("Start", loadImage("cues/buttons/Start_Steam.png"), new Bounds(335, 480, 420, 510));
         addCue("No", loadImage("cues/buttons/No_Steam.png"), null); // cue for a blue "No" button used for example with "Your team is not full" dialog, or for "Replace consumable" dialog, etc. This is why we can't put concrete borders as position varies a lot.
-
+        addCue("Yes", loadImage("cues/buttons/Yes_Steam.png"), null); // used for example when raid has been finished ("Cleared" popup)
 
         //Labels
         addCue("Bounties", loadImage("cues/labels/Bounties_Steam.png"), new Bounds(317, 91, 472, 122));
         addCue("WorldBossVictory", loadImage("cues/labels/WorldBossVictory_Steam.png"), new Bounds(314, 150, 477, 185));
         addCue("Victory", loadImage("cues/labels/Victory_Steam.png"), new Bounds(314, 150, 477, 185)); // victory window cue found upon completing gauntlet / PvP
-        addCue("News", loadImage("cues/label/NewsPopup_Steam.png"), new Bounds(350, 90, 445, 140)); // news popup
+        addCue("News", loadImage("cues/labels/NewsPopup_Steam.png"), new Bounds(350, 90, 445, 140)); // news popup
+        addCue("EnergyBar", loadImage("cues/labels/EnergyBar_Steam.png"), new Bounds(397, 0, 437, 37));
 
-        addCue("EnergyBar", loadImage("cues/cueEnergyBar.png"), new Bounds(390, 0, 420, 20));
+
         addCue("TicketBar", loadImage("cues/cueTicketBar.png"), new Bounds(540, 0, 770, 20));
 
 
@@ -375,7 +376,6 @@ public class MainThread implements Runnable {
 
         addCue("Cleared", loadImage("cues/cueCleared.png"), null); // used for example when raid has been finished
         addCue("Defeat", loadImage("cues/cueDefeat.png"), null); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
-        addCue("YesGreen", loadImage("cues/cueYesGreen.png"), null); // used for example when raid has been finished ("Cleared" popup)
         addCue("Persuade", loadImage("cues/cuePersuade.png"), new Bounds(116, 311, 286, 380));
         addCue("View", loadImage("cues/cueView.png"), new Bounds(390, 415, 600, 486));
         addCue("Bribe", loadImage("cues/cueBribe.png"), new Bounds(505, 305, 684, 375));
@@ -529,24 +529,24 @@ public class MainThread implements Runnable {
         addCue("WorldBossSelector", loadImage("cues/cueWorldBossSelector.png"), null);
         addCue("Invite3rd", loadImage("cues/cueInviteAny.png"), new Bounds(334, 275, 456, 323)); //bounds defined 3rd invite button for Nether
         addCue("Invite4th", loadImage("cues/cueInviteAny.png"), new Bounds(330, 330, 460, 380)); //bounds defined 4th invite button for Melvin
-        addCue("Private", loadImage("cues/cuePrivate.png"), new Bounds(310, 320, 370, 380));
+        addCue("Private", loadImage("cues/worldboss/Private_Steam.png"), new Bounds(313, 349, 359, 395));
         addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
         addCue("WorldBossTier1", loadImage("cues/cueWorldBossTier1.png"), new Bounds(300, 180, 500, 250));
         addCue("WorldBossTier2", loadImage("cues/cueWorldBossTier2.png"), new Bounds(300, 180, 500, 250));
-        addCue("WorldBossDifficultyNormal", loadImage("cues/worldboss/cueWorldBossDifficultyNormal.png"), new Bounds(300, 275, 500, 325));
-        addCue("WorldBossDifficultyHard", loadImage("cues/worldboss/cueWorldBossDifficultyHard.png"), new Bounds(300, 275, 500, 325));
-        addCue("WorldBossDifficultyHeroic", loadImage("cues/worldboss/cueWorldBossDifficultyHeroic.png"), new Bounds(300, 275, 500, 325));
+        addCue("WorldBossDetectNormal", loadImage("cues/worldboss/WBSelectNomal_Steam.png"), new Bounds(333, 307, 423, 330));
+        addCue("WorldBossDetectHard", loadImage("cues/worldboss/WBSelectHard_Steam.png"), new Bounds(333, 307, 423, 330));
+        addCue("WorldBossDetectHeroic", loadImage("cues/worldboss/WBSelectHeroic_Steam.png"), new Bounds(333, 307, 423, 330));
 
-        addCue("cueWBSelectNormal", loadImage("cues/worldboss/cueWBSelectNormal.png"), new Bounds(260, 140, 510, 320));
-        addCue("cueWBSelectHard", loadImage("cues/worldboss/cueWBSelectHard.png"), new Bounds(260, 140, 510, 320));
-        addCue("cueWBSelectHeroic", loadImage("cues/worldboss/cueWBSelectHeroic.png"), new Bounds(260, 140, 510, 320));
+        addCue("WorldBossSelectNormal", loadImage("cues/worldboss/WorldBossSelectNormal_Steam.png"), new Bounds(260, 140, 510, 320));
+        addCue("WorldBossSelectHard", loadImage("cues/worldboss/WorldBossSelectHard_Steam.png"), new Bounds(260, 140, 510, 320));
+        addCue("WorldBossSelectHeroic", loadImage("cues/worldboss/WorldBossSelectHeroic_Steam.png"), new Bounds(260, 140, 510, 320));
 
-        addCue("OrlagWB", loadImage("cues/worldboss/orlagclan.png"), new Bounds(190, 355, 400, 390));
-        addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(190, 355, 400, 390));
-        addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(190, 355, 400, 390));
-        addCue("3xt3rWB", loadImage("cues/worldboss/3xt3rmin4tion.png"), new Bounds(190, 355, 400, 390));
-        addCue("WorldBossTitle", loadImage("cues/worldboss/cueWorldBossTitle.png"), new Bounds(280, 90, 515, 140));
-        addCue("WorldBossSummonTitle", loadImage("cues/worldboss/cueWorldBossSummonTitle.png"), new Bounds(325, 100, 480, 150));
+        addCue("OrlagWB", loadImage("cues/worldboss/orlagclan_Steam.png"), new Bounds(190, 378, 460, 410));
+        addCue("NetherWB", loadImage("cues/worldboss/netherworld_Steam.png"), new Bounds(190, 355, 400, 390));
+        addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory_Steam.png"), new Bounds(190, 355, 400, 390));
+        addCue("3xt3rWB", loadImage("cues/worldboss/3xt3rmin4tion_Steam.png"), new Bounds(190, 355, 400, 390));
+        addCue("WorldBossTitle", loadImage("cues/worldboss/WorldBossTitle_Steam.png"), new Bounds(280, 90, 515, 140));
+        addCue("WorldBossSummonTitle", loadImage("cues/worldboss/cueWorldBossSummonTitle.png"), new Bounds(286, 125, 501, 158));
 
 
         //fishing related
@@ -2491,10 +2491,11 @@ public class MainThread implements Runnable {
                             if (currentDifficulty != worldBossDifficulty) {
                                 BHBot.logger.info(currentDifficultyName + " detected, changing to " + settingsDifficultyName);
                                 changeWorldBossDifficulty(worldBossDifficulty);
+                                sleep(500);
                             }
 
                             readScreen(SECOND);
-                            seg = detectCue(cues.get("SmallGreenSummon"), SECOND * 2);
+                            seg = detectCue(cues.get("GreenSummon"), SECOND * 2);
                             clickOnSeg(seg); //accept current settings
 
                             boolean insufficientEnergy = handleNotEnoughEnergyPopup(SECOND * 3, State.WorldBoss);
@@ -2612,7 +2613,7 @@ public class MainThread implements Runnable {
                                 if (segStart != null) {
                                     clickOnSeg(segStart); //start World Boss
                                     sleep(2 * SECOND); //wait for dropdown animation to finish
-                                    seg = detectCue(cues.get("YesGreen"), 2 * SECOND); //clear empty team prompt
+                                    seg = detectCue(cues.get("Yes"), 2 * SECOND); //clear empty team prompt
                                     if (seg == null) {
                                         sleep(500);
                                         clickInGame(330, 360); //yesgreen cue has issues so we use pos to click on Yes as a backup
@@ -3143,6 +3144,7 @@ public class MainThread implements Runnable {
      */
     private void clickOnSeg(MarvinSegment seg) {
 
+        sleep(100); //fixes the mouse cursor hovering over the cue, causing it to highlight and not be recognised
         final int WM_LBUTTONDOWN = 513;
 
         WinUser.WINDOWINFO info = new WinUser.WINDOWINFO();
@@ -3160,7 +3162,7 @@ public class MainThread implements Runnable {
         User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN, w, l);
         User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN + 1, w, l);
 
-//      moveMouseAway();
+ //     moveMouseAway();
     }
 
     private void clickInGame(int x, int y) {
@@ -3665,7 +3667,7 @@ public class MainThread implements Runnable {
 
             handleVictory();
 
-            seg = detectCue(cues.get("CloseGreen"), 2 * SECOND); // we need to wait a little bit because the popup scrolls down and the close button is semi-transparent (it stabilizes after popup scrolls down and bounces a bit)
+            seg = detectCue(cues.get("GreenClose"), 2 * SECOND); // we need to wait a little bit because the popup scrolls down and the close button is semi-transparent (it stabilizes after popup scrolls down and bounces a bit)
             if (seg != null)
                 clickOnSeg(seg);
             else {
@@ -5347,7 +5349,7 @@ public class MainThread implements Runnable {
      **/
 
     private String readSelectedWorldBoss() {
-        readScreen(SECOND * 2);
+        readScreen(SECOND * 1);
         if (detectCue(cues.get("OrlagWB"), SECOND) != null)
             return "o";
         else if (detectCue(cues.get("NetherWB"), SECOND) != null)
@@ -5783,8 +5785,9 @@ public class MainThread implements Runnable {
     /* World boss reading and changing section */
     private int detectWorldBossTier() {
 
-        //Melvins only available in T10 so we don't need to read the image
+        //Melvins/3xt only available in T10 so we don't need to read the image
         if ("m".equals(BHBot.settings.worldBossSettings.get(0))) return 10;
+        if ("3".equals(BHBot.settings.worldBossSettings.get(0))) return 10;
 
         readScreen(SECOND);
         MarvinSegment seg;
@@ -5872,11 +5875,11 @@ public class MainThread implements Runnable {
     private int detectWorldBossDifficulty() {
         readScreen();
 
-        if (detectCue(cues.get("WorldBossDifficultyNormal"), SECOND) != null) {
+        if (detectCue(cues.get("WorldBossDetectNormal"), SECOND) != null) {
             return 1;
-        } else if (detectCue(cues.get("WorldBossDifficultyHard"), SECOND) != null) {
+        } else if (detectCue(cues.get("WorldBossDetectHard"), SECOND) != null) {
             return 2;
-        } else if (detectCue(cues.get("WorldBossDifficultyHeroic"), SECOND) != null) {
+        } else if (detectCue(cues.get("WorldBossDetectHeroic"), SECOND) != null) {
             return 3;
         } else return 0;
     }
@@ -5884,20 +5887,20 @@ public class MainThread implements Runnable {
     private void changeWorldBossDifficulty(int target) {
 
         readScreen(SECOND); //screen stabilising
-        clickInGame(480, 300); //difficulty button
+        clickInGame(470, 320); //difficulty button
         readScreen(SECOND); //screen stabilising
 
         Cue difficultySelection;
 
         if (target == 1) {
-            difficultySelection = cues.get("cueWBSelectNormal");
+            difficultySelection = cues.get("WorldBossSelectNormal");
         } else if (target == 2) {
-            difficultySelection = cues.get("cueWBSelectHard");
+            difficultySelection = cues.get("WorldBossSelectHard");
         } else if (target == 3) {
-            difficultySelection = cues.get("cueWBSelectHeroic");
+            difficultySelection = cues.get("WorldBossSelectHeroic");
         } else {
-            BHBot.logger.error("Wrong target value in changeWorldBossDifficulty, defult to normal!");
-            difficultySelection = cues.get("cueWBSelectNormal");
+            BHBot.logger.error("Wrong target value in changeWorldBossDifficulty, defaulting to normal!");
+            difficultySelection = cues.get("WorldBossSelectNormal");
         }
 
         MarvinSegment seg = detectCue(difficultySelection, SECOND * 2);
