@@ -320,7 +320,7 @@ public class MainThread implements Runnable {
         addCue("Trials2", loadImage("cues/mainscreen/cueTrials2.png"), new Bounds(719, 211, 789, 425));
         addCue("Gauntlet", loadImage("cues/mainscreen/Gauntlet_Steam.png"), new Bounds(719, 211, 789, 425));
         addCue("Gauntlet2", loadImage("cues/mainscreen/Gauntlet2_Steam.png"), new Bounds(719, 211, 789, 425));
-        addCue("FishingButton", loadImage("cues/mainscreen/Fishing_Steam.png"), new Bounds(715, 425, 793, 500));
+        addCue("Fishing", loadImage("cues/mainscreen/Fishing_Steam.png"), new Bounds(715, 425, 793, 500));
         addCue("SettingsGear", loadImage("cues/mainscreen/Settings_Steam.png"), new Bounds(655, 450, 730, 515));
         addCue("GuildButton", loadImage("cues/mainscreen/Guild_Steam.png"), new Bounds(510, 497, 572, 567));
 
