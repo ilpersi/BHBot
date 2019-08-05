@@ -4489,11 +4489,11 @@ public class MainThread implements Runnable {
                     revivePositions.put(3, new Point(115, 285));
                     break;
                 case Raid:
-                    revivePositions.put(1, new Point(305, 320));
-                    revivePositions.put(2, new Point(250, 345));
-                    revivePositions.put(3, new Point(200, 267));
-                    revivePositions.put(4, new Point(150, 325));
-                    revivePositions.put(5, new Point(90, 295));
+                    revivePositions.put(1, new Point(306, 339));
+                    revivePositions.put(2, new Point(250, 369));
+                    revivePositions.put(3, new Point(200, 307));
+                    revivePositions.put(4, new Point(150, 350));
+                    revivePositions.put(5, new Point(95, 320));
                     break;
                 default:
                     break;
