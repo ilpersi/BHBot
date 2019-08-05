@@ -291,12 +291,9 @@ public class MainThread implements Runnable {
 
     static void loadCues() {
         addCue("Main", loadImage("cues/cueSteamMainScreen.png"), new Bounds(90, 5, 100, 10));
-
         addCue("Login", loadImage("cues/cueLogin.png"), new Bounds(270, 260, 330, 300)); // login window (happens seldom)
-
         addCue("AreYouThere", loadImage("cues/cueSteamAreYouThere.png"), new Bounds(235, 260, 557, 314));
         addCue("Yes", loadImage("cues/cueYes.png"), null);
-
         addCue("Disconnected", loadImage("cues/cueSteamDisconnected.png"), new Bounds(290, 255, 503, 325)); // cue for "You have been disconnected" popup
         addCue("Reconnect", loadImage("cues/cueSteamReconnectButton.png"), new Bounds(330, 370, 460, 405)); // used with "You have been disconnected" dialog and also with the "maintenance" dialog
         addCue("Reload", loadImage("cues/cueReload.png"), new Bounds(320, 330, 360, 360)); // used in "There is a new update required to play" dialog (happens on Friday night)
@@ -312,22 +309,32 @@ public class MainThread implements Runnable {
         addCue("WeeklyRewards", loadImage("cues/cueSteamWeeklyRewards.png"), new Bounds(170, 130, 630, 435)); // used with reward for GVG/PVP/Gauntlet/Trial on Friday night (when day changes into Saturday)
         addCue("Bounties", loadImage("cues/cueBounties.png"), new Bounds(320, 63, 480, 103));
         addCue("Loot", loadImage("cues/cueLoot.png"), null);
-
         addCue("News", loadImage("cues/cueSteamNewsPopup.png"), new Bounds(350, 90, 445, 140)); // news popup
         addCue("Close", loadImage("cues/cueSteamClose.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
 
-        addCue("Ad", loadImage("cues/cueAd.png"), new Bounds(720, 100, 750, 410)); // main screen ad button cue. Note that sometimes it is higher up on the screen than other times (during GvG week, it will be higher up, above GvG icon)
-        addCue("AdPopup", loadImage("cues/cueAdPopup.png"), null);
-        addCue("Watch", loadImage("cues/cueWatch.png"), null); // used with ad main screen watch button. Does not work in dungeons (button is a bit different there - used button there!)
-        addCue("Watch2", loadImage("cues/cueWatch2.png"), null); // this is an alternative watch button. It is practically the same as the first one, but it has another shade of blue in the first row. Used with watching ads in dungeons (confirmed).
-        addCue("AdInProgress", loadImage("cues/cueAdInProgress.png"), null); // we currently don't really need this cue
-        addCue("AdFinished", loadImage("cues/cueAdFinished.png"), null); // we currently don't really need this cue
         addCue("Skip", loadImage("cues/cueSkip.png"), null);
+
+        //Mainscreen Cues
+        addCue("Quest", loadImage("cues/mainscreen/Quest_Steam.png"), new Bounds(0, 0, 75, 75)); // cue for quest (dungeons) button
+        addCue("PVP", loadImage("cues/mainscreen/PvP_Steam.png"), new Bounds(0, 70, 75, 150)); // PVP icon in main screen
+        addCue("WorldBoss", loadImage("cues/mainscreen/WorldBoss_Steam.png"), new Bounds(0, 220, 73, 288));
+        addCue("RaidButton", loadImage("cues/mainscreen/Raid_Steam.png"), new Bounds(10, 280, 70, 365));
+        addCue("GVG", loadImage("cues/mainscreen/cueGVG.png"), null);
+        addCue("Invasion", loadImage("cues/mainscreen/cueInvasion.png"), null);
+        addCue("ExpeditionButton", loadImage("cues/mainscreen/cueExpedition.png"), null);
+        addCue("Trials", loadImage("cues/mainscreen/cueTrials.png"), new Bounds(719, 211, 789, 425));
+        addCue("Trials2", loadImage("cues/mainscreen/cueTrials2.png"), new Bounds(719, 211, 789, 425));
+        addCue("Gauntlet", loadImage("cues/mainscreen/Gauntlet_Steam.png"), new Bounds(719, 211, 789, 425));
+        addCue("Gauntlet2", loadImage("cues/mainscreen/Gauntlet2_Steam.png"), new Bounds(719, 211, 789, 425));
+        addCue("FishingButton", loadImage("cues/mainscreen/Fishing_Steam.png"), new Bounds(715, 425, 793, 500));
+        addCue("SettingsGear", loadImage("cues/mainscreen/Settings_Steam.png"), new Bounds(655, 450, 730, 515));
+        addCue("GuildButton", loadImage("cues/mainscreen/Guild_Steam.png"), new Bounds(510, 497, 572, 567));
+
 
         addCue("EnergyBar", loadImage("cues/cueEnergyBar.png"), new Bounds(390, 0, 420, 20));
         addCue("TicketBar", loadImage("cues/cueTicketBar.png"), new Bounds(540, 0, 770, 20));
 
-        addCue("RaidButton", loadImage("cues/raid/cueSteamRaidButton.png"), new Bounds(10, 280, 70, 365));
+
         addCue("RaidPopup", loadImage("cues/raid/cueSteamRaidPopup.png"), new Bounds(300, 70, 370, 120));
         addCue("RaidSummon", loadImage("cues/raid/cueSteamRaidSummon.png"), new Bounds(480, 380, 590, 4200));
         addCue("RaidLevel", loadImage("cues/raid/cueSteamRaidLevel.png"), new Bounds(300, 450, 490, 480)); // selected raid type button cue
@@ -361,7 +368,6 @@ public class MainThread implements Runnable {
         addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
         addCue("DeclineRed", loadImage("cues/cueDeclineRed.png"), null); // decline persuation attempts
         addCue("Merchant", loadImage("cues/cueMerchant.png"), null); // cue for merchant dialog/popup
-        addCue("SettingsGear", loadImage("cues/cueSettingsGear.png"), new Bounds(655, 450, 730, 515)); // settings button
         addCue("Settings", loadImage("cues/cueSteamSettings.png"), new Bounds(245, 84, 554, 125)); // settings menu
 
         addCue("Team", loadImage("cues/cueSteamTeam.png"), null); // Team text part of pop-ups about teams
@@ -377,10 +383,7 @@ public class MainThread implements Runnable {
         addCue("AutoOn", loadImage("cues/cueSteamAutoOn.png"), new Bounds(760, 230, 793, 310)); // cue for auto pilot on
         addCue("AutoOff", loadImage("cues/cueSteamAutoOff.png"), new Bounds(760, 230, 793, 310)); // cue for auto pilot off
 
-        addCue("Trials", loadImage("cues/cueTrials.png"), new Bounds(0, 0, 40, 400)); // cue for trials button (note that as of 23.9.2017 they changed the button position to the right side of the screen and modified the glyph)
-        addCue("Trials2", loadImage("cues/cueTrials2.png"), new Bounds(720, 0, 770, 400)); // an alternative cue for trials (flipped horizontally, located on the right side of the screen). Used since 23.9.2017.
-        addCue("Gauntlet", loadImage("cues/cueGauntlet.png"), null); // cue for gauntlet button
-        addCue("Gauntlet2", loadImage("cues/cueGauntlet2.png"), null); // alternative cue for gauntlet button
+
         addCue("Play", loadImage("cues/cuePlay.png"), null); // cue for play button in trials/gauntlet window
         addCue("TokenBar", loadImage("cues/cueTokenBar.png"), null);
         addCue("CloseGreen", loadImage("cues/cueCloseGreen.png"), null); // close button used with "You have been defeated" popup in gauntlet and also "Victory" window in gauntlet
@@ -390,29 +393,28 @@ public class MainThread implements Runnable {
         addCue("ReviveAverage", loadImage("cues/cueReviveAverage.png"), null);
         addCue("Purchase", loadImage("cues/cuePurchase.png"), new Bounds(240, 240, 390, 280));
 
-        addCue("GuildButton", loadImage("cues/cueGuildButton.png"), new Bounds(500, 420, 590, 520));
         addCue("IgnoreShrines", loadImage("cues/cueSteamIgnoreShrines.png"), new Bounds(165, 370, 410, 420));
         addCue("IgnoreBoss", loadImage("cues/cueSteamIgnoreBoss.png"), new Bounds(165, 330, 380, 375));
 
 
-        addCue("Quest", loadImage("cues/cueQuest.png"), new Bounds(0, 0, 40, 40)); // cue for quest (dungeons) button
-        addCue("ZonesButton", loadImage("cues/cueZonesButton.png"), new Bounds(105, 60, 125, 75));
-        addCue("Zone1", loadImage("cues/cueZone1.png"), null);
-        addCue("Zone2", loadImage("cues/cueZone2.png"), null);
-        addCue("Zone3", loadImage("cues/cueZone3.png"), null);
-        addCue("Zone4", loadImage("cues/cueZone4.png"), null);
-        addCue("Zone5", loadImage("cues/cueZone5.png"), null);
-        addCue("Zone6", loadImage("cues/cueZone6.png"), null);
-        addCue("Zone7", loadImage("cues/cueZone7.png"), null);
-        addCue("Zone8", loadImage("cues/cueZone8.png"), null);
-        addCue("Zone9", loadImage("cues/cueZone9.png"), null);
+
+        addCue("ZonesButton", loadImage("cues/zones/cueZonesButton.png"), new Bounds(105, 60, 125, 75));
+        addCue("Zone1", loadImage("cues/zones/cueZone1.png"), null);
+        addCue("Zone2", loadImage("cues/zones/cueZone2.png"), null);
+        addCue("Zone3", loadImage("cues/zones/cueZone3.png"), null);
+        addCue("Zone4", loadImage("cues/zones/cueZone4.png"), null);
+        addCue("Zone5", loadImage("cues/zones/cueZone5.png"), null);
+        addCue("Zone6", loadImage("cues/zones/cueZone6.png"), null);
+        addCue("Zone7", loadImage("cues/zones/cueZone7.png"), null);
+        addCue("Zone8", loadImage("cues/zones/cueZone8.png"), null);
+        addCue("Zone9", loadImage("cues/zones/cueZone9.png"), null);
         addCue("RightArrow", loadImage("cues/cueRightArrow.png"), null); // arrow used in quest screen to change zone
         addCue("LeftArrow", loadImage("cues/cueLeftArrow.png"), null); // arrow used in quest screen to change zone
         addCue("Enter", loadImage("cues/cueEnter.png"), null); // "Enter" button found on d4 window
 //		addCue("EnterExpedition", loadImage("cues/cueEnter.png"),null ); // "Enter" for Expeditions
         addCue("NotEnoughEnergy", loadImage("cues/cueNotEnoughEnergy.png"), new Bounds(260, 210, 290, 235)); // "Not enough Energy" popup cue
 
-        addCue("PVP", loadImage("cues/cuePVP.png"), new Bounds(0, 70, 40, 110)); // PVP icon in main screen
+
         addCue("Fight", loadImage("cues/cueFight.png"), null); // fight button in PVP window
         addCue("VictoryPopup", loadImage("cues/cueVictoryPopup.png"), null); // victory popup that appears in PVP after you have successfully completed it (needs to be closed). Also found in dungeons after you've completed an encounter (and hence probably also in trials, but not in gauntlet - that one has a different 'Victory' window!)
         addCue("PVPWindow", loadImage("cues/cuePVPWindow.png"), null); // PVP window cue
@@ -424,7 +426,6 @@ public class MainThread implements Runnable {
         addCue("Switch", loadImage("cues/cueSwitch.png"), new Bounds(0, 450, 100, 520)); //unused
 
         // GVG related:
-        addCue("GVG", loadImage("cues/cueGVG.png"), null); // main GVG button cue
         addCue("BadgeBar", loadImage("cues/cueBadgeBar.png"), null);
         addCue("GVGWindow", loadImage("cues/cueGVGWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
 
@@ -444,16 +445,16 @@ public class MainThread implements Runnable {
         addCue("Cost", loadImage("cues/cueCost.png"), new Bounds(400, 150, 580, 240)); // used both for PvP and Gauntlet/Trials costs. Note that bounds are very wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
         addCue("SelectCost", loadImage("cues/cueSelectCost.png"), new Bounds(555, 170, 595, 205)); // cue for select cost found in both PvP and Gauntlet/Trials windows. Note that bounds are wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
         addCue("CostDropDown", loadImage("cues/cueCostDropDown.png"), new Bounds(260, 45, 320, 70)); // cue for cost selection drop down window
-        addCue("0", loadImage("cues/cue0.png"), null);
-        addCue("1", loadImage("cues/cue1.png"), null);
-        addCue("2", loadImage("cues/cue2.png"), null);
-        addCue("3", loadImage("cues/cue3.png"), null);
-        addCue("4", loadImage("cues/cue4.png"), null);
-        addCue("5", loadImage("cues/cue5.png"), null);
-        addCue("6", loadImage("cues/cue6.png"), null);
-        addCue("7", loadImage("cues/cue7.png"), null);
-        addCue("8", loadImage("cues/cue8.png"), null);
-        addCue("9", loadImage("cues/cue9.png"), null);
+        addCue("0", loadImage("cues/numbers/cue0.png"), null);
+        addCue("1", loadImage("cues/numbers/cue1.png"), null);
+        addCue("2", loadImage("cues/numbers/cue2.png"), null);
+        addCue("3", loadImage("cues/numbers/cue3.png"), null);
+        addCue("4", loadImage("cues/numbers/cue4.png"), null);
+        addCue("5", loadImage("cues/numbers/cue5.png"), null);
+        addCue("6", loadImage("cues/numbers/cue6.png"), null);
+        addCue("7", loadImage("cues/numbers/cue7.png"), null);
+        addCue("8", loadImage("cues/numbers/cue8.png"), null);
+        addCue("9", loadImage("cues/numbers/cue9.png"), null);
 
         // PvP strip related:
         addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos.png"), new Bounds(525, 140, 540, 370));
@@ -469,30 +470,31 @@ public class MainThread implements Runnable {
         addCue("StripTypeRing", loadImage("cues/strip/cueStripTypeRing.png"), new Bounds(460, 125, 550, 140));
 
         // consumables management related:
-        addCue("BonusExp", loadImage("cues/cueBonusExp.png"), new Bounds(100, 455, 370, 485)); // consumable icon in the main menu (when it's being used)
-        addCue("BonusItem", loadImage("cues/cueBonusItem.png"), new Bounds(100, 455, 370, 485));
-        addCue("BonusGold", loadImage("cues/cueBonusGold.png"), new Bounds(100, 455, 370, 485));
-        addCue("BonusSpeed", loadImage("cues/cueBonusSpeed.png"), new Bounds(100, 455, 370, 485));
-        addCue("ConsumableExpMinor", loadImage("cues/cueConsumableExpMinor.png"), null); // consumable icon in the inventory
-        addCue("ConsumableExpAverage", loadImage("cues/cueConsumableExpAverage.png"), null);
-        addCue("ConsumableExpMajor", loadImage("cues/cueConsumableExpMajor.png"), null);
-        addCue("ConsumableItemMinor", loadImage("cues/cueConsumableItemMinor.png"), null);
-        addCue("ConsumableItemAverage", loadImage("cues/cueConsumableItemAverage.png"), null);
-        addCue("ConsumableItemMajor", loadImage("cues/cueConsumableItemMajor.png"), null);
-        addCue("ConsumableSpeedMinor", loadImage("cues/cueConsumableSpeedMinor.png"), null);
-        addCue("ConsumableSpeedAverage", loadImage("cues/cueConsumableSpeedAverage.png"), null);
-        addCue("ConsumableSpeedMajor", loadImage("cues/cueConsumableSpeedMajor.png"), null);
-        addCue("ConsumableGoldMinor", loadImage("cues/cueConsumableGoldMinor.png"), null);
-        addCue("ConsumableGoldAverage", loadImage("cues/cueConsumableGoldAverage.png"), null);
-        addCue("ConsumableGoldMajor", loadImage("cues/cueConsumableGoldMajor.png"), null);
-        addCue("ConsumablePumkgor", loadImage("cues/cueConsumablePumkgor.png"), new Bounds(150, 460, 205, 519)); // Special Halloween consumable
-        addCue("ConsumableGingernaut", loadImage("cues/cueConsumableGingernaut.png"), new Bounds(150, 460, 205, 519)); // Special Chrismast consumable
-        addCue("ConsumableGreatFeast", loadImage("cues/cueConsumableGreatFeast.png"), new Bounds(150, 460, 205, 519)); // Thanksgiving consumable
-        addCue("ConsumableBroccoli", loadImage("cues/cueConsumableBroccoli.png"), new Bounds(150, 460, 205, 519)); // Special Halloween consumable
-        addCue("ConsumableCoco", loadImage("cues/cueConsumableCoco.png"), new Bounds(150, 460, 205, 519)); // Special ?? consumable
+        addCue("BonusExp", loadImage("cues/consumables/cueBonusExp.png"), new Bounds(100, 455, 370, 485)); // consumable icon in the main menu (when it's being used)
+        addCue("BonusItem", loadImage("cues/consumables/cueBonusItem.png"), new Bounds(100, 455, 370, 485));
+        addCue("BonusGold", loadImage("cues/consumables/cueBonusGold.png"), new Bounds(100, 455, 370, 485));
+        addCue("BonusSpeed", loadImage("cues/consumables/cueBonusSpeed.png"), new Bounds(100, 455, 370, 485));
+        addCue("ConsumableExpMinor", loadImage("cues/consumables/cueConsumableExpMinor.png"), null); // consumable icon in the inventory
+        addCue("ConsumableExpAverage", loadImage("cues/consumables/cueConsumableExpAverage.png"), null);
+        addCue("ConsumableExpMajor", loadImage("cues/consumables/cueConsumableExpMajor.png"), null);
+        addCue("ConsumableItemMinor", loadImage("cues/consumables/cueConsumableItemMinor.png"), null);
+        addCue("ConsumableItemAverage", loadImage("cues/consumables/cueConsumableItemAverage.png"), null);
+        addCue("ConsumableItemMajor", loadImage("cues/consumables/cueConsumableItemMajor.png"), null);
+        addCue("ConsumableSpeedMinor", loadImage("cues/consumables/cueConsumableSpeedMinor.png"), null);
+        addCue("ConsumableSpeedAverage", loadImage("cues/consumables/cueConsumableSpeedAverage.png"), null);
+        addCue("ConsumableSpeedMajor", loadImage("cues/consumables/cueConsumableSpeedMajor.png"), null);
+        addCue("ConsumableGoldMinor", loadImage("cues/consumables/cueConsumableGoldMinor.png"), null);
+        addCue("ConsumableGoldAverage", loadImage("cues/consumables/cueConsumableGoldAverage.png"), null);
+        addCue("ConsumableGoldMajor", loadImage("cues/consumables/cueConsumableGoldMajor.png"), null);
+        addCue("ConsumablePumkgor", loadImage("cues/consumables/cueConsumablePumkgor.png"), new Bounds(150, 460, 205, 519)); // Special Halloween consumable
+        addCue("ConsumableGingernaut", loadImage("cues/consumables/cueConsumableGingernaut.png"), new Bounds(150, 460, 205, 519)); // Special Chrismast consumable
+        addCue("ConsumableGreatFeast", loadImage("cues/consumables/cueConsumableGreatFeast.png"), new Bounds(150, 460, 205, 519)); // Thanksgiving consumable
+        addCue("ConsumableBroccoli", loadImage("cues/consumables/cueConsumableBroccoli.png"), new Bounds(150, 460, 205, 519)); // Special Halloween consumable
+        addCue("ConsumableCoco", loadImage("cues/consumables/cueConsumableCoco.png"), new Bounds(150, 460, 205, 519)); // Special ?? consumable
+        addCue("ConsumableTitle", loadImage("cues/consumables/cueConsumableTitle.png"), new Bounds(280, 100, 310, 180)); // cue for title of the window that pops up when we want to consume a consumable. Note that vertical range is big here since sometimes is higher due to greater window size and sometimes is lower.
+        addCue("FilterConsumables", loadImage("cues/consumables/cueFilterConsumables.png"), new Bounds(460, 125, 550, 140)); // cue for filter button name
+
         addCue("ScrollerAtBottom", loadImage("cues/cueScrollerAtBottom.png"), null); // cue for scroller being at the bottom-most position (we can't scroll down more than this)
-        addCue("ConsumableTitle", loadImage("cues/cueConsumableTitle.png"), new Bounds(280, 100, 310, 180)); // cue for title of the window that pops up when we want to consume a consumable. Note that vertical range is big here since sometimes is higher due to greater window size and sometimes is lower.
-        addCue("FilterConsumables", loadImage("cues/cueFilterConsumables.png"), new Bounds(460, 125, 550, 140)); // cue for filter button name
         addCue("LoadingInventoryIcon", loadImage("cues/cueLoadingInventoryIcon.png"), null); // cue for loading animation for the icons inside inventory
 
 
@@ -510,18 +512,15 @@ public class MainThread implements Runnable {
 
         // invasion related:
 //		addCue("Invasion", loadImage("cues/cueInvasion.png"), new Bounds(720, 270, 770, 480)); // main Invasion button cue
-        addCue("Invasion", loadImage("cues/cueInvasion.png"), null);
         addCue("InvasionWindow", loadImage("cues/cueInvasionWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
 
         // Expedition related:
-        addCue("ExpeditionButton", loadImage("cues/cueExpeditionButton.png"), null);
         addCue("Expedition1", loadImage("cues/expedition/cueExpedition1Hallowed.png"), new Bounds(168, 34, 628, 108)); // Hallowed Expedtion Title
         addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"), new Bounds(200, 40, 600, 100)); //Inferno Expedition
         addCue("Expedition3", loadImage("cues/expedition/cueExpedition3Jammie.png"), new Bounds(230, 40, 565, 100)); //Jammie Dimension
         addCue("Expedition4", loadImage("cues/expedition/cueExpedition4Idol.png"), new Bounds(230, 40, 565, 100)); //Idol Dimension
 
         //WorldBoss Related
-        addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"), null);
         addCue("WorldBossSelector", loadImage("cues/cueWorldBossSelector.png"), null);
         addCue("BlueSummon", loadImage("cues/cueBlueSummon.png"), null);
         addCue("LargeGreenSummon", loadImage("cues/cueLargeGreenSummon.png"), null);
@@ -531,8 +530,6 @@ public class MainThread implements Runnable {
         addCue("Invite", loadImage("cues/cueInvite.png"), new Bounds(336, 387, 452, 422)); //bounds defined 5th invite button for Orlag
         addCue("Start", loadImage("cues/cueStart.png"), null);
         addCue("WorldBossVictory", loadImage("cues/cueWorldBossVictory.png"), null);
-        addCue("OrlagSelected", loadImage("cues/cueOrlagSelected.png"), new Bounds(360, 430, 440, 460));
-        addCue("NetherSelected", loadImage("cues/cueNetherSelected.png"), null);
         addCue("Private", loadImage("cues/cuePrivate.png"), new Bounds(310, 320, 370, 380));
         addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
         addCue("WorldBossTier1", loadImage("cues/cueWorldBossTier1.png"), new Bounds(300, 180, 500, 250));
@@ -554,7 +551,6 @@ public class MainThread implements Runnable {
 
 
         //fishing related
-        addCue("FishingButton", loadImage("cues/cueFishingButton.png"), null);
         addCue("Exit", loadImage("cues/cueExit.png"), null);
         addCue("Fishing", loadImage("cues/cueSteamFishing.png"), new Bounds(725, 425, 790, 510));
         addCue("FishingClose", loadImage("cues/fishingClose.png"), null);
@@ -983,7 +979,7 @@ public class MainThread implements Runnable {
                 }
                 BHBot.scheduler.resetIdleTime();
 
-                moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
+//                moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
                 readScreen();
                 MarvinSegment seg;
 
@@ -3167,7 +3163,7 @@ public class MainThread implements Runnable {
         User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN, w, l);
         User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN + 1, w, l);
 
-        moveMouseAway();
+//      moveMouseAway();
     }
 
     private void clickInGame(int x, int y) {
@@ -3184,7 +3180,7 @@ public class MainThread implements Runnable {
         User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN, w, l);
         User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN + 1, w, l);
 
-        moveMouseAway();
+//        moveMouseAway();
     }
 
     private void sleep(int milliseconds) {
