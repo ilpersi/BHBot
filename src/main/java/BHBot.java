@@ -310,6 +310,11 @@ public class BHBot {
                 }
                 break;
             case "print":
+                if (params.length < 2) {
+                    BHBot.logger.error("Missing parameters for print command: print familiars|version");
+                    break;
+                }
+
                 switch (params[1]) {
                     case "familiars":
                     case "familiar":
