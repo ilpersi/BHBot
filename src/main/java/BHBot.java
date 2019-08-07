@@ -219,10 +219,13 @@ public class BHBot {
                         scheduler.doDungeonImmediately = true;
                         break;
                     case "gauntlet":
+                        logger.info("Forcing gauntlet...");
+                        scheduler.doGauntletImmediately = true;
+                        break;
                     case "trials":
                         // force 1 run of gauntlet/trials (regardless of tokens)
-                        logger.info("Forcing gauntlet/trials...");
-                        scheduler.doTrialsOrGauntletImmediately = true;
+                        logger.info("Forcing trials...");
+                        scheduler.doTrialsImmediately = true;
                         break;
                     case "pvp":
                         // force pvp

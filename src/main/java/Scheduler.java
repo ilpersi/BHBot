@@ -11,7 +11,8 @@ class Scheduler {
     /**
      * Instructs bot to do 1 trials/gauntlet immediately (after which this flag will get reset to 'false'
      */
-    boolean doTrialsOrGauntletImmediately;
+    boolean doTrialsImmediately;
+    boolean doGauntletImmediately;
     /**
      * Instructs bot to do 1 PVP battle immediately (after which this flag will get reset to 'false'
      */

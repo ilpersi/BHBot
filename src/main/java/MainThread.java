@@ -1553,7 +1553,8 @@ public class MainThread implements Runnable {
                     } // shards
 
                     // check for tokens (trials and gauntlet):
-                    if (BHBot.scheduler.doTrialsOrGauntletImmediately || ("t".equals(currentActivity)) || ("g".equals(currentActivity))) {
+                    if (BHBot.scheduler.doTrialsImmediately || BHBot.scheduler.doGauntletImmediately ||
+                            ("t".equals(currentActivity)) || ("g".equals(currentActivity))) {
                         if ("t".equals(currentActivity)) timeLastTrialsTokensCheck = Misc.getTime();
                         if ("g".equals(currentActivity)) timeLastGauntletTokensCheck = Misc.getTime();
 
@@ -1597,7 +1598,7 @@ public class MainThread implements Runnable {
                             continue;
                         }
 
-                        if ((!BHBot.scheduler.doTrialsOrGauntletImmediately && (tokens <= BHBot.settings.minTokens)) || (tokens < (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet))) {
+                        if (( (!BHBot.scheduler.doTrialsImmediately && !BHBot.scheduler.doGauntletImmediately) && (tokens <= BHBot.settings.minTokens)) || (tokens < (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet))) {
                             readScreen();
                             seg = detectCue(cues.get("X"), SECOND);
                             clickOnSeg(seg);
@@ -1610,15 +1611,21 @@ public class MainThread implements Runnable {
                                 TOKENS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
                             } else TOKENS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 token check every 10 minutes
 
-                            if (BHBot.scheduler.doTrialsOrGauntletImmediately)
-                                BHBot.scheduler.doTrialsOrGauntletImmediately = false; // if we don't have resources to run we need to disable force it
+                            if (BHBot.scheduler.doTrialsImmediately) {
+                                BHBot.scheduler.doTrialsImmediately = false; // if we don't have resources to run we need to disable force it
+                            } else if (BHBot.scheduler.doGauntletImmediately) {
+                                BHBot.scheduler.doGauntletImmediately = false;
+                            }
 
                             continue;
                         } else {
                             // do the trials/gauntlet!
 
-                            if (BHBot.scheduler.doTrialsOrGauntletImmediately)
-                                BHBot.scheduler.doTrialsOrGauntletImmediately = false; // reset it
+                            if (BHBot.scheduler.doTrialsImmediately) {
+                                BHBot.scheduler.doTrialsImmediately = false; // reset it
+                            } else if (BHBot.scheduler.doGauntletImmediately) {
+                                BHBot.scheduler.doGauntletImmediately = false;
+                            }
 
                             // One time check for Autoshrine
                             if (trials) {
@@ -2867,6 +2874,26 @@ public class MainThread implements Runnable {
     }
 
     private String activitySelector() {
+
+        if (BHBot.scheduler.doRaidImmediately) {
+            return "r";
+        } else if (BHBot.scheduler.doDungeonImmediately) {
+            return "d";
+        } else if (BHBot.scheduler.doWorldBossImmediately) {
+            return "w";
+        } else if (BHBot.scheduler.doTrialsImmediately) {
+            return "t";
+        } else if (BHBot.scheduler.doGauntletImmediately) {
+            return "g";
+        } else if (BHBot.scheduler.doPVPImmediately) {
+            return "p";
+        } else if (BHBot.scheduler.doInvasionImmediately) {
+            return "i";
+        } else if (BHBot.scheduler.doGVGImmediately) {
+            return "v";
+        } else if (BHBot.scheduler.doExpeditionImmediately) {
+            return "e";
+        }
 
         if (BHBot.settings.activitiesEnabled.isEmpty()) {
             return null;
