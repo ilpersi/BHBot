@@ -1144,6 +1144,7 @@ public class MainThread implements Runnable {
                 readScreen();
                 MarvinSegment seg;
 
+
                 seg = detectCue(cues.get("UnableToConnect"));
                 if (seg != null) {
                     BHBot.logger.info("'Unable to connect' dialog detected. Reconnecting...");
@@ -1216,6 +1217,12 @@ public class MainThread implements Runnable {
                     }
                     sleep(2 * SECOND);
                     continue; // skip other stuff, we must first get rid of this popup!
+                }
+
+                // process dungeons of any kind (if we are in any):
+                if (state == State.Raid || state == State.Trials || state == State.Gauntlet || state == State.Dungeon || state == State.PVP || state == State.GVG || state == State.Invasion || state == State.UnidentifiedDungeon || state == State.Expedition || state == State.WorldBoss) {
+                    processDungeon();
+                    continue;
                 }
 
                 // check for "News" popup:
@@ -1302,12 +1309,6 @@ public class MainThread implements Runnable {
                     BHBot.logger.info("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
                     sleep(60 * SECOND); //long sleep as if the checkShrine didn't find the potion button we'd enter a restart loop
                     checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
-                    continue;
-                }
-
-                // process dungeons of any kind (if we are in any):
-                if (state == State.Raid || state == State.Trials || state == State.Gauntlet || state == State.Dungeon || state == State.PVP || state == State.GVG || state == State.Invasion || state == State.UnidentifiedDungeon || state == State.Expedition || state == State.WorldBoss) {
-                    processDungeon();
                     continue;
                 }
 
@@ -1510,11 +1511,13 @@ public class MainThread implements Runnable {
                             if (currentType != raidType) {
                                 if (raidUnlocked < raidType) {
                                     BHBot.logger.warn("Raid selected in settings (R" + raidType + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
+
                                     if (!setRaidType(raidType, raidUnlocked)) {
-                                        BHBot.logger.error("Impossible to set the raid type!");
-                                        continue;
+                                        //BHBot.logger.error("Impossible to set the raid type!"); // player only has r1 unlocked, so we can just do that
+                                        BHBot.logger.info("Only R1 unlocked. Will perform R1");
+                                        readScreen(2 * SECOND);
+                                      //  continue;
                                     }
-                                    readScreen(2 * SECOND);
                                 } else {
                                     // we need to change the raid type!
                                     BHBot.logger.info("Changing from R" + currentRaid + " to R" + raidType);
@@ -5481,6 +5484,7 @@ public class MainThread implements Runnable {
      */
     private int readUnlockedRaidTier() {
         int result = 0;
+
 
         readScreen(SECOND);
         List<MarvinSegment> list = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
