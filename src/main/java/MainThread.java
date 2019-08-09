@@ -5516,6 +5516,9 @@ public class MainThread implements Runnable {
         MarvinSegment seg = detectCue(cues.get("RaidLevel"));
         if (seg != null) result += 1;
 
+        //Only R1 fix
+        if (detectCue(cues.get("Raid1Name")) != null) result  += 1;
+
         return result;
     }
 
