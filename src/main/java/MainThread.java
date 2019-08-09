@@ -5517,7 +5517,7 @@ public class MainThread implements Runnable {
         if (seg != null) result += 1;
 
         //Only R1 fix
-        if (result == 0 & detectCue(cues.get("Raid1Name")) != null) result  += 1;
+        if (result == 0 && detectCue(cues.get("Raid1Name")) != null) result  += 1;
 
         return result;
     }
