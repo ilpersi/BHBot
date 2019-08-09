@@ -5584,6 +5584,11 @@ public class MainThread implements Runnable {
     private boolean setRaidType(int newType, int currentType) {
 //		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
 
+        if (currentType == 1) {
+            BHBot.logger.debug("Only R1 available, no need to change raids");
+            return true;
+        }
+
         MarvinSegment seg = detectCue(cues.get("RaidLevel"));
         if (seg == null) {
             // error!
