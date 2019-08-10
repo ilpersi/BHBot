@@ -34,6 +34,10 @@ class Scheduler {
      */
     boolean doWorldBossImmediately;
     /**
+     * Instructs bot to do 1 World Boss immediately (after which this flag will get reset to 'false'
+     */
+    boolean collectBountiesImmediately;
+    /**
      * Set it to true when user logs in and we must wait for him to finish interacting.
      */
     boolean isUserInteracting = false;

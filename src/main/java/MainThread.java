@@ -2801,10 +2801,59 @@ public class MainThread implements Runnable {
                         continue;
                     } // World Boss
 
-                    // Collect bounties:
-                    if (BHBot.settings.collectBounties && ((Misc.getTime() - timeLastBountyCheck > BOUNTY_CHECK_INTERVAL) || timeLastBountyCheck == 0)) {
-                        timeLastBountyCheck = Misc.getTime();
-                        handleBounties();
+                    //bounties activity
+                    if (BHBot.scheduler.collectBountiesImmediately || ("b".equals(currentActivity))) {
+
+                        if (BHBot.scheduler.collectBountiesImmediately) {
+                            BHBot.scheduler.collectBountiesImmediately = false; //disable collectImmediately again if its been activated
+                        }
+                        BHBot.logger.debug("Attempting bounties collection.");
+
+                        clickInGame(130, 490);
+
+                        seg = detectCue(cues.get("Bounties"), SECOND * 5);
+                        if (seg != null) {
+                            readScreen();
+                            seg = detectCue(cues.get("Loot"), SECOND * 5, new Bounds(505, 245, 585, 275));
+                            while (seg != null) {
+                                clickOnSeg(seg);
+                                seg = detectCue(cues.get("WeeklyRewards"), SECOND * 5, new Bounds(190, 100, 615, 400));
+                                if (seg != null) {
+                                    seg = detectCue(cues.get("X"), 5 * SECOND);
+                                    if (seg != null) {
+                                        saveGameScreen("bounty-loot");
+                                        clickOnSeg(seg);
+                                        BHBot.logger.info("Collected bounties");
+                                        sleep(SECOND * 2);
+                                    } else {
+                                        BHBot.logger.error("Error when collecting bounty items, restarting...");
+                                        saveGameScreen("bounties-error-collect");
+                                        restart();
+                                    }
+                                } else {
+                                    BHBot.logger.error("Error finding bounty item dialog, restarting...");
+                                    saveGameScreen("bounties-error-item");
+                                    restart();
+                                }
+
+                                seg = detectCue(cues.get("Loot"), SECOND * 5, new Bounds(505, 245, 585, 275));
+                            }
+
+                            seg = detectCue(cues.get("X"), 5 * SECOND);
+                            if (seg != null) {
+                                clickOnSeg(seg);
+                                readScreen();
+                            } else {
+                                BHBot.logger.error("Impossible to close the bounties dialog, restarting...");
+                                saveGameScreen("bounties-error-closing");
+                                restart();
+                            }
+                        } else {
+                            BHBot.logger.error("Impossible to detect the Bounties dialog, restarting...");
+                            saveGameScreen("bounties-error-dialog");
+                            restart();
+                        }
+                        readScreen(SECOND * 2);
                     }
 
 
@@ -2933,6 +2982,8 @@ public class MainThread implements Runnable {
                     return "v";
                 } else if ("e".equals(activity) && ((Misc.getTime() - timeLastExpBadgesCheck) > BADGES_CHECK_INTERVAL)) {
                     return "e";
+                } else if ("b".equals(activity) && ((Misc.getTime() - timeLastBountyCheck) > BOUNTY_CHECK_INTERVAL)) {
+                    return "b";
                 }
             }
 
@@ -6713,7 +6764,7 @@ public class MainThread implements Runnable {
     /**
      * Daily collection of fishing baits!
      */
-    void handleFishingBaits() {
+    private void handleFishingBaits() {
         MarvinSegment seg;
 
         seg = detectCue(cues.get("Fishing"), SECOND * 5);

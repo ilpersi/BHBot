@@ -453,9 +453,6 @@ public class BHBot {
                     case "runes":
                         main.detectEquippedMinorRunes(true, true);
                         break;
-                    case "fishing":
-                        main.handleFishingBaits();
-                        break;
                     default:
                         break;
                 }

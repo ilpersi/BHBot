@@ -1008,6 +1008,12 @@ public class Settings {
         if (lastUsedMap.getOrDefault("doGVG", null) != null) {
             BHBot.logger.warn("Deprecated setting detected: doGVG. Use the new activitiesEnabled with 'v' letter instead.");
         }
+        if (lastUsedMap.getOrDefault("collectBounties", null) != null) {
+            BHBot.logger.warn("Deprecated setting detected: collectBounties. Use the new activitiesEnabled with 'b' letter instead.");
+        }
+        if (lastUsedMap.getOrDefault("difficulty", null) != null) {
+            BHBot.logger.warn("Deprecated setting detected: difficulty. Please replace with difficultyTrials and difficultyGauntlet instead.");
+        }
     }
 
     void sanitizeSetting() {
