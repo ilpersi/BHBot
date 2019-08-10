@@ -356,6 +356,7 @@ public class MainThread implements Runnable {
         addCue("Victory", loadImage("cues/labels/Victory_Steam.png"), new Bounds(314, 150, 477, 185)); // victory window cue found upon completing gauntlet / PvP
         addCue("News", loadImage("cues/labels/NewsPopup_Steam.png"), new Bounds(350, 90, 445, 140)); // news popup
         addCue("EnergyBar", loadImage("cues/labels/EnergyBar_Steam.png"), new Bounds(397, 0, 437, 37));
+        addCue("Cleared", loadImage("cues/labels/Cleared_Steam.png"), null); // used for example when raid has been finished
 
 
         addCue("TicketBar", loadImage("cues/cueTicketBar.png"), new Bounds(540, 0, 770, 20));
@@ -376,7 +377,6 @@ public class MainThread implements Runnable {
         addCue("Raid7Name", loadImage("cues/raid/r7Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 7 Name
 
 
-        addCue("Cleared", loadImage("cues/cueCleared.png"), null); // used for example when raid has been finished
         addCue("Defeat", loadImage("cues/cueDefeat.png"), null); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
         addCue("Persuade", loadImage("cues/cuePersuade.png"), new Bounds(116, 311, 286, 380));
         addCue("View", loadImage("cues/cueView.png"), new Bounds(390, 415, 600, 486));
@@ -408,19 +408,19 @@ public class MainThread implements Runnable {
 
 
 
-        addCue("ZonesButton", loadImage("cues/zones/cueZonesButton.png"), new Bounds(105, 60, 125, 75));
-        addCue("Zone1", loadImage("cues/zones/cueZone1.png"), null);
-        addCue("Zone2", loadImage("cues/zones/cueZone2.png"), null);
-        addCue("Zone3", loadImage("cues/zones/cueZone3.png"), null);
-        addCue("Zone4", loadImage("cues/zones/cueZone4.png"), null);
-        addCue("Zone5", loadImage("cues/zones/cueZone5.png"), null);
-        addCue("Zone6", loadImage("cues/zones/cueZone6.png"), null);
-        addCue("Zone7", loadImage("cues/zones/cueZone7.png"), null);
-        addCue("Zone8", loadImage("cues/zones/cueZone8.png"), null);
-        addCue("Zone9", loadImage("cues/zones/cueZone9.png"), null);
-        addCue("RightArrow", loadImage("cues/cueRightArrow.png"), null); // arrow used in quest screen to change zone
-        addCue("LeftArrow", loadImage("cues/cueLeftArrow.png"), null); // arrow used in quest screen to change zone
-//		addCue("EnterExpedition", loadImage("cues/cueEnter.png"),null ); // "Enter" for Expeditions
+        addCue("ZonesButton", loadImage("cues/zones/ZonesButton_Steam.png"), new Bounds(108, 88, 198, 121));
+        addCue("Zone1", loadImage("cues/zones/Zone1_Steam.png"), new Bounds(251, 77, 543, 115));
+        addCue("Zone2", loadImage("cues/zones/Zone2_Steam.png"), new Bounds(250, 75, 545, 120));
+        addCue("Zone3", loadImage("cues/zones/Zone3_Steam.png"), new Bounds(251, 77, 543, 115));
+        addCue("Zone4", loadImage("cues/zones/Zone4_Steam.png"), new Bounds(251, 77, 543, 115));
+        addCue("Zone5", loadImage("cues/zones/Zone5_Steam.png"), new Bounds(251, 77, 543, 115));
+        addCue("Zone6", loadImage("cues/zones/Zone6_Steam.png"), new Bounds(251, 77, 543, 115));
+        addCue("Zone7", loadImage("cues/zones/Zone7_Steam.png"), new Bounds(251, 77, 543, 115));
+        addCue("Zone8", loadImage("cues/zones/Zone8_Steam.png"), new Bounds(251, 77, 543, 115));
+        addCue("Zone9", loadImage("cues/zones/Zone9_Steam.png"), new Bounds(251, 77, 543, 115));
+        addCue("RightArrow", loadImage("cues/zones/RightArrow_Steam.png"), new Bounds(720, 274, 754, 328)); // arrow used in quest screen to change zone
+        addCue("LeftArrow", loadImage("cues/zones/LeftArrow_Steam.png"), new Bounds(65, 270, 40, 340)); // arrow used in quest screen to change zone
+
         addCue("NotEnoughEnergy", loadImage("cues/cueNotEnoughEnergy.png"), new Bounds(260, 210, 290, 235)); // "Not enough Energy" popup cue
 
 
@@ -1190,8 +1190,8 @@ public class MainThread implements Runnable {
 
 
                     //comment for faster testing
-//					oneTimeshrineCheck = true;
-//					oneTimeRuneCheck = true;
+					oneTimeshrineCheck = true;
+					oneTimeRuneCheck = true;
 
                     // One time check for Autoshrine
                     if (!oneTimeshrineCheck) {
@@ -1591,16 +1591,6 @@ public class MainThread implements Runnable {
                             continue;
                         }
 
-                        if (BHBot.settings.countActivities) {
-                            int dungeonCounter = Integer.parseInt(BHBot.settings.dungeonsRun.split(" ")[1]);
-                            if (dungeonCounter >= 10) {
-                                if (BHBot.scheduler.doDungeonImmediately)
-                                    BHBot.scheduler.doDungeonImmediately = false; // reset it
-                                BHBot.scheduler.restoreIdleTime();
-                                continue;
-                            }
-                        }
-
                         if (!BHBot.scheduler.doDungeonImmediately && (energy <= BHBot.settings.minEnergyPercentage || BHBot.settings.dungeons.size() == 0)) {
                             sleep(SECOND);
 
@@ -1654,24 +1644,30 @@ public class MainThread implements Runnable {
                             BHBot.logger.info("Attempting " + difficultyName + " " + dungeon);
 
                             int currentZone = readCurrentZone();
+                            BHBot.logger.debug("Current zone: " + currentZone);
                             int vec = goalZone - currentZone; // movement vector
 //							BHBot.logger.info("Current zone: " + Integer.toString(currentZone) + " Target Zone: " + Integer.toString(goalZone));
                             while (vec != 0) { // move to the correct zone
                                 if (vec > 0) {
                                     // note that moving to the right will fail in case player has not unlocked the zone yet!
-                                    readScreen(SECOND); // wait for screen to stabilise
-                                    seg = detectCue(cues.get("RightArrow"));
-                                    if (seg == null) {
-                                        BHBot.logger.error("Right button not found, zone unlocked?");
-                                        break; // happens for example when player hasn't unlock the zone yet
-                                    }
-                                    //coords are used as moving multiple screens would crash the bot when using the arrow cues
-                                    clickInGame(740, 275);
+//                                    seg = detectCue(cues.get("RightArrow"), 1 * SECOND);
+//                                    if (seg == null) {
+//                                        BHBot.logger.error("Right button not found, zone unlocked?");
+//                                        break; // happens for example when player hasn't unlock the zone yet
+//                                    } clickOnSeg(seg);
+                                    sleep(200);
+                                    clickInGame(737, 299);
+                                    BHBot.logger.debug(Integer.toString(vec));
                                     vec--;
                                 } else {
-                                    sleep(500);
-                                    //coords are used as moving multiple screens would crash the bot when using the arrow cues
-                                    clickInGame(55, 275);
+//                                    seg = detectCue(cues.get("LeftArrow"), 1*SECOND);
+//                                    if (seg == null) {
+//                                        BHBot.logger.error("Left button not found.");
+//                                        break; // happens for example when player hasn't unlock the zone yet
+//                                    } clickOnSeg(seg);
+                                    sleep(200);
+                                    clickInGame(56, 300);
+                                    BHBot.logger.debug(Integer.toString(vec));
                                     vec++;
                                 }
                             }
@@ -1687,10 +1683,8 @@ public class MainThread implements Runnable {
                                     sendPushOverMessage("Dungeon error", "It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!", "siren");
                                 continue;
                             }
-
                             clickInGame(p.x, p.y);
 
-                            readScreen(3 * SECOND);
                             // select difficulty (If D4 just hit enter):
                             if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') || (dungeon.charAt(1) == '8' && dungeon.charAt(3) == '3')) { // D4, or Z7D3/Z8D3
                                 specialDungeon = true;
@@ -1717,13 +1711,11 @@ public class MainThread implements Runnable {
                                 }
                             }
 
-                            readScreen();
                             seg = detectCue(cues.get("Accept"), SECOND * 2);
                             clickOnSeg(seg);
 
                             if (soloThreshold <= BHBot.settings.minSolo) {
-                                readScreen(3 * SECOND); //wait for dropdown animation to finish
-                                seg = detectCue(cues.get("YesGreen"), 2 * SECOND);
+                                seg = detectCue(cues.get("Yes"), 2 * SECOND, new Bounds(294,372,352,402));
                                 if (seg != null) {
                                     clickOnSeg(seg);
                                 } else {
@@ -3538,7 +3530,7 @@ public class MainThread implements Runnable {
         // check if we're done (cleared):
         seg = detectCue(cues.get("Cleared"));
         if (seg != null) {
-            closePopupSecurely(cues.get("Cleared"), cues.get("YesGreen"));
+            closePopupSecurely(cues.get("Cleared"), cues.get("Yes"));
 
             // close the raid/dungeon/trials/gauntlet window:
             readScreen(2 * SECOND);
@@ -4905,25 +4897,25 @@ public class MainThread implements Runnable {
             case 1: // zone 1
                 switch (d) {
                     case 1:
-                        return new Point(240, 350);
+                        return new Point(240, 360);
                     case 2:
-                        return new Point(580, 190);
+                        return new Point(575, 210);
                     case 3:
-                        return new Point(660, 330);
+                        return new Point(650, 350);
                     case 4:
-                        return new Point(410, 230);
+                        return new Point(405, 260);
                 }
                 break;
             case 2: // zone 2
                 switch (d) {
                     case 1:
-                        return new Point(215, 270);
+                        return new Point(210, 275);
                     case 2:
-                        return new Point(550, 150);
+                        return new Point(550, 180);
                     case 3:
-                        return new Point(515, 380);
+                        return new Point(510, 400);
                     case 4:
-                        return new Point(400, 270);
+                        return new Point(400, 295);
                 }
                 break;
             case 3: // zone 3
@@ -5310,6 +5302,7 @@ public class MainThread implements Runnable {
      * Returns 0 in case zone could not be read (in case we are not in the quest window, for example).
      */
     private int readCurrentZone() {
+        readScreen(1* SECOND);
         if (detectCue(cues.get("Zone1")) != null)
             return 1;
         else if (detectCue(cues.get("Zone2")) != null)
