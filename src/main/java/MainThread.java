@@ -1389,7 +1389,7 @@ public class MainThread implements Runnable {
 
 
                     // check for shards:
-                    if (BHBot.scheduler.doRaidImmediately || ("r".equals(currentActivity))) {
+                    if ("r".equals(currentActivity)) {
                         timeLastShardsCheck = Misc.getTime();
 
                         readScreen();
@@ -1744,7 +1744,7 @@ public class MainThread implements Runnable {
                     } // tokens (trials and gauntlet)
 
                     // check for energy:
-                    if (BHBot.scheduler.doDungeonImmediately || ("d".equals(currentActivity))) {
+                    if ("d".equals(currentActivity)) {
                         timeLastEnergyCheck = Misc.getTime();
 
                         readScreen();
@@ -1776,8 +1776,8 @@ public class MainThread implements Runnable {
                             //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
                             int energyDifference = BHBot.settings.minEnergyPercentage - energy; //difference between needed and current resource
                             if (energyDifference > 1) {
-                                int increase = (energyDifference - 1) * 4;
-                                ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
+                                int increase = (energyDifference - 1) * 5;
+                                ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 5 minutes to the check interval for each energy % needed above 1
                             } else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
 
                             continue;
@@ -1920,7 +1920,7 @@ public class MainThread implements Runnable {
                     } // energy
 
                     // check for Tickets (PvP):
-                    if (BHBot.scheduler.doPVPImmediately || ("p".equals(currentActivity))) {
+                    if ("p".equals(currentActivity)) {
                         timeLastTicketsCheck = Misc.getTime();
 
                         readScreen();
@@ -2032,8 +2032,7 @@ public class MainThread implements Runnable {
                     } // PvP
 
                     // check for badges (for GVG/Invasion/Expedition):
-                    if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || BHBot.scheduler.doExpeditionImmediately
-                            || (("v".equals(currentActivity)) || ("i".equals(currentActivity)) || ("e".equals(currentActivity)))) {
+                    if (("v".equals(currentActivity)) || ("i".equals(currentActivity)) || ("e".equals(currentActivity))) {
 
                         String checkedActivity = currentActivity;
 
@@ -2504,7 +2503,7 @@ public class MainThread implements Runnable {
                     } // badges
 
                     // Check worldBoss:
-                    if (BHBot.scheduler.doWorldBossImmediately || ("w".equals(currentActivity))) {
+                    if ("w".equals(currentActivity)) {
                         timeLastEnergyCheck = Misc.getTime();
                         int energy = getEnergy();
                         globalEnergy = energy;
@@ -2518,17 +2517,6 @@ public class MainThread implements Runnable {
 
                             continue;
                         }
-
-                        // if (BHBot.settings.countActivities) {
-                        // 	int worldBossCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]);
-                        // 		if (worldBossCounter >= 10) {
-                        // 		BHBot.logger.warn("World Boss limit met (" + worldBossCounter + "), skipping.");
-                        // 		if (BHBot.scheduler.doDungeonImmediately)
-                        // 			BHBot.scheduler.doDungeonImmediately = false; // reset it
-                        // 		BHBot.scheduler.restoreIdleTime();
-                        // 		continue;
-                        // 		}
-                        // }
 
                         if (!BHBot.scheduler.doWorldBossImmediately && (energy <= BHBot.settings.minEnergyPercentage)) {
 
@@ -2802,7 +2790,7 @@ public class MainThread implements Runnable {
                     } // World Boss
 
                     //bounties activity
-                    if (BHBot.scheduler.collectBountiesImmediately || ("b".equals(currentActivity))) {
+                    if ("b".equals(currentActivity)) {
 
                         if (BHBot.scheduler.collectBountiesImmediately) {
                             BHBot.scheduler.collectBountiesImmediately = false; //disable collectImmediately again if its been activated
@@ -2942,6 +2930,8 @@ public class MainThread implements Runnable {
             return "v";
         } else if (BHBot.scheduler.doExpeditionImmediately) {
             return "e";
+        } else if (BHBot.scheduler.doExpeditionImmediately) {
+            return "b";
         }
 
         if (BHBot.settings.activitiesEnabled.isEmpty()) {
@@ -5450,10 +5440,10 @@ public class MainThread implements Runnable {
 
         //check tier
         if ("o".equals(worldBossType) || "n".equals(worldBossType)) {
-            if (worldBossTier >= 1 && worldBossTier <= 9) {
+            if (worldBossTier >= 3 && worldBossTier <= 9) {
                 passed++;
             } else {
-                BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 1 and 9");
+                BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 3 and 9");
                 failed = true;
             }
         } else if ("m".equals(worldBossType) || "3".equals(worldBossType)) {
