@@ -426,8 +426,8 @@ public class BHBot {
                         }
                         break;
                     case "r":
-                    case "raidread":
-                        main.raidReadTest();
+                    case "zoneread":
+                        main.zoneReadTest();
                         break;
                     case "e":
                     case "expeditionread":

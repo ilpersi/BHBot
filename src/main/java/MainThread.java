@@ -411,6 +411,7 @@ public class MainThread implements Runnable {
         addCue("ZonesButton", loadImage("cues/zones/ZonesButton_Steam.png"), new Bounds(108, 88, 198, 121));
         addCue("Zone1", loadImage("cues/zones/Zone1_Steam.png"), new Bounds(245, 75, 545, 120));
         addCue("Zone2", loadImage("cues/zones/Zone2_Steam.png"), new Bounds(245, 75, 545, 120));
+        addCue("Zone2alt", loadImage("cues/zones/Zone2_alt_Steam.png"), new Bounds(245, 75, 545, 120));
         addCue("Zone3", loadImage("cues/zones/Zone3_Steam.png"), new Bounds(245, 75, 545, 120));
         addCue("Zone4", loadImage("cues/zones/Zone4_Steam.png"), new Bounds(245, 75, 545, 120));
         addCue("Zone5", loadImage("cues/zones/Zone5_Steam.png"), new Bounds(245, 75, 545, 120));
@@ -418,6 +419,7 @@ public class MainThread implements Runnable {
         addCue("Zone7", loadImage("cues/zones/Zone7_Steam.png"), new Bounds(245, 75, 545, 120));
         addCue("Zone8", loadImage("cues/zones/Zone8_Steam.png"), new Bounds(245, 75, 545, 120));
         addCue("Zone9", loadImage("cues/zones/Zone9_Steam.png"), new Bounds(245, 75, 545, 120));
+
 //        addCue("RightArrow", loadImage("cues/zones/RightArrow_Steam.png"), new Bounds(720, 274, 754, 328)); // arrow used in quest screen to change zone
 //        addCue("LeftArrow", loadImage("cues/zones/LeftArrow_Steam.png"), new Bounds(65, 270, 40, 340)); // arrow used in quest screen to change zone
 
@@ -1624,7 +1626,6 @@ public class MainThread implements Runnable {
 
                             seg = detectCue(cues.get("Quest"));
                             clickOnSeg(seg);
-                            readScreen(5 * SECOND);
 
                             String dungeon = decideDungeonRandomly();
                             if (dungeon == null) {
@@ -1643,37 +1644,39 @@ public class MainThread implements Runnable {
 
                             BHBot.logger.info("Attempting " + difficultyName + " " + dungeon);
 
-                            readScreen();
+                            sleep(1 * SECOND); //sleep to stabilize
+                            clickInGame(737, 299); //move zones to clear unique shaded zone cue
+                            sleep(500);
+                            clickInGame(56, 300); //move zones to clear unique shaded zone cue
+                            sleep(1 * SECOND); //sleep to stabilize
                             int currentZone = readCurrentZone();
+                            if (currentZone == 0) {
+                                BHBot.logger.error("Error reading zone, skipping..");
+                                continue;
+                            }
                             BHBot.logger.debug("Current zone: " + currentZone);
                             int vec = goalZone - currentZone; // movement vector
 //							BHBot.logger.info("Current zone: " + Integer.toString(currentZone) + " Target Zone: " + Integer.toString(goalZone));
                             while (vec != 0) { // move to the correct zone
                                 if (vec > 0) {
-                                    // note that moving to the right will fail in case player has not unlocked the zone yet!
-//                                    seg = detectCue(cues.get("RightArrow"), 1 * SECOND);
-//                                    if (seg == null) {
-//                                        BHBot.logger.error("Right button not found, zone unlocked?");
-//                                        break; // happens for example when player hasn't unlock the zone yet
-//                                    } clickOnSeg(seg);
                                     sleep(200);
                                     clickInGame(737, 299);
-                                    BHBot.logger.debug(Integer.toString(vec));
+//                                    BHBot.logger.debug(Integer.toString(vec));
                                     vec--;
                                 } else {
-//                                    seg = detectCue(cues.get("LeftArrow"), 1*SECOND);
-//                                    if (seg == null) {
-//                                        BHBot.logger.error("Left button not found.");
-//                                        break; // happens for example when player hasn't unlock the zone yet
-//                                    } clickOnSeg(seg);
                                     sleep(200);
                                     clickInGame(56, 300);
-                                    BHBot.logger.debug(Integer.toString(vec));
+                                    //                                   BHBot.logger.debug(Integer.toString(vec));
                                     vec++;
                                 }
                             }
 
                             readScreen(2 * SECOND);
+                            int changedZone = readCurrentZone();
+                            if (changedZone != goalZone) {
+                                BHBot.logger.warn("Something went wrong while changing zones, skipping");
+                                continue;
+                            }
 
                             // click on the dungeon:
                             Point p = getDungeonIconPos(dungeon);
@@ -2539,7 +2542,7 @@ public class MainThread implements Runnable {
                                                 BHBot.scheduler.doDungeonImmediately = true;
                                             } else {
                                                 BHBot.logger.info("Lobby timed out, returning to main screen.");
-                                                timeLastEnergyCheck -= 540; // remove 9 minutes from the check time so we check again in a minute
+                                                timeLastEnergyCheck -= 9 * MINUTE; // remove 9 minutes from the check time so we check again in a minute
                                                 closeWorldBoss();
                                             }
                                         }
@@ -5303,41 +5306,26 @@ public class MainThread implements Runnable {
      * Returns 0 in case zone could not be read (in case we are not in the quest window, for example).
      */
     private int readCurrentZone() {
-        if (detectCue(cues.get("Zone1")) != null)
-            return 1;
-        else if (detectCue(cues.get("Zone2")) != null)
-            return 2;
-        else if (detectCue(cues.get("Zone3")) != null)
-            return 3;
-        else if (detectCue(cues.get("Zone4")) != null)
-            return 4;
-        else if (detectCue(cues.get("Zone5")) != null)
-            return 5;
-        else if (detectCue(cues.get("Zone6")) != null)
-            return 6;
-        else if (detectCue(cues.get("Zone7")) != null)
-            return 7;
-        else if (detectCue(cues.get("Zone8")) != null)
-            return 8;
-        else if (detectCue(cues.get("Zone9")) != null)
-            return 9;
-        else
-            return 0;
+        readScreen();
+        for (int i = 1; i <= 9; i++) {
+            if (detectCue(cues.get("Zone" + i)) != null) {
+                BHBot.logger.debug("Detected zone " + i);
+            return i;
+            }
+        }
+
+        //the first time we open the dungeon window we get a uniquely shaded title, this checks for that
+        for (int i = 2; i <= 2; i++) {
+            if (detectCue(cues.get("Zone" + i + "alt")) != null) {
+                BHBot.logger.debug("Detected zone " + i);
+                return i;
+            }
+        }
+        return 0;
     }
 
-	/*private int checkFamiliarCounter(String fam) { //returns current catch count for given familiar from the settings file
-		int catchCount = 0;
-		for (String f : BHBot.settings.familiars) { //cycle familiars defined in settings
-				String fString = f.toUpperCase().split(" ")[0]; //stringify the familiar name
-				if (fam.equals(fString)) { // on match return
-					catchCount = Integer.parseInt(f.split(" ")[1]);
-				}
-			}
-		return catchCount;
-		}*/
-
-    void raidReadTest() {
-        int test = readUnlockedRaidTier();
+    void zoneReadTest() {
+        int test = readCurrentZone();
         BHBot.logger.info(Integer.toString(test));
     }
 
