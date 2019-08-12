@@ -316,8 +316,8 @@ public class MainThread implements Runnable {
         addCue("GVG", loadImage("cues/mainscreen/cueGVG.png"), null);
         addCue("Invasion", loadImage("cues/mainscreen/Invasion_Steam.png"), null);
         addCue("ExpeditionButton", loadImage("cues/mainscreen/cueExpedition.png"), null);
-        addCue("Trials", loadImage("cues/mainscreen/cueTrials.png"), new Bounds(719, 211, 789, 425));
-        addCue("Trials2", loadImage("cues/mainscreen/cueTrials2.png"), new Bounds(719, 211, 789, 425));
+        addCue("Trials", loadImage("cues/mainscreen/Trials_Steam.png"), new Bounds(719, 211, 789, 425));
+        addCue("Trials2", loadImage("cues/mainscreen/Trials2_Steam.png"), new Bounds(719, 211, 789, 425));
         addCue("Gauntlet", loadImage("cues/mainscreen/Gauntlet_Steam.png"), new Bounds(719, 211, 789, 425));
         addCue("Gauntlet2", loadImage("cues/mainscreen/Gauntlet2_Steam.png"), new Bounds(719, 211, 789, 425));
         addCue("Fishing", loadImage("cues/mainscreen/Fishing_Steam.png"), new Bounds(715, 425, 793, 500));
@@ -409,17 +409,17 @@ public class MainThread implements Runnable {
 
 
         addCue("ZonesButton", loadImage("cues/zones/ZonesButton_Steam.png"), new Bounds(108, 88, 198, 121));
-        addCue("Zone1", loadImage("cues/zones/Zone1_Steam.png"), new Bounds(251, 77, 543, 115));
-        addCue("Zone2", loadImage("cues/zones/Zone2_Steam.png"), new Bounds(250, 75, 545, 120));
-        addCue("Zone3", loadImage("cues/zones/Zone3_Steam.png"), new Bounds(251, 77, 543, 115));
-        addCue("Zone4", loadImage("cues/zones/Zone4_Steam.png"), new Bounds(251, 77, 543, 115));
-        addCue("Zone5", loadImage("cues/zones/Zone5_Steam.png"), new Bounds(251, 77, 543, 115));
-        addCue("Zone6", loadImage("cues/zones/Zone6_Steam.png"), new Bounds(251, 77, 543, 115));
-        addCue("Zone7", loadImage("cues/zones/Zone7_Steam.png"), new Bounds(251, 77, 543, 115));
-        addCue("Zone8", loadImage("cues/zones/Zone8_Steam.png"), new Bounds(251, 77, 543, 115));
-        addCue("Zone9", loadImage("cues/zones/Zone9_Steam.png"), new Bounds(251, 77, 543, 115));
-        addCue("RightArrow", loadImage("cues/zones/RightArrow_Steam.png"), new Bounds(720, 274, 754, 328)); // arrow used in quest screen to change zone
-        addCue("LeftArrow", loadImage("cues/zones/LeftArrow_Steam.png"), new Bounds(65, 270, 40, 340)); // arrow used in quest screen to change zone
+        addCue("Zone1", loadImage("cues/zones/Zone1_Steam.png"), new Bounds(245, 75, 545, 120));
+        addCue("Zone2", loadImage("cues/zones/Zone2_Steam.png"), new Bounds(245, 75, 545, 120));
+        addCue("Zone3", loadImage("cues/zones/Zone3_Steam.png"), new Bounds(245, 75, 545, 120));
+        addCue("Zone4", loadImage("cues/zones/Zone4_Steam.png"), new Bounds(245, 75, 545, 120));
+        addCue("Zone5", loadImage("cues/zones/Zone5_Steam.png"), new Bounds(245, 75, 545, 120));
+        addCue("Zone6", loadImage("cues/zones/Zone6_Steam.png"), new Bounds(245, 75, 545, 120));
+        addCue("Zone7", loadImage("cues/zones/Zone7_Steam.png"), new Bounds(245, 75, 545, 120));
+        addCue("Zone8", loadImage("cues/zones/Zone8_Steam.png"), new Bounds(245, 75, 545, 120));
+        addCue("Zone9", loadImage("cues/zones/Zone9_Steam.png"), new Bounds(245, 75, 545, 120));
+//        addCue("RightArrow", loadImage("cues/zones/RightArrow_Steam.png"), new Bounds(720, 274, 754, 328)); // arrow used in quest screen to change zone
+//        addCue("LeftArrow", loadImage("cues/zones/LeftArrow_Steam.png"), new Bounds(65, 270, 40, 340)); // arrow used in quest screen to change zone
 
         addCue("NotEnoughEnergy", loadImage("cues/cueNotEnoughEnergy.png"), new Bounds(260, 210, 290, 235)); // "Not enough Energy" popup cue
 
@@ -1643,6 +1643,7 @@ public class MainThread implements Runnable {
 
                             BHBot.logger.info("Attempting " + difficultyName + " " + dungeon);
 
+                            readScreen();
                             int currentZone = readCurrentZone();
                             BHBot.logger.debug("Current zone: " + currentZone);
                             int vec = goalZone - currentZone; // movement vector
@@ -1686,7 +1687,7 @@ public class MainThread implements Runnable {
                             clickInGame(p.x, p.y);
 
                             // select difficulty (If D4 just hit enter):
-                            if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') || (dungeon.charAt(1) == '8' && dungeon.charAt(3) == '3')) { // D4, or Z7D3/Z8D3
+                            if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') || (dungeon.charAt(1) == '8' && dungeon.charAt(3) == '3')) { // D4, or Z7D3/Z8D3/Z9D3
                                 specialDungeon = true;
                                 seg = detectCue(cues.get("Enter"), 5 * SECOND);
                                 clickOnSeg(seg);
@@ -4921,88 +4922,88 @@ public class MainThread implements Runnable {
             case 3: // zone 3
                 switch (d) {
                     case 1:
-                        return new Point(145, 200);
+                        return new Point(145, 230);
                     case 2:
-                        return new Point(430, 300);
+                        return new Point(430, 320);
                     case 3:
-                        return new Point(565, 375);
+                        return new Point(565, 400);
                     case 4:
-                        return new Point(570, 170);
+                        return new Point(570, 200);
                 }
                 break;
             case 4: // zone 4
                 switch (d) {
                     case 1:
-                        return new Point(300, 400);
+                        return new Point(300, 390);
                     case 2:
-                        return new Point(260, 200);
+                        return new Point(260, 225);
                     case 3:
                         return new Point(650, 200);
                     case 4:
-                        return new Point(400, 270);
+                        return new Point(400, 300);
                 }
                 break;
             case 5: // zone 5
                 switch (d) {
                     case 1:
-                        return new Point(150, 200);
+                        return new Point(150, 225);
                     case 2:
-                        return new Point(410, 380);
+                        return new Point(410, 410);
                     case 3:
-                        return new Point(630, 240);
+                        return new Point(630, 260);
                     case 4:
-                        return new Point(550, 150);
+                        return new Point(550, 175);
                 }
                 break;
             case 6: // zone 6
                 switch (d) {
                     case 1:
-                        return new Point(150, 220);
+                        return new Point(150, 300);
                     case 2:
-                        return new Point(500, 400);
+                        return new Point(500, 435);
                     case 3:
-                        return new Point(550, 120);
+                        return new Point(550, 210);
                     case 4:
-                        return new Point(400, 270);
+                        return new Point(375, 300);
                 }
                 break;
             case 7: // zone 7
                 switch (d) {
                     case 1:
-                        return new Point(215, 315);
+                        return new Point(215, 350);
                     case 2:
-                        return new Point(570, 165);
+                        return new Point(570, 195);
                     case 3:
-                        return new Point(400, 290);
+                        return new Point(400, 320);
                     case 4:
-                        BHBot.logger.warn("Zone 7 only has 3 dungeons, falling back to z7d2");
-                        return new Point(650, 400);
+                        BHBot.logger.warn("Zone 7 only has 3 dungeons, falling back to z7d3");
+                        return new Point(400, 320);
                 }
                 break;
             case 8: // zone 8
                 switch (d) {
                     case 1:
-                        return new Point(570, 170);
+                        return new Point(570, 205);
                     case 2:
-                        return new Point(650, 390);
+                        return new Point(650, 410);
                     case 3:
-                        return new Point(250, 370);
+                        return new Point(250, 400);
                     case 4:
-                        BHBot.logger.warn("Zone 8 only has 3 dungeons, falling back to z8d2");
-                        return new Point(570, 340);
+                        BHBot.logger.warn("Zone 8 only has 3 dungeons, falling back to z8d3");
+                        return new Point(250, 400);
                 }
                 break;
             case 9:
                 switch (d) {
                     case 1:
-                        return new Point(310, 165);
+                        return new Point(310, 190);
                     case 2:
-                        return new Point(610, 190);
+                        return new Point(610, 210);
                     case 3:
-                        return new Point(375, 415);
+                        return new Point(375, 440);
                     case 4:
-                        BHBot.logger.warn("Zone 9 only has 3 dungeons, falling back to z9d2");
-                        return new Point(610, 190);
+                        BHBot.logger.warn("Zone 9 only has 3 dungeons, falling back to z9d3");
+                        return new Point(375, 440);
                 }
                 break;
         }
@@ -5302,7 +5303,6 @@ public class MainThread implements Runnable {
      * Returns 0 in case zone could not be read (in case we are not in the quest window, for example).
      */
     private int readCurrentZone() {
-        readScreen(1* SECOND);
         if (detectCue(cues.get("Zone1")) != null)
             return 1;
         else if (detectCue(cues.get("Zone2")) != null)
