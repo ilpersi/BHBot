@@ -34,9 +34,13 @@ class Scheduler {
      */
     boolean doWorldBossImmediately;
     /**
-     * Instructs bot to do 1 World Boss immediately (after which this flag will get reset to 'false'
+     * Instructs bot to collect bounties immediately (after which this flag will get reset to 'false'
      */
     boolean collectBountiesImmediately;
+    /**
+     * Instructs bot to fish immediately (after which this flag will get reset to 'false'
+     */
+    boolean doFishingImmediately;
     /**
      * Set it to true when user logs in and we must wait for him to finish interacting.
      */
@@ -96,7 +100,6 @@ class Scheduler {
         paused = false;
         resetIdleTime();
         backupIdleTime(); // we need this because at the end of main loop idleTime will get assigned to lastIdleTime (which actually happens when game is unpaused after more than 30 minutes, for example)
-        BHBot.main.timeLastAdOffer = Misc.getTime(); // reset it
         /* we need this because of this situation: user issues command "pause",
          * then connect to the game (so that "reconnect" dialog pops up in the bot),
          * after a while he disconnects and issues command "resume".

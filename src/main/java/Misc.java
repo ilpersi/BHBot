@@ -20,7 +20,7 @@ public class Misc {
      * Return time in milliseconds from the start of the system. Can have a negative value.
      */
     static long getTime() {
-        return System.nanoTime() / 1000000;
+        return System.currentTimeMillis();
     }
 
     static String getStackTrace() {

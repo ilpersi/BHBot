@@ -247,6 +247,16 @@ public class BHBot {
                         logger.info("Forcing World Boss...");
                         scheduler.doWorldBossImmediately = true;
                         break;
+                    case "bounties":
+                        // force bounties
+                        logger.info("Forcing Bounty collection...");
+                        scheduler.collectBountiesImmediately = true;
+                        break;
+                    case "fishing":
+                        // force fishing
+                        logger.info("Forcing Fishing...");
+                        scheduler.doFishingImmediately = true;
+                        break;
                     default:
                         logger.warn("Unknown dungeon : '" + params[1] + "'");
                         break;
