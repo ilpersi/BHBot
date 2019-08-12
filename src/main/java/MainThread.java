@@ -1489,36 +1489,33 @@ public class MainThread implements Runnable {
                             }
 
                             int difficulty = Integer.parseInt(raid.split(" ")[1]);
-                            int raidType = Integer.parseInt(raid.split(" ")[0]);
+                            int desiredRaid = Integer.parseInt(raid.split(" ")[0]);
                             int raidUnlocked = readUnlockedRaidTier();
-//							BHBot.logger.info("Detected: R" + Integer.toString(raidUnlocked) + " unlocked");
-//							int raidUnlocked = BHBot.settings.currentRaidTier;
-                            BHBot.logger.info("Attempting R" + raidType + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
+
+							BHBot.logger.debug("Detected: R" + raidUnlocked + " unlocked");
+                            BHBot.logger.info("Attempting R" + desiredRaid + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
 
                             readScreen(SECOND);
 
-                            int currentType = readSelectedRaidTier();
-                            String currentRaid = Integer.toString(currentType);
-//							BHBot.logger.info("Raid selected is R" + currentRaid);
+                            int selectedRaid = readSelectedRaid();
+							BHBot.logger.debug("Raid selected is R" + selectedRaid);
 
-                            if (currentType == 0) { // an error!
+                            if (selectedRaid == 0) { // an error!
                                 BHBot.logger.error("Error: detected selected raid is 0, which is an error. Restarting...");
 //								restart();
                                 continue;
                             }
 
-                            if (currentType != raidType) {
-                                if (raidUnlocked < raidType) {
-                                    BHBot.logger.warn("Raid selected in settings (R" + raidType + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
-                                    if (!setRaidType(raidType, raidUnlocked)) {
-                                        BHBot.logger.error("Impossible to set the raid type!");
-                                        continue;
+                            if (selectedRaid != desiredRaid) {
+                                if (raidUnlocked < desiredRaid) {
+                                    BHBot.logger.warn("Raid selected in settings (R" + desiredRaid + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
+                                    if (raidUnlocked != 1) {
+                                        changeRaid(desiredRaid, raidUnlocked);
                                     }
-                                    readScreen(2 * SECOND);
                                 } else {
                                     // we need to change the raid type!
-                                    BHBot.logger.info("Changing from R" + currentRaid + " to R" + raidType);
-                                    setRaidType(raidType, currentType);
+                                    BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaid);
+                                    changeRaid(desiredRaid, selectedRaid);
                                     readScreen(2 * SECOND);
                                 }
                             }
@@ -5567,7 +5564,7 @@ public class MainThread implements Runnable {
      * Returns raid type, that is value between 1 and 4 (Corresponding to the raid tiers) that is currently selected in the raid window.
      * Note that the raid window must be open for this method to work (or else it will simply return 0).
      */
-    private int readSelectedRaidTier() {
+    private int readSelectedRaid() {
         readScreen(SECOND);
         if (detectCue(cues.get("Raid1Name")) != null)
             return 1;
@@ -5622,27 +5619,35 @@ public class MainThread implements Runnable {
      * <p>
      * Returns false in case it failed.
      */
-    private boolean setRaidType(int newType, int currentType) {
+    private boolean changeRaid(int newType, int currentType) {
 //		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
-
-        if (currentType == 1) {
-            BHBot.logger.debug("Only R1 available, no need to change raids");
-            return true;
-        }
 
         MarvinSegment seg = detectCue(cues.get("RaidLevel"));
         if (seg == null) {
             // error!
-//			BHBot.logger.info("Error: Changing of raid type failed - raid selection button not detected.");
+			BHBot.logger.error("Error: Changing of raid type failed - raid selection button not detected.");
             return false;
         }
 
         Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
-        int move = newType - currentType;
+        int move = currentType - newType;
+        BHBot.logger.debug(move);
 
-        Point pos = center.moveBy(move * 26, 0);
-
-        clickInGame(pos.x, pos.y);
+        while (move != 0) { // move to the correct zone
+            if (move > 0) {
+                sleep(200);
+                center = center.moveBy(-26, 0);
+                clickInGame(center.x, center.y);
+                BHBot.logger.debug(move);
+                move--;
+            } else if (move < 0) {
+                sleep(200);
+                center = center.moveBy(26, 0);
+                clickInGame(center.x, center.y);
+                BHBot.logger.debug(move);
+                move++;
+            }
+        }
 
         return true;
     }
