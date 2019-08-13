@@ -98,7 +98,7 @@ public class MainThread implements Runnable {
     @SuppressWarnings("FieldCanBeLocal")
     private long BADGES_CHECK_INTERVAL = 10 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
-    private long BOUNTY_CHECK_INTERVAL = 6 * HOUR;
+    private long BOUNTY_CHECK_INTERVAL = HOUR;
     @SuppressWarnings("FieldCanBeLocal")
     private long BONUS_CHECK_INTERVAL = 10 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
