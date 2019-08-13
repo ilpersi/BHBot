@@ -103,6 +103,7 @@ public class MainThread implements Runnable {
     private long timeLastBountyCheck = 0; // when did we check for bounties the last time?
     private long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
     private long timeLastFishingBaitsCheck = 0; // when did we check for fishing baits the last time?
+    private long timeLastFishingCheck = 0; // when did we check for fishing last time?
     private long timeLastPOAlive = Misc.getTime(); // when did we send the last PO Notification?
     /**
      * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale.
@@ -2833,6 +2834,18 @@ public class MainThread implements Runnable {
                         continue;
                     }
 
+                    //fishing
+                    if ("f".equals(currentActivity)) {
+                        timeLastFishingCheck = Misc.getTime();
+
+                        if (BHBot.scheduler.doFishingImmediately) {
+                            BHBot.scheduler.doFishingImmediately = false; //disable collectImmediately again if its been activated
+                        }
+
+                        handleFishing();
+                        continue;
+                    }
+
 
                 } // main screen processing
             } catch (Exception e) {
@@ -2923,6 +2936,8 @@ public class MainThread implements Runnable {
             return "b";
         } else if (BHBot.scheduler.doFishingBaitsImmediately) {
             return "a";
+        } else if (BHBot.scheduler.doFishingImmediately) {
+            return "f";
         }
 
         if (BHBot.settings.activitiesEnabled.isEmpty()) {
@@ -2967,6 +2982,8 @@ public class MainThread implements Runnable {
                     return "b";
                 } else if ("a".equals(activity) && ((Misc.getTime() - timeLastFishingBaitsCheck) > (long) DAY)) {
                     return "a";
+                } else if ("f".equals(activity) && ((Misc.getTime() - timeLastFishingCheck) > (long) DAY)) {
+                    return "f";
                 }
             }
 
@@ -7125,14 +7142,6 @@ public class MainThread implements Runnable {
             int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 seconds per bait used, plus 10 seconds buffer
 
             readScreen();
-
-            seg = detectCue(cues.get("Fishing"), SECOND * 5);
-            if (seg != null) {
-                clickOnSeg(seg);
-                sleep(SECOND * 2); // we allow some seconds as maybe the reward popup is sliding down
-            }
-
-            detectCharacterDialogAndHandleIt();
 
             seg = detectCue(cues.get("Play"), SECOND * 5);
             if (seg != null) {
