@@ -3523,12 +3523,12 @@ public class MainThread implements Runnable {
          */
         if (state == State.PVP) {
             readScreen();
-            seg = detectCue(cues.get("VictoryPopup"));
+            seg = detectCue(cues.get("Victory"));
             if (seg != null) {
 
                 handleVictory();
 
-                closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
+                closePopupSecurely(cues.get("Victory"), cues.get("CloseGreen")); // ignore failure
 
                 // close the PVP window, in case it is open:
                 readScreen(2 * SECOND);
@@ -4500,7 +4500,7 @@ public class MainThread implements Runnable {
             return;
         }
 
-        seg = detectCue(cues.get("VictoryPopup"), 500);
+        seg = detectCue(cues.get("Victory"), 500);
         if (seg != null) {
             BHBot.logger.autorevive("Victory popup, skipping revive check");
             seg = detectCue(cues.get("AutoOff"), SECOND);
