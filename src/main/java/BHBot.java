@@ -255,7 +255,7 @@ public class BHBot {
                     case "fishing":
                         // force fishing
                         logger.info("Forcing Fishing...");
-                        scheduler.doFishingImmediately = true;
+                        scheduler.doFishingBaitsImmediately = true;
                         break;
                     default:
                         logger.warn("Unknown dungeon : '" + params[1] + "'");

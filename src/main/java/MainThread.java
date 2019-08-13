@@ -2832,12 +2832,12 @@ public class MainThread implements Runnable {
                         readScreen(SECOND * 2);
                     }
 
-                    //fishing
-                    if ("f".equals(currentActivity)) {
+                    //fishing baits
+                    if ("a".equals(currentActivity)) {
                         timeLastFishingCheck = Misc.getTime();
 
-                        if (BHBot.scheduler.doFishingImmediately) {
-                            BHBot.scheduler.doFishingImmediately = false; //disable collectImmediately again if its been activated
+                        if (BHBot.scheduler.doFishingBaitsImmediately) {
+                            BHBot.scheduler.doFishingBaitsImmediately = false; //disable collectImmediately again if its been activated
                         }
 
                         handleFishingBaits();
@@ -2932,8 +2932,8 @@ public class MainThread implements Runnable {
             return "e";
         } else if (BHBot.scheduler.collectBountiesImmediately) {
             return "b";
-        } else if (BHBot.scheduler.doFishingImmediately) {
-            return "f";
+        } else if (BHBot.scheduler.doFishingBaitsImmediately) {
+            return "a";
         }
 
         if (BHBot.settings.activitiesEnabled.isEmpty()) {
@@ -2976,8 +2976,8 @@ public class MainThread implements Runnable {
                     return "e";
                 } else if ("b".equals(activity) && ((Misc.getTime() - timeLastBountyCheck) > BOUNTY_CHECK_INTERVAL)) {
                     return "b";
-                } else if ("f".equals(activity) && ((Misc.getTime() - timeLastFishingCheck) > FISHING_CHECK_INTERVAL)) {
-                    return "f";
+                } else if ("a".equals(activity) && ((Misc.getTime() - timeLastFishingCheck) > FISHING_CHECK_INTERVAL)) {
+                    return "a";
                 }
             }
 

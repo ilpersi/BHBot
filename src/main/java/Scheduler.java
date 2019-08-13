@@ -40,7 +40,7 @@ class Scheduler {
     /**
      * Instructs bot to fish immediately (after which this flag will get reset to 'false'
      */
-    boolean doFishingImmediately;
+    boolean doFishingBaitsImmediately;
     /**
      * Set it to true when user logs in and we must wait for him to finish interacting.
      */
