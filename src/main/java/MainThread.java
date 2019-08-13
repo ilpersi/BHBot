@@ -1491,18 +1491,18 @@ public class MainThread implements Runnable {
                             readScreen(SECOND);
 
                             int selectedRaid = readSelectedRaid();
-							BHBot.logger.debug("Raid selected is R" + selectedRaid);
+                            BHBot.logger.debug("Raid selected is R" + selectedRaid);
 
                             if (selectedRaid == 0) { // an error!
                                 BHBot.logger.error("Error: detected selected raid is 0, which is an error. Restarting...");
-								restart();
+                                restart();
                                 continue;
                             }
 
                             if (selectedRaid != desiredRaid) {
                                 // we need to change the raid type!
                                 BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaid);
-                                if (!changeRaid(desiredRaid)){
+                                if (!changeRaid(desiredRaid)) {
                                     BHBot.logger.error("Impossible to select R" + desiredRaid + "! Restarting...");
                                     restart();
                                     continue;
@@ -1512,7 +1512,7 @@ public class MainThread implements Runnable {
 
                             seg = detectCue(cues.get("RaidSummon"), 2 * SECOND);
                             clickOnSeg(seg);
-                            readScreen(2*SECOND);
+                            readScreen(2 * SECOND);
 
                             // dismiss character dialog if it pops up:
                             readScreen();
@@ -1524,7 +1524,7 @@ public class MainThread implements Runnable {
                             seg = detectCue(cues.get("Accept"), 5 * SECOND);
                             clickOnSeg(seg);
                             readScreen(2 * SECOND);
-                            
+
                             if (handleTeamMalformedWarning()) {
                                 BHBot.logger.error("Team incomplete, doing emergency restart..");
                                 restart();
@@ -1585,7 +1585,7 @@ public class MainThread implements Runnable {
                             continue;
                         }
 
-                        if (( (!BHBot.scheduler.doTrialsImmediately && !BHBot.scheduler.doGauntletImmediately) && (tokens <= BHBot.settings.minTokens)) || (tokens < (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet))) {
+                        if (((!BHBot.scheduler.doTrialsImmediately && !BHBot.scheduler.doGauntletImmediately) && (tokens <= BHBot.settings.minTokens)) || (tokens < (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet))) {
                             readScreen();
                             seg = detectCue(cues.get("X"), SECOND);
                             clickOnSeg(seg);
@@ -1887,7 +1887,7 @@ public class MainThread implements Runnable {
                                     restart();
                                 }
                             } else {
-                                if(handleTeamMalformedWarning()){
+                                if (handleTeamMalformedWarning()) {
                                     restart();
                                     continue;
                                 }
@@ -1901,7 +1901,7 @@ public class MainThread implements Runnable {
                             autoShrined = false;
                             autoBossRuned = false;
 
-                            BHBot.logger.info("Dungeon <" + dungeon + "> " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic")  + " initiated!");
+                            BHBot.logger.info("Dungeon <" + dungeon + "> " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic") + " initiated!");
                         }
                         continue;
                     } // energy
@@ -5562,7 +5562,7 @@ public class MainThread implements Runnable {
         if (seg != null) result += 1;
 
         //Only R1 fix
-        if (result == 0 && detectCue(cues.get("Raid1Name")) != null) result  += 1;
+        if (result == 0 && detectCue(cues.get("Raid1Name")) != null) result += 1;
 
         return result;
     }
@@ -7125,45 +7125,57 @@ public class MainThread implements Runnable {
 
     private void handleFishing() {
         MarvinSegment seg;
-        int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 seconds per bait used, plus 10 seconds buffer
-
-        readScreen();
 
         seg = detectCue(cues.get("Fishing"), SECOND * 5);
         if (seg != null) {
             clickOnSeg(seg);
-            sleep(SECOND * 2); // we allow some seconds as maybe the reward popup is sliding down
-        }
+            sleep(SECOND); // we allow some seconds as maybe the reward popup is sliding down
 
-        detectCharacterDialogAndHandleIt();
+            detectCharacterDialogAndHandleIt();
 
-        seg = detectCue(cues.get("Play"), SECOND * 5);
-        if (seg != null) {
-            clickOnSeg(seg);
-        }
+            int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 seconds per bait used, plus 10 seconds buffer
 
-        seg = detectCue(cues.get("Start"), SECOND * 20);
-        if (seg != null) {
-            try {
-                BHBot.logger.info("Pausing for " + fishingTime + " seconds to fish");
-                BHBot.scheduler.pause();
+            readScreen();
 
-                Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fisherCLI.exe\" " + BHBot.settings.baitAmount);
-                if (!fisher.waitFor(fishingTime, TimeUnit.SECONDS)) { //run and wait for fishingTime seconds
-                    BHBot.scheduler.resume();
-                }
-                Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisherCLI.exe\"\"");
-                fisherClose.waitFor(1, TimeUnit.SECONDS);
-
-            } catch (IOException | InterruptedException ex) {
-                BHBot.logger.error("Can't start fisher.exe");
+            seg = detectCue(cues.get("Fishing"), SECOND * 5);
+            if (seg != null) {
+                clickOnSeg(seg);
+                sleep(SECOND * 2); // we allow some seconds as maybe the reward popup is sliding down
             }
 
-        } else BHBot.logger.info("start not found");
+            detectCharacterDialogAndHandleIt();
 
-        if (!closeFishingSafely()) {
-            BHBot.logger.error("Error closing fishing, restarting..");
-            restart();
+            seg = detectCue(cues.get("Play"), SECOND * 5);
+            if (seg != null) {
+                clickOnSeg(seg);
+            }
+
+            seg = detectCue(cues.get("Start"), SECOND * 20);
+            if (seg != null) {
+                try {
+                    BHBot.logger.info("Pausing for " + fishingTime + " seconds to fish");
+                    BHBot.scheduler.pause();
+
+                    Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fisherCLI.exe\" " + BHBot.settings.baitAmount);
+                    if (!fisher.waitFor(fishingTime, TimeUnit.SECONDS)) { //run and wait for fishingTime seconds
+                        BHBot.scheduler.resume();
+                    }
+                    Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisherCLI.exe\"\"");
+                    fisherClose.waitFor(1, TimeUnit.SECONDS);
+
+                } catch (IOException | InterruptedException ex) {
+                    BHBot.logger.error("Can't start fisher.exe");
+                }
+
+            } else BHBot.logger.info("start not found");
+
+            if (!closeFishingSafely()) {
+                BHBot.logger.error("Error closing fishing, restarting..");
+                restart();
+            }
+
+            readScreen(SECOND);
+            enterGuildHall();
         }
 
     }
