@@ -102,7 +102,7 @@ public class MainThread implements Runnable {
     private long timeLastGVGBadgesCheck = 0; // when did we check for badges the last time?
     private long timeLastBountyCheck = 0; // when did we check for bounties the last time?
     private long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
-    private long timeLastFishingCheck = 0; // when did we check for fishing baits the last time?
+    private long timeLastFishingBaitsCheck = 0; // when did we check for fishing baits the last time?
     private long timeLastPOAlive = Misc.getTime(); // when did we send the last PO Notification?
     /**
      * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale.
@@ -2823,7 +2823,7 @@ public class MainThread implements Runnable {
 
                     //fishing baits
                     if ("a".equals(currentActivity)) {
-                        timeLastFishingCheck = Misc.getTime();
+                        timeLastFishingBaitsCheck = Misc.getTime();
 
                         if (BHBot.scheduler.doFishingBaitsImmediately) {
                             BHBot.scheduler.doFishingBaitsImmediately = false; //disable collectImmediately again if its been activated
@@ -2965,7 +2965,7 @@ public class MainThread implements Runnable {
                     return "e";
                 } else if ("b".equals(activity) && ((Misc.getTime() - timeLastBountyCheck) > (long) HOUR)) {
                     return "b";
-                } else if ("a".equals(activity) && ((Misc.getTime() - timeLastFishingCheck) > (long) DAY)) {
+                } else if ("a".equals(activity) && ((Misc.getTime() - timeLastFishingBaitsCheck) > (long) DAY)) {
                     return "a";
                 }
             }
