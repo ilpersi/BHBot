@@ -6776,28 +6776,6 @@ public class MainThread implements Runnable {
                 }
             }
 
-            boolean botPresent = new File("fisherCLI.exe").exists();
-
-            if (botPresent) {
-                BHBot.logger.debug("Handling fishing...");
-                handleFishing();
-                sleep(SECOND);
-                enterGuildHall();
-                sleep(SECOND);
-            } else {
-                BHBot.logger.info("Fishing active but no fisherCLI.exe found, skipping..");
-//                seg = detectCue(cues.get("X"), 5 * SECOND);
-//                if (seg != null) {
-//                    clickOnSeg(seg);
-//                    sleep(SECOND);
-//                    readScreen();
-//                } else {
-//                    BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
-//                    saveGameScreen("fishing-error-closing");
-//                    restart();
-//                }
-            }
-
         } else {
             BHBot.logger.warn("Impossible to find the fishing button");
         }
