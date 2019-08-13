@@ -1060,7 +1060,6 @@ public class MainThread implements Runnable {
 //				  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime)));
 //		BHBot.logger.info(runtime);
 
-        BHBot.logger.info(BHBot.settings.activitiesEnabled);
 
         //End debugging section
 
@@ -2689,7 +2688,7 @@ public class MainThread implements Runnable {
                                                 BHBot.scheduler.doDungeonImmediately = true;
                                             } else {
                                                 BHBot.logger.info("Lobby timed out, returning to main screen.");
-                                                timeLastEnergyCheck -= 540; // remove 9 minutes from the check time so we check again in a minute
+                                                timeLastEnergyCheck -= 9 * MINUTE; // remove 9 minutes from the check time so we check again in a minute
                                                 closeWorldBoss();
                                             }
                                         }
