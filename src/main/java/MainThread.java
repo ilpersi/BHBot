@@ -87,22 +87,10 @@ public class MainThread implements Runnable {
     private State state; // at which stage of the game/menu are we currently?
     private BufferedImage img; // latest screen capture
 
-    @SuppressWarnings("FieldCanBeLocal")
     private long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
-    private long SHARDS_CHECK_INTERVAL = 15 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
     private long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
     private long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
     private long BADGES_CHECK_INTERVAL = 10 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
-    private long BOUNTY_CHECK_INTERVAL = HOUR;
-    @SuppressWarnings("FieldCanBeLocal")
-    private long BONUS_CHECK_INTERVAL = 10 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
-    private long FISHING_CHECK_INTERVAL = DAY;
 
     private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
     private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
@@ -1334,6 +1322,7 @@ public class MainThread implements Runnable {
                     }
 
                     // check for bonuses:
+                    long BONUS_CHECK_INTERVAL = 10 * MINUTE;
                     if (BHBot.settings.autoConsume && (Misc.getTime() - timeLastBonusCheck > BONUS_CHECK_INTERVAL)) {
                         timeLastBonusCheck = Misc.getTime();
                         handleConsumables();
@@ -2956,7 +2945,7 @@ public class MainThread implements Runnable {
                     activity = activitysIterator.next();
                 }
 
-                if (activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL)) {
+                if (activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > (long)(15 * MINUTE))) {
                     return "r";
                 } else if ("d".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL)) {
                     return "d";
@@ -2974,9 +2963,9 @@ public class MainThread implements Runnable {
                     return "v";
                 } else if ("e".equals(activity) && ((Misc.getTime() - timeLastExpBadgesCheck) > BADGES_CHECK_INTERVAL)) {
                     return "e";
-                } else if ("b".equals(activity) && ((Misc.getTime() - timeLastBountyCheck) > BOUNTY_CHECK_INTERVAL)) {
+                } else if ("b".equals(activity) && ((Misc.getTime() - timeLastBountyCheck) > (long) HOUR)) {
                     return "b";
-                } else if ("a".equals(activity) && ((Misc.getTime() - timeLastFishingCheck) > FISHING_CHECK_INTERVAL)) {
+                } else if ("a".equals(activity) && ((Misc.getTime() - timeLastFishingCheck) > (long) DAY)) {
                     return "a";
                 }
             }
