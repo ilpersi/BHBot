@@ -50,4 +50,8 @@ public class MarvinSegment {
     public String toString() {
         return "{x1:" + x1 + ", x2:" + x2 + ", y1:" + y1 + ", y2:" + y2 + ", width:" + width + ", height:" + height + ", area:" + area + "}";
     }
+
+    int getX1(){
+        return x1;
+    }
 }

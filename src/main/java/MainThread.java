@@ -40,6 +40,8 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.Comparator.comparing;
+
 public class MainThread implements Runnable {
     static final int SECOND = 1000;
     static final int MINUTE = 60 * SECOND;
@@ -1480,8 +1482,13 @@ public class MainThread implements Runnable {
                             int difficulty = Integer.parseInt(raid.split(" ")[1]);
                             int desiredRaid = Integer.parseInt(raid.split(" ")[0]);
                             int raidUnlocked = readUnlockedRaidTier();
+                            BHBot.logger.debug("Detected: R" + raidUnlocked + " unlocked");
 
-							BHBot.logger.debug("Detected: R" + raidUnlocked + " unlocked");
+                            if (raidUnlocked < desiredRaid) {
+                                BHBot.logger.warn("Raid selected in settings (R" + desiredRaid + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
+                                desiredRaid = raidUnlocked;
+                            }
+
                             BHBot.logger.info("Attempting R" + desiredRaid + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
 
                             readScreen(SECOND);
@@ -1491,22 +1498,19 @@ public class MainThread implements Runnable {
 
                             if (selectedRaid == 0) { // an error!
                                 BHBot.logger.error("Error: detected selected raid is 0, which is an error. Restarting...");
-//								restart();
+								restart();
                                 continue;
                             }
 
                             if (selectedRaid != desiredRaid) {
-                                if (raidUnlocked < desiredRaid) {
-                                    BHBot.logger.warn("Raid selected in settings (R" + desiredRaid + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
-                                    if (raidUnlocked != 1) {
-                                        changeRaid(desiredRaid, raidUnlocked);
-                                    }
-                                } else {
-                                    // we need to change the raid type!
-                                    BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaid);
-                                    changeRaid(desiredRaid, selectedRaid);
-                                    readScreen(2 * SECOND);
+                                // we need to change the raid type!
+                                BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaid);
+                                if (!changeRaid(desiredRaid)){
+                                    BHBot.logger.error("Impossible to select R" + desiredRaid + "! Restarting...");
+                                    restart();
+                                    continue;
                                 }
+                                readScreen(2 * SECOND);
                             }
 
                             seg = detectCue(cues.get("RaidSummon"), 2 * SECOND);
@@ -5625,35 +5629,20 @@ public class MainThread implements Runnable {
      * <p>
      * Returns false in case it failed.
      */
-    private boolean changeRaid(int newType, int currentType) {
-//		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
+    private boolean changeRaid(int desiredRaid) {
 
-        MarvinSegment seg = detectCue(cues.get("RaidLevel"));
-        if (seg == null) {
-            // error!
-			BHBot.logger.error("Error: Changing of raid type failed - raid selection button not detected.");
-            return false;
-        }
+        // we get all the raid selection cues
+        List<MarvinSegment> list = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
+        if (list.size() < 1) return false;
 
-        Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
-        int move = currentType - newType;
-        BHBot.logger.debug(move);
+        // we also consider the already selected one to be sure to get all the available cues
+        list.add(detectCue(cues.get("RaidLevel")));
 
-        while (move != 0) { // move to the correct zone
-            if (move > 0) {
-                sleep(200);
-                center = center.moveBy(-26, 0);
-                clickInGame(center.x, center.y);
-                BHBot.logger.debug(move);
-                move--;
-            } else if (move < 0) {
-                sleep(200);
-                center = center.moveBy(26, 0);
-                clickInGame(center.x, center.y);
-                BHBot.logger.debug(move);
-                move++;
-            }
-        }
+        // we sort them by x1
+        list.sort(comparing(MarvinSegment::getX1));
+
+        // we click on the desired cue
+        clickOnSeg(list.get(desiredRaid - 1));
 
         return true;
     }
