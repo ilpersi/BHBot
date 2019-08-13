@@ -67,7 +67,6 @@ public class MainThread implements Runnable {
     private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
     boolean finished = false;
-    private boolean idleMode = false;
     private boolean[] revived = {false, false, false, false, false};
     private int potionsUsed = 0;
     private boolean startTimeCheck = false;
@@ -1316,13 +1315,11 @@ public class MainThread implements Runnable {
                     state = State.Main;
 
                     //Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
-                    if (!idleMode) {
-                        seg = detectCue(cues.get("AutoOn")); //if we're in Main state, with auto button visible, then we need to change state
-                        if (seg != null) {
-                            state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
-                            BHBot.logger.warn("Possible dungeon crash, activating failsafe");
-                            continue;
-                        }
+                    seg = detectCue(cues.get("AutoOn")); //if we're in Main state, with auto button visible, then we need to change state
+                    if (seg != null) {
+                        state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
+                        BHBot.logger.warn("Possible dungeon crash, activating failsafe");
+                        continue;
                     }
 
                     // check for pushover alive notifications!
@@ -2060,7 +2057,7 @@ public class MainThread implements Runnable {
                         if (badgeEvent == BadgeEvent.Invasion) currentActivity = "i";
                         if (badgeEvent == BadgeEvent.GVG) currentActivity = "v";
 
-                        if (currentActivity == null || !currentActivity.equals(checkedActivity)) { //if checked activity and chosen activity don't match we skip
+                        if (!currentActivity.equals(checkedActivity)) { //if checked activity and chosen activity don't match we skip
                             continue;
                         }
 
