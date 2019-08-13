@@ -219,10 +219,13 @@ public class BHBot {
                         scheduler.doDungeonImmediately = true;
                         break;
                     case "gauntlet":
+                        logger.info("Forcing gauntlet...");
+                        scheduler.doGauntletImmediately = true;
+                        break;
                     case "trials":
                         // force 1 run of gauntlet/trials (regardless of tokens)
-                        logger.info("Forcing gauntlet/trials...");
-                        scheduler.doTrialsOrGauntletImmediately = true;
+                        logger.info("Forcing trials...");
+                        scheduler.doTrialsImmediately = true;
                         break;
                     case "pvp":
                         // force pvp
@@ -243,6 +246,16 @@ public class BHBot {
                         // force invasion
                         logger.info("Forcing World Boss...");
                         scheduler.doWorldBossImmediately = true;
+                        break;
+                    case "bounties":
+                        // force bounties
+                        logger.info("Forcing Bounty collection...");
+                        scheduler.collectBountiesImmediately = true;
+                        break;
+                    case "fishing":
+                        // force fishing
+                        logger.info("Forcing Fishing...");
+                        scheduler.doFishingImmediately = true;
                         break;
                     default:
                         logger.warn("Unknown dungeon : '" + params[1] + "'");
@@ -307,6 +320,11 @@ public class BHBot {
                 }
                 break;
             case "print":
+                if (params.length < 2) {
+                    BHBot.logger.error("Missing parameters for print command: print familiars|version");
+                    break;
+                }
+
                 switch (params[1]) {
                     case "familiars":
                     case "familiar":
@@ -438,9 +456,6 @@ public class BHBot {
                         break;
                     case "runes":
                         main.detectEquippedMinorRunes(true, true);
-                        break;
-                    case "fishing":
-                        main.handleFishingBaits();
                         break;
                     default:
                         break;

@@ -46,6 +46,8 @@ import static com.sun.jna.platform.win32.WinGDI.DIB_RGB_COLORS;
 import static com.sun.jna.platform.win32.WinUser.SW_RESTORE;
 import static com.sun.jna.platform.win32.WinUser.WS_ICONIC;
 
+import static java.util.Comparator.comparing;
+
 public class MainThread implements Runnable {
     static final int SECOND = 1000;
     static final int MINUTE = 60 * SECOND;
@@ -68,13 +70,8 @@ public class MainThread implements Runnable {
     private final long MAX_IDLE_TIME = 15 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
     private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
+
     boolean finished = false;
-    /**
-     * Time when we got last ad offered. If it exceeds 15 minutes, then we should call restart() because ads are not getting through!
-     */
-    long timeLastAdOffer;
-    @SuppressWarnings("FieldCanBeLocal")
-    private boolean idleMode = false;
     private boolean[] revived = {false, false, false, false, false};
     private int potionsUsed = 0;
 
@@ -102,6 +99,7 @@ public class MainThread implements Runnable {
 	private static WebElement game;*/
     private State state; // at which stage of the game/menu are we currently?
     private BufferedImage img; // latest screen capture
+
     @SuppressWarnings("FieldCanBeLocal")
     private long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
@@ -113,11 +111,12 @@ public class MainThread implements Runnable {
     @SuppressWarnings("FieldCanBeLocal")
     private long BADGES_CHECK_INTERVAL = 10 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
-    private long BOUNTY_CHECK_INTERVAL = HOUR;
+    private long BOUNTY_CHECK_INTERVAL = 6 * HOUR;
     @SuppressWarnings("FieldCanBeLocal")
     private long BONUS_CHECK_INTERVAL = 10 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
     private long FISHING_CHECK_INTERVAL = DAY;
+
     private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
     private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
     private long timeLastTicketsCheck = 0; // when did we check for Tickets the last time?
@@ -922,6 +921,7 @@ public class MainThread implements Runnable {
 //				  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime)));
 //		BHBot.logger.info(runtime);
 
+
         //End debugging section
 
         if (BHBot.settings.idleMode) { //skip startup checks if we are in idle mode
@@ -936,8 +936,6 @@ public class MainThread implements Runnable {
         }
         state = State.Loading;
         BHBot.scheduler.resetIdleTime();
-//		numAdOffers = 0; // reset ad offers counter
-        timeLastAdOffer = Misc.getTime();
         BHBot.scheduler.resume(); // in case it was paused
         numFailedRestarts = 0; // must be last line in this method!
     }
@@ -1157,13 +1155,11 @@ public class MainThread implements Runnable {
                     state = State.Main;
 
                     //Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
-                    if (!idleMode) {
-                        seg = detectCue(cues.get("AutoOn")); //if we're in Main state, with auto button visible, then we need to change state
-                        if (seg != null) {
-                            state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
-                            BHBot.logger.warn("Possible dungeon crash, activating failsafe");
-                            continue;
-                        }
+                    seg = detectCue(cues.get("AutoOn")); //if we're in Main state, with auto button visible, then we need to change state
+                    if (seg != null) {
+                        state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
+                        BHBot.logger.warn("Possible dungeon crash, activating failsafe");
+                        continue;
                     }
 
                     // check for pushover alive notifications!
@@ -1182,14 +1178,6 @@ public class MainThread implements Runnable {
                         timeLastBonusCheck = Misc.getTime();
                         handleConsumables();
                     }
-
-                    // collect any fishing bait
-                    if (BHBot.settings.collectFishingBaits && ((Misc.getTime() - timeLastFishingCheck > FISHING_CHECK_INTERVAL) || timeLastFishingCheck == 0)) {
-                        timeLastFishingCheck = Misc.getTime();
-                        handleFishingBaits();
-                        continue;
-                    }
-
 
                     //comment for faster testing
 					oneTimeshrineCheck = true;
@@ -1229,7 +1217,7 @@ public class MainThread implements Runnable {
 
 
                     // check for shards:
-                    if (BHBot.scheduler.doRaidImmediately || ("r".equals(currentActivity))) {
+                    if ("r".equals(currentActivity)) {
                         timeLastShardsCheck = Misc.getTime();
 
                         readScreen();
@@ -1329,38 +1317,37 @@ public class MainThread implements Runnable {
                             }
 
                             int difficulty = Integer.parseInt(raid.split(" ")[1]);
-                            int raidType = Integer.parseInt(raid.split(" ")[0]);
+                            int desiredRaid = Integer.parseInt(raid.split(" ")[0]);
                             int raidUnlocked = readUnlockedRaidTier();
-//							BHBot.logger.info("Detected: R" + Integer.toString(raidUnlocked) + " unlocked");
-//							int raidUnlocked = BHBot.settings.currentRaidTier;
-                            BHBot.logger.info("Attempting R" + raidType + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
+                            BHBot.logger.debug("Detected: R" + raidUnlocked + " unlocked");
+
+                            if (raidUnlocked < desiredRaid) {
+                                BHBot.logger.warn("Raid selected in settings (R" + desiredRaid + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
+                                desiredRaid = raidUnlocked;
+                            }
+
+                            BHBot.logger.info("Attempting R" + desiredRaid + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
 
                             readScreen(SECOND);
 
-                            int currentType = readSelectedRaidTier();
-                            String currentRaid = Integer.toString(currentType);
-//							BHBot.logger.info("Raid selected is R" + currentRaid);
+                            int selectedRaid = readSelectedRaid();
+							BHBot.logger.debug("Raid selected is R" + selectedRaid);
 
-                            if (currentType == 0) { // an error!
+                            if (selectedRaid == 0) { // an error!
                                 BHBot.logger.error("Error: detected selected raid is 0, which is an error. Restarting...");
-//								restart();
+								restart();
                                 continue;
                             }
 
-                            if (currentType != raidType) {
-                                if (raidUnlocked < raidType) {
-                                    BHBot.logger.warn("Raid selected in settings (R" + raidType + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
-                                    if (!setRaidType(raidType, raidUnlocked)) {
-                                        BHBot.logger.error("Impossible to set the raid type!");
-                                        continue;
-                                    }
-                                    readScreen(2 * SECOND);
-                                } else {
-                                    // we need to change the raid type!
-                                    BHBot.logger.info("Changing from R" + currentRaid + " to R" + raidType);
-                                    setRaidType(raidType, currentType);
-                                    readScreen(2 * SECOND);
+                            if (selectedRaid != desiredRaid) {
+                                // we need to change the raid type!
+                                BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaid);
+                                if (!changeRaid(desiredRaid)){
+                                    BHBot.logger.error("Impossible to select R" + desiredRaid + "! Restarting...");
+                                    restart();
+                                    continue;
                                 }
+                                readScreen(2 * SECOND);
                             }
 
                             seg = detectCue(cues.get("RaidSummon"), 2 * SECOND);
@@ -1393,7 +1380,8 @@ public class MainThread implements Runnable {
                     } // shards
 
                     // check for tokens (trials and gauntlet):
-                    if (BHBot.scheduler.doTrialsOrGauntletImmediately || ("t".equals(currentActivity)) || ("g".equals(currentActivity))) {
+                    if (BHBot.scheduler.doTrialsImmediately || BHBot.scheduler.doGauntletImmediately ||
+                            ("t".equals(currentActivity)) || ("g".equals(currentActivity))) {
                         if ("t".equals(currentActivity)) timeLastTrialsTokensCheck = Misc.getTime();
                         if ("g".equals(currentActivity)) timeLastGauntletTokensCheck = Misc.getTime();
 
@@ -1437,7 +1425,7 @@ public class MainThread implements Runnable {
                             continue;
                         }
 
-                        if ((!BHBot.scheduler.doTrialsOrGauntletImmediately && (tokens <= BHBot.settings.minTokens)) || (tokens < (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet))) {
+                        if (( (!BHBot.scheduler.doTrialsImmediately && !BHBot.scheduler.doGauntletImmediately) && (tokens <= BHBot.settings.minTokens)) || (tokens < (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet))) {
                             readScreen();
                             seg = detectCue(cues.get("X"), SECOND);
                             clickOnSeg(seg);
@@ -1450,15 +1438,21 @@ public class MainThread implements Runnable {
                                 TOKENS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
                             } else TOKENS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 token check every 10 minutes
 
-                            if (BHBot.scheduler.doTrialsOrGauntletImmediately)
-                                BHBot.scheduler.doTrialsOrGauntletImmediately = false; // if we don't have resources to run we need to disable force it
+                            if (BHBot.scheduler.doTrialsImmediately) {
+                                BHBot.scheduler.doTrialsImmediately = false; // if we don't have resources to run we need to disable force it
+                            } else if (BHBot.scheduler.doGauntletImmediately) {
+                                BHBot.scheduler.doGauntletImmediately = false;
+                            }
 
                             continue;
                         } else {
                             // do the trials/gauntlet!
 
-                            if (BHBot.scheduler.doTrialsOrGauntletImmediately)
-                                BHBot.scheduler.doTrialsOrGauntletImmediately = false; // reset it
+                            if (BHBot.scheduler.doTrialsImmediately) {
+                                BHBot.scheduler.doTrialsImmediately = false; // reset it
+                            } else if (BHBot.scheduler.doGauntletImmediately) {
+                                BHBot.scheduler.doGauntletImmediately = false;
+                            }
 
                             // One time check for Autoshrine
                             if (trials) {
@@ -1577,7 +1571,7 @@ public class MainThread implements Runnable {
                     } // tokens (trials and gauntlet)
 
                     // check for energy:
-                    if (BHBot.scheduler.doDungeonImmediately || ("d".equals(currentActivity))) {
+                    if ("d".equals(currentActivity)) {
                         timeLastEnergyCheck = Misc.getTime();
 
                         readScreen();
@@ -1599,8 +1593,8 @@ public class MainThread implements Runnable {
                             //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
                             int energyDifference = BHBot.settings.minEnergyPercentage - energy; //difference between needed and current resource
                             if (energyDifference > 1) {
-                                int increase = (energyDifference - 1) * 4;
-                                ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
+                                int increase = (energyDifference - 1) * 5;
+                                ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 5 minutes to the check interval for each energy % needed above 1
                             } else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
 
                             continue;
@@ -1747,7 +1741,7 @@ public class MainThread implements Runnable {
                     } // energy
 
                     // check for Tickets (PvP):
-                    if (BHBot.scheduler.doPVPImmediately || ("p".equals(currentActivity))) {
+                    if ("p".equals(currentActivity)) {
                         timeLastTicketsCheck = Misc.getTime();
 
                         readScreen();
@@ -1859,8 +1853,7 @@ public class MainThread implements Runnable {
                     } // PvP
 
                     // check for badges (for GVG/Invasion/Expedition):
-                    if (BHBot.scheduler.doGVGImmediately || BHBot.scheduler.doInvasionImmediately || BHBot.scheduler.doExpeditionImmediately
-                            || (("v".equals(currentActivity)) || ("i".equals(currentActivity)) || ("e".equals(currentActivity)))) {
+                    if (("v".equals(currentActivity)) || ("i".equals(currentActivity)) || ("e".equals(currentActivity))) {
 
                         String checkedActivity = currentActivity;
 
@@ -1898,7 +1891,7 @@ public class MainThread implements Runnable {
                         if (badgeEvent == BadgeEvent.Invasion) currentActivity = "i";
                         if (badgeEvent == BadgeEvent.GVG) currentActivity = "v";
 
-                        if (currentActivity == null || !currentActivity.equals(checkedActivity)) { //if checked activity and chosen activity don't match we skip
+                        if (!currentActivity.equals(checkedActivity)) { //if checked activity and chosen activity don't match we skip
                             continue;
                         }
 
@@ -2331,7 +2324,7 @@ public class MainThread implements Runnable {
                     } // badges
 
                     // Check worldBoss:
-                    if (BHBot.scheduler.doWorldBossImmediately || ("w".equals(currentActivity))) {
+                    if ("w".equals(currentActivity)) {
                         timeLastEnergyCheck = Misc.getTime();
                         int energy = getEnergy();
                         globalEnergy = energy;
@@ -2345,17 +2338,6 @@ public class MainThread implements Runnable {
 
                             continue;
                         }
-
-                        // if (BHBot.settings.countActivities) {
-                        // 	int worldBossCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]);
-                        // 		if (worldBossCounter >= 10) {
-                        // 		BHBot.logger.warn("World Boss limit met (" + worldBossCounter + "), skipping.");
-                        // 		if (BHBot.scheduler.doDungeonImmediately)
-                        // 			BHBot.scheduler.doDungeonImmediately = false; // reset it
-                        // 		BHBot.scheduler.restoreIdleTime();
-                        // 		continue;
-                        // 		}
-                        // }
 
                         if (!BHBot.scheduler.doWorldBossImmediately && (energy <= BHBot.settings.minEnergyPercentage)) {
 
@@ -2630,14 +2612,15 @@ public class MainThread implements Runnable {
                     } // World Boss
 
                     //bounties activity
-                    if (BHBot.scheduler.collectBountiesImmediately || ("b".equals(currentActivity))) {
+                    if ("b".equals(currentActivity)) {
+                        timeLastBountyCheck = Misc.getTime();
 
                         if (BHBot.scheduler.collectBountiesImmediately) {
                             BHBot.scheduler.collectBountiesImmediately = false; //disable collectImmediately again if its been activated
                         }
                         BHBot.logger.debug("Attempting bounties collection.");
 
-                        clickInGame(130, 490);
+                        clickInGame(130, 440);
 
                         seg = detectCue(cues.get("Bounties"), SECOND * 5);
                         if (seg != null) {
@@ -2682,6 +2665,18 @@ public class MainThread implements Runnable {
                             restart();
                         }
                         readScreen(SECOND * 2);
+                    }
+
+                    //fishing
+                    if ("f".equals(currentActivity)) {
+                        timeLastFishingCheck = Misc.getTime();
+
+                        if (BHBot.scheduler.doFishingImmediately) {
+                            BHBot.scheduler.doFishingImmediately = false; //disable collectImmediately again if its been activated
+                        }
+
+                        handleFishingBaits();
+                        continue;
                     }
 
 
@@ -2733,6 +2728,30 @@ public class MainThread implements Runnable {
 
     private String activitySelector() {
 
+        if (BHBot.scheduler.doRaidImmediately) {
+            return "r";
+        } else if (BHBot.scheduler.doDungeonImmediately) {
+            return "d";
+        } else if (BHBot.scheduler.doWorldBossImmediately) {
+            return "w";
+        } else if (BHBot.scheduler.doTrialsImmediately) {
+            return "t";
+        } else if (BHBot.scheduler.doGauntletImmediately) {
+            return "g";
+        } else if (BHBot.scheduler.doPVPImmediately) {
+            return "p";
+        } else if (BHBot.scheduler.doInvasionImmediately) {
+            return "i";
+        } else if (BHBot.scheduler.doGVGImmediately) {
+            return "v";
+        } else if (BHBot.scheduler.doExpeditionImmediately) {
+            return "e";
+        } else if (BHBot.scheduler.collectBountiesImmediately) {
+            return "b";
+        } else if (BHBot.scheduler.doFishingImmediately) {
+            return "f";
+        }
+
         if (BHBot.settings.activitiesEnabled.isEmpty()) {
             return null;
         } else {
@@ -2773,6 +2792,8 @@ public class MainThread implements Runnable {
                     return "e";
                 } else if ("b".equals(activity) && ((Misc.getTime() - timeLastBountyCheck) > BOUNTY_CHECK_INTERVAL)) {
                     return "b";
+                } else if ("f".equals(activity) && ((Misc.getTime() - timeLastFishingCheck) > FISHING_CHECK_INTERVAL)) {
+                    return "f";
                 }
             }
 
@@ -5249,10 +5270,10 @@ public class MainThread implements Runnable {
 
         //check tier
         if ("o".equals(worldBossType) || "n".equals(worldBossType)) {
-            if (worldBossTier >= 1 && worldBossTier <= 9) {
+            if (worldBossTier >= 3 && worldBossTier <= 9) {
                 passed++;
             } else {
-                BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 1 and 9");
+                BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 3 and 9");
                 failed = true;
             }
         } else if ("m".equals(worldBossType) || "3".equals(worldBossType)) {
@@ -5351,6 +5372,9 @@ public class MainThread implements Runnable {
         MarvinSegment seg = detectCue(cues.get("RaidLevel"));
         if (seg != null) result += 1;
 
+        //Only R1 fix
+        if (result == 0 && detectCue(cues.get("Raid1Name")) != null) result  += 1;
+
         return result;
     }
 
@@ -5358,7 +5382,7 @@ public class MainThread implements Runnable {
      * Returns raid type, that is value between 1 and 4 (Corresponding to the raid tiers) that is currently selected in the raid window.
      * Note that the raid window must be open for this method to work (or else it will simply return 0).
      */
-    private int readSelectedRaidTier() {
+    private int readSelectedRaid() {
         readScreen(SECOND);
         if (detectCue(cues.get("Raid1Name")) != null)
             return 1;
@@ -5413,21 +5437,20 @@ public class MainThread implements Runnable {
      * <p>
      * Returns false in case it failed.
      */
-    private boolean setRaidType(int newType, int currentType) {
-//		final Color off = new Color(147, 147, 147); // color of center pixel of turned off button
+    private boolean changeRaid(int desiredRaid) {
 
-        MarvinSegment seg = detectCue(cues.get("RaidLevel"));
-        if (seg == null) {
-            // error!
-//			BHBot.logger.info("Error: Changing of raid type failed - raid selection button not detected.");
-            return false;
-        }
+        // we get all the raid selection cues
+        List<MarvinSegment> list = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
+        if (list.size() < 1) return false;
 
-        Point center = new Point(seg.x1 + 7, seg.y1 + 7); // center of the raid button
-        int move = newType - currentType;
-        int xDiff = 25 * move;
+        // we also consider the already selected one to be sure to get all the available cues
+        list.add(detectCue(cues.get("RaidLevel")));
 
-		clickInGame(center.x + xDiff, center.y);
+        // we sort them by x1
+        list.sort(comparing(MarvinSegment::getX1));
+
+        // we click on the desired cue
+        clickOnSeg(list.get(desiredRaid - 1));
 
         return true;
     }
@@ -6518,7 +6541,7 @@ public class MainThread implements Runnable {
     /**
      * Daily collection of fishing baits!
      */
-    void handleFishingBaits() {
+    private void handleFishingBaits() {
         MarvinSegment seg;
 
         seg = detectCue(cues.get("Fishing"), SECOND * 5);
@@ -6543,86 +6566,30 @@ public class MainThread implements Runnable {
                 }
             }
 
-            if (BHBot.settings.doFishing) {
+            boolean botPresent = new File("fisherCLI.exe").exists();
+
+            if (botPresent) {
                 BHBot.logger.debug("Handling fishing...");
                 handleFishing();
                 sleep(SECOND);
-                if (enterGuildHall()) { //the fishing island is a silly place, lets not stay there
-                    BHBot.logger.debug("Entered Guild Hall");
-                } else BHBot.logger.debug("Failed to enter guild hall");
+                enterGuildHall();
                 sleep(SECOND);
-            }
-
-            readScreen();
-            seg = detectCue(cues.get("X"), 5 * SECOND);
-            if (seg != null) {
-                clickOnSeg(seg);
-                sleep(SECOND);
-                readScreen();
             } else {
-                if (!BHBot.settings.doFishing) {
-                    BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
-                    saveGameScreen("fishing-error-closing");
-                    restart();
-                }
+                BHBot.logger.info("Fishing active but no fisherCLI.exe found, skipping..");
+//                seg = detectCue(cues.get("X"), 5 * SECOND);
+//                if (seg != null) {
+//                    clickOnSeg(seg);
+//                    sleep(SECOND);
+//                    readScreen();
+//                } else {
+//                    BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
+//                    saveGameScreen("fishing-error-closing");
+//                    restart();
+//                }
             }
 
         } else {
             BHBot.logger.warn("Impossible to find the fishing button");
-        }
-        readScreen(SECOND * 2);
-    }
-
-    /**
-     * Let's collect any finished bounty!
-     */
-    private void handleBounties() {
-        BHBot.logger.debug("Attempting bounties collection.");
-        MarvinSegment seg;
-
-        clickInGame(130, 490);
-
-        seg = detectCue(cues.get("Bounties"), SECOND * 5);
-        if (seg != null) {
-            readScreen();
-            seg = detectCue(cues.get("Loot"), SECOND * 5, new Bounds(505, 245, 585, 275));
-            while (seg != null) {
-                clickOnSeg(seg);
-                seg = detectCue(cues.get("WeeklyRewards"), SECOND * 5, new Bounds(190, 100, 615, 400));
-                if (seg != null) {
-                    seg = detectCue(cues.get("X"), 5 * SECOND);
-                    if (seg != null) {
-                        saveGameScreen("bounty-loot");
-                        clickOnSeg(seg);
-                        BHBot.logger.info("Collected bounties");
-                        sleep(SECOND * 2);
-                    } else {
-                        BHBot.logger.error("Error when collecting bounty items, restarting...");
-                        saveGameScreen("bounties-error-collect");
-                        restart();
-                    }
-                } else {
-                    BHBot.logger.error("Error finding bounty item dialog, restarting...");
-                    saveGameScreen("bounties-error-item");
-                    restart();
-                }
-
-                seg = detectCue(cues.get("Loot"), SECOND * 5, new Bounds(505, 245, 585, 275));
-            }
-
-            seg = detectCue(cues.get("X"), 5 * SECOND);
-            if (seg != null) {
-                clickOnSeg(seg);
-                readScreen();
-            } else {
-                BHBot.logger.error("Impossible to close the bounties dialog, restarting...");
-                saveGameScreen("bounties-error-closing");
-                restart();
-            }
-        } else {
-            BHBot.logger.error("Impossible to detect the Bounties dialog, restarting...");
-            saveGameScreen("bounties-error-dialog");
-            restart();
         }
         readScreen(SECOND * 2);
     }
@@ -7004,14 +6971,6 @@ public class MainThread implements Runnable {
                 BHBot.logger.error("Can't start fisher.exe");
             }
 
-//			try{
-//				Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisher-v1.2.4.exe\"\"");
-//				if (!fisherClose.waitFor(1, TimeUnit.SECONDS)) { //run and wait for one second
-//				}
-//			}catch( IOException ex ){
-//			}catch( InterruptedException ex ){
-//			}
-
         } else BHBot.logger.info("start not found");
 
         if (!closeFishingSafely()) {
@@ -7046,7 +7005,7 @@ public class MainThread implements Runnable {
 
     }
 
-    private boolean enterGuildHall() {
+    private void enterGuildHall() {
         MarvinSegment seg;
 
         seg = detectCue(cues.get("GuildButton"), SECOND * 5);
@@ -7058,10 +7017,6 @@ public class MainThread implements Runnable {
         if (seg != null) {
             clickOnSeg(seg);
         }
-
-        readScreen();
-        seg = detectCue(cues.get("GuildHallC"), SECOND * 10); //long search time as the bot can take a while to load the assets
-        return seg != null;
     }
 
     private void handleVictory() {
