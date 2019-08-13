@@ -1014,9 +1014,6 @@ public class Settings {
         if (lastUsedMap.getOrDefault("difficulty", null) != null) {
             BHBot.logger.warn("Deprecated setting detected: difficulty. Please replace with difficultyTrials and difficultyGauntlet instead.");
         }
-        if (lastUsedMap.getOrDefault("doFishing", null) != null) {
-            BHBot.logger.warn("Deprecated setting detected: doFishing. Use the new activitiesEnabled with 'f' letter instead.");
-        }
         if (lastUsedMap.getOrDefault("collectFishingBaits", null) != null) {
             BHBot.logger.warn("Deprecated setting detected: collectFishingBaits. Use the new activitiesEnabled with 'f' letter instead.");
         }

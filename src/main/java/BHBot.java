@@ -252,9 +252,14 @@ public class BHBot {
                         logger.info("Forcing Bounty collection...");
                         scheduler.collectBountiesImmediately = true;
                         break;
+                    case "baits":
+                        // force fishing baits
+                        logger.info("Forcing fishing baits collection...");
+                        scheduler.doFishingBaitsImmediately = true;
+                        break;
                     case "fishing":
                         // force fishing
-                        logger.info("Forcing Fishing...");
+                        logger.info("Forcing fishing...");
                         scheduler.doFishingImmediately = true;
                         break;
                     default:

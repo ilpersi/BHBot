@@ -100,22 +100,10 @@ public class MainThread implements Runnable {
     private State state; // at which stage of the game/menu are we currently?
     private BufferedImage img; // latest screen capture
 
-    @SuppressWarnings("FieldCanBeLocal")
     private long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
-    private long SHARDS_CHECK_INTERVAL = 15 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
     private long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
     private long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
     private long BADGES_CHECK_INTERVAL = 10 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
-    private long BOUNTY_CHECK_INTERVAL = 6 * HOUR;
-    @SuppressWarnings("FieldCanBeLocal")
-    private long BONUS_CHECK_INTERVAL = 10 * MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
-    private long FISHING_CHECK_INTERVAL = DAY;
 
     private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
     private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
@@ -127,7 +115,8 @@ public class MainThread implements Runnable {
     private long timeLastGVGBadgesCheck = 0; // when did we check for badges the last time?
     private long timeLastBountyCheck = 0; // when did we check for bounties the last time?
     private long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
-    private long timeLastFishingCheck = 0; // when did we check for fishing baits the last time?
+    private long timeLastFishingBaitsCheck = 0; // when did we check for fishing baits the last time?
+    private long timeLastFishingCheck = 0; // when did we check for fishing last time?
     private long timeLastPOAlive = Misc.getTime(); // when did we send the last PO Notification?
     /**
      * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting Steam. Or else it could get into loop and stale.
@@ -1174,6 +1163,7 @@ public class MainThread implements Runnable {
                     }
 
                     // check for bonuses:
+                    long BONUS_CHECK_INTERVAL = 10 * MINUTE;
                     if (BHBot.settings.autoConsume && (Misc.getTime() - timeLastBonusCheck > BONUS_CHECK_INTERVAL)) {
                         timeLastBonusCheck = Misc.getTime();
                         handleConsumables();
@@ -1331,18 +1321,18 @@ public class MainThread implements Runnable {
                             readScreen(SECOND);
 
                             int selectedRaid = readSelectedRaid();
-							BHBot.logger.debug("Raid selected is R" + selectedRaid);
+                            BHBot.logger.debug("Raid selected is R" + selectedRaid);
 
                             if (selectedRaid == 0) { // an error!
                                 BHBot.logger.error("Error: detected selected raid is 0, which is an error. Restarting...");
-								restart();
+                                restart();
                                 continue;
                             }
 
                             if (selectedRaid != desiredRaid) {
                                 // we need to change the raid type!
                                 BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaid);
-                                if (!changeRaid(desiredRaid)){
+                                if (!changeRaid(desiredRaid)) {
                                     BHBot.logger.error("Impossible to select R" + desiredRaid + "! Restarting...");
                                     restart();
                                     continue;
@@ -1425,7 +1415,7 @@ public class MainThread implements Runnable {
                             continue;
                         }
 
-                        if (( (!BHBot.scheduler.doTrialsImmediately && !BHBot.scheduler.doGauntletImmediately) && (tokens <= BHBot.settings.minTokens)) || (tokens < (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet))) {
+                        if (((!BHBot.scheduler.doTrialsImmediately && !BHBot.scheduler.doGauntletImmediately) && (tokens <= BHBot.settings.minTokens)) || (tokens < (trials ? BHBot.settings.costTrials : BHBot.settings.costGauntlet))) {
                             readScreen();
                             seg = detectCue(cues.get("X"), SECOND);
                             clickOnSeg(seg);
@@ -2667,6 +2657,18 @@ public class MainThread implements Runnable {
                         readScreen(SECOND * 2);
                     }
 
+                    //fishing baits
+                    if ("a".equals(currentActivity)) {
+                        timeLastFishingBaitsCheck = Misc.getTime();
+
+                        if (BHBot.scheduler.doFishingBaitsImmediately) {
+                            BHBot.scheduler.doFishingBaitsImmediately = false; //disable collectImmediately again if its been activated
+                        }
+
+                        handleFishingBaits();
+                        continue;
+                    }
+
                     //fishing
                     if ("f".equals(currentActivity)) {
                         timeLastFishingCheck = Misc.getTime();
@@ -2675,7 +2677,7 @@ public class MainThread implements Runnable {
                             BHBot.scheduler.doFishingImmediately = false; //disable collectImmediately again if its been activated
                         }
 
-                        handleFishingBaits();
+                        handleFishing();
                         continue;
                     }
 
@@ -2748,6 +2750,8 @@ public class MainThread implements Runnable {
             return "e";
         } else if (BHBot.scheduler.collectBountiesImmediately) {
             return "b";
+        } else if (BHBot.scheduler.doFishingBaitsImmediately) {
+            return "a";
         } else if (BHBot.scheduler.doFishingImmediately) {
             return "f";
         }
@@ -2772,7 +2776,7 @@ public class MainThread implements Runnable {
                     activity = activitysIterator.next();
                 }
 
-                if (activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > SHARDS_CHECK_INTERVAL)) {
+                if (activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > (long)(15 * MINUTE))) {
                     return "r";
                 } else if ("d".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL)) {
                     return "d";
@@ -2790,9 +2794,11 @@ public class MainThread implements Runnable {
                     return "v";
                 } else if ("e".equals(activity) && ((Misc.getTime() - timeLastExpBadgesCheck) > BADGES_CHECK_INTERVAL)) {
                     return "e";
-                } else if ("b".equals(activity) && ((Misc.getTime() - timeLastBountyCheck) > BOUNTY_CHECK_INTERVAL)) {
+                } else if ("b".equals(activity) && ((Misc.getTime() - timeLastBountyCheck) > (long) HOUR)) {
                     return "b";
-                } else if ("f".equals(activity) && ((Misc.getTime() - timeLastFishingCheck) > FISHING_CHECK_INTERVAL)) {
+                } else if ("a".equals(activity) && ((Misc.getTime() - timeLastFishingBaitsCheck) > (long) DAY)) {
+                    return "a";
+                } else if ("f".equals(activity) && ((Misc.getTime() - timeLastFishingCheck) > (long) DAY)) {
                     return "f";
                 }
             }
@@ -5373,7 +5379,7 @@ public class MainThread implements Runnable {
         if (seg != null) result += 1;
 
         //Only R1 fix
-        if (result == 0 && detectCue(cues.get("Raid1Name")) != null) result  += 1;
+        if (result == 0 && detectCue(cues.get("Raid1Name")) != null) result += 1;
 
         return result;
     }
@@ -6566,28 +6572,6 @@ public class MainThread implements Runnable {
                 }
             }
 
-            boolean botPresent = new File("fisherCLI.exe").exists();
-
-            if (botPresent) {
-                BHBot.logger.debug("Handling fishing...");
-                handleFishing();
-                sleep(SECOND);
-                enterGuildHall();
-                sleep(SECOND);
-            } else {
-                BHBot.logger.info("Fishing active but no fisherCLI.exe found, skipping..");
-//                seg = detectCue(cues.get("X"), 5 * SECOND);
-//                if (seg != null) {
-//                    clickOnSeg(seg);
-//                    sleep(SECOND);
-//                    readScreen();
-//                } else {
-//                    BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
-//                    saveGameScreen("fishing-error-closing");
-//                    restart();
-//                }
-            }
-
         } else {
             BHBot.logger.warn("Impossible to find the fishing button");
         }
@@ -6937,45 +6921,49 @@ public class MainThread implements Runnable {
 
     private void handleFishing() {
         MarvinSegment seg;
-        int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 seconds per bait used, plus 10 seconds buffer
-
-        readScreen();
 
         seg = detectCue(cues.get("Fishing"), SECOND * 5);
         if (seg != null) {
             clickOnSeg(seg);
-            sleep(SECOND * 2); // we allow some seconds as maybe the reward popup is sliding down
-        }
+            sleep(SECOND); // we allow some seconds as maybe the reward popup is sliding down
 
-        detectCharacterDialogAndHandleIt();
+            detectCharacterDialogAndHandleIt();
 
-        seg = detectCue(cues.get("Play"), SECOND * 5);
-        if (seg != null) {
-            clickOnSeg(seg);
-        }
+            int fishingTime = 10 + (BHBot.settings.baitAmount * 15); //pause for around 15 seconds per bait used, plus 10 seconds buffer
 
-        seg = detectCue(cues.get("Start"), SECOND * 20);
-        if (seg != null) {
-            try {
-                BHBot.logger.info("Pausing for " + fishingTime + " seconds to fish");
-                BHBot.scheduler.pause();
+            readScreen();
 
-                Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fisherCLI.exe\" " + BHBot.settings.baitAmount);
-                if (!fisher.waitFor(fishingTime, TimeUnit.SECONDS)) { //run and wait for fishingTime seconds
-                    BHBot.scheduler.resume();
-                }
-                Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisherCLI.exe\"\"");
-                fisherClose.waitFor(1, TimeUnit.SECONDS);
-
-            } catch (IOException | InterruptedException ex) {
-                BHBot.logger.error("Can't start fisher.exe");
+            seg = detectCue(cues.get("Play"), SECOND * 5);
+            if (seg != null) {
+                clickOnSeg(seg);
             }
 
-        } else BHBot.logger.info("start not found");
+            seg = detectCue(cues.get("Start"), SECOND * 20);
+            if (seg != null) {
+                try {
+                    BHBot.logger.info("Pausing for " + fishingTime + " seconds to fish");
+                    BHBot.scheduler.pause();
 
-        if (!closeFishingSafely()) {
-            BHBot.logger.error("Error closing fishing, restarting..");
-            restart();
+                    Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fisherCLI.exe\" " + BHBot.settings.baitAmount);
+                    if (!fisher.waitFor(fishingTime, TimeUnit.SECONDS)) { //run and wait for fishingTime seconds
+                        BHBot.scheduler.resume();
+                    }
+                    Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisherCLI.exe\"\"");
+                    fisherClose.waitFor(1, TimeUnit.SECONDS);
+
+                } catch (IOException | InterruptedException ex) {
+                    BHBot.logger.error("Can't start fisher.exe");
+                }
+
+            } else BHBot.logger.info("start not found");
+
+            if (!closeFishingSafely()) {
+                BHBot.logger.error("Error closing fishing, restarting..");
+                restart();
+            }
+
+            readScreen(SECOND);
+            enterGuildHall();
         }
 
     }
