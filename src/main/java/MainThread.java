@@ -555,15 +555,15 @@ public class MainThread implements Runnable {
         addCue("LegendaryFamiliar", loadImage("cues/familiars/type/cue04LegendaryFamiliar.png"), new Bounds(525, 240, 674, 365)); // Epic Bribe cue
 
         //AutoRevive cues
-        addCue("Potions", loadImage("cues/autorevive/cuePotions.png"), new Bounds(0, 370, 90, 460)); //Potions button
+        addCue("Potions", loadImage("cues/autorevive/cuePotions_Steam.png"), Bounds.fromWidthHeight(18, 438, 44, 52)); //Potions button
         addCue("NoPotions", loadImage("cues/autorevive/cueNoPotions.png"), new Bounds(210, 190, 590, 350)); // The team does not need revive
-        addCue("Restores", loadImage("cues/autorevive/cueRestores.png"), new Bounds(145, 320, 655, 395)); // To identify revive and healing potions
-        addCue("Revives", loadImage("cues/autorevive/cueRevives.png"), new Bounds(145, 320, 655, 395)); // To identify revive potions
-        addCue("MinorAvailable", loadImage("cues/autorevive/cueMinorAvailable.png"), new Bounds(170, 205, 270, 300));
-        addCue("AverageAvailable", loadImage("cues/autorevive/cueAverageAvailable.png"), new Bounds(350, 205, 450, 300));
-        addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable.png"), new Bounds(535, 205, 635, 300));
-        addCue("SuperAvailable", loadImage("cues/autorevive/cueSuperAvailable.png"), new Bounds(140, 150, 300, 200));
-        addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
+        addCue("Restores", loadImage("cues/autorevive/cueRestores_Steam.png"), Bounds.fromWidthHeight(145, 343, 504, 70)); // To identify revive and healing potions
+        addCue("Revives", loadImage("cues/autorevive/cueRevives_Steam.png"), Bounds.fromWidthHeight(145, 343, 504, 70)); // To identify revive potions
+        addCue("MinorAvailable", loadImage("cues/autorevive/cueMinorAvailable_Steam.png"), Bounds.fromWidthHeight(170, 229, 95, 92));
+        addCue("AverageAvailable", loadImage("cues/autorevive/cueAverageAvailable_Steam.png"), Bounds.fromWidthHeight(346, 229, 98, 93));
+        addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable_Steam.png"), Bounds.fromWidthHeight(528, 231, 93, 90));
+        addCue("SuperAvailable", loadImage("cues/autorevive/cueSuperAvailable_Steam.png"), Bounds.fromWidthHeight(150, 181, 135, 25));
+        addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect_Steam.png"), Bounds.fromWidthHeight(130, 34, 530, 47));
 
         //Items related cues
         addCue("ItemLeg", loadImage("cues/items/cueItemLeg.png"), null); // Legendary Item border
