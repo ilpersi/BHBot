@@ -1169,10 +1169,6 @@ public class MainThread implements Runnable {
                         handleConsumables();
                     }
 
-                    //comment for faster testing
-					// oneTimeshrineCheck = true;
-					oneTimeRuneCheck = true;
-
                     // One time check for Autoshrine
                     if (!oneTimeshrineCheck) {
 
