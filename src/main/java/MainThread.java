@@ -6572,6 +6572,17 @@ public class MainThread implements Runnable {
                 }
             }
 
+            seg = detectCue(cues.get("X"), 5 * SECOND);
+            if (seg != null) {
+                clickOnSeg(seg);
+                sleep(SECOND * 2);
+                readScreen();
+            } else {
+                BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
+                saveGameScreen("fishing-error-closing");
+                restart();
+            }
+
         } else {
             BHBot.logger.warn("Impossible to find the fishing button");
         }
