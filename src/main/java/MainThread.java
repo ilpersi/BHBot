@@ -365,7 +365,7 @@ public class MainThread implements Runnable {
         addCue("Raid7Name", loadImage("cues/raid/r7Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 7 Name
 
 
-        addCue("Defeat", loadImage("cues/cueDefeat.png"), null); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
+        addCue("Defeat", loadImage("cues/cueDefeat_Steam.png"), null); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
         addCue("Persuade", loadImage("cues/cuePersuade.png"), new Bounds(116, 311, 286, 380));
         addCue("View", loadImage("cues/cueView.png"), new Bounds(390, 415, 600, 486));
         addCue("Bribe", loadImage("cues/cueBribe.png"), new Bounds(505, 305, 684, 375));
