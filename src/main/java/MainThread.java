@@ -1170,7 +1170,7 @@ public class MainThread implements Runnable {
                     }
 
                     //comment for faster testing
-					oneTimeshrineCheck = true;
+					// oneTimeshrineCheck = true;
 					oneTimeRuneCheck = true;
 
                     // One time check for Autoshrine
@@ -2847,12 +2847,12 @@ public class MainThread implements Runnable {
                 return false;
             }
 
-            readScreen();
+            readScreen(SECOND);
 
-            Bounds ignoreBossBounds = new Bounds(172, 353, 207, 389);
-            Bounds ignoreShrineBounds = new Bounds(172, 395, 207, 431);
+            Bounds ignoreBossBounds = new Bounds(172, 333, 210, 372);
+            Bounds ignoreShrineBounds = new Bounds(172, 375, 210, 414);
 
-            seg = detectCue(cues.get("Check"), SECOND, ignoreBossBounds);
+            seg = detectCue(cues.get("Check"), 0, ignoreBossBounds);
             if (ignoreBoss) {
                 if (seg == null) {
                     clickInGame(194, 366);
@@ -2861,14 +2861,14 @@ public class MainThread implements Runnable {
                 }
 
             } else {
-                if (seg == null) {
+                if (seg != null) {
                     clickInGame(194, 366);
                     BHBot.logger.debug("Ignore Boss Disabled");
                     ignoreBossSetting = false;
                 }
             }
 
-            seg = detectCue(cues.get("Check"), SECOND, ignoreShrineBounds);
+            seg = detectCue(cues.get("Check"), 0, ignoreShrineBounds);
             if (ignoreShrines) {
                 if (seg == null) {
                     clickInGame(194, 402);
