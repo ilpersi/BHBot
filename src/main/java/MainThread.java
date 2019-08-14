@@ -393,7 +393,7 @@ public class MainThread implements Runnable {
 
         addCue("IgnoreShrines", loadImage("cues/IgnoreShrines_Steam.png"), new Bounds(165, 370, 410, 420));
         addCue("IgnoreBoss", loadImage("cues/IgnoreBoss_Steam.png"), new Bounds(165, 330, 380, 375));
-
+        addCue("Check", loadImage("cues/cueCheck_Steam.png"), null);
 
 
         addCue("ZonesButton", loadImage("cues/zones/ZonesButton_Steam.png"), new Bounds(108, 88, 198, 121));
@@ -2849,60 +2849,38 @@ public class MainThread implements Runnable {
 
             readScreen();
 
+            Bounds ignoreBossBounds = new Bounds(172, 353, 207, 389);
+            Bounds ignoreShrineBounds = new Bounds(172, 395, 207, 431);
+
+            seg = detectCue(cues.get("Check"), SECOND, ignoreBossBounds);
             if (ignoreBoss) {
-                while (detectCue(cues.get("IgnoreBoss"), SECOND) != null) {
-                    BHBot.logger.debug("Enabling Ignore Boss");
+                if (seg == null) {
                     clickInGame(194, 366);
-                    readScreen(500);
-
-                    if (ignoreBossCnt++ > 10) {
-                        BHBot.logger.error("Impossible to enable Ignore Boss");
-                        return false;
-                    }
+                    BHBot.logger.debug("Ignore Boss Enabled");
+                    ignoreBossSetting = true;
                 }
-                ignoreBossSetting = true;
-                BHBot.logger.debug("Ignore Boss Enabled");
+
             } else {
-                while (detectCue(cues.get("IgnoreBoss"), SECOND) == null) {
-                    BHBot.logger.debug("Disabling Ignore Boss");
+                if (seg == null) {
                     clickInGame(194, 366);
-                    readScreen(500);
-
-                    if (ignoreBossCnt++ > 10) {
-                        BHBot.logger.error("Impossible to Disable Ignore Boss");
-                        return false;
-                    }
+                    BHBot.logger.debug("Ignore Boss Disabled");
+                    ignoreBossSetting = false;
                 }
-                ignoreBossSetting = false;
-                BHBot.logger.debug("Ignore Boss Disabled");
             }
 
+            seg = detectCue(cues.get("Check"), SECOND, ignoreShrineBounds);
             if (ignoreShrines) {
-                while (detectCue(cues.get("IgnoreShrines"), SECOND) != null) {
-                    BHBot.logger.debug("Enabling Ignore Shrine");
+                if (seg == null) {
                     clickInGame(194, 402);
-                    readScreen(500);
-
-                    if (ignoreShrineCnt++ > 10) {
-                        BHBot.logger.error("Impossible to enable Ignore Shrines");
-                        return false;
-                    }
+                    BHBot.logger.debug("Ignore Shrine Enabled");
+                    ignoreShrinesSetting = true;
                 }
-                ignoreShrinesSetting = true;
-                BHBot.logger.debug("Ignore Shrine Enabled");
             } else {
-                while (detectCue(cues.get("IgnoreShrines"), SECOND) == null) {
-                    BHBot.logger.debug("Disabling Ignore Shrine");
+                if (seg != null) {
                     clickInGame(194, 402);
-                    readScreen(500);
-
-                    if (ignoreShrineCnt++ > 10) {
-                        BHBot.logger.error("Impossible to disable Ignore Shrines");
-                        return false;
-                    }
+                    BHBot.logger.debug("Ignore Shrine Disabled");
+                    ignoreShrinesSetting = false;
                 }
-                ignoreShrinesSetting = false;
-                BHBot.logger.debug("Ignore Shrine Disabled");
             }
 
             readScreen(SECOND);
