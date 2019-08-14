@@ -4532,9 +4532,9 @@ public class MainThread implements Runnable {
                 case Trials:
                 case Gauntlet:
                 case Expedition:
-                    revivePositions.put(1, new Point(290, 315));
-                    revivePositions.put(2, new Point(200, 340));
-                    revivePositions.put(3, new Point(115, 285));
+                    revivePositions.put(1, new Point(282, 338));
+                    revivePositions.put(2, new Point(196, 370));
+                    revivePositions.put(3, new Point(111, 303));
                     break;
                 case Raid:
                     revivePositions.put(1, new Point(306, 339));
