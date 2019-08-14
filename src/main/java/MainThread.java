@@ -3229,7 +3229,7 @@ public class MainThread implements Runnable {
         User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN, w, l);
         User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN + 1, w, l);
 
-//        moveMouseAway();
+        moveMouseAway();
     }
 
     private void sleep(int milliseconds) {
