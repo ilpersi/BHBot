@@ -4802,6 +4802,8 @@ public class MainThread implements Runnable {
                             readScreen(SECOND);
                             continue;
                         }
+                    } else {
+                        continue;
                     }
 
                     // We check what revives are available, and we save the seg for future reuse
