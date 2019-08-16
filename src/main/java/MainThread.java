@@ -357,13 +357,6 @@ public class MainThread implements Runnable {
 
         // New Raid level detection logic
         addCue("Raid1Name", loadImage("cues/raid/r1Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 1 Name
-        addCue("Raid2Name", loadImage("cues/raid/r2Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 2 Name
-        addCue("Raid3Name", loadImage("cues/raid/r3Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 3 Name
-        addCue("Raid4Name", loadImage("cues/raid/r4Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 4 Name
-        addCue("Raid5Name", loadImage("cues/raid/r5Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 5 Name
-        addCue("Raid6Name", loadImage("cues/raid/r6Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 6 Name
-        addCue("Raid7Name", loadImage("cues/raid/r7Name_Steam.png"), new Bounds(190, 375, 480, 430));// Raid 7 Name
-
 
         addCue("Defeat", loadImage("cues/cueDefeat_Steam.png"), null); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
         addCue("Persuade", loadImage("cues/cuePersuade.png"), new Bounds(116, 311, 286, 380));
@@ -564,6 +557,7 @@ public class MainThread implements Runnable {
         addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable_Steam.png"), Bounds.fromWidthHeight(528, 231, 93, 90));
         addCue("SuperAvailable", loadImage("cues/autorevive/cueSuperAvailable_Steam.png"), Bounds.fromWidthHeight(150, 181, 135, 25));
         addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect_Steam.png"), Bounds.fromWidthHeight(130, 34, 530, 47));
+        addCue("ScrollerRightDisabled", loadImage("cues/autorevive/cueScrollerRightDisabled.png"), Bounds.fromWidthHeight(646, 425, 18, 18));
 
         //Items related cues
         addCue("ItemLeg", loadImage("cues/items/cueItemLeg.png"), null); // Legendary Item border
@@ -1304,36 +1298,10 @@ public class MainThread implements Runnable {
 
                             int difficulty = Integer.parseInt(raid.split(" ")[1]);
                             int desiredRaid = Integer.parseInt(raid.split(" ")[0]);
-                            int raidUnlocked = readUnlockedRaidTier();
-                            BHBot.logger.debug("Detected: R" + raidUnlocked + " unlocked");
 
-                            if (raidUnlocked < desiredRaid) {
-                                BHBot.logger.warn("Raid selected in settings (R" + desiredRaid + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
-                                desiredRaid = raidUnlocked;
-                            }
-
-                            BHBot.logger.info("Attempting R" + desiredRaid + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
-
-                            readScreen(SECOND);
-
-                            int selectedRaid = readSelectedRaid();
-                            BHBot.logger.debug("Raid selected is R" + selectedRaid);
-
-                            if (selectedRaid == 0) { // an error!
-                                BHBot.logger.error("Error: detected selected raid is 0, which is an error. Restarting...");
+                            if (!handleRaidSelection(desiredRaid, difficulty)) {
                                 restart();
                                 continue;
-                            }
-
-                            if (selectedRaid != desiredRaid) {
-                                // we need to change the raid type!
-                                BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaid);
-                                if (!changeRaid(desiredRaid)) {
-                                    BHBot.logger.error("Impossible to select R" + desiredRaid + "! Restarting...");
-                                    restart();
-                                    continue;
-                                }
-                                readScreen(2 * SECOND);
                             }
 
                             seg = detectCue(cues.get("RaidSummon"), 2 * SECOND);
@@ -4602,6 +4570,26 @@ public class MainThread implements Runnable {
                     clickInGame(slotPos.x, slotPos.y);
                     readScreen(SECOND);
 
+                    MarvinSegment superHealSeg = detectCue(cues.get("SuperAvailable"));
+
+                    if (superHealSeg != null) {
+                        if (detectCue(cues.get("ScrollerRightDisabled")) != null ) {
+                            BHBot.logger.debug("Slot " + slotNum + " is up for super potion, closing revive window.");
+                            seg = detectCue(cues.get("X"));
+                            clickOnSeg(seg);
+                            readScreen(SECOND);
+                            continue;
+                        }
+
+                        // If super potion is available, we skip it
+                        int superPotionMaxChecks = 10, superPotionCurrentCheck = 0;
+                        while (superPotionCurrentCheck < superPotionMaxChecks && detectCue(cues.get("SuperAvailable")) != null) {
+                            clickInGame(656, 434);
+                            readScreen(500);
+                            superPotionCurrentCheck++;
+                        }
+                    }
+
                     MarvinSegment reviveSeg = detectCue(cues.get("Revives"), SECOND);
                     MarvinSegment restoreSeg = detectCue(cues.get("Restores"));
 
@@ -4613,22 +4601,6 @@ public class MainThread implements Runnable {
                             readScreen(SECOND);
                             continue;
                         }
-                    } else {
-                        if (detectCue(cues.get("SuperAvailable")) != null) {
-                            BHBot.logger.debug("Slot " + slotNum + " is up for super potion, closing revive window.");
-                            seg = detectCue(cues.get("X"));
-                            clickOnSeg(seg);
-                            readScreen(SECOND);
-                        }
-                        continue;
-                    }
-
-                    // If super potion is available, we skip it
-                    int superPotionMaxChecks = 10, superPotionCurrentCheck = 0;
-                    while (superPotionCurrentCheck < superPotionMaxChecks && detectCue(cues.get("SuperAvailable")) != null) {
-                        clickInGame(656, 434);
-                        readScreen(500);
-                        superPotionCurrentCheck++;
                     }
 
                     // We check what revives are available, and we save the seg for future reuse
@@ -5325,10 +5297,16 @@ public class MainThread implements Runnable {
         return 0;
     }
 
-    void zoneReadTest() {
-        int test = readCurrentZone();
-        BHBot.logger.info(Integer.toString(test));
-    }
+	/*private int checkFamiliarCounter(String fam) { //returns current catch count for given familiar from the settings file
+		int catchCount = 0;
+		for (String f : BHBot.settings.familiars) { //cycle familiars defined in settings
+				String fString = f.toUpperCase().split(" ")[0]; //stringify the familiar name
+				if (fam.equals(fString)) { // on match return
+					catchCount = Integer.parseInt(f.split(" ")[1]);
+				}
+			}
+		return catchCount;
+		}*/
 
     void expeditionReadTest() {
         String expedition = BHBot.settings.expeditions.next();
@@ -5336,50 +5314,6 @@ public class MainThread implements Runnable {
             expedition = expedition.split(" ")[0];
             BHBot.logger.info("Expedition chosen: " + expedition);
         }
-    }
-
-    /**
-     * Returns the current max tier of raid the player has unlocked, so we can calculate which raid we are selecting via the dot menu
-     * Returns 0 in case of error
-     */
-    private int readUnlockedRaidTier() {
-        int result = 0;
-
-        readScreen(SECOND);
-        List<MarvinSegment> list = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
-        result += list.size();
-
-        MarvinSegment seg = detectCue(cues.get("RaidLevel"));
-        if (seg != null) result += 1;
-
-        //Only R1 fix
-        if (result == 0 && detectCue(cues.get("Raid1Name")) != null) result += 1;
-
-        return result;
-    }
-
-    /**
-     * Returns raid type, that is value between 1 and 4 (Corresponding to the raid tiers) that is currently selected in the raid window.
-     * Note that the raid window must be open for this method to work (or else it will simply return 0).
-     */
-    private int readSelectedRaid() {
-        readScreen(SECOND);
-        if (detectCue(cues.get("Raid1Name")) != null)
-            return 1;
-        else if (detectCue(cues.get("Raid2Name")) != null)
-            return 2;
-        else if (detectCue(cues.get("Raid3Name")) != null)
-            return 3;
-        else if (detectCue(cues.get("Raid4Name")) != null)
-            return 4;
-        else if (detectCue(cues.get("Raid5Name")) != null)
-            return 5;
-        else if (detectCue(cues.get("Raid6Name")) != null)
-            return 6;
-        else if (detectCue(cues.get("Raid7Name")) != null)
-            return 7;
-        else
-            return 0; // error
     }
 
     /**
@@ -5417,20 +5351,75 @@ public class MainThread implements Runnable {
      * <p>
      * Returns false in case it failed.
      */
-    private boolean changeRaid(int desiredRaid) {
+    private boolean handleRaidSelection(int desiredRaid, int difficulty) {
 
-        // we get all the raid selection cues
-        List<MarvinSegment> list = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
-        if (list.size() < 1) return false;
+        MarvinSegment seg;
 
-        // we also consider the already selected one to be sure to get all the available cues
-        list.add(detectCue(cues.get("RaidLevel")));
+        // we refresh the screen
+        readScreen(SECOND);
 
-        // we sort them by x1
-        list.sort(comparing(MarvinSegment::getX1));
+        int raidUnlocked = 0;
+        // we get the grey dots on the raid selection popup
+        List<MarvinSegment> raidDotsList = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
+        // we update the number of unlocked raids
+        raidUnlocked += raidDotsList.size();
 
-        // we click on the desired cue
-        clickOnSeg(list.get(desiredRaid - 1));
+        // Is only R1 unlocked?
+        boolean onlyR1 = false;
+        if (raidUnlocked == 0 && detectCue(cues.get("Raid1Name")) != null) {
+            raidUnlocked += 1;
+            onlyR1 = true;
+        }
+
+        // A  temporary variable to save the position of the current selected raid
+        int selectedRaidX1;
+
+        // we look for the the currently selected raid, the green dot
+        seg = detectCue(cues.get("RaidLevel"));
+        if (seg != null) {
+            raidUnlocked += 1;
+            selectedRaidX1 = seg.getX1();
+            raidDotsList.add(seg);
+        } else {
+            BHBot.logger.error("Impossible to detect the currently selected grey cue!");
+            return false;
+        }
+
+        BHBot.logger.debug("Detected: R" + raidUnlocked + " unlocked");
+
+        if (raidUnlocked < desiredRaid) {
+            BHBot.logger.warn("Raid selected in settings (R" + desiredRaid + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
+            desiredRaid = raidUnlocked;
+        }
+
+        BHBot.logger.info("Attempting R" + desiredRaid + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
+
+        // we sort the list of dots, using the x1 coordinate
+        raidDotsList.sort(comparing(MarvinSegment::getX1));
+
+        int selectedRaid = 0;
+        if (!onlyR1) {
+            for (MarvinSegment raidDotSeg: raidDotsList) {
+                selectedRaid++;
+                if (raidDotSeg.getX1() == selectedRaidX1) break;
+            }
+        } else {
+            selectedRaid = 1;
+        }
+
+        BHBot.logger.debug("Raid selected is R" + selectedRaid);
+
+        if (selectedRaid == 0) { // an error!
+            BHBot.logger.error("It was impossible to determine the currently selected raid!");
+            return false;
+        }
+
+        if (selectedRaid != desiredRaid) {
+            // we need to change the raid type!
+            BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaid);
+            // we click on the desired cue
+            clickOnSeg(raidDotsList.get(desiredRaid - 1));
+        }
 
         return true;
     }

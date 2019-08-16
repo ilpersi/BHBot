@@ -23,7 +23,7 @@ import java.util.*;
 public class BHBot {
 
     private static final String PROGRAM_NAME = "BHBot";
-    static MainThread main;
+    private static MainThread main;
     static Settings settings = new Settings().setDebug();
     static Scheduler scheduler = new Scheduler();
     static PushoverClient poClient = new PushoverRestClient();
@@ -447,10 +447,6 @@ public class BHBot {
                         if (!main.checkShrineSettings(ignoreBoss, ignoreShrines)) {
                             logger.error("Something went wrong when checking auto ignore settings!");
                         }
-                        break;
-                    case "r":
-                    case "zoneread":
-                        main.zoneReadTest();
                         break;
                     case "e":
                     case "expeditionread":
