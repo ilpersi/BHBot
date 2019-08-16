@@ -549,6 +549,7 @@ public class MainThread implements Runnable {
         addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable.png"), new Bounds(535, 205, 635, 300));
         addCue("SuperAvailable", loadImage("cues/autorevive/cueSuperAvailable.png"), new Bounds(140, 150, 300, 200));
         addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
+        addCue("ScrollerRightDisabled", loadImage("cues/autorevive/cueScrollerRightDisabled.png"), Bounds.fromWidthHeight(646, 425, 18, 18));
 
         //Items related cues
         addCue("ItemLeg", loadImage("cues/items/cueItemLeg.png"), null); // Legendary Item border
@@ -4770,6 +4771,26 @@ public class MainThread implements Runnable {
                     clickInGame(slotPos.x, slotPos.y);
                     readScreen(SECOND);
 
+                    MarvinSegment superHealSeg = detectCue(cues.get("SuperAvailable"));
+
+                    if (superHealSeg != null) {
+                        if (detectCue(cues.get("ScrollerRightDisabled")) != null ) {
+                            BHBot.logger.debug("Slot " + slotNum + " is up for super potion, closing revive window.");
+                            seg = detectCue(cues.get("X"));
+                            clickOnSeg(seg);
+                            readScreen(SECOND);
+                            continue;
+                        }
+
+                        // If super potion is available, we skip it
+                        int superPotionMaxChecks = 10, superPotionCurrentCheck = 0;
+                        while (superPotionCurrentCheck < superPotionMaxChecks && detectCue(cues.get("SuperAvailable")) != null) {
+                            clickInGame(656, 434);
+                            readScreen(500);
+                            superPotionCurrentCheck++;
+                        }
+                    }
+
                     MarvinSegment reviveSeg = detectCue(cues.get("Revives"), SECOND);
                     MarvinSegment restoreSeg = detectCue(cues.get("Restores"));
 
@@ -4781,22 +4802,6 @@ public class MainThread implements Runnable {
                             readScreen(SECOND);
                             continue;
                         }
-                    } else {
-                        if (detectCue(cues.get("SuperAvailable")) != null) {
-                            BHBot.logger.debug("Slot " + slotNum + " is up for super potion, closing revive window.");
-                            seg = detectCue(cues.get("X"));
-                            clickOnSeg(seg);
-                            readScreen(SECOND);
-                        }
-                        continue;
-                    }
-
-                    // If super potion is available, we skip it
-                    int superPotionMaxChecks = 10, superPotionCurrentCheck = 0;
-                    while (superPotionCurrentCheck < superPotionMaxChecks && detectCue(cues.get("SuperAvailable")) != null) {
-                        clickInGame(656, 434);
-                        readScreen(500);
-                        superPotionCurrentCheck++;
                     }
 
                     // We check what revives are available, and we save the seg for future reuse
