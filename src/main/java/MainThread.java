@@ -1106,7 +1106,7 @@ public class MainThread implements Runnable {
                 // check for "recently disconnected" popup:
                 seg = detectCue(cues.get("RecentlyDisconnected"));
                 if (seg != null) {
-                    seg = detectCue(cues.get("YesGreen"), 2 * SECOND);
+                    seg = detectCue(cues.get("Yes"), 2 * SECOND);
                     if (seg == null) {
                         BHBot.logger.error("Error: detected 'recently disconnected' popup but could not find 'Yes' button. Restarting...");
                         restart();
@@ -3459,7 +3459,7 @@ public class MainThread implements Runnable {
             clickOnSeg(seg);
 
             readScreen(SECOND);
-            seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+            seg = detectCue(cues.get("Yes"), 5 * SECOND);
             clickOnSeg(seg);
             return;
         }
@@ -4086,7 +4086,7 @@ public class MainThread implements Runnable {
             seg = detectCue(cues.get("Decline"), 5 * SECOND);
             clickOnSeg(seg);
             readScreen(SECOND);
-            seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+            seg = detectCue(cues.get("Yes"), 5 * SECOND);
             clickOnSeg(seg);
             return false;
         }
@@ -4096,7 +4096,7 @@ public class MainThread implements Runnable {
             seg = detectCue(cues.get("Decline"), 5 * SECOND);
             clickOnSeg(seg);
             readScreen(SECOND);
-            seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+            seg = detectCue(cues.get("Yes"), 5 * SECOND);
             clickOnSeg(seg);
             return false;
 
@@ -4113,7 +4113,7 @@ public class MainThread implements Runnable {
             }
             clickOnSeg(seg);
             readScreen(SECOND);
-            seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+            seg = detectCue(cues.get("Yes"), 5 * SECOND);
             if (seg == null) {
                 BHBot.logger.error("Yes button not found, restarting");
                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
@@ -4138,7 +4138,7 @@ public class MainThread implements Runnable {
             }
             clickOnSeg(seg);
             readScreen(SECOND);
-            seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+            seg = detectCue(cues.get("Yes"), 5 * SECOND);
             if (seg == null) {
                 BHBot.logger.error("Yes button not found, restarting");
                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
@@ -4155,7 +4155,7 @@ public class MainThread implements Runnable {
         seg = detectCue(cues.get("Decline"), 5 * SECOND);
         clickOnSeg(seg);
         readScreen(SECOND);
-        seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
+        seg = detectCue(cues.get("Yes"), 5 * SECOND);
         clickOnSeg(seg);
         return false;
     }
@@ -4247,7 +4247,7 @@ public class MainThread implements Runnable {
             if (seg != null) {
                 clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
                 readScreen(SECOND * 2);
-                seg = detectCue(cues.get("YesGreen"), SECOND);
+                seg = detectCue(cues.get("Yes"), SECOND);
                 clickOnSeg(seg);
                 BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion declined.");
             } else {
@@ -4376,7 +4376,7 @@ public class MainThread implements Runnable {
             clickOnSeg(seg);
             sleep(2 * SECOND);
 
-            seg = detectCue(cues.get("YesGreen"), SECOND * 5);
+            seg = detectCue(cues.get("Yes"), SECOND * 5);
             if (seg != null) {
                 clickOnSeg(seg);
                 sleep(2 * SECOND);
@@ -4413,7 +4413,7 @@ public class MainThread implements Runnable {
             sleep(2 * SECOND);
 
             readScreen();
-            seg = detectCue(cues.get("YesGreen"));
+            seg = detectCue(cues.get("Yes"));
             clickOnSeg(seg);
             sleep(2 * SECOND);
 
@@ -4628,7 +4628,7 @@ public class MainThread implements Runnable {
                                 BHBot.logger.autorevive("Handling tank priority (position: " + BHBot.settings.tankPosition + ") with " + potionTranslate.get(potion) + " revive.");
                                 clickOnSeg(seg);
                                 readScreen(SECOND);
-                                seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
+                                seg = detectCue(cues.get("Yes"), SECOND, new Bounds(230, 320, 550, 410));
                                 clickOnSeg(seg);
                                 revived[BHBot.settings.tankPosition - 1] = true;
                                 potionsUsed++;
@@ -4646,7 +4646,7 @@ public class MainThread implements Runnable {
                                 BHBot.logger.autorevive("Using " + potionTranslate.get(potion) + " revive on slot " + slotNum + ".");
                                 clickOnSeg(seg);
                                 readScreen(SECOND);
-                                seg = detectCue(cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410));
+                                seg = detectCue(cues.get("Yes"), SECOND, new Bounds(230, 320, 550, 410));
                                 clickOnSeg(seg);
                                 revived[slotNum - 1] = true;
                                 potionsUsed++;
@@ -4691,7 +4691,7 @@ public class MainThread implements Runnable {
         }
 
         sleep(SECOND);
-        seg = detectCue(cues.get("YesGreen"), 2 * SECOND);
+        seg = detectCue(cues.get("Yes"), 2 * SECOND);
         if (seg != null) {
             clickOnSeg(seg);
         } else {
@@ -5642,7 +5642,7 @@ public class MainThread implements Runnable {
         if (detectCue(cues.get("GuildLeaveConfirm"), SECOND * 3) != null) {
             sleep(500); // in case popup is still sliding downward
             readScreen();
-            MarvinSegment seg = detectCue(cues.get("YesGreen"), 10 * SECOND);
+            MarvinSegment seg = detectCue(cues.get("Yes"), 10 * SECOND);
             if (seg == null) {
                 BHBot.logger.error("Error: 'Guild Leave Confirm' window detected, but no 'Yes' green button found. Restarting...");
                 return true;
@@ -6697,7 +6697,7 @@ public class MainThread implements Runnable {
                     int dist;
                     seg = detectCue(cues.get("ConsumableTitle"));
                     dist = seg.y1;
-                    seg = detectCue(cues.get("YesGreen"));
+                    seg = detectCue(cues.get("Yes"));
                     dist = seg.y1 - dist;
                     // distance for the big window should be 262 pixels, for the small one it should be 212.
 
@@ -6708,7 +6708,7 @@ public class MainThread implements Runnable {
                         closePopupSecurely(cues.get("ConsumableTitle"), cues.get("No"));
                     } else {
                         // consume the consumable:
-                        closePopupSecurely(cues.get("ConsumableTitle"), cues.get("YesGreen"));
+                        closePopupSecurely(cues.get("ConsumableTitle"), cues.get("Yes"));
                     }
                     detectCue(cues.get("StripSelectorButton"), 5 * SECOND); // we do this just in order to wait for the previous menu to reappear
                     i.remove();
