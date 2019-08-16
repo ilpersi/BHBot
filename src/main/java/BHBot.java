@@ -454,10 +454,6 @@ public class BHBot {
                             logger.error("Something went wrong when checking auto ignore settings!");
                         }
                         break;
-                    case "r":
-                    case "raidread":
-                        main.raidReadTest();
-                        break;
                     case "e":
                     case "expeditionread":
                         main.expeditionReadTest();
