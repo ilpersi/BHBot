@@ -8,7 +8,7 @@ public class Settings {
     static String configurationFile = "settings.ini";
 
     String username = "";
-    String password = "";
+    private String password = "";
 
     // Pushover info
     String poAppToken = "";
@@ -17,8 +17,6 @@ public class Settings {
     boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
     int reconnectTimer = 60;
     boolean idleMode = false;
-    // chromedriver autostart
-    boolean autoStartChromeDriver = true; // if true, BHBot will automatically run chromedriver at startup
     //Various settings
     int openSkeleton = 0;
     boolean contributeFamiliars = true;
@@ -173,7 +171,6 @@ public class Settings {
     /**
      * Fishing Settings
      **/
-    boolean doFishing = false;
     private int rodType = 4;
     int baitAmount = 5;
     /**
@@ -833,7 +830,6 @@ public class Settings {
         debugDetectionTimes = lastUsedMap.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("1");
         hideWindowOnRestart = lastUsedMap.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("1");
         resetTimersOnBattleEnd = lastUsedMap.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("1");
-        autoStartChromeDriver = lastUsedMap.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
         reconnectTimer = Integer.parseInt(lastUsedMap.getOrDefault("reconnectTimer", "" + reconnectTimer));
 
         setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()));
@@ -917,7 +913,6 @@ public class Settings {
         persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", "" + persuasionLevel));
         bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", "" + bribeLevel));
 
-        doFishing = lastUsedMap.getOrDefault("doFishing", doFishing ? "1" : "0").equals("1");
         rodType = Integer.parseInt(lastUsedMap.getOrDefault("rodType", "" + rodType));
         baitAmount = Integer.parseInt(lastUsedMap.getOrDefault("baitAmount", "" + baitAmount));
 
