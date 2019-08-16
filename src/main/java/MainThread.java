@@ -557,7 +557,7 @@ public class MainThread implements Runnable {
         addCue("MajorAvailable", loadImage("cues/autorevive/cueMajorAvailable_Steam.png"), Bounds.fromWidthHeight(528, 231, 93, 90));
         addCue("SuperAvailable", loadImage("cues/autorevive/cueSuperAvailable_Steam.png"), Bounds.fromWidthHeight(150, 181, 135, 25));
         addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect_Steam.png"), Bounds.fromWidthHeight(130, 34, 530, 47));
-        addCue("ScrollerRightDisabled", loadImage("cues/autorevive/cueScrollerRightDisabled.png"), Bounds.fromWidthHeight(646, 425, 18, 18));
+        addCue("ScrollerRightDisabled", loadImage("cues/autorevive/cueScrollerRightDisabled_Steam.png"), Bounds.fromWidthHeight(642, 448, 14, 14));
 
         //Items related cues
         addCue("ItemLeg", loadImage("cues/items/cueItemLeg.png"), null); // Legendary Item border
@@ -4584,7 +4584,7 @@ public class MainThread implements Runnable {
                         // If super potion is available, we skip it
                         int superPotionMaxChecks = 10, superPotionCurrentCheck = 0;
                         while (superPotionCurrentCheck < superPotionMaxChecks && detectCue(cues.get("SuperAvailable")) != null) {
-                            clickInGame(656, 434);
+                            clickInGame(650, 455);
                             readScreen(500);
                             superPotionCurrentCheck++;
                         }
