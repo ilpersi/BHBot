@@ -40,6 +40,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.sun.jna.platform.win32.WinGDI.BI_RGB;
 import static com.sun.jna.platform.win32.WinGDI.DIB_RGB_COLORS;
@@ -929,6 +931,21 @@ public class MainThread implements Runnable {
 
         restart(false);
 
+        /*
+          Match the character “z” literally (case sensitive) «z»
+          Match the regex below and capture its match into a backreference named “zone” (also backreference number 1) «(?<zone>\d{1,2})»
+             Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+                Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+          Match the character “d” literally (case sensitive) «d»
+          Match the regex below and capture its match into a backreference named “dungeon” (also backreference number 2) «(?<dungeon>[1234])»
+             Match a single character from the list “1234” «[1234]»
+          Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s+»
+             Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
+          Match the regex below and capture its match into a backreference named “difficulty” (also backreference number 3) «(?<difficulty>[123])»
+             Match a single character from the list “123” «[123]»
+         */
+        Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])\\s+(?<difficulty>[123])");
+
         while (!finished) {
             BHBot.scheduler.backupIdleTime();
             try {
@@ -1584,13 +1601,21 @@ public class MainThread implements Runnable {
                                 continue;
                             }
 
+                            Matcher dungeonMatcher = dungeonRegex.matcher(dungeon.toLowerCase());
+                            if (!dungeonMatcher.find()) {
+                                BHBot.logger.error("Wrong format in dungeon detected: " + dungeon + "! It will be skipped...");
+                                if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
+                                    sendPushOverMessage("Dungeon error", "Wrong dungeon format detected: " + dungeon, "siren");
+                                continue;
+                            }
 
-                            int difficulty = Integer.parseInt(dungeon.split(" ")[1]);
+                            int goalZone = Integer.parseInt(dungeonMatcher.group("zone"));
+                            int goalDungeon = Integer.parseInt(dungeonMatcher.group("dungeon"));
+                            int difficulty = Integer.parseInt(dungeonMatcher.group("difficulty"));
+
                             String difficultyName = (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic");
-                            dungeon = dungeon.split(" ")[0].toLowerCase(); //in case the settings file is input in upper case
-                            int goalZone = Integer.parseInt("" + dungeon.charAt(1));
 
-                            BHBot.logger.info("Attempting " + difficultyName + " " + dungeon);
+                            BHBot.logger.info("Attempting " + difficultyName + " z" + goalZone + "d" + goalDungeon);
 
                             sleep(1 * SECOND); //sleep to stabilize
                             clickInGame(737, 299); //move zones to clear unique shaded zone cue
@@ -1627,18 +1652,18 @@ public class MainThread implements Runnable {
                             }
 
                             // click on the dungeon:
-                            Point p = getDungeonIconPos(dungeon);
+                            Point p = getDungeonIconPos(goalZone, goalDungeon);
                             if (p == null) {
                                 BHBot.settings.activitiesEnabled.remove("d");
-                                BHBot.logger.error("It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!");
+                                BHBot.logger.error("It was impossible to get icon position of dungeon z" + goalZone + "d" + goalDungeon + ". Dungeons are now disabled!");
                                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-                                    sendPushOverMessage("Dungeon error", "It was impossible to get icon position of dungeon " + dungeon + ". Dungeons are now disabled!", "siren");
+                                    sendPushOverMessage("Dungeon error", "It was impossible to get icon position of dungeon z" + goalZone + "d" + goalDungeon + ". Dungeons are now disabled!", "siren");
                                 continue;
                             }
                             clickInGame(p.x, p.y);
 
                             // select difficulty (If D4 just hit enter):
-                            if ((dungeon.charAt(3) == '4') || (dungeon.charAt(1) == '7' && dungeon.charAt(3) == '3') || (dungeon.charAt(1) == '8' && dungeon.charAt(3) == '3')) { // D4, or Z7D3/Z8D3/Z9D3
+                            if ((goalDungeon == 4) || (goalZone == 7 && goalDungeon == 3) || (goalZone == 8 && goalDungeon == 3)) { // D4, or Z7D3/Z8D3
                                 specialDungeon = true;
                                 seg = detectCue(cues.get("Enter"), 5 * SECOND);
                                 clickOnSeg(seg);
@@ -1649,7 +1674,7 @@ public class MainThread implements Runnable {
 
                             //team selection screen
                             /* Solo-for-bounty code */
-                            int soloThreshold = Character.getNumericValue(dungeon.charAt(1)); //convert the zone char to int so we can compare
+                            int soloThreshold = Character.getNumericValue(goalZone); //convert the zone char to int so we can compare
                             if (soloThreshold <= BHBot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
                                 readScreen(SECOND);
                                 seg = detectCue(cues.get("Clear"), SECOND * 2);
@@ -1689,7 +1714,7 @@ public class MainThread implements Runnable {
                             autoShrined = false;
                             autoBossRuned = false;
 
-                            BHBot.logger.info("Dungeon <" + dungeon + "> " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic") + " initiated!");
+                            BHBot.logger.info("Dungeon <z" + goalZone + "d" + goalDungeon + "> " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic") + " initiated!");
                         }
                         continue;
                     } // energy
@@ -3632,16 +3657,39 @@ public class MainThread implements Runnable {
                 BHBot.logger.stats("Run time: " + runtime);
             } else if (state.equals(State.Trials)) {
                 if (BHBot.settings.difficultyFailsafe.containsKey("t")) {
-                    String original = "difficultyTrials " + (BHBot.settings.difficultyTrials);
-                    String updated = "difficultyTrials " + (BHBot.settings.difficultyTrials - BHBot.settings.difficultyFailsafe.get("t"));
-                    settingsUpdate(original, updated);
+
+                    // The key is the difficulty decrease, the value is the minimum level
+                    Map.Entry<Integer, Integer> trialDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("t");
+                    // We calculate the new difficulty
+                    int newTrialDifficulty = BHBot.settings.difficultyTrials - trialDifficultyFailsafe.getKey();
+
+                    // We check that the new difficulty is not lower than the minimum
+                    if (newTrialDifficulty >= trialDifficultyFailsafe.getValue()) newTrialDifficulty = trialDifficultyFailsafe.getValue();
+
+                    // If the new difficulty is different from the current one, we update the ini setting
+                    if (newTrialDifficulty != BHBot.settings.difficultyTrials) {
+                        String original = "difficultyTrials " + (BHBot.settings.difficultyTrials);
+                        String updated = "difficultyTrials " + (newTrialDifficulty);
+                        settingsUpdate(original, updated);
+                    }
                 }
                 BHBot.logger.warn("Trials completed. Result: Defeat.");
             } else if (state.equals(State.Gauntlet)) {
                 if (BHBot.settings.difficultyFailsafe.containsKey("g")) {
-                    String original = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet);
-                    String updated = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet - BHBot.settings.difficultyFailsafe.get("g"));
-                    settingsUpdate(original, updated);
+                    // The key is the difficulty decrease, the value is the minimum level
+                    Map.Entry<Integer, Integer> gauntletDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("g");
+                    // We calculate the new difficulty
+                    int newGauntletDifficulty = BHBot.settings.difficultyGauntlet - gauntletDifficultyFailsafe.getKey();
+
+                    // We check that the new difficulty is not lower than the minimum
+                    if (newGauntletDifficulty >= gauntletDifficultyFailsafe.getValue()) newGauntletDifficulty = gauntletDifficultyFailsafe.getValue();
+
+                    // If the new difficulty is different from the current one, we update the ini setting
+                    if (newGauntletDifficulty != BHBot.settings.difficultyGauntlet) {
+                        String original = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet);
+                        String updated = "difficultyGauntlet " + (newGauntletDifficulty);
+                        settingsUpdate(original, updated);
+                    }
                 }
                 BHBot.logger.warn("Gauntlet completed. Result: Defeat.");
             } else {
@@ -4860,16 +4908,12 @@ public class MainThread implements Runnable {
     }
 
     /**
-     * @param dungeon in standard format, e.g. "z2d4".
+     * @param z and integer with the desired zone.
+     * @param d and integer with the desired dungeon.
      * @return null in case dungeon parameter is malformed (can even throw an exception)
      */
-    private Point getDungeonIconPos(String dungeon) {
-        if (dungeon.length() != 4) return null;
-        if (dungeon.charAt(0) != 'z') return null;
-        if (dungeon.charAt(2) != 'd') return null;
-        int z = Integer.parseInt("" + dungeon.charAt(1));
-        int d = Integer.parseInt("" + dungeon.charAt(3));
-        if (z < 1 || z > 9) return null;
+    private Point getDungeonIconPos(int z, int d) {
+        if (z < 1 || z > 10) return null;
         if (d < 1 || d > 4) return null;
 
         switch (z) {
@@ -4984,6 +5028,17 @@ public class MainThread implements Runnable {
                         return new Point(375, 440);
                 }
                 break;
+            case 10:
+                switch (d){
+                    case 1:
+                        return null;
+                    case 2:
+                        return null;
+                    case 3:
+                        return null;
+                    case 4:
+                        return null;
+                }
         }
 
 

@@ -1,3 +1,4 @@
+import com.google.common.collect.Maps;
 import org.apache.logging.log4j.Level;
 
 import java.util.*;
@@ -70,7 +71,9 @@ public class Settings {
      */
     int difficultyTrials = 60;
     int difficultyGauntlet = 60;
-    HashMap<String, Integer> difficultyFailsafe = new HashMap<>();
+    // The HashMap key is the activity lecter: t for trial, g for gauntlet
+    // The Map.Entry is composed by two Integers: the key is the number of levels to decrease, the value is the minimum level
+    HashMap<String, Map.Entry<Integer, Integer>> difficultyFailsafe = new HashMap<>();
     /**
      * PvP/GvG Opponent
      */
@@ -424,7 +427,8 @@ public class Settings {
     private void setDifficultyFailsafe(String... failSafes) {
         this.difficultyFailsafe.clear();
         // We only support Trial and Gauntlets, so we do sanity checks here only settings the right letters t,g
-        String pattern = "([tg]):([0-9])";
+        String pattern = "([tg]):([0-9])(:[\\d]+)?";
+        Integer minimumDifficulty = 1;
         Pattern r = Pattern.compile(pattern);
 
         for (String f : failSafes) {
@@ -432,7 +436,10 @@ public class Settings {
 
             Matcher m = r.matcher(f);
             if (m.find()) {
-                difficultyFailsafe.put(m.group(1), Integer.parseInt(m.group(2)));
+                if (m.group(3) != null) minimumDifficulty = Integer.parseInt(m.group(3));
+                Map.Entry<Integer, Integer> entry = Maps.immutableEntry(Integer.parseInt(m.group(2)), minimumDifficulty);
+                difficultyFailsafe.put(m.group(1), entry);
+
             }
         }
     }
@@ -622,9 +629,13 @@ public class Settings {
 
     private String getDifficultyFailsafeAsString(){
         StringBuilder dfsBuilder = new StringBuilder();
-        for (Map.Entry<String, Integer> entry: difficultyFailsafe.entrySet()){
+        for (Map.Entry<String, Map.Entry<Integer, Integer>> entry: difficultyFailsafe.entrySet()){
             if (dfsBuilder.length() > 0) dfsBuilder.append(" ");
-            dfsBuilder.append(entry.getKey()).append(entry.getValue());
+            dfsBuilder.append(entry.getKey())
+                    .append(":")
+                    .append(entry.getValue().getKey())
+                    .append(":")
+                    .append(entry.getValue().getValue());
         }
 
         return dfsBuilder.toString();
