@@ -303,7 +303,7 @@ public class MainThread implements Runnable {
         addCue("PVP", loadImage("cues/mainscreen/PvP_Steam.png"), new Bounds(0, 70, 75, 150)); // PVP icon in main screen
         addCue("WorldBoss", loadImage("cues/mainscreen/WorldBoss_Steam.png"), new Bounds(0, 220, 73, 288));
         addCue("RaidButton", loadImage("cues/mainscreen/Raid_Steam.png"), new Bounds(10, 280, 70, 365));
-        addCue("GVG", loadImage("cues/mainscreen/cueGVG.png"), null);
+        addCue("GVG", loadImage("cues/mainscreen/cueGVG_Steam.png"), Bounds.fromWidthHeight(720, 118, 73, 242));
         addCue("Invasion", loadImage("cues/mainscreen/Invasion_Steam.png"), null);
         addCue("ExpeditionButton", loadImage("cues/mainscreen/cueExpedition.png"), null);
         addCue("Trials", loadImage("cues/mainscreen/Trials_Steam.png"), new Bounds(719, 211, 789, 425));
@@ -418,8 +418,8 @@ public class MainThread implements Runnable {
         addCue("Switch", loadImage("cues/cueSwitch.png"), new Bounds(0, 450, 100, 520)); //unused
 
         // GVG related:
-        addCue("BadgeBar", loadImage("cues/cueBadgeBar.png"), null);
-        addCue("GVGWindow", loadImage("cues/cueGVGWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
+        addCue("BadgeBar", loadImage("cues/cueBadgeBar_Steam.png"), Bounds.fromWidthHeight(307, 68, 58, 50));
+        addCue("GVGWindow", loadImage("cues/cueGVGWindow_Steam.png"), Bounds.fromWidthHeight(256, 120, 276, 42)); // GVG window cue
 
         addCue("InGamePM", loadImage("cues/cueInGamePM.png"), new Bounds(450, 330, 530, 380)); // note that the guild window uses the same cue! That's why it's important that user doesn't open guild window while bot is working!
 
@@ -1875,7 +1875,7 @@ public class MainThread implements Runnable {
                         }
 
                         clickOnSeg(seg);
-                        sleep(2 * SECOND);
+                        readScreen(2 * SECOND);
 
                         detectCharacterDialogAndHandleIt(); // needed for invasion
 
@@ -3387,7 +3387,7 @@ public class MainThread implements Runnable {
         int maxBadges = BHBot.settings.maxBadges;
 
         // badges bar is 78 pixels wide (however last two pixels will have "medium" color and not full color (it's so due to shading))
-        for (int i = 0; i < 76; i++) {
+        for (int i = 0; i < 79; i++) {
             value = i;
             Color col = new Color(img.getRGB(left + i, top));
 
@@ -3397,7 +3397,7 @@ public class MainThread implements Runnable {
 
         value = value + 2; //add the last 2 pixels to get an accurate count
 //		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxBadges / 77.0f)));
-        return Math.round(value * (maxBadges / 75.0f)); // scale it to interval [0..10]
+        return Math.round(value * (maxBadges / 78.0f)); // scale it to interval [0..10]
     }
 
     /**
