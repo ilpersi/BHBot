@@ -451,17 +451,17 @@ public class MainThread implements Runnable {
         addCue("9", loadImage("cues/numbers/cue9.png"), null);
 
         // PvP strip related:
-        addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos.png"), new Bounds(525, 140, 540, 370));
-        addCue("StripEquipped", loadImage("cues/strip/cueStripEquipped.png"), new Bounds(465, 180, 485, 200)); // the little "E" icon upon an equipped item (the top-left item though, we want to detect just that one)
-        addCue("StripItemsTitle", loadImage("cues/strip/cueStripItemsTitle.png"), new Bounds(335, 70, 360, 80));
-        addCue("StripSelectorButton", loadImage("cues/strip/cueStripSelectorButton.png"), new Bounds(450, 115, 465, 130));
+        addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos_Steam.png"), Bounds.fromWidthHeight(526, 151, 18, 318));
+        addCue("StripEquipped", loadImage("cues/strip/cueStripEquipped_Steam.png"), Bounds.fromWidthHeight(458, 199, 32, 30)); // the little "E" icon upon an equipped item (the top-left item though, we want to detect just that one)
+        addCue("StripItemsTitle", loadImage("cues/strip/cueStripItemsTitle_Steam.png"), Bounds.fromWidthHeight(329, 86, 148, 50));
+        addCue("StripSelectorButton", loadImage("cues/strip/cueStripSelectorButton_Steam.png"), Bounds.fromWidthHeight(445, 134, 240, 55));
         // filter titles:
-        addCue("StripTypeBody", loadImage("cues/strip/cueStripTypeBody.png"), new Bounds(460, 125, 550, 140));
-        addCue("StripTypeHead", loadImage("cues/strip/cueStripTypeHead.png"), new Bounds(460, 125, 550, 140));
-        addCue("StripTypeMainhand", loadImage("cues/strip/cueStripTypeMainhand.png"), new Bounds(460, 125, 550, 140));
-        addCue("StripTypeOffhand", loadImage("cues/strip/cueStripTypeOffhand.png"), new Bounds(460, 125, 550, 140));
-        addCue("StripTypeNeck", loadImage("cues/strip/cueStripTypeNeck.png"), new Bounds(460, 125, 550, 140));
-        addCue("StripTypeRing", loadImage("cues/strip/cueStripTypeRing.png"), new Bounds(460, 125, 550, 140));
+        addCue("StripTypeBody", loadImage("cues/strip/cueStripTypeBody_Steam.png"), Bounds.fromWidthHeight(460, 146, 175, 29));
+        addCue("StripTypeHead", loadImage("cues/strip/cueStripTypeHead_Steam.png"), Bounds.fromWidthHeight(460, 146, 175, 29));
+        addCue("StripTypeMainhand", loadImage("cues/strip/cueStripTypeMainhand_Steam.png"), Bounds.fromWidthHeight(460, 146, 175, 29));
+        addCue("StripTypeOffhand", loadImage("cues/strip/cueStripTypeOffhand_Steam.png"), Bounds.fromWidthHeight(460, 146, 175, 29));
+        addCue("StripTypeNeck", loadImage("cues/strip/cueStripTypeNeck_Steam.png"), Bounds.fromWidthHeight(460, 146, 175, 29));
+        addCue("StripTypeRing", loadImage("cues/strip/cueStripTypeRing_Steam.png"), Bounds.fromWidthHeight(460, 146, 175, 29));
 
         //Consumables
         addCue("BonusExp", loadImage("cues/consumables/cueBonusExp.png"), new Bounds(100, 455, 370, 485)); // consumable icon in the main menu (when it's being used)
@@ -6401,7 +6401,7 @@ public class MainThread implements Runnable {
      * @return -1 on error
      */
     private int detectEquipmentFilterScrollerPos() {
-        final int[] yScrollerPositions = {146, 164, 181, 199, 217, 235, 252, 270, 288, 306, 323, 341}; // top scroller positions
+        final int[] yScrollerPositions = {170, 188, 205, 223, 241, 259, 276, 293, 311, 329, 346, 364}; // top scroller positions
 
         MarvinSegment seg = detectCue(cues.get("StripScrollerTopPos"), 2 * SECOND);
         if (seg == null) {
@@ -6423,7 +6423,7 @@ public class MainThread implements Runnable {
         MarvinSegment seg;
 
         // click on the character menu button (it's a bottom-left button with your character image on it):
-        clickInGame(55, 465);
+        clickInGame(55, 520);
 
         seg = detectCue(cues.get("StripSelectorButton"), 10 * SECOND);
         if (seg == null) {
@@ -6448,7 +6448,7 @@ public class MainThread implements Runnable {
                 return;
             }
 
-            int[] yButtonPositions = {170, 230, 290, 350, 410}; // center y positions of the 5 buttons
+            int[] yButtonPositions = {190, 250, 310, 370, 430}; // center y positions of the 5 buttons
             int xButtonPosition = 390;
 
             if (scrollerPos < type.minPos()) {
@@ -6496,12 +6496,12 @@ public class MainThread implements Runnable {
 
         // position of top-left item (which is the strongest) is (490, 210)
         if (dir == StripDirection.StripDown) {
-            clickInGame(490, 210);
+            clickInGame(490, 240);
             if (!equipped) // in case item was not equipped, we must click on it twice, first time to equip it, second to unequip it. This could happen for example when we had some weaker item equipped (or no item equipped).
-                clickInGame(490, 210);
+                clickInGame(490, 240);
         } else {
             if (!equipped)
-                clickInGame(490, 210);
+                clickInGame(490, 240);
         }
 
         // OK, we're done, lets close the character menu window:
