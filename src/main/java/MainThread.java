@@ -3858,16 +3858,39 @@ public class MainThread implements Runnable {
                 BHBot.logger.stats("Run time: " + runtime);
             } else if (state.equals(State.Trials)) {
                 if (BHBot.settings.difficultyFailsafe.containsKey("t")) {
-                    String original = "difficultyTrials " + (BHBot.settings.difficultyTrials);
-                    String updated = "difficultyTrials " + (BHBot.settings.difficultyTrials - BHBot.settings.difficultyFailsafe.get("t"));
-                    settingsUpdate(original, updated);
+
+                    // The key is the difficulty decrease, the value is the minimum level
+                    Map.Entry<Integer, Integer> trialDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("t");
+                    // We calculate the new difficulty
+                    int newTrialDifficulty = BHBot.settings.difficultyTrials - trialDifficultyFailsafe.getKey();
+
+                    // We check that the new difficulty is not lower than the minimum
+                    if (newTrialDifficulty >= trialDifficultyFailsafe.getValue()) newTrialDifficulty = trialDifficultyFailsafe.getValue();
+
+                    // If the new difficulty is different from the current one, we update the ini setting
+                    if (newTrialDifficulty != BHBot.settings.difficultyTrials) {
+                        String original = "difficultyTrials " + (BHBot.settings.difficultyTrials);
+                        String updated = "difficultyTrials " + (newTrialDifficulty);
+                        settingsUpdate(original, updated);
+                    }
                 }
                 BHBot.logger.warn("Trials completed. Result: Defeat.");
             } else if (state.equals(State.Gauntlet)) {
                 if (BHBot.settings.difficultyFailsafe.containsKey("g")) {
-                    String original = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet);
-                    String updated = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet - BHBot.settings.difficultyFailsafe.get("g"));
-                    settingsUpdate(original, updated);
+                    // The key is the difficulty decrease, the value is the minimum level
+                    Map.Entry<Integer, Integer> gauntletDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("g");
+                    // We calculate the new difficulty
+                    int newGauntletDifficulty = BHBot.settings.difficultyGauntlet - gauntletDifficultyFailsafe.getKey();
+
+                    // We check that the new difficulty is not lower than the minimum
+                    if (newGauntletDifficulty >= gauntletDifficultyFailsafe.getValue()) newGauntletDifficulty = gauntletDifficultyFailsafe.getValue();
+
+                    // If the new difficulty is different from the current one, we update the ini setting
+                    if (newGauntletDifficulty != BHBot.settings.difficultyGauntlet) {
+                        String original = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet);
+                        String updated = "difficultyGauntlet " + (newGauntletDifficulty);
+                        settingsUpdate(original, updated);
+                    }
                 }
                 BHBot.logger.warn("Gauntlet completed. Result: Defeat.");
             } else {
