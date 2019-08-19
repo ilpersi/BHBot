@@ -3660,11 +3660,14 @@ public class MainThread implements Runnable {
 
                     // The key is the difficulty decrease, the value is the minimum level
                     Map.Entry<Integer, Integer> trialDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("t");
+                    int levelOffset = trialDifficultyFailsafe.getKey();
+                    int minimunLevel = trialDifficultyFailsafe.getValue();
+
                     // We calculate the new difficulty
-                    int newTrialDifficulty = BHBot.settings.difficultyTrials - trialDifficultyFailsafe.getKey();
+                    int newTrialDifficulty = BHBot.settings.difficultyTrials - levelOffset;
 
                     // We check that the new difficulty is not lower than the minimum
-                    if (newTrialDifficulty >= trialDifficultyFailsafe.getValue()) newTrialDifficulty = trialDifficultyFailsafe.getValue();
+                    if (newTrialDifficulty < minimunLevel) newTrialDifficulty = minimunLevel;
 
                     // If the new difficulty is different from the current one, we update the ini setting
                     if (newTrialDifficulty != BHBot.settings.difficultyTrials) {
@@ -3678,11 +3681,14 @@ public class MainThread implements Runnable {
                 if (BHBot.settings.difficultyFailsafe.containsKey("g")) {
                     // The key is the difficulty decrease, the value is the minimum level
                     Map.Entry<Integer, Integer> gauntletDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("g");
+                    int levelOffset = gauntletDifficultyFailsafe.getKey();
+                    int minimunLevel = gauntletDifficultyFailsafe.getValue();
+
                     // We calculate the new difficulty
-                    int newGauntletDifficulty = BHBot.settings.difficultyGauntlet - gauntletDifficultyFailsafe.getKey();
+                    int newGauntletDifficulty = BHBot.settings.difficultyGauntlet - levelOffset;
 
                     // We check that the new difficulty is not lower than the minimum
-                    if (newGauntletDifficulty >= gauntletDifficultyFailsafe.getValue()) newGauntletDifficulty = gauntletDifficultyFailsafe.getValue();
+                    if (newGauntletDifficulty < minimunLevel) newGauntletDifficulty = minimunLevel;
 
                     // If the new difficulty is different from the current one, we update the ini setting
                     if (newGauntletDifficulty != BHBot.settings.difficultyGauntlet) {
