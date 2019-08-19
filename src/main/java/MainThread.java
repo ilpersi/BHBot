@@ -3187,25 +3187,8 @@ public class MainThread implements Runnable {
      */
     private void clickOnSeg(MarvinSegment seg) {
 
-        sleep(100); //fixes the mouse cursor hovering over the cue, causing it to highlight and not be recognised
-        final int WM_LBUTTONDOWN = 513;
+        clickInGame( getSegCenterX(seg), (getSegCenterY(seg)));
 
-        WinUser.WINDOWINFO info = new WinUser.WINDOWINFO();
-        User32.INSTANCE.GetWindowInfo(BHHwnd, info);
-
-        // we make sure the window is not minimized
-        if ((info.dwStyle & WS_ICONIC) == WS_ICONIC) {
-            User32.INSTANCE.ShowWindow(BHHwnd, SW_RESTORE);
-        }
-
-        long mousePos = getSegCenterX(seg) + (getSegCenterY(seg) << 16); //x + (y << 16)
-        WinDef.LPARAM l = new WinDef.LPARAM(mousePos);
-        WinDef.WPARAM w = new WinDef.WPARAM(0);
-
-        User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN, w, l);
-        User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN + 1, w, l);
-
-      moveMouseAway();
     }
 
     private void clickInGame(int x, int y) {
@@ -3215,11 +3198,21 @@ public class MainThread implements Runnable {
     private void clickInGame(long x, long y) {
         final int WM_LBUTTONDOWN = 513;
 
+        WinUser.WINDOWINFO info = new WinUser.WINDOWINFO();
+        User32.INSTANCE.GetWindowInfo(BHHwnd, info);
+
+        // we make sure the window is not minimized
+        if ((info.dwStyle & WS_ICONIC) == WS_ICONIC) {
+            // if the window is minimized, we restore it
+            User32.INSTANCE.ShowWindow(BHHwnd, SW_RESTORE);
+        }
+
         long mousePos = x + (y << 16); //x + (y << 16)
         WinDef.LPARAM l = new WinDef.LPARAM(mousePos);
         WinDef.WPARAM w = new WinDef.WPARAM(0);
 
         User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN, w, l);
+        sleep(10);
         User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN + 1, w, l);
 
         moveMouseAway();
