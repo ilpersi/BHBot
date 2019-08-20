@@ -3186,16 +3186,18 @@ public class MainThread implements Runnable {
      * Performs a mouse click on the center of the given segment
      */
     private void clickOnSeg(MarvinSegment seg) {
-
         clickInGame( getSegCenterX(seg), (getSegCenterY(seg)));
-
     }
 
     private void clickInGame(int x, int y) {
-        clickInGame((long) x, (long) y);
+        clickInGame((long) x, (long) y, 0);
     }
 
     private void clickInGame(long x, long y) {
+        clickInGame(x, y, 0);
+    }
+
+    private void clickInGame(long x, long y, int delay) {
         final int WM_LBUTTONDOWN = 513;
 
         WinUser.WINDOWINFO info = new WinUser.WINDOWINFO();
@@ -3212,7 +3214,7 @@ public class MainThread implements Runnable {
         WinDef.WPARAM w = new WinDef.WPARAM(0);
 
         User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN, w, l);
-        sleep(10);
+        sleep(delay);
         User32.INSTANCE.SendMessage(BHHwnd, WM_LBUTTONDOWN + 1, w, l);
 
         moveMouseAway();
