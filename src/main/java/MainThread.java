@@ -436,15 +436,15 @@ public class MainThread implements Runnable {
         addCue("DropDownDownSettings", loadImage("cues/DropDownDownSettings_Steam.png"), null); // down arrow in settings menu
         addCue("DropDownUp", loadImage("cues/DropDownUpDifficulty_Steam.png"), null); // up arrow in difficulty drop down menu (found in trials/gauntlet, for example)
         addCue("DropDownDown", loadImage("cues/DropDownDownDifficulty_Steam.png"), null); // down arrow in difficulty drop down menu (found in trials/gauntlet, for example)
-        addCue("Cost", loadImage("cues/cueCost.png"), new Bounds(400, 150, 580, 240)); // used both for PvP and Gauntlet/Trials costs. Note that bounds are very wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
-        addCue("SelectCost", loadImage("cues/cueSelectCost.png"), new Bounds(555, 170, 595, 205)); // cue for select cost found in both PvP and Gauntlet/Trials windows. Note that bounds are wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
-        addCue("CostDropDown", loadImage("cues/cueCostDropDown.png"), new Bounds(260, 45, 320, 70)); // cue for cost selection drop down window
+        addCue("Cost", loadImage("cues/cueCost_Steam.png"), Bounds.fromWidthHeight(513, 201, 101, 78)); // used both for PvP and Gauntlet/Trials costs. Note that bounds are very wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
+        addCue("SelectCost", loadImage("cues/cueSelectCost_Steam.png"), Bounds.fromWidthHeight(558, 201, 60, 70)); // cue for select cost found in both PvP and Gauntlet/Trials windows. Note that bounds are wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
+        addCue("CostDropDown", loadImage("cues/cueCostDropDown_Steam.png"), Bounds.fromWidthHeight(251, 70, 348, 106)); // cue for cost selection drop down window
         addCue("0", loadImage("cues/numbers/cue0.png"), null);
-        addCue("1", loadImage("cues/numbers/cue1.png"), null);
-        addCue("2", loadImage("cues/numbers/cue2.png"), null);
-        addCue("3", loadImage("cues/numbers/cue3.png"), null);
-        addCue("4", loadImage("cues/numbers/cue4.png"), null);
-        addCue("5", loadImage("cues/numbers/cue5.png"), null);
+        addCue("1", loadImage("cues/numbers/cue1_Steam.png"), null);
+        addCue("2", loadImage("cues/numbers/cue2_Steam.png"), null);
+        addCue("3", loadImage("cues/numbers/cue3_Steam.png"), null);
+        addCue("4", loadImage("cues/numbers/cue4_Steam.png"), null);
+        addCue("5", loadImage("cues/numbers/cue5_Steam.png"), null);
         addCue("6", loadImage("cues/numbers/cue6.png"), null);
         addCue("7", loadImage("cues/numbers/cue7.png"), null);
         addCue("8", loadImage("cues/numbers/cue8.png"), null);
@@ -6307,7 +6307,7 @@ public class MainThread implements Runnable {
         // horizontal position of the 5 buttons:
         final int posx = 390;
         // vertical positions of the 5 buttons:
-        final int[] posy = new int[]{170, 230, 290, 350, 410};
+        final int[] posy = new int[]{190, 250, 310, 370, 430};
 
         clickInGame(posx, posy[newCost - 1]); // will auto-close the drop down (but it takes a second or so, since it's animated)
         sleep(2 * SECOND);
