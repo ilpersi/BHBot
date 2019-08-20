@@ -6491,12 +6491,12 @@ public class MainThread implements Runnable {
 
         // position of top-left item (which is the strongest) is (490, 210)
         if (dir == StripDirection.StripDown) {
-            clickInGame(490, 240);
+            clickInGame(490, 240, 100);
             if (!equipped) // in case item was not equipped, we must click on it twice, first time to equip it, second to unequip it. This could happen for example when we had some weaker item equipped (or no item equipped).
-                clickInGame(490, 240);
+                clickInGame(490, 240, 100);
         } else {
             if (!equipped)
-                clickInGame(490, 240);
+                clickInGame(490, 240, 100);
         }
 
         // OK, we're done, lets close the character menu window:
