@@ -3346,7 +3346,10 @@ public class MainThread implements Runnable {
         int left = seg.x2 + 1;
         int top = seg.y1 + 6;
 
-        final Color full = new Color(17, 208, 226);
+        ArrayList<Color> blueColors = new ArrayList<>();
+        blueColors.add(new Color(17, 208, 226));
+        blueColors.add(new Color(16, 206, 224));
+        blueColors.add(new Color(16, 205, 223));
 
         int value = 0;
         int maxTokens = BHBot.settings.maxTokens;
@@ -3356,7 +3359,7 @@ public class MainThread implements Runnable {
             value = i;
             Color col = new Color(img.getRGB(left + i, top));
 
-            if (!col.equals(full))
+            if (!blueColors.contains(col))
                 break;
         }
 
