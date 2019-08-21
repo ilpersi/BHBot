@@ -3124,6 +3124,10 @@ public class MainThread implements Runnable {
         return detectCue(cue, timeout, true);
     }
 
+    private MarvinSegment detectCue(String cueName, int timeout) {
+        return detectCue(cues.get(cueName), timeout, true);
+    }
+
     /**
      * Will try (and retry) to detect cue from image until timeout is reached. May return null if cue has not been detected within given 'timeout' time. If 'timeout' is 0,
      * then it will attempt at cue detection only once and return the result immediately.
@@ -6302,7 +6306,7 @@ public class MainThread implements Runnable {
 
         clickOnSeg(seg);
 
-        readScreen(5 * SECOND); // wait for the cost selection popup window to open
+        detectCue("CostDropDown", 5 * SECOND); // wait for the cost selection popup window to open
 
         // horizontal position of the 5 buttons:
         final int posx = 390;
