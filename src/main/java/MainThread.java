@@ -3360,6 +3360,10 @@ public class MainThread implements Runnable {
         return detectCue(cue, timeout, true);
     }
 
+    private MarvinSegment detectCue(String cueName, int timeout) {
+        return detectCue(cues.get(cueName), timeout, true);
+    }
+
     /**
      * Will try (and retry) to detect cue from image until timeout is reached. May return null if cue has not been detected within given 'timeout' time. If 'timeout' is 0,
      * then it will attempt at cue detection only once and return the result immediately.
