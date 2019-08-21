@@ -587,8 +587,9 @@ public class MainThread implements Runnable {
         Callable<Boolean> callable = () -> {
             AtomicReference<Boolean> result = new AtomicReference<>(false);
             WindowUtils.getAllWindows(false).forEach(desktopWindow -> {
-                if (desktopWindow.getTitle().contains("Bit Heroes") && !desktopWindow.getTitle().contains("Steam")) {
+                if (desktopWindow.getTitle().equals("Bit Heroes") && desktopWindow.getFilePath().contains("Bit Heroes.exe")) {
                     BHHwnd = desktopWindow.getHWND();
+                    BHBot.logger.debug("Bit Heroes HWND: " + BHHwnd);
                     BHWindow = desktopWindow;
                     result.set(true);
                 }
