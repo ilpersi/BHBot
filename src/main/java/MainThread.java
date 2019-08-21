@@ -1852,16 +1852,6 @@ public class MainThread implements Runnable {
                                     restart();
                                     continue;
                                 }
-                            } else {
-                                readScreen(SECOND);
-                                seg = detectCue(cues.get("AutoTeam"), SECOND * 2);
-                                if (seg != null) {
-                                    clickOnSeg(seg);
-                                } else {
-                                    BHBot.logger.error("Impossible to find auto button in Dungeon Team!");
-                                    restart();
-                                    continue;
-                                }
                             }
 
                             readScreen();
