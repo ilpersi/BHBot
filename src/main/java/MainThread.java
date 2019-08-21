@@ -303,7 +303,7 @@ public class MainThread implements Runnable {
         addCue("PVP", loadImage("cues/mainscreen/PvP_Steam.png"), new Bounds(0, 70, 75, 150)); // PVP icon in main screen
         addCue("WorldBoss", loadImage("cues/mainscreen/WorldBoss_Steam.png"), new Bounds(0, 220, 73, 288));
         addCue("RaidButton", loadImage("cues/mainscreen/Raid_Steam.png"), new Bounds(10, 280, 70, 365));
-        addCue("GVG", loadImage("cues/mainscreen/cueGVG_Steam.png"), Bounds.fromWidthHeight(720, 118, 73, 242));
+        addCue("GVG", loadImage("cues/mainscreen/GVG_Steam.png"), Bounds.fromWidthHeight(720, 118, 73, 242));
         addCue("Invasion", loadImage("cues/mainscreen/Invasion_Steam.png"), null);
         addCue("ExpeditionButton", loadImage("cues/mainscreen/cueExpedition.png"), null);
         addCue("Trials", loadImage("cues/mainscreen/Trials_Steam.png"), new Bounds(719, 211, 789, 425));
