@@ -1691,7 +1691,6 @@ public class MainThread implements Runnable {
                             clickOnSeg(seg);
                             sleep(5 * SECOND);
 
-                            handleTeamMalformedWarning();
                             if (handleTeamMalformedWarning()) {
                                 BHBot.logger.error("Team incomplete, doing emergency restart..");
                                 restart();
@@ -1989,7 +1988,6 @@ public class MainThread implements Runnable {
                             }
                             clickOnSeg(seg);
 
-                            handleTeamMalformedWarning();
                             if (handleTeamMalformedWarning()) {
                                 BHBot.logger.error("Team incomplete, doing emergency restart..");
                                 restart();
@@ -2170,7 +2168,6 @@ public class MainThread implements Runnable {
                                 clickOnSeg(seg);
                                 sleep(SECOND);
 
-                                handleTeamMalformedWarning();
                                 if (handleTeamMalformedWarning()) {
                                     BHBot.logger.error("Team incomplete, doing emergency restart..");
                                     restart();
@@ -2243,7 +2240,6 @@ public class MainThread implements Runnable {
                                 clickOnSeg(seg);
                                 sleep(5 * SECOND);
 
-                                handleTeamMalformedWarning();
                                 if (handleTeamMalformedWarning()) {
                                     BHBot.logger.error("Team incomplete, doing emergency restart..");
                                     restart();
@@ -2446,7 +2442,6 @@ public class MainThread implements Runnable {
                                     restart();
                                 }
 
-                                handleTeamMalformedWarning();
                                 if (handleTeamMalformedWarning()) {
                                     BHBot.logger.error("Team incomplete, doing emergency restart..");
                                     restart();
