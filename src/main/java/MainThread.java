@@ -1047,7 +1047,6 @@ public class MainThread implements Runnable {
 //				  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime)));
 //		BHBot.logger.info(runtime);
 
-
         //End debugging section
 
         if (BHBot.settings.idleMode) { //skip startup checks if we are in idle mode
@@ -1842,8 +1841,7 @@ public class MainThread implements Runnable {
 
                             //team selection screen
                             /* Solo-for-bounty code */
-                            int soloThreshold = Character.getNumericValue(goalZone); //convert the zone char to int so we can compare
-                            if (soloThreshold <= BHBot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
+                            if (goalZone <= BHBot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
                                 readScreen(SECOND);
                                 seg = detectCue(cues.get("Clear"), SECOND * 2);
                                 if (seg != null) {
@@ -1854,13 +1852,23 @@ public class MainThread implements Runnable {
                                     restart();
                                     continue;
                                 }
+                            } else {
+                                readScreen(SECOND);
+                                seg = detectCue(cues.get("AutoTeam"), SECOND * 2);
+                                if (seg != null) {
+                                    clickOnSeg(seg);
+                                } else {
+                                    BHBot.logger.error("Impossible to find auto button in Dungeon Team!");
+                                    restart();
+                                    continue;
+                                }
                             }
 
                             readScreen();
                             seg = detectCue(cues.get("Accept"), SECOND * 2);
                             clickOnSeg(seg);
 
-                            if (soloThreshold <= BHBot.settings.minSolo) {
+                            if (goalZone <= BHBot.settings.minSolo) {
                                 readScreen(3 * SECOND); //wait for dropdown animation to finish
                                 seg = detectCue(cues.get("YesGreen"), 2 * SECOND);
                                 if (seg != null) {
