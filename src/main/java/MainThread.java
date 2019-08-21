@@ -379,7 +379,7 @@ public class MainThread implements Runnable {
         addCue("GuildLeaveConfirm", loadImage("cues/cueGuildLeaveConfirm.png"), new Bounds(195, 105, 605, 395)); // GVG confirm
         addCue("DisabledBattles", loadImage("cues/cueDisabledBattles.png"), new Bounds(240, 210, 560, 330)); // Disabled Battles Popup
 
-        addCue("Play", loadImage("cues/cuePlay_Steam.png"), null); // cue for play button in trials/gauntlet window
+        addCue("Play", loadImage("cues/buttons/Play_Steam.png"), null); // cue for play button in trials/gauntlet window
         addCue("TokenBar", loadImage("cues/trial-gauntlet/cueTokenBar_Steam.png"), Bounds.fromWidthHeight(321,79,37, 30));
 
         addCue("UhOh", loadImage("cues/cueUhoh.png"), new Bounds(319, 122, 526, 184));
