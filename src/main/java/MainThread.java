@@ -380,7 +380,7 @@ public class MainThread implements Runnable {
         addCue("DisabledBattles", loadImage("cues/cueDisabledBattles.png"), new Bounds(240, 210, 560, 330)); // Disabled Battles Popup
 
         addCue("Play", loadImage("cues/cuePlay_Steam.png"), null); // cue for play button in trials/gauntlet window
-        addCue("TokenBar", loadImage("cues/cueTokenBar.png"), null);
+        addCue("TokenBar", loadImage("cues/trial-gauntlet/cueTokenBar_Steam.png"), Bounds.fromWidthHeight(321,79,37, 30));
 
         addCue("UhOh", loadImage("cues/cueUhoh.png"), new Bounds(319, 122, 526, 184));
         addCue("ReviveAverage", loadImage("cues/cueReviveAverage.png"), null);
@@ -423,8 +423,8 @@ public class MainThread implements Runnable {
 
         addCue("InGamePM", loadImage("cues/cueInGamePM.png"), new Bounds(450, 330, 530, 380)); // note that the guild window uses the same cue! That's why it's important that user doesn't open guild window while bot is working!
 
-        addCue("TrialsOrGauntletWindow", loadImage("cues/cueTrialsOrGauntletWindow.png"), new Bounds(300, 30, 510, 105)); // cue for a trials/gauntlet window
-        addCue("Difficulty", loadImage("cues/cueDifficulty.png"), new Bounds(450, 330, 640, 450)); // selected difficulty in trials/gauntlet window
+        addCue("TrialsOrGauntletWindow", loadImage("cues/cueTrialsOrGauntletWindow_Steam.png"), Bounds.fromWidthHeight(308, 67, 178, 54)); // cue for a trials/gauntlet window
+        addCue("Difficulty", loadImage("cues/trial-gauntlet/cueDifficulty_Steam.png"), Bounds.fromWidthHeight(466, 379, 160, 64)); // selected difficulty in trials/gauntlet window
         addCue("DifficultyDisabled", loadImage("cues/cueDifficultyDisabled.png"), new Bounds(450, 330, 640, 450)); // selected difficulty in trials/gauntlet window (disabled - because game is still fetching data from server)
         addCue("SelectDifficulty", loadImage("cues/cueSelectDifficulty.png"), new Bounds(400, 260, 0, 0)/*not exact bounds... the lower-right part of screen!*/); // select difficulty button in trials/gauntlet
         addCue("DifficultyDropDown", loadImage("cues/cueDifficultyDropDown.png"), new Bounds(260, 50, 550, 125)); // difficulty drop down menu cue
@@ -439,7 +439,7 @@ public class MainThread implements Runnable {
         addCue("Cost", loadImage("cues/cueCost_Steam.png"), Bounds.fromWidthHeight(513, 201, 101, 78)); // used both for PvP and Gauntlet/Trials costs. Note that bounds are very wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
         addCue("SelectCost", loadImage("cues/cueSelectCost_Steam.png"), Bounds.fromWidthHeight(558, 201, 60, 70)); // cue for select cost found in both PvP and Gauntlet/Trials windows. Note that bounds are wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
         addCue("CostDropDown", loadImage("cues/cueCostDropDown_Steam.png"), Bounds.fromWidthHeight(251, 70, 348, 106)); // cue for cost selection drop down window
-        addCue("0", loadImage("cues/numbers/cue0.png"), null);
+        addCue("0", loadImage("cues/numbers/cue0_Steam.png"), null);
         addCue("1", loadImage("cues/numbers/cue1_Steam.png"), null);
         addCue("2", loadImage("cues/numbers/cue2_Steam.png"), null);
         addCue("3", loadImage("cues/numbers/cue3_Steam.png"), null);
@@ -3361,7 +3361,7 @@ public class MainThread implements Runnable {
                 break;
         }
 
-        value = value + 2; //add the last 2 pixels to get an accurate count
+        value += 2; //add the last 2 pixels to get an accurate count
 //		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxTokens / 77.0f)));
         return Math.round(value * (maxTokens / 75.0f)); // scale it to interval [0..10]
     }
@@ -5858,7 +5858,7 @@ public class MainThread implements Runnable {
             return 0; // error
         }
 
-        MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 35, seg.y1 + 30, 55, 19));
+        MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 35, seg.y1 + 30, 55, 20));
 
         // make it white-gray (to facilitate cue recognition):
         makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
