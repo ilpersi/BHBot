@@ -445,10 +445,10 @@ public class MainThread implements Runnable {
         addCue("3", loadImage("cues/numbers/cue3_Steam.png"), null);
         addCue("4", loadImage("cues/numbers/cue4_Steam.png"), null);
         addCue("5", loadImage("cues/numbers/cue5_Steam.png"), null);
-        addCue("6", loadImage("cues/numbers/cue6.png"), null);
-        addCue("7", loadImage("cues/numbers/cue7.png"), null);
-        addCue("8", loadImage("cues/numbers/cue8.png"), null);
-        addCue("9", loadImage("cues/numbers/cue9.png"), null);
+        addCue("6", loadImage("cues/numbers/cue6_Steam.png"), null);
+        addCue("7", loadImage("cues/numbers/cue7_Steam.png"), null);
+        addCue("8", loadImage("cues/numbers/cue8_Steam.png"), null);
+        addCue("9", loadImage("cues/numbers/cue9_Steam.png"), null);
 
         // PvP strip related:
         addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos_Steam.png"), Bounds.fromWidthHeight(526, 151, 18, 318));
