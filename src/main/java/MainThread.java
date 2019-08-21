@@ -375,7 +375,7 @@ public class MainThread implements Runnable {
 
         addCue("Team", loadImage("cues/Team_Steam.png"), null); // Team text part of pop-ups about teams
         addCue("TeamNotFull", loadImage("cues/TeamNotFull_Steam.png"), new Bounds(230, 200, 330, 250)); // warning popup when some friend left you and your team is not complete anymore
-        addCue("TeamNotOrdered", loadImage("cues/cueTeamNotOrdered.png"), new Bounds(230, 190, 350, 250)); // warning popup when some guild member left and your GvG team is not complete anymore
+        addCue("TeamNotOrdered", loadImage("cues/cueTeamNotOrdered_Steam.png"), Bounds.fromWidthHeight(239, 234, 314, 113)); // warning popup when some guild member left and your GvG team is not complete anymore
         addCue("GuildLeaveConfirm", loadImage("cues/cueGuildLeaveConfirm.png"), new Bounds(195, 105, 605, 395)); // GVG confirm
         addCue("DisabledBattles", loadImage("cues/cueDisabledBattles.png"), new Bounds(240, 210, 560, 330)); // Disabled Battles Popup
 
