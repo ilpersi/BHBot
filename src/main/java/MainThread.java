@@ -423,7 +423,7 @@ public class MainThread implements Runnable {
 
         addCue("InGamePM", loadImage("cues/cueInGamePM.png"), new Bounds(450, 330, 530, 380)); // note that the guild window uses the same cue! That's why it's important that user doesn't open guild window while bot is working!
 
-        addCue("TrialsOrGauntletWindow", loadImage("cues/cueTrialsOrGauntletWindow_Steam.png"), Bounds.fromWidthHeight(308, 67, 178, 54)); // cue for a trials/gauntlet window
+        addCue("TrialsOrGauntletWindow", loadImage("cues/trial-gauntlet/cueTrialsOrGauntletWindow_Steam.png"), Bounds.fromWidthHeight(308, 67, 178, 54)); // cue for a trials/gauntlet window
         addCue("Difficulty", loadImage("cues/trial-gauntlet/cueDifficulty_Steam.png"), Bounds.fromWidthHeight(466, 379, 160, 64)); // selected difficulty in trials/gauntlet window
         addCue("DifficultyDisabled", loadImage("cues/cueDifficultyDisabled.png"), new Bounds(450, 330, 640, 450)); // selected difficulty in trials/gauntlet window (disabled - because game is still fetching data from server)
         addCue("SelectDifficulty", loadImage("cues/cueSelectDifficulty.png"), new Bounds(400, 260, 0, 0)/*not exact bounds... the lower-right part of screen!*/); // select difficulty button in trials/gauntlet
