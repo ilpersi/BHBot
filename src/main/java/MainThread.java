@@ -6537,7 +6537,7 @@ public class MainThread implements Runnable {
 
         clickOnSeg(seg);
 
-        readScreen(5 * SECOND); // wait for the cost selection popup window to open
+        detectCue("CostDropDown", 5 * SECOND); // wait for the cost selection popup window to open
 
         // horizontal position of the 5 buttons:
         final int posx = 390;
