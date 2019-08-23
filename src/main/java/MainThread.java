@@ -3341,6 +3341,29 @@ public class MainThread implements Runnable {
         img = takeScreenshot(game);
     }
 
+    /**
+     * This method is ment to be used for development purpose. In some situations you want to "fake" the readScreen result
+     * with an hand-crafted image. If this is the case, this method is here to help with it.
+     * @param screenFilePath the path to the image to be used to load the screen
+     */
+    @SuppressWarnings("unused")
+    private void loadScreen(String screenFilePath) {
+        File screenImgFile = new File(screenFilePath);
+
+        if (screenImgFile.exists()) {
+            BufferedImage screenImg = null;
+            try {
+                screenImg = ImageIO.read(screenImgFile);
+            } catch (IOException e) {
+                BHBot.logger.error("Error when loading game screen ", e);
+            }
+
+            img = screenImg;
+        } else {
+            BHBot.logger.error("Impossible to load screen file: " + screenImgFile.getAbsolutePath());
+        }
+    }
+
     private MarvinSegment detectCue(Cue cue) {
         return detectCue(cue, 0, true);
     }
