@@ -416,16 +416,16 @@ public class MainThread implements Runnable {
         addCue("Cost", loadImage("cues/cueCost.png"), new Bounds(400, 150, 580, 240)); // used both for PvP and Gauntlet/Trials costs. Note that bounds are very wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
         addCue("SelectCost", loadImage("cues/cueSelectCost.png"), new Bounds(555, 170, 595, 205)); // cue for select cost found in both PvP and Gauntlet/Trials windows. Note that bounds are wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
         addCue("CostDropDown", loadImage("cues/cueCostDropDown.png"), new Bounds(260, 45, 320, 70)); // cue for cost selection drop down window
-        addCue("0", loadImage("cues/cue0.png"), null);
-        addCue("1", loadImage("cues/cue1.png"), null);
-        addCue("2", loadImage("cues/cue2.png"), null);
-        addCue("3", loadImage("cues/cue3.png"), null);
-        addCue("4", loadImage("cues/cue4.png"), null);
-        addCue("5", loadImage("cues/cue5.png"), null);
-        addCue("6", loadImage("cues/cue6.png"), null);
-        addCue("7", loadImage("cues/cue7.png"), null);
-        addCue("8", loadImage("cues/cue8.png"), null);
-        addCue("9", loadImage("cues/cue9.png"), null);
+        addCue("0", loadImage("cues/numbers/cue0.png"), null);
+        addCue("1", loadImage("cues/numbers/cue1.png"), null);
+        addCue("2", loadImage("cues/numbers/cue2.png"), null);
+        addCue("3", loadImage("cues/numbers/cue3.png"), null);
+        addCue("4", loadImage("cues/numbers/cue4.png"), null);
+        addCue("5", loadImage("cues/numbers/cue5.png"), null);
+        addCue("6", loadImage("cues/numbers/cue6.png"), null);
+        addCue("7", loadImage("cues/numbers/cue7.png"), null);
+        addCue("8", loadImage("cues/numbers/cue8.png"), null);
+        addCue("9", loadImage("cues/numbers/cue9.png"), null);
 
         // PvP strip related:
         addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos.png"), new Bounds(525, 140, 540, 370));
