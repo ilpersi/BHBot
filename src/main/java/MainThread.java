@@ -2397,7 +2397,7 @@ public class MainThread implements Runnable {
                                 clickInGame(p.x, p.y);
 
                                 // select difficulty if needed:
-                                int difficulty = detectDifficultyExpedition();
+                                int difficulty = detectDifficulty(cues.get("DifficultyExpedition"));
                                 if (difficulty == 0) { // error!
                                     BHBot.logger.warn("Due to an error in difficulty detection, Expedition will be skipped.");
                                     seg = detectCue(cues.get("X"));
@@ -6083,21 +6083,25 @@ public class MainThread implements Runnable {
         input.update(); // must be called! Or else things won't work...
     }
 
+    int detectDifficulty(){
+        return detectDifficulty(cues.get("Difficulty"));
+    }
+
     /**
      * Detects selected difficulty in trials/gauntlet window. <br>
      * NOTE: Trials/gauntlet window must be open for this to work! <br>
      *
      * @return 0 in case of an error, or the selected difficulty level instead.
      */
-    int detectDifficulty() {
+    int detectDifficulty(Cue difficulty) {
         readScreen(2 * SECOND); // note that sometimes the cue will be gray (disabled) since the game is fetching data from the server - in that case we'll have to wait a bit
 
-        MarvinSegment seg = detectCue(cues.get("Difficulty"));
+        MarvinSegment seg = detectCue(difficulty);
         if (seg == null) {
             seg = detectCue(cues.get("DifficultyDisabled"));
             if (seg != null) { // game is still fetching data from the server... we must wait a bit!
                 sleep(5 * SECOND);
-                seg = detectCue(cues.get("Difficulty"), 20 * SECOND);
+                seg = detectCue(difficulty, 20 * SECOND);
             }
         }
         if (seg == null) {
@@ -6243,39 +6247,6 @@ public class MainThread implements Runnable {
             BHBot.logger.error("Impossible to detect desired difficulty in changeWorldBossDifficulty!");
             restart();
         }
-    }
-
-    /**
-     * Detects selected difficulty in expedition window. <br>
-     *
-     * @return 0 in case of an error, or the selected difficulty level instead.
-     */
-    private int detectDifficultyExpedition() {
-        sleep(2 * SECOND); // note that sometimes the cue will be gray (disabled) since the game is fetching data from the server - in that case we'll have to wait a bit
-        readScreen();
-
-        MarvinSegment seg = detectCue(cues.get("DifficultyExpedition"));
-        if (seg == null) {
-            seg = detectCue(cues.get("DifficultyDisabled"));
-            if (seg != null) { // game is still fetching data from the server... we must wait a bit!
-                sleep(5 * SECOND);
-                seg = detectCue(cues.get("DifficultyExpedition"), 20 * SECOND);
-            }
-        }
-        if (seg == null) {
-            BHBot.logger.error("Error: unable to detect difficulty selection box!");
-            saveGameScreen("early_error");
-            return 0; // error
-        }
-
-        MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 35, seg.y1 + 30, 55, 19));
-
-        // make it white-gray (to facilitate cue recognition):
-        makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
-
-        BufferedImage imb = im.getBufferedImage();
-
-        return readNumFromImg(imb);
     }
 
     /**
