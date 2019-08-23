@@ -3384,7 +3384,6 @@ public class MainThread implements Runnable {
                 break;
         }
 
-        value += 2; //add the last 2 pixels to get an accurate count
 //		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxTokens / 77.0f)));
         return Math.round(value * (maxTokens / 75.0f)); // scale it to interval [0..10]
     }
