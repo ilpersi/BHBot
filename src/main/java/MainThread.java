@@ -3335,7 +3335,11 @@ public class MainThread implements Runnable {
         int left = seg.x2 + 1;
         int top = seg.y1 + 9;
 
-        final Color full = new Color(199, 79, 175);
+        HashSet<Color> raidColors = new HashSet<>();
+        raidColors.add(new Color(199, 79, 175));
+        raidColors.add(new Color(197, 78, 173));
+        raidColors.add(new Color(196, 78, 172));
+        raidColors.add(new Color(199, 79, 176));
 
         int value = 0;
         int maxShards = BHBot.settings.maxShards;
@@ -3344,12 +3348,10 @@ public class MainThread implements Runnable {
             value = i;
             Color col = new Color(img.getRGB(left + i, top));
 
-            if (!col.equals(full))
+            if (!raidColors.contains(col))
                 break;
         }
 
-        value = value + 2; //add the last 2 pixels to get an accurate count
-//		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxShards / 77.0f)));
         return Math.round(value * (maxShards / 75.0f)); // round to nearest whole number
     }
 
