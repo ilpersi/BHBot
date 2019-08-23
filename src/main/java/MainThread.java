@@ -2813,8 +2813,6 @@ public class MainThread implements Runnable {
 
     boolean checkShrineSettings(boolean ignoreBoss, boolean ignoreShrines) {
         //open settings
-        int ignoreBossCnt = 0;
-        int ignoreShrineCnt = 0;
 
         MarvinSegment seg;
 
@@ -2834,32 +2832,32 @@ public class MainThread implements Runnable {
 
             Bounds ignoreBossBounds = new Bounds(172, 333, 210, 372);
             Bounds ignoreShrineBounds = new Bounds(172, 375, 210, 414);
+            MarvinSegment ignoreBossCheck = detectCue(cues.get("Check"), 0, ignoreBossBounds);
+            MarvinSegment ignoreShrineCheck = detectCue(cues.get("Check"), 0, ignoreShrineBounds);
 
-            seg = detectCue(cues.get("Check"), 0, ignoreBossBounds);
             if (ignoreBoss) {
-                if (seg == null) {
+                if (ignoreBossCheck == null) {
                     clickInGame(194, 366);
                     BHBot.logger.debug("Ignore Boss Enabled");
                     ignoreBossSetting = true;
                 }
 
             } else {
-                if (seg != null) {
+                if (ignoreBossCheck != null) {
                     clickInGame(194, 366);
                     BHBot.logger.debug("Ignore Boss Disabled");
                     ignoreBossSetting = false;
                 }
             }
 
-            seg = detectCue(cues.get("Check"), 0, ignoreShrineBounds);
             if (ignoreShrines) {
-                if (seg == null) {
+                if (ignoreShrineCheck == null) {
                     clickInGame(194, 402);
                     BHBot.logger.debug("Ignore Shrine Enabled");
                     ignoreShrinesSetting = true;
                 }
             } else {
-                if (seg != null) {
+                if (ignoreShrineCheck != null) {
                     clickInGame(194, 402);
                     BHBot.logger.debug("Ignore Shrine Disabled");
                     ignoreShrinesSetting = false;
