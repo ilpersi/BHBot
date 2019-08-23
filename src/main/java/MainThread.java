@@ -2226,7 +2226,7 @@ public class MainThread implements Runnable {
                                 clickInGame(p.x, p.y);
 
                                 // select difficulty if needed:
-                                int difficulty = detectDifficultyExpedition();
+                                int difficulty = detectDifficulty(cues.get("DifficultyExpedition"));
                                 if (difficulty == 0) { // error!
                                     BHBot.logger.warn("Due to an error in difficulty detection, Expedition will be skipped.");
                                     seg = detectCue(cues.get("X"));
@@ -2240,7 +2240,7 @@ public class MainThread implements Runnable {
 
                                 if (difficulty != targetDifficulty) {
                                     BHBot.logger.info("Detected Expedition difficulty level: " + difficulty + ", settings level is " + targetDifficulty + ". Changing..");
-                                    boolean result = selectDifficultyExpedition(difficulty, targetDifficulty);
+                                    boolean result = selectDifficulty(difficulty, targetDifficulty, cues.get("SelectDifficultyExpedition"), 5);
                                     if (!result) { // error!
                                         // see if drop down menu is still open and close it:
                                         readScreen();
@@ -5859,21 +5859,25 @@ public class MainThread implements Runnable {
         input.update(); // must be called! Or else things won't work...
     }
 
+    int detectDifficulty(){
+        return detectDifficulty(cues.get("Difficulty"));
+    }
+
     /**
      * Detects selected difficulty in trials/gauntlet window. <br>
      * NOTE: Trials/gauntlet window must be open for this to work! <br>
      *
      * @return 0 in case of an error, or the selected difficulty level instead.
      */
-    int detectDifficulty() {
+    private int detectDifficulty(Cue difficulty) {
         readScreen(2 * SECOND); // note that sometimes the cue will be gray (disabled) since the game is fetching data from the server - in that case we'll have to wait a bit
 
-        MarvinSegment seg = detectCue(cues.get("Difficulty"));
+        MarvinSegment seg = detectCue(difficulty);
         if (seg == null) {
             seg = detectCue(cues.get("DifficultyDisabled"));
             if (seg != null) { // game is still fetching data from the server... we must wait a bit!
                 sleep(5 * SECOND);
-                seg = detectCue(cues.get("Difficulty"), 20 * SECOND);
+                seg = detectCue(difficulty, 20 * SECOND);
             }
         }
         if (seg == null) {
@@ -6018,66 +6022,20 @@ public class MainThread implements Runnable {
     }
 
     /**
-     * Detects selected difficulty in expedition window. <br>
-     *
-     * @return 0 in case of an error, or the selected difficulty level instead.
-     */
-    private int detectDifficultyExpedition() {
-        sleep(2 * SECOND); // note that sometimes the cue will be gray (disabled) since the game is fetching data from the server - in that case we'll have to wait a bit
-        readScreen();
-
-        MarvinSegment seg = detectCue(cues.get("DifficultyExpedition"));
-        if (seg == null) {
-            seg = detectCue(cues.get("DifficultyDisabled"));
-            if (seg != null) { // game is still fetching data from the server... we must wait a bit!
-                sleep(5 * SECOND);
-                seg = detectCue(cues.get("DifficultyExpedition"), 20 * SECOND);
-            }
-        }
-        if (seg == null) {
-            BHBot.logger.error("Error: unable to detect difficulty selection box!");
-            saveGameScreen("early_error");
-            return 0; // error
-        }
-
-        MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 35, seg.y1 + 30, 55, 19));
-
-        // make it white-gray (to facilitate cue recognition):
-        makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
-
-        BufferedImage imb = im.getBufferedImage();
-
-        return readNumFromImg(imb);
-    }
-
-    /**
      * Changes difficulty level in trials/gauntlet window. <br>
      * Note: for this to work, trials/gauntlet window must be open!
      *
      * @return false in case of an error (unable to change difficulty).
      */
     boolean selectDifficulty(int oldDifficulty, int newDifficulty) {
-        if (oldDifficulty == newDifficulty)
-            return true; // no change
-
-        MarvinSegment seg = detectCue(cues.get("SelectDifficulty"), 2 * SECOND);
-        if (seg == null) {
-            BHBot.logger.error("Error: unable to detect 'select difficulty' button while trying to change difficulty level!");
-            return false; // error
-        }
-
-        clickOnSeg(seg);
-
-        readScreen(5 * SECOND);
-
-        return selectDifficultyFromDropDown(newDifficulty);
+        return selectDifficulty(oldDifficulty, newDifficulty, cues.get("SelectDifficulty"), 1);
     }
 
-    private boolean selectDifficultyExpedition(int oldDifficulty, int newDifficulty) {
+    private boolean selectDifficulty(int oldDifficulty, int newDifficulty, Cue difficulty, int step) {
         if (oldDifficulty == newDifficulty)
             return true; // no change
 
-        MarvinSegment seg = detectCue(cues.get("SelectDifficultyExpedition"), 2 * SECOND);
+        MarvinSegment seg = detectCue(difficulty, 2 * SECOND);
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect 'select difficulty' button while trying to change difficulty level!");
             return false; // error
@@ -6087,7 +6045,7 @@ public class MainThread implements Runnable {
 
         readScreen(5 * SECOND);
 
-        return selectDifficultyFromDropDownExpedition(newDifficulty);
+        return selectDifficultyFromDropDown(newDifficulty, step);
     }
 
     /**
@@ -6097,8 +6055,8 @@ public class MainThread implements Runnable {
      *
      * @return false in case of an error.
      */
-    private boolean selectDifficultyFromDropDown(int newDifficulty) {
-        return selectDifficultyFromDropDown(newDifficulty, 0);
+    private boolean selectDifficultyFromDropDown(int newDifficulty, int step) {
+        return selectDifficultyFromDropDown(newDifficulty, 0, step);
     }
 
     /**
@@ -6106,7 +6064,7 @@ public class MainThread implements Runnable {
      *
      * @return false on error (caller must do restart() if he gets false as a result from this method)
      */
-    private boolean selectDifficultyFromDropDown(int newDifficulty, int recursionDepth) {
+    private boolean selectDifficultyFromDropDown(int newDifficulty, int recursionDepth, int step) {
         // horizontal position of the 5 buttons:
         final int posx = 390;
         // vertical positions of the 5 buttons:
@@ -6133,7 +6091,7 @@ public class MainThread implements Runnable {
             return false;
         }
 
-        int move = newDifficulty - num; // if negative, we have to move down (in dropdown/numbers), or else up
+        int move = (newDifficulty - num) / step; // if negative, we have to move down (in dropdown/numbers), or else up
 //		BHBot.logger.info("move = " + Integer.toString(move));
 
         if (move >= -4 && move <= 0) {
@@ -6157,7 +6115,7 @@ public class MainThread implements Runnable {
             }
             // OK, we should have a target value on screen now, in the first spot. Let's click it!
             readScreen(5 * SECOND); //*** should we increase this time?
-            return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1); // recursively select new difficulty
+            return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1, step); // recursively select new difficulty
         } else {
             // move down
             seg = detectCue(cues.get("DropDownDown"));
@@ -6174,94 +6132,7 @@ public class MainThread implements Runnable {
             }
             // OK, we should have a target value on screen now, in the first spot. Let's click it!
             readScreen(5 * SECOND); //*** should we increase this time?
-            return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1); // recursively select new difficulty
-        }
-    }
-
-    /**
-     * Quickfix Copy for Expedition as it moves 5 at a time not 1
-     */
-    private boolean selectDifficultyFromDropDownExpedition(int newDifficulty) {
-        return selectDifficultyFromDropDownExpedition(newDifficulty, 0);
-    }
-
-    /**
-     * Quickfix Copy for Expedition as it moves 5 at a time not 1
-     * Internal routine - do not use it manually! <br>
-     *
-     * @return false on error (caller must do restart() if he gets false as a result from this method)
-     */
-    private boolean selectDifficultyFromDropDownExpedition(int newDifficulty,
-                                                           @SuppressWarnings("SameParameterValue") int recursionDepth) {
-        // horizontal position of the 5 buttons:
-        final int posx = 390;
-        // vertical positions of the 5 buttons:
-        final int[] posy = new int[]{170, 230, 290, 350, 410};
-
-        if (recursionDepth > 5) {
-            BHBot.logger.error("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
-            saveGameScreen("early_error");
-            tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
-            return false;
-        }
-
-        MarvinSegment seg;
-
-        MarvinImage subm = new MarvinImage(img.getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu. Note that every while a "tier x" is written bellow it, so text is higher up (hence we need to scan a larger area)
-        makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
-        BufferedImage sub = subm.getBufferedImage();
-        int num = readNumFromImg(sub);
-//		BHBot.logger.info("num = " + Integer.toString(num));
-        if (num == 0) {
-            BHBot.logger.error("Error: unable to read difficulty level from a drop-down menu!");
-            saveGameScreen("early_error");
-            tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
-            return false;
-        }
-
-        int move = (newDifficulty - num) / 5; // divided by 5 as each click moves the levels by 5 in Expeditions
-//		BHBot.logger.info("move = " + Integer.toString(move));
-
-        if (move >= -4 && move <= 0) {
-            // we have it on screen. Let's select it!
-            clickInGame(posx, posy[Math.abs(move)]); // will auto-close the drop down (but it takes a second or so, since it's animated)
-            return true;
-        }
-
-        // scroll the drop-down until we reach our position:
-        if (move > 0) {
-            // move up
-            seg = detectCue(cues.get("DropDownUp"));
-            if (seg == null) {
-                BHBot.logger.error("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
-                saveGameScreen("early_error");
-                clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
-                return false;
-            }
-//			BHBot.logger.info("Scrolls up = " + Integer.toString(move));
-            for (int i = 0; i < move; i++) {
-                clickOnSeg(seg);
-            }
-            // OK, we should have a target value on screen now, in the first spot. Let's click it!
-            readScreen(5 * SECOND); //*** should we increase this time?
-            return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1); // recursively select new difficulty
-        } else {
-            // move down
-            seg = detectCue(cues.get("DropDownDown"));
-            if (seg == null) {
-                BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty drop-down menu!");
-                saveGameScreen("early_error");
-                clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
-                return false;
-            }
-            int moves = Math.abs(move);
-//			BHBot.logger.info("Scrolls down = " + Integer.toString(moves));
-            for (int i = 0; i < moves; i++) {
-                clickOnSeg(seg);
-            }
-            // OK, we should have a target value on screen now, in the first spot. Let's click it!
-            readScreen(5 * SECOND); //*** should we increase this time?
-            return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1); // recursively select new difficulty
+            return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1, step); // recursively select new difficulty
         }
     }
 
