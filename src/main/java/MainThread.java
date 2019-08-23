@@ -3404,7 +3404,10 @@ public class MainThread implements Runnable {
         int left = seg.x2 + 1;
         int top = seg.y1 + 6;
 
-        final Color full = new Color(17, 208, 226);
+        HashSet<Color> badgeColors = new HashSet<>();
+        badgeColors.add(new Color(17, 208, 226));
+        badgeColors.add(new Color(16, 206, 224));
+        badgeColors.add(new Color(16, 205, 223));
 
         int value = 0;
         int maxBadges = BHBot.settings.maxBadges;
@@ -3414,12 +3417,10 @@ public class MainThread implements Runnable {
             value = i;
             Color col = new Color(img.getRGB(left + i, top));
 
-            if (!col.equals(full))
+            if (!badgeColors.contains(col))
                 break;
         }
 
-        value = value + 2; //add the last 2 pixels to get an accurate count
-//		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxBadges / 77.0f)));
         return Math.round(value * (maxBadges / 78.0f)); // scale it to interval [0..10]
     }
 
