@@ -402,6 +402,7 @@ public class MainThread implements Runnable {
         addCue("Zone7", loadImage("cues/zones/Zone7_Steam.png"), new Bounds(245, 75, 545, 120));
         addCue("Zone8", loadImage("cues/zones/Zone8_Steam.png"), new Bounds(245, 75, 545, 120));
         addCue("Zone9", loadImage("cues/zones/Zone9_Steam.png"), new Bounds(245, 75, 545, 120));
+        addCue("Zone10", loadImage("cues/cueZone10.png"), null);
 
 //        addCue("RightArrow", loadImage("cues/zones/RightArrow_Steam.png"), new Bounds(720, 274, 754, 328)); // arrow used in quest screen to change zone
 //        addCue("LeftArrow", loadImage("cues/zones/LeftArrow_Steam.png"), new Bounds(65, 270, 40, 340)); // arrow used in quest screen to change zone
@@ -517,8 +518,8 @@ public class MainThread implements Runnable {
         addCue("WorldBossSelector", loadImage("cues/cueWorldBossSelector.png"), null);
         addCue("Private", loadImage("cues/worldboss/Private_Steam.png"), new Bounds(313, 349, 359, 395));
         addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
-        addCue("WorldBossTier1", loadImage("cues/worldboss/WorldBossTier1_Steam.png"), new Bounds(296, 218, 495, 268));
-        addCue("WorldBossTier2", loadImage("cues/worldboss/WorldBossTier2_Steam.png"), new Bounds(296, 218, 495, 268));
+        addCue("WorldBossTier", loadImage("cues/cueWorldBossTier.png"), Bounds.fromWidthHeight(314, 206, 88, 28));
+        addCue("WorldBossTierDropDown", loadImage("cues/cueWorldBossTierDropDown.png"), Bounds.fromWidthHeight(304, 199, 194, 42));
         addCue("WorldBossDetectNormal", loadImage("cues/worldboss/WBSelectNomal_Steam.png"), new Bounds(333, 307, 423, 330));
         addCue("WorldBossDetectHard", loadImage("cues/worldboss/WBSelectHard_Steam.png"), new Bounds(333, 307, 423, 330));
         addCue("WorldBossDetectHeroic", loadImage("cues/worldboss/WBSelectHeroic_Steam.png"), new Bounds(333, 307, 423, 330));
@@ -3139,6 +3140,10 @@ public class MainThread implements Runnable {
     }
 
     // Cue detection based on String
+    private MarvinSegment detectCue(String cueName) {
+        return detectCue(cues.get(cueName), 0, true);
+    }
+
     private MarvinSegment detectCue(String cueName, int timeout, Bounds bounds) {
         return detectCue(new Cue(cues.get(cueName), bounds), timeout, true);
     }
@@ -5060,13 +5065,13 @@ public class MainThread implements Runnable {
             case 10:
                 switch (d){
                     case 1:
-                        return null;
+                        return new Point(468, 389);
                     case 2:
-                        return null;
+                        return new Point(428, 261);
                     case 3:
-                        return null;
+                        return new Point(145, 200);
                     case 4:
-                        return null;
+                        return new Point(585, 167);
                 }
         }
 
@@ -5315,7 +5320,7 @@ public class MainThread implements Runnable {
                 failed = true;
             }
         } else if ("m".equals(worldBossType) || "3".equals(worldBossType)) {
-            if (worldBossTier == 10) {
+            if (worldBossTier >= 10 && worldBossTier <= 11) {
                 passed++;
             } else {
                 BHBot.logger.error("Invalid world boss tier for Melvin or 3xt3rmin4tion, must be equal to 10");
@@ -5366,7 +5371,7 @@ public class MainThread implements Runnable {
      */
     private int readCurrentZone() {
         readScreen();
-        for (int i = 1; i <= 9; i++) {
+        for (int i = 1; i <= 10; i++) {
             if (detectCue(cues.get("Zone" + i)) != null) {
                 BHBot.logger.debug("Detected zone " + i);
             return i;
@@ -5900,24 +5905,17 @@ public class MainThread implements Runnable {
     private int detectWorldBossTier() {
 
         readScreen(SECOND);
-        MarvinSegment seg;
-        int x1 = 97, y1 = 12, x2 = 17, y2 = 18;
+        MarvinSegment tierDropDown;
+        int xOffset = 401, yOffset = 210, w = 21, h = 19;
 
-        seg = detectCue(cues.get("WorldBossTier1"), SECOND); // For tier 1 to 9
-        if (seg == null) {
-            seg = detectCue(cues.get("WorldBossTier2"), SECOND);
-            if (seg == null) {
-                BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
-                saveGameScreen("early_error");
-                return 0; // error
-            }
-            x1 = 96;
-            y1 = 11;
-            x2 = 20;
-            y2 = 18;
+        tierDropDown = detectCue("WorldBossTierDropDown", SECOND); // For tier drop down menu
+
+        if (tierDropDown == null ) {
+            BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
+            return 0; // error
         }
 
-        MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + x1, seg.y1 + y1, x2, y2));
+        MarvinImage im = new MarvinImage(img.getSubimage(xOffset, yOffset, w, h));
 
         // make it white-gray (to facilitate cue recognition):
         makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
@@ -5943,14 +5941,14 @@ public class MainThread implements Runnable {
         if (target >= 5) { //top most
             readScreen();
             MarvinSegment up = detectCue(cues.get("DropDownUp"), SECOND);
-            if (seg != null) {
+            if (up != null) {
                 clickOnSeg(up);
                 clickOnSeg(up);
             }
         } else { //bottom most
             readScreen();
             MarvinSegment down = detectCue(cues.get("DropDownDown"), SECOND);
-            if (seg != null) {
+            if (down != null) {
                 clickOnSeg(down);
                 clickOnSeg(down);
             }
@@ -5974,8 +5972,10 @@ public class MainThread implements Runnable {
             case 7:
                 return new Point(290, 390);
             case 8:
+            case 10:
                 return new Point(230, 390);
             case 9:
+            case 11:
                 return new Point(170, 390);
         }
         return null;
