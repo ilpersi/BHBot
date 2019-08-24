@@ -2423,7 +2423,7 @@ public class MainThread implements Runnable {
                                 if (seg == null) {
                                     BHBot.logger.info("Enabling private lobby for solo World Boss");
                                     sleep(500);
-                                    clickInGame(340, 350);
+                                    clickInGame(340, 370);
                                     readScreen(500);
                                 }
                             }
