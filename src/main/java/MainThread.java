@@ -508,8 +508,8 @@ public class MainThread implements Runnable {
         addCue("NetherSelected", loadImage("cues/cueNetherSelected.png"), null);
         addCue("Private", loadImage("cues/cuePrivate.png"), new Bounds(310, 320, 370, 380));
         addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
-        addCue("WorldBossTier1", loadImage("cues/cueWorldBossTier1.png"), new Bounds(300, 180, 500, 250));
-        addCue("WorldBossTier2", loadImage("cues/cueWorldBossTier2.png"), new Bounds(300, 180, 500, 250));
+        addCue("WorldBossTier", loadImage("cues/cueWorldBossTier.png"), Bounds.fromWidthHeight(314, 206, 88, 28));
+        addCue("WorldBossTierDropDown", loadImage("cues/cueWorldBossTierDropDown.png"), Bounds.fromWidthHeight(304, 199, 194, 42));
         addCue("WorldBossDifficultyNormal", loadImage("cues/cueWorldBossDifficultyNormal.png"), new Bounds(300, 275, 500, 325));
         addCue("WorldBossDifficultyHard", loadImage("cues/cueWorldBossDifficultyHard.png"), new Bounds(300, 275, 500, 325));
         addCue("WorldBossDifficultyHeroic", loadImage("cues/cueWorldBossDifficultyHeroic.png"), new Bounds(300, 275, 500, 325));
@@ -6130,29 +6130,18 @@ public class MainThread implements Runnable {
     /* World boss reading and changing section */
     private int detectWorldBossTier() {
 
-        //Melvins only available in T10 so we don't need to read the image
-        if ("m".equals(BHBot.settings.worldBossSettings.get(0))) return 10;
-
         readScreen(SECOND);
-        MarvinSegment seg;
-        int xOffset = 99, yOffset = 11, w = 17, h = 19;
+        MarvinSegment tierDropDown;
+        int xOffset = 401, yOffset = 210, w = 21, h = 19;
 
-        seg = detectCue(cues.get("WorldBossTier1"), SECOND); // For tier 1 to 9
-        if (seg == null) {
-            seg = detectCue(cues.get("WorldBossTier2"), SECOND);
-            if (seg == null) {
-                BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
-                saveGameScreen("early_error");
-                return 0; // error
-            }
+        tierDropDown = detectCue("WorldBossTierDropDown", SECOND); // For tier drop down menu
 
-            xOffset = 97;
-            yOffset = 11;
-            w = 21;
-            h = 19;
+        if (tierDropDown == null ) {
+            BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
+            return 0; // error
         }
 
-        MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + xOffset, seg.y1 + yOffset, w, h));
+        MarvinImage im = new MarvinImage(img.getSubimage(xOffset, yOffset, w, h));
 
         // make it white-gray (to facilitate cue recognition):
         makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
