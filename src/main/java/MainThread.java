@@ -5274,7 +5274,7 @@ public class MainThread implements Runnable {
                     case 3:
                         return new Point(145, 200);
                     case 4:
-                        return null;
+                        return new Point(585, 167);
                 }
         }
 
@@ -5592,7 +5592,7 @@ public class MainThread implements Runnable {
         else if (detectCue("Zone9") != null)
             return 9;
         else if (detectCue("Zone10") != null)
-            return 9;
+            return 10;
         else
             return 0;
     }
