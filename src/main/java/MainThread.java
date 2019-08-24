@@ -402,7 +402,7 @@ public class MainThread implements Runnable {
         addCue("Zone7", loadImage("cues/zones/Zone7_Steam.png"), new Bounds(245, 75, 545, 120));
         addCue("Zone8", loadImage("cues/zones/Zone8_Steam.png"), new Bounds(245, 75, 545, 120));
         addCue("Zone9", loadImage("cues/zones/Zone9_Steam.png"), new Bounds(245, 75, 545, 120));
-        addCue("Zone10", loadImage("cues/cueZone10.png"), null);
+        addCue("Zone10", loadImage("cues/zones/Zone10_Steam.png"), Bounds.fromWidthHeight(343, 82, 108, 29));
 
 //        addCue("RightArrow", loadImage("cues/zones/RightArrow_Steam.png"), new Bounds(720, 274, 754, 328)); // arrow used in quest screen to change zone
 //        addCue("LeftArrow", loadImage("cues/zones/LeftArrow_Steam.png"), new Bounds(65, 270, 40, 340)); // arrow used in quest screen to change zone
