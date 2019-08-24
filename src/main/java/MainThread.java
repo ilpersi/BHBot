@@ -5523,7 +5523,7 @@ public class MainThread implements Runnable {
                 failed = true;
             }
         } else if ("m".equals(worldBossType) || "3".equals(worldBossType)) {
-            if (worldBossTier == 10) {
+            if (worldBossTier >= 10 && worldBossTier <= 11) {
                 passed++;
             } else {
                 BHBot.logger.error("Invalid world boss tier for Melvin or 3xt3rmin4tion, must be equal to 10");
