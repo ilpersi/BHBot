@@ -378,6 +378,7 @@ public class MainThread implements Runnable {
         addCue("Zone7", loadImage("cues/cueZone7.png"), null);
         addCue("Zone8", loadImage("cues/cueZone8.png"), null);
         addCue("Zone9", loadImage("cues/cueZone9.png"), null);
+        addCue("Zone10", loadImage("cues/cueZone10.png"), null);
         addCue("RightArrow", loadImage("cues/cueRightArrow.png"), null); // arrow used in quest screen to change zone
         addCue("LeftArrow", loadImage("cues/cueLeftArrow.png"), null); // arrow used in quest screen to change zone
         addCue("Enter", loadImage("cues/cueEnter.png"), null); // "Enter" button found on d4 window
@@ -5267,11 +5268,11 @@ public class MainThread implements Runnable {
             case 10:
                 switch (d){
                     case 1:
-                        return null;
+                        return new Point(468, 389);
                     case 2:
-                        return null;
+                        return new Point(428, 261);
                     case 3:
-                        return null;
+                        return new Point(145, 200);
                     case 4:
                         return null;
                 }
@@ -5572,23 +5573,25 @@ public class MainThread implements Runnable {
      * Returns 0 in case zone could not be read (in case we are not in the quest window, for example).
      */
     private int readCurrentZone() {
-        if (detectCue(cues.get("Zone1")) != null)
+        if (detectCue("Zone1") != null)
             return 1;
-        else if (detectCue(cues.get("Zone2")) != null)
+        else if (detectCue("Zone2") != null)
             return 2;
-        else if (detectCue(cues.get("Zone3")) != null)
+        else if (detectCue("Zone3") != null)
             return 3;
-        else if (detectCue(cues.get("Zone4")) != null)
+        else if (detectCue("Zone4") != null)
             return 4;
-        else if (detectCue(cues.get("Zone5")) != null)
+        else if (detectCue("Zone5") != null)
             return 5;
-        else if (detectCue(cues.get("Zone6")) != null)
+        else if (detectCue("Zone6") != null)
             return 6;
-        else if (detectCue(cues.get("Zone7")) != null)
+        else if (detectCue("Zone7") != null)
             return 7;
-        else if (detectCue(cues.get("Zone8")) != null)
+        else if (detectCue("Zone8") != null)
             return 8;
-        else if (detectCue(cues.get("Zone9")) != null)
+        else if (detectCue("Zone9") != null)
+            return 9;
+        else if (detectCue("Zone10") != null)
             return 9;
         else
             return 0;
