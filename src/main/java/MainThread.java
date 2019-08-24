@@ -6178,14 +6178,14 @@ public class MainThread implements Runnable {
         if (target >= 5) { //top most
             readScreen();
             MarvinSegment up = detectCue(cues.get("DropDownUp"), SECOND);
-            if (seg != null) {
+            if (up != null) {
                 clickOnSeg(up);
                 clickOnSeg(up);
             }
         } else { //bottom most
             readScreen();
             MarvinSegment down = detectCue(cues.get("DropDownDown"), SECOND);
-            if (seg != null) {
+            if (down != null) {
                 clickOnSeg(down);
                 clickOnSeg(down);
             }
@@ -6209,8 +6209,10 @@ public class MainThread implements Runnable {
             case 7:
                 return new Point(290, 390);
             case 8:
+            case 10:
                 return new Point(230, 390);
             case 9:
+            case 11:
                 return new Point(170, 390);
         }
         return null;
