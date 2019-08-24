@@ -519,7 +519,7 @@ public class MainThread implements Runnable {
         addCue("Private", loadImage("cues/worldboss/Private_Steam.png"), new Bounds(313, 349, 359, 395));
         addCue("Unready", loadImage("cues/cueWorldBossUnready.png"), new Bounds(170, 210, 215, 420));
         addCue("WorldBossTier", loadImage("cues/cueWorldBossTier.png"), Bounds.fromWidthHeight(314, 206, 88, 28));
-        addCue("WorldBossTierDropDown", loadImage("cues/cueWorldBossTierDropDown.png"), Bounds.fromWidthHeight(304, 199, 194, 42));
+        addCue("WorldBossTierDropDown", loadImage("cues/worldboss/cueWorldBossTierDropDown_Steam.png"), Bounds.fromWidthHeight(301, 222, 192, 42));
         addCue("WorldBossDetectNormal", loadImage("cues/worldboss/WBSelectNomal_Steam.png"), new Bounds(333, 307, 423, 330));
         addCue("WorldBossDetectHard", loadImage("cues/worldboss/WBSelectHard_Steam.png"), new Bounds(333, 307, 423, 330));
         addCue("WorldBossDetectHeroic", loadImage("cues/worldboss/WBSelectHeroic_Steam.png"), new Bounds(333, 307, 423, 330));
@@ -5906,7 +5906,7 @@ public class MainThread implements Runnable {
 
         readScreen(SECOND);
         MarvinSegment tierDropDown;
-        int xOffset = 401, yOffset = 210, w = 21, h = 19;
+        int xOffset = 397, yOffset = 233, w = 21, h = 19;
 
         tierDropDown = detectCue("WorldBossTierDropDown", SECOND); // For tier drop down menu
 
