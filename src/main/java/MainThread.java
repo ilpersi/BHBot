@@ -3377,6 +3377,10 @@ public class MainThread implements Runnable {
     }
 
     // Cue detection based on String
+    private MarvinSegment detectCue(String cueName) {
+        return detectCue(cues.get(cueName), 0, true);
+    }
+
     private MarvinSegment detectCue(String cueName, int timeout, Bounds bounds) {
         return detectCue(new Cue(cues.get(cueName), bounds), timeout, true);
     }
