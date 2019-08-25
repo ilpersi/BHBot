@@ -439,6 +439,7 @@ public class MainThread implements Runnable {
         addCue("Cost", loadImage("cues/cueCost_Steam.png"), Bounds.fromWidthHeight(513, 201, 101, 78)); // used both for PvP and Gauntlet/Trials costs. Note that bounds are very wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
         addCue("SelectCost", loadImage("cues/cueSelectCost_Steam.png"), Bounds.fromWidthHeight(558, 201, 60, 70)); // cue for select cost found in both PvP and Gauntlet/Trials windows. Note that bounds are wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
         addCue("CostDropDown", loadImage("cues/cueCostDropDown_Steam.png"), Bounds.fromWidthHeight(251, 70, 348, 106)); // cue for cost selection drop down window
+
         addCue("0", loadImage("cues/numbers/cost-difficulty/cue0_Steam.png"), null);
         addCue("1", loadImage("cues/numbers/cost-difficulty/cue1_Steam.png"), null);
         addCue("2", loadImage("cues/numbers/cost-difficulty/cue2_Steam.png"), null);
@@ -449,6 +450,17 @@ public class MainThread implements Runnable {
         addCue("7", loadImage("cues/numbers/cost-difficulty/cue7_Steam.png"), null);
         addCue("8", loadImage("cues/numbers/cost-difficulty/cue8_Steam.png"), null);
         addCue("9", loadImage("cues/numbers/cost-difficulty/cue9_Steam.png"), null);
+
+        addCue("wbt_0", loadImage("cues/numbers/world-boss-tier/wbt_0_Steam.png"), null);
+        addCue("wbt_1", loadImage("cues/numbers/world-boss-tier/wbt_1_Steam.png"), null);
+//        addCue("wbt_2", loadImage("cues/numbers/world-boss-tier/wbt_2_Steam.png"), null);
+        addCue("wbt_3", loadImage("cues/numbers/world-boss-tier/wbt_3_Steam.png"), null);
+        addCue("wbt_4", loadImage("cues/numbers/world-boss-tier/wbt_4_Steam.png"), null);
+        addCue("wbt_5", loadImage("cues/numbers/world-boss-tier/wbt_5_Steam.png"), null);
+        addCue("wbt_6", loadImage("cues/numbers/world-boss-tier/wbt_6_Steam.png"), null);
+        addCue("wbt_7", loadImage("cues/numbers/world-boss-tier/wbt_7_Steam.png"), null);
+        addCue("wbt_8", loadImage("cues/numbers/world-boss-tier/wbt_8_Steam.png"), null);
+        addCue("wbt_9", loadImage("cues/numbers/world-boss-tier/wbt_9_Steam.png"), null);
 
         // PvP strip related:
         addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos_Steam.png"), Bounds.fromWidthHeight(526, 151, 18, 318));
@@ -5925,7 +5937,10 @@ public class MainThread implements Runnable {
 
         BufferedImage imb = im.getBufferedImage();
 
-        return readNumFromImg(imb);
+        HashSet<Integer> toSkip = new HashSet<>();
+        toSkip.add(2); // we don't have the cue for tier 2
+
+        return readNumFromImg(imb, "wbt_", toSkip);
     }
 
     private void changeWorldBossTier(int target) {
