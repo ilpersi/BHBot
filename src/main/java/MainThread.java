@@ -1627,11 +1627,6 @@ public class MainThread implements Runnable {
 
                             BHBot.logger.info("Attempting " + difficultyName + " z" + goalZone + "d" + goalDungeon);
 
-                            sleep(1 * SECOND); //sleep to stabilize
-                            clickInGame(737, 299); //move zones to clear unique shaded zone cue
-                            sleep(500);
-                            clickInGame(56, 300); //move zones to clear unique shaded zone cue
-                            sleep(1 * SECOND); //sleep to stabilize
                             int currentZone = readCurrentZone();
                             if (currentZone == 0) {
                                 BHBot.logger.error("Error reading zone, skipping..");
