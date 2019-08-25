@@ -4819,8 +4819,7 @@ public class MainThread implements Runnable {
 
                     if (potionsUsed == BHBot.settings.potionLimit) {
                         BHBot.logger.autorevive("Potion limit reached, exiting from Auto Revive");
-                        seg = detectCue(cues.get("AutoOff"), SECOND);
-                        if (seg != null) clickOnSeg(seg);
+                        readScreen(SECOND);
                         break;
                     }
 
