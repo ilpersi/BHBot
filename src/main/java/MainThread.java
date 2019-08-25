@@ -6294,7 +6294,7 @@ public class MainThread implements Runnable {
         // vertical positions of the 5 buttons:
         final int[] posy = new int[]{170, 230, 290, 350, 410};
 
-        if (recursionDepth > 5) {
+        if (recursionDepth > 3) {
             BHBot.logger.error("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
             saveGameScreen("early_error");
             tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
