@@ -6151,8 +6151,7 @@ public class MainThread implements Runnable {
 
     private void changeWorldBossTier(int target) {
         MarvinSegment seg;
-        seg = detectCue(cues.get("WorldBossTier1"), SECOND);
-        if (seg == null) seg = detectCue(cues.get("WorldBossTier2"), SECOND);
+        seg = detectCue(cues.get("WorldBossTier"), SECOND);
 
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in changeWorldBossTier!");
