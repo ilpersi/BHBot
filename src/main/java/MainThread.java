@@ -6037,12 +6037,17 @@ public class MainThread implements Runnable {
      * @return 0 in case of error.
      */
     private int readNumFromImg(BufferedImage im) {
+        return readNumFromImg(im, "", new HashSet<>());
+    }
+
+    private int readNumFromImg(BufferedImage im, String numberPrefix, HashSet<Integer> intToSkip) {
         List<ScreenNum> nums = new ArrayList<>();
 
         //MarvinImageIO.saveImage(im, "difficulty_test.png");
         //Misc.saveImage(imb, "difficulty_test2.png");
         for (int i = 0; i < 10; i++) {
-            List<MarvinSegment> list = FindSubimage.findSubimage(im, cues.get("" + i).im, 1.0, true, false, 0, 0, 0, 0);
+            if (intToSkip.contains(i)) continue;
+            List<MarvinSegment> list = FindSubimage.findSubimage(im, cues.get(numberPrefix + "" + i).im, 1.0, true, false, 0, 0, 0, 0);
             //BHBot.logger.info("DEBUG difficulty detection: " + i + " - " + list.size());
             for (MarvinSegment s : list) {
                 nums.add(new ScreenNum(i, s.x1));
