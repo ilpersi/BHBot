@@ -1648,9 +1648,8 @@ public class MainThread implements Runnable {
                                     readScreen(SECOND);
                                     tryClosingWindow(cues.get("DifficultyDropDown"));
                                     readScreen(5 * SECOND);
-                                    tryClosingWindow(cues.get("TrialsOrGauntletWindow"));
-                                    BHBot.logger.error("Due to an error#2 in difficulty selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
-                                    continue;
+                                    BHBot.logger.warn("Unable to change difficulty, usually because desired level is not unlocked. Running " + (trials ? "trials" : "gauntlet") + " at " + difficulty + ".");
+                                    sendPushOverMessage("T/G Error", "Unable to change difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.", "siren");
                                 }
                             }
 
