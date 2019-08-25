@@ -2361,7 +2361,7 @@ public class MainThread implements Runnable {
 
                             //new settings loading
                             HashMap<String, String> wbNameDecode = new HashMap<>();
-                            wbNameDecode.put("o", "Orlang Clan");
+                            wbNameDecode.put("o", "Orlag Clan");
                             wbNameDecode.put("n", "Netherworld");
                             wbNameDecode.put("m", "Melvin");
                             wbNameDecode.put("3", "3xt3rmin4tion");
@@ -5321,7 +5321,7 @@ public class MainThread implements Runnable {
             if (worldBossTier >= 3 && worldBossTier <= 9) {
                 passed++;
             } else {
-                BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 3 and 9");
+                BHBot.logger.error("Invalid world boss tier for Orlag or Nether, must be between 3 and 9");
                 failed = true;
             }
         } else if ("m".equals(worldBossType) || "3".equals(worldBossType)) {
