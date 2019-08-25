@@ -1483,9 +1483,8 @@ public class MainThread implements Runnable {
                                     readScreen(SECOND);
                                     tryClosingWindow(cues.get("DifficultyDropDown"));
                                     readScreen(5 * SECOND);
-                                    tryClosingWindow(cues.get("TrialsOrGauntletWindow"));
-                                    BHBot.logger.error("Due to an error#2 in difficulty selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
-                                    continue;
+                                    BHBot.logger.warn("Unable to change difficulty, usually because desired level is not unlocked. Running " + (trials ? "trials" : "gauntlet") + " at " + difficulty + ".");
+                                    sendPushOverMessage("T/G Error", "Unable to change difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.", "siren");
                                 }
                             }
 
@@ -4616,8 +4615,7 @@ public class MainThread implements Runnable {
 
                     if (potionsUsed == BHBot.settings.potionLimit) {
                         BHBot.logger.autorevive("Potion limit reached, exiting from Auto Revive");
-                        seg = detectCue(cues.get("AutoOff"), SECOND);
-                        if (seg != null) clickOnSeg(seg);
+                        readScreen(SECOND);
                         break;
                     }
 
@@ -5815,11 +5813,16 @@ public class MainThread implements Runnable {
      * @return 0 in case of error.
      */
     private int readNumFromImg(BufferedImage im) {
+        return readNumFromImg(im, "", new HashSet<>());
+    }
+
+    private int readNumFromImg(BufferedImage im, String numberPrefix, HashSet<Integer> intToSkip) {
         List<ScreenNum> nums = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
-            List<MarvinSegment> list = FindSubimage.findSubimage(im, cues.get("" + i).im, 1, true, false, 0, 0, 0, 0);
-//            BHBot.logger.debug("DEBUG difficulty detection: " + i + " - " + list.size());
+            if (intToSkip.contains(i)) continue;
+            List<MarvinSegment> list = FindSubimage.findSubimage(im, cues.get(numberPrefix + "" + i).im, 1.0, true, false, 0, 0, 0, 0);
+            //BHBot.logger.info("DEBUG difficulty detection: " + i + " - " + list.size());
             for (MarvinSegment s : list) {
                 nums.add(new ScreenNum(i, s.x1));
             }
@@ -5927,8 +5930,7 @@ public class MainThread implements Runnable {
 
     private void changeWorldBossTier(int target) {
         MarvinSegment seg;
-        seg = detectCue(cues.get("WorldBossTier1"), SECOND);
-        if (seg == null) seg = detectCue(cues.get("WorldBossTier2"), SECOND);
+        seg = detectCue(cues.get("WorldBossTier"), SECOND);
 
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in changeWorldBossTier!");
@@ -6070,7 +6072,7 @@ public class MainThread implements Runnable {
         // vertical positions of the 5 buttons:
         final int[] posy = new int[]{170, 230, 290, 350, 410};
 
-        if (recursionDepth > 5) {
+        if (recursionDepth > 3) {
             BHBot.logger.error("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
             saveGameScreen("early_error");
             tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
