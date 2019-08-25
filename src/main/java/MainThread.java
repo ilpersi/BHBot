@@ -3887,22 +3887,28 @@ public class MainThread implements Runnable {
                 BHBot.logger.stats("Run time: " + runtime);
             } else if (state.equals(State.Trials)) {
                 if (BHBot.settings.difficultyFailsafe.containsKey("t")) {
+//                    BHBot.logger.debug("t key found");
 
                     // The key is the difficulty decrease, the value is the minimum level
                     Map.Entry<Integer, Integer> trialDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("t");
                     int levelOffset = trialDifficultyFailsafe.getKey();
                     int minimunLevel = trialDifficultyFailsafe.getValue();
+//                    BHBot.logger.debug("offset " + levelOffset);
+//                    BHBot.logger.debug("min level " + minimunLevel);
 
                     // We calculate the new difficulty
                     int newTrialDifficulty = BHBot.settings.difficultyTrials - levelOffset;
+//                    BHBot.logger.debug("new diff " + newTrialDifficulty);
 
                     // We check that the new difficulty is not lower than the minimum
                     if (newTrialDifficulty < minimunLevel) newTrialDifficulty = minimunLevel;
 
                     // If the new difficulty is different from the current one, we update the ini setting
                     if (newTrialDifficulty != BHBot.settings.difficultyTrials) {
-                        String original = "difficultyTrials " + (BHBot.settings.difficultyTrials);
-                        String updated = "difficultyTrials " + (newTrialDifficulty);
+                        String original = "difficultyTrials " + BHBot.settings.difficultyTrials;
+                        String updated = "difficultyTrials " + newTrialDifficulty;
+//                        BHBot.logger.debug("string orig " + original);
+//                        BHBot.logger.debug("string updated " + updated);
                         settingsUpdate(original, updated);
                     }
                 }
@@ -3922,8 +3928,8 @@ public class MainThread implements Runnable {
 
                     // If the new difficulty is different from the current one, we update the ini setting
                     if (newGauntletDifficulty != BHBot.settings.difficultyGauntlet) {
-                        String original = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet);
-                        String updated = "difficultyGauntlet " + (newGauntletDifficulty);
+                        String original = "difficultyGauntlet " + BHBot.settings.difficultyGauntlet;
+                        String updated = "difficultyGauntlet " + newGauntletDifficulty;
                         settingsUpdate(original, updated);
                     }
                 }
@@ -5068,7 +5074,7 @@ public class MainThread implements Runnable {
             if (inputStr.contains(string)) {
                 inputStr = inputStr.replace(string, updatedString);
                 BHBot.logger.info("Replaced '" + string + "' with '" + updatedString + "' in " + Settings.configurationFile);
-            }
+            } else BHBot.logger.error("Error finding string: " + string);
 
             // write the string from memory over the existing file
             // a bit risky for crashes
