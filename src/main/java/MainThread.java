@@ -1134,6 +1134,18 @@ public class MainThread implements Runnable {
                         }
                     }
 
+                    if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                        String idleTimerScreenName = saveGameScreen("idle-timer", img);
+                        File idleTimerScreenFile = new File(idleTimerScreenName);
+                        if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                            sendPushOverMessage("Idle timer exceeded", "Idle time exceeded while state = " + state, "siren", MessagePriority.NORMAL, idleTimerScreenFile);
+
+                            if(!idleTimerScreenFile.delete()) {
+                                BHBot.logger.error("Impossible to delete idle timer screenshot.");
+                            }
+                        }
+                    }
+
                     restart();
                     continue;
                 }
