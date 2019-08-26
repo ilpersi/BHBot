@@ -1486,7 +1486,11 @@ public class MainThread implements Runnable {
                                 continue;
                             }
 
+                            readScreen(2 * SECOND);
                             seg = detectCue(cues.get("RaidSummon"), 2 * SECOND);
+                                if (seg == null) {
+                                    BHBot.logger.error("Summon button not found");
+                                }
                             clickOnSeg(seg);
                             readScreen(2 * SECOND);
 
@@ -6162,15 +6166,18 @@ public class MainThread implements Runnable {
 
     private void changeWorldBossTier(int target) {
         MarvinSegment seg;
-        seg = detectCue(cues.get("WorldBossTier"), SECOND);
+        readScreen(1 * SECOND); //wait for screen to stabilize
+        seg = detectCue(cues.get("WorldBossTierDropDown"), SECOND);
 
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in changeWorldBossTier!");
             saveGameScreen("early_error");
             restart();
         }
+
         clickOnSeg(seg);
         readScreen(2 * SECOND); //wait for screen to stabilize
+
         //get known screen position for difficulty screen selection
         if (target >= 5) { //top most
             readScreen();
