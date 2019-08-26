@@ -64,7 +64,7 @@ public class MainThread implements Runnable {
     @SuppressWarnings("FieldCanBeLocal")
     private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
     @SuppressWarnings("FieldCanBeLocal")
-    private final long MAX_IDLE_TIME = 15 * MINUTE;
+    private final long MAX_IDLE_TIME = 30 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
     private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
