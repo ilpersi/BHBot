@@ -64,7 +64,7 @@ public class MainThread implements Runnable {
     @SuppressWarnings("FieldCanBeLocal")
     private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
     @SuppressWarnings("FieldCanBeLocal")
-    private final long MAX_IDLE_TIME = 30 * MINUTE;
+    private final long MAX_IDLE_TIME = 10 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
     private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
@@ -76,6 +76,7 @@ public class MainThread implements Runnable {
     private boolean autoShrined = false;
     private long activityStartTime;
     private long activityDuration;
+    private boolean combatIdleChecker = true;
     private long outOfEncounterTimestamp = 0;
     private long inEncounterTimestamp = 0;
     private long runMillisAvg = 0;
@@ -3665,6 +3666,7 @@ public class MainThread implements Runnable {
             outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             startTimeCheck = true;
+            combatIdleChecker = true;
         }
 
         activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
@@ -3673,9 +3675,18 @@ public class MainThread implements Runnable {
         MarvinSegment guildButtonSeg = detectCue(cues.get("GuildButton"));
         if (guildButtonSeg != null) {
             outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
+            if (combatIdleChecker) {
+                BHBot.logger.debug("Updating idle time (Out of combat)");
+                BHBot.scheduler.backupIdleTime();
+                combatIdleChecker = false;
+            }
         } else {
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
-//			BHBot.logger.debug("Encounter detected");
+            if (!combatIdleChecker) {
+                BHBot.logger.debug("Updating idle time (In combat)");
+                BHBot.scheduler.backupIdleTime();
+                combatIdleChecker = true;
+            }
         }
 
         if ((outOfEncounterTimestamp - inEncounterTimestamp) > 0) {
