@@ -64,7 +64,7 @@ public class MainThread implements Runnable {
     @SuppressWarnings("FieldCanBeLocal")
     private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
     @SuppressWarnings("FieldCanBeLocal")
-    private final long MAX_IDLE_TIME = 15 * MINUTE;
+    private final long MAX_IDLE_TIME = 30 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
     private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
@@ -1130,6 +1130,18 @@ public class MainThread implements Runnable {
                             BHBot.logger.info("Re-validating autoRunes");
                             if (!detectEquippedMinorRunes(true, true)) {
                                 BHBot.logger.error("It was not possible to verify the equipped runes!");
+                            }
+                        }
+                    }
+
+                    if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                        String idleTimerScreenName = saveGameScreen("idle-timer", img);
+                        File idleTimerScreenFile = new File(idleTimerScreenName);
+                        if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                            sendPushOverMessage("Idle timer exceeded", "Idle time exceeded while state = " + state, "siren", MessagePriority.NORMAL, idleTimerScreenFile);
+
+                            if(!idleTimerScreenFile.delete()) {
+                                BHBot.logger.error("Impossible to delete idle timer screenshot.");
                             }
                         }
                     }
