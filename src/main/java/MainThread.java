@@ -2617,8 +2617,10 @@ public class MainThread implements Runnable {
                             //world boss tier selection
 
                             int currentTier = detectWorldBossTier();
+                            sleep(500);
                             if (currentTier != worldBossTier) {
                                 BHBot.logger.info("T" + currentTier + " detected, changing to T" + worldBossTier);
+                                sleep(500);
                                 changeWorldBossTier(worldBossTier);
                             }
 
@@ -6178,8 +6180,8 @@ public class MainThread implements Runnable {
 
     private void changeWorldBossTier(int target) {
         MarvinSegment seg;
-        readScreen(1 * SECOND); //wait for screen to stabilize
-        seg = detectCue(cues.get("WorldBossTierDropDown"), SECOND);
+        readScreen(SECOND); //wait for screen to stabilize
+        seg = detectCue(cues.get("WorldBossTierDropDown"), 2 * SECOND);
 
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in changeWorldBossTier!");
