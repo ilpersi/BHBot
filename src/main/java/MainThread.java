@@ -69,7 +69,7 @@ public class MainThread implements Runnable {
     @SuppressWarnings("FieldCanBeLocal")
     private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
     @SuppressWarnings("FieldCanBeLocal")
-    private final long MAX_IDLE_TIME = 15 * MINUTE;
+    private final long MAX_IDLE_TIME = 30 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
     private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
@@ -985,6 +985,18 @@ public class MainThread implements Runnable {
                         }
                     }
 
+                    if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                        String idleTimerScreenName = saveGameScreen("idle-timer", img);
+                        File idleTimerScreenFile = new File(idleTimerScreenName);
+                        if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
+                            sendPushOverMessage("Idle timer exceeded", "Idle time exceeded while state = " + state, "siren", MessagePriority.NORMAL, idleTimerScreenFile);
+
+                            if(!idleTimerScreenFile.delete()) {
+                                BHBot.logger.error("Impossible to delete idle timer screenshot.");
+                            }
+                        }
+                    }
+
                     restart();
                     continue;
                 }
@@ -1333,7 +1345,11 @@ public class MainThread implements Runnable {
                                 continue;
                             }
 
+                            readScreen(2 * SECOND);
                             seg = detectCue(cues.get("RaidSummon"), 2 * SECOND);
+                                if (seg == null) {
+                                    BHBot.logger.error("Summon button not found");
+                                }
                             clickOnSeg(seg);
                             readScreen(2 * SECOND);
 
@@ -2437,8 +2453,10 @@ public class MainThread implements Runnable {
                             //world boss tier selection
 
                             int currentTier = detectWorldBossTier();
+                            sleep(500);
                             if (currentTier != worldBossTier) {
                                 BHBot.logger.info("T" + currentTier + " detected, changing to T" + worldBossTier);
+                                sleep(500);
                                 changeWorldBossTier(worldBossTier);
                             }
 
@@ -3691,22 +3709,28 @@ public class MainThread implements Runnable {
                 BHBot.logger.stats("Run time: " + runtime);
             } else if (state.equals(State.Trials)) {
                 if (BHBot.settings.difficultyFailsafe.containsKey("t")) {
+//                    BHBot.logger.debug("t key found");
 
                     // The key is the difficulty decrease, the value is the minimum level
                     Map.Entry<Integer, Integer> trialDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("t");
                     int levelOffset = trialDifficultyFailsafe.getKey();
                     int minimunLevel = trialDifficultyFailsafe.getValue();
+//                    BHBot.logger.debug("offset " + levelOffset);
+//                    BHBot.logger.debug("min level " + minimunLevel);
 
                     // We calculate the new difficulty
                     int newTrialDifficulty = BHBot.settings.difficultyTrials - levelOffset;
+//                    BHBot.logger.debug("new diff " + newTrialDifficulty);
 
                     // We check that the new difficulty is not lower than the minimum
                     if (newTrialDifficulty < minimunLevel) newTrialDifficulty = minimunLevel;
 
                     // If the new difficulty is different from the current one, we update the ini setting
                     if (newTrialDifficulty != BHBot.settings.difficultyTrials) {
-                        String original = "difficultyTrials " + (BHBot.settings.difficultyTrials);
-                        String updated = "difficultyTrials " + (newTrialDifficulty);
+                        String original = "difficultyTrials " + BHBot.settings.difficultyTrials;
+                        String updated = "difficultyTrials " + newTrialDifficulty;
+//                        BHBot.logger.debug("string orig " + original);
+//                        BHBot.logger.debug("string updated " + updated);
                         settingsUpdate(original, updated);
                     }
                 }
@@ -3726,8 +3750,8 @@ public class MainThread implements Runnable {
 
                     // If the new difficulty is different from the current one, we update the ini setting
                     if (newGauntletDifficulty != BHBot.settings.difficultyGauntlet) {
-                        String original = "difficultyGauntlet " + (BHBot.settings.difficultyGauntlet);
-                        String updated = "difficultyGauntlet " + (newGauntletDifficulty);
+                        String original = "difficultyGauntlet " + BHBot.settings.difficultyGauntlet;
+                        String updated = "difficultyGauntlet " + newGauntletDifficulty;
                         settingsUpdate(original, updated);
                     }
                 }
@@ -4872,7 +4896,7 @@ public class MainThread implements Runnable {
             if (inputStr.contains(string)) {
                 inputStr = inputStr.replace(string, updatedString);
                 BHBot.logger.info("Replaced '" + string + "' with '" + updatedString + "' in " + Settings.configurationFile);
-            }
+            } else BHBot.logger.error("Error finding string: " + string);
 
             // write the string from memory over the existing file
             // a bit risky for crashes
@@ -5940,15 +5964,18 @@ public class MainThread implements Runnable {
 
     private void changeWorldBossTier(int target) {
         MarvinSegment seg;
-        seg = detectCue(cues.get("WorldBossTier"), SECOND);
+        readScreen(SECOND); //wait for screen to stabilize
+        seg = detectCue(cues.get("WorldBossTierDropDown"), 2 * SECOND);
 
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in changeWorldBossTier!");
             saveGameScreen("early_error");
             restart();
         }
+
         clickOnSeg(seg);
         readScreen(2 * SECOND); //wait for screen to stabilize
+
         //get known screen position for difficulty screen selection
         if (target >= 5) { //top most
             readScreen();
