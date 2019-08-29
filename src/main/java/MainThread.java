@@ -1341,7 +1341,18 @@ public class MainThread implements Runnable {
                         timeLastPOAlive = Misc.getTime();
                         String aliveScreenName = saveGameScreen("alive-screen");
                         File aliveScreenFile = new File(aliveScreenName);
-                        sendPushOverMessage("Alive notification", "I am alive and doing fine!", MessagePriority.QUIET, aliveScreenFile);
+
+                        StringBuilder aliveMsg = new StringBuilder();
+                        aliveMsg.append("I am alive and doing fine!");
+
+                        if ((raidVictoryCounter + raidDefeatCounter) > 0) {
+                            aliveMsg.append("\n\n")
+                                    .append(String.format("Raid success rate is %s%%: W:%d L:%d",
+                                            df.format(((double) raidVictoryCounter / (raidVictoryCounter + raidDefeatCounter)) * 100),
+                                            raidVictoryCounter, raidDefeatCounter));
+                        }
+
+                        sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
                         if (!aliveScreenFile.delete())
                             BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
                     }
