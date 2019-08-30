@@ -1345,6 +1345,7 @@ public class MainThread implements Runnable {
                         StringBuilder aliveMsg = new StringBuilder();
                         aliveMsg.append("I am alive and doing fine!");
 
+                        // If they are both equal to zero, the percentage will divide by 0 and give a Nan
                         if ((raidVictoryCounter + raidDefeatCounter) > 0) {
                             aliveMsg.append("\n\n")
                                     .append(String.format("Raid success rate is %s%%: W:%d L:%d",
