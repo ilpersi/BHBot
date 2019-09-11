@@ -5706,17 +5706,19 @@ public class MainThread implements Runnable {
         }
 
         // A  temporary variable to save the position of the current selected raid
-        int selectedRaidX1;
+        int selectedRaidX1 = 0;
 
         // we look for the the currently selected raid, the green dot
-        seg = detectCue(cues.get("RaidLevel"));
-        if (seg != null) {
-            raidUnlocked += 1;
-            selectedRaidX1 = seg.getX1();
-            raidDotsList.add(seg);
-        } else {
-            BHBot.logger.error("Impossible to detect the currently selected grey cue!");
-            return false;
+        if (!onlyR1) {
+            seg = detectCue(cues.get("RaidLevel"));
+            if (seg != null) {
+                raidUnlocked += 1;
+                selectedRaidX1 = seg.getX1();
+                raidDotsList.add(seg);
+            } else {
+                BHBot.logger.error("Impossible to detect the currently selected grey cue!");
+                return false;
+            }
         }
 
         BHBot.logger.debug("Detected: R" + raidUnlocked + " unlocked");
@@ -5748,7 +5750,7 @@ public class MainThread implements Runnable {
             return false;
         }
 
-        if (selectedRaid != desiredRaid) {
+        if (!onlyR1 && (selectedRaid != desiredRaid)) {
             // we need to change the raid type!
             BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaid);
             // we click on the desired cue
