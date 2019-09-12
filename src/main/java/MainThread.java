@@ -1342,7 +1342,19 @@ public class MainThread implements Runnable {
                         timeLastPOAlive = Misc.getTime();
                         String aliveScreenName = saveGameScreen("alive-screen");
                         File aliveScreenFile = new File(aliveScreenName);
-                        sendPushOverMessage("Alive notification", "I am alive and doing fine!", MessagePriority.QUIET, aliveScreenFile);
+
+                        StringBuilder aliveMsg = new StringBuilder();
+                        aliveMsg.append("I am alive and doing fine!");
+
+                        // If they are both equal to zero, the percentage will divide by 0 and give a Nan
+                        if ((raidVictoryCounter + raidDefeatCounter) > 0) {
+                            aliveMsg.append("\n\n")
+                                    .append(String.format("Raid success rate is %s%%: W:%d L:%d",
+                                            df.format(((double) raidVictoryCounter / (raidVictoryCounter + raidDefeatCounter)) * 100),
+                                            raidVictoryCounter, raidDefeatCounter));
+                        }
+
+                        sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
                         if (!aliveScreenFile.delete())
                             BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
                     }
@@ -5705,17 +5717,19 @@ public class MainThread implements Runnable {
         }
 
         // A  temporary variable to save the position of the current selected raid
-        int selectedRaidX1;
+        int selectedRaidX1 = 0;
 
         // we look for the the currently selected raid, the green dot
-        seg = detectCue(cues.get("RaidLevel"));
-        if (seg != null) {
-            raidUnlocked += 1;
-            selectedRaidX1 = seg.getX1();
-            raidDotsList.add(seg);
-        } else {
-            BHBot.logger.error("Impossible to detect the currently selected grey cue!");
-            return false;
+        if (!onlyR1) {
+            seg = detectCue(cues.get("RaidLevel"));
+            if (seg != null) {
+                raidUnlocked += 1;
+                selectedRaidX1 = seg.getX1();
+                raidDotsList.add(seg);
+            } else {
+                BHBot.logger.error("Impossible to detect the currently selected grey cue!");
+                return false;
+            }
         }
 
         BHBot.logger.debug("Detected: R" + raidUnlocked + " unlocked");
@@ -5747,7 +5761,7 @@ public class MainThread implements Runnable {
             return false;
         }
 
-        if (selectedRaid != desiredRaid) {
+        if (!onlyR1 && (selectedRaid != desiredRaid)) {
             // we need to change the raid type!
             BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaid);
             // we click on the desired cue

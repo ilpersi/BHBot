@@ -146,6 +146,12 @@ public class BHBot {
                     logger.error("Impossile to process user command: " + s, e);
                 }
             }
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                logger.error("Error while reading console input: ", e);
+            }
         }
 
         if (mainThread.isAlive()) {
