@@ -69,7 +69,7 @@ public class MainThread implements Runnable {
     @SuppressWarnings("FieldCanBeLocal")
     private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
     @SuppressWarnings("FieldCanBeLocal")
-    private final long MAX_IDLE_TIME = 30 * MINUTE;
+    private final long MAX_IDLE_TIME = 15 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
     private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
@@ -82,6 +82,7 @@ public class MainThread implements Runnable {
     private boolean autoShrined = false;
     private long activityStartTime;
     private long activityDuration;
+    private boolean combatIdleChecker = true;
     private long outOfEncounterTimestamp = 0;
     private long inEncounterTimestamp = 0;
 
@@ -1192,7 +1193,19 @@ public class MainThread implements Runnable {
                         timeLastPOAlive = Misc.getTime();
                         String aliveScreenName = saveGameScreen("alive-screen");
                         File aliveScreenFile = new File(aliveScreenName);
-                        sendPushOverMessage("Alive notification", "I am alive and doing fine!", MessagePriority.QUIET, aliveScreenFile);
+
+                        StringBuilder aliveMsg = new StringBuilder();
+                        aliveMsg.append("I am alive and doing fine!");
+
+                        // If they are both equal to zero, the percentage will divide by 0 and give a Nan
+                        if ((raidVictoryCounter + raidDefeatCounter) > 0) {
+                            aliveMsg.append("\n\n")
+                                    .append(String.format("Raid success rate is %s%%: W:%d L:%d",
+                                            df.format(((double) raidVictoryCounter / (raidVictoryCounter + raidDefeatCounter)) * 100),
+                                            raidVictoryCounter, raidDefeatCounter));
+                        }
+
+                        sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
                         if (!aliveScreenFile.delete())
                             BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
                     }
@@ -3469,6 +3482,7 @@ public class MainThread implements Runnable {
             outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             startTimeCheck = true;
+            combatIdleChecker = true;
         }
 
         activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
@@ -3477,9 +3491,18 @@ public class MainThread implements Runnable {
         MarvinSegment guildButtonSeg = detectCue(cues.get("GuildButton"));
         if (guildButtonSeg != null) {
             outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
+            if (combatIdleChecker) {
+                BHBot.logger.debug("Updating idle time (Out of combat)");
+                BHBot.scheduler.resetIdleTime();
+                combatIdleChecker = false;
+            }
         } else {
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
-//			BHBot.logger.debug("Encounter detected");
+            if (!combatIdleChecker) {
+                BHBot.logger.debug("Updating idle time (In combat)");
+                BHBot.scheduler.resetIdleTime();
+                combatIdleChecker = true;
+            }
         }
 
         if (State.Dungeon.equals(state) && activityDuration < 30) {
@@ -3934,6 +3957,7 @@ public class MainThread implements Runnable {
                         }
 
                         autoShrined = true;
+                        BHBot.scheduler.resetIdleTime();
                     }
                 }
             }
@@ -4547,6 +4571,7 @@ public class MainThread implements Runnable {
             BHBot.logger.debug("AutoRevive disabled, reenabling auto.. State = '" + state + "'");
             seg = detectCue(cues.get("AutoOff"));
             if (seg != null) clickOnSeg(seg);
+            BHBot.scheduler.resetIdleTime();
             return;
         }
 
@@ -4557,6 +4582,7 @@ public class MainThread implements Runnable {
             seg = detectCue(cues.get("AutoOff"), SECOND);
             if (seg != null) clickOnSeg(seg);
             readScreen(SECOND);
+            BHBot.scheduler.resetIdleTime();
             return;
         }
 
@@ -4573,6 +4599,7 @@ public class MainThread implements Runnable {
                 BHBot.logger.warn("Problem: 'Victory' window has been detected, but no 'Close' button. Ignoring...");
                 return;
             }
+            BHBot.scheduler.resetIdleTime();
             return;
         }
 
@@ -4581,6 +4608,7 @@ public class MainThread implements Runnable {
             BHBot.logger.autorevive("Potion limit reached, skipping revive check");
             seg = detectCue(cues.get("AutoOff"), SECOND);
             if (seg != null) clickOnSeg(seg);
+            BHBot.scheduler.resetIdleTime();
             return;
         }
 
@@ -4603,6 +4631,7 @@ public class MainThread implements Runnable {
                     saveGameScreen("autorevive-no-potions-no-close", img);
                     restart();
                 }
+                BHBot.scheduler.resetIdleTime();
                 return;
             }
 
@@ -4726,6 +4755,7 @@ public class MainThread implements Runnable {
                     if (availablePotions.get('1') == null && availablePotions.get('2') == null && availablePotions.get('3') == null) {
                         BHBot.logger.warn("No potions are avilable, autoRevive well be temporary disabled!");
                         BHBot.settings.autoRevive = new ArrayList<>();
+                        BHBot.scheduler.resetIdleTime();
                         return;
                     }
 
@@ -4746,6 +4776,7 @@ public class MainThread implements Runnable {
                                 revived[BHBot.settings.tankPosition - 1] = true;
                                 potionsUsed++;
                                 readScreen(SECOND);
+                                BHBot.scheduler.resetIdleTime();
                                 break;
                             }
                         }
@@ -4764,6 +4795,7 @@ public class MainThread implements Runnable {
                                 revived[slotNum - 1] = true;
                                 potionsUsed++;
                                 readScreen(SECOND);
+                                BHBot.scheduler.resetIdleTime();
                                 break;
                             }
                         }
@@ -4789,6 +4821,7 @@ public class MainThread implements Runnable {
 
         seg = detectCue(cues.get("AutoOff"), SECOND);
         if (seg != null) clickOnSeg(seg);
+        BHBot.scheduler.resetIdleTime();
     }
 
     private void closeWorldBoss() {
@@ -5492,17 +5525,19 @@ public class MainThread implements Runnable {
         }
 
         // A  temporary variable to save the position of the current selected raid
-        int selectedRaidX1;
+        int selectedRaidX1 = 0;
 
         // we look for the the currently selected raid, the green dot
-        seg = detectCue(cues.get("RaidLevel"));
-        if (seg != null) {
-            raidUnlocked += 1;
-            selectedRaidX1 = seg.getX1();
-            raidDotsList.add(seg);
-        } else {
-            BHBot.logger.error("Impossible to detect the currently selected grey cue!");
-            return false;
+        if (!onlyR1) {
+            seg = detectCue(cues.get("RaidLevel"));
+            if (seg != null) {
+                raidUnlocked += 1;
+                selectedRaidX1 = seg.getX1();
+                raidDotsList.add(seg);
+            } else {
+                BHBot.logger.error("Impossible to detect the currently selected grey cue!");
+                return false;
+            }
         }
 
         BHBot.logger.debug("Detected: R" + raidUnlocked + " unlocked");
@@ -5534,7 +5569,7 @@ public class MainThread implements Runnable {
             return false;
         }
 
-        if (selectedRaid != desiredRaid) {
+        if (!onlyR1 && (selectedRaid != desiredRaid)) {
             // we need to change the raid type!
             BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaid);
             // we click on the desired cue

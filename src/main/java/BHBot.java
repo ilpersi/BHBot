@@ -148,7 +148,7 @@ public class BHBot {
             }
 
             try {
-                Thread.sleep(100);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 logger.error("Error while reading console input: ", e);
             }
