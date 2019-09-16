@@ -33,21 +33,20 @@ public class Misc {
         return r.toString();
     }
 
-    static List<String> readTextFile2(String file) {
+    static List<String> readTextFile2(String file) throws FileNotFoundException {
         List<String> lines = new ArrayList<>();
         BufferedReader br;
+
+        br = new BufferedReader(new FileReader(file));
         try {
-            br = new BufferedReader(new FileReader(file));
-            try {
-                String line = br.readLine();
-                while (line != null) {
-                    lines.add(line);
-                    line = br.readLine();
-                }
-                return lines;
-            } finally {
-                br.close();
+            String line = br.readLine();
+            while (line != null) {
+                lines.add(line);
+                line = br.readLine();
             }
+            br.close();
+
+            return lines;
         } catch (IOException e) {
             BHBot.logger.error("Impossible to read file: " + file, e);
             return null;

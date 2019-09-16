@@ -12,10 +12,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.util.*;
 
@@ -81,7 +78,24 @@ public class BHBot {
         if ("LOAD_IDLE_SETTINGS".equals(Settings.configurationFile)) {
             settings.setIdle();
         } else {
-            settings.load(Settings.configurationFile);
+            try {
+                settings.load(Settings.configurationFile);
+            } catch (FileNotFoundException e) {
+                System.out.println("It was impossible to find file " + Settings.configurationFile + ".");
+
+                // We handle the default configuration file and we generate an empty one
+                if ("settings.ini".equals(Settings.configurationFile)) {
+
+                    try {
+                        Settings.resetIniFile();
+                    } catch (IOException ex) {
+                        System.out.println("Error while creating settings.ini in main folder");
+                        ex.printStackTrace();
+                        return;
+                    }
+                }
+                return;
+            }
         }
 
         logger = BHBotLogger.create();
@@ -287,7 +301,14 @@ public class BHBot {
                 String file = Settings.configurationFile;
                 if (params.length > 1)
                     file = params[1];
-                settings.load(file);
+
+                try {
+                    settings.load(file);
+                } catch (FileNotFoundException e) {
+                    BHBot.logger.error("It was impossible to find setting file: " + file + ".");
+                    break;
+                }
+
                 settings.checkDeprecatedSettings();
                 settings.sanitizeSetting();
                 reloadLogger();
@@ -301,7 +322,13 @@ public class BHBot {
                 }
                 break;
             case "plan":
-                settings.load("plans/" + params[1] + ".ini");
+                try {
+                    settings.load("plans/" + params[1] + ".ini");
+                } catch (FileNotFoundException e) {
+                    BHBot.logger.error("It was impossible to find plan plans/" + params[1] + ".ini" + "!");
+                    break;
+                }
+
                 settings.checkDeprecatedSettings();
                 settings.sanitizeSetting();
                 reloadLogger();
@@ -355,6 +382,13 @@ public class BHBot {
                     default:
                         logger.warn("Impossible to print : '" + params[1] + "'");
                         break;
+                }
+                break;
+            case "resetini":
+                try {
+                    Settings.resetIniFile();
+                } catch (IOException e) {
+                    BHBot.logger.error("It was impossible to reset ini file: " + Settings.configurationFile);
                 }
                 break;
             case "restart":
