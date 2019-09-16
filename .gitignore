@@ -1,34 +1,17 @@
-/bin/
-
-\.settings/org\.eclipse\.jdt\.core\.prefs
-
-web/\.DS_Store
-
-\.DS_Store
+# Maven packaging files
 /target/
-
 BHBot\.jar
 
-\.project
-
-\.classpath
-
-\.settings/org\.eclipse\.m2e\.core\.prefs
-
-logs/
-
+# Run time folders
 chrome_profile/
-
-chromedriver\.exe
-
+logs/
 screenshots/
 
-fisher-v1\.2\.4\.exe
-
-fishing\.exe
-
+# IntelliJ Files
+BHBot\.iml
 \.idea
 
-BHBot\.iml
-
-chrome_profile/
+# External executables
+chromedriver\.exe
+fisher-v1\.2\.4\.exe
+fishing\.exe
