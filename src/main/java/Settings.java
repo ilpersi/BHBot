@@ -29,8 +29,8 @@ public class Settings {
     //Various settings
     int openSkeleton = 0;
     boolean contributeFamiliars = true;
-    boolean collectBounties = false;
-    boolean collectFishingBaits = false;
+    private boolean collectBounties = false;
+    private boolean collectFishingBaits = false;
     boolean dungeonOnTimeout = true;
     boolean countActivities = false;
 
@@ -184,7 +184,7 @@ public class Settings {
     /**
      * Fishing Settings
      **/
-    boolean doFishing = false;
+    private boolean doFishing = false;
     private int rodType = 4;
     int baitAmount = 5;
     /**
@@ -441,7 +441,7 @@ public class Settings {
         this.difficultyFailsafe.clear();
         // We only support Trial and Gauntlets, so we do sanity checks here only settings the right letters t,g
         String pattern = "([tg]):([0-9])(:([\\d]+))?";
-        Integer minimumDifficulty = 1;
+        int minimumDifficulty = 1;
         Pattern r = Pattern.compile(pattern);
 
         for (String f : failSafes) {

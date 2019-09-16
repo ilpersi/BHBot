@@ -1141,7 +1141,7 @@ public class MainThread implements Runnable {
                         if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
                             sendPushOverMessage("Idle timer exceeded", "Idle time exceeded while state = " + state, "siren", MessagePriority.NORMAL, idleTimerScreenFile);
 
-                            if(!idleTimerScreenFile.delete()) {
+                            if (!idleTimerScreenFile.delete()) {
                                 BHBot.logger.error("Impossible to delete idle timer screenshot.");
                             }
                         }
@@ -1513,9 +1513,9 @@ public class MainThread implements Runnable {
 
                             readScreen(2 * SECOND);
                             seg = detectCue(cues.get("RaidSummon"), 2 * SECOND);
-                                if (seg == null) {
-                                    BHBot.logger.error("Summon button not found");
-                                }
+                            if (seg == null) {
+                                BHBot.logger.error("Summon button not found");
+                            }
                             clickOnSeg(seg);
                             readScreen(2 * SECOND);
 
@@ -2983,7 +2983,7 @@ public class MainThread implements Runnable {
                     activity = activitysIterator.next();
                 }
 
-                if (activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > (long)(15 * MINUTE))) {
+                if (activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > (long) (15 * MINUTE))) {
                     return "r";
                 } else if ("d".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL)) {
                     return "d";
@@ -3380,6 +3380,7 @@ public class MainThread implements Runnable {
     /**
      * This method is ment to be used for development purpose. In some situations you want to "fake" the readScreen result
      * with an hand-crafted image. If this is the case, this method is here to help with it.
+     *
      * @param screenFilePath the path to the image to be used to load the screen
      */
     @SuppressWarnings("unused")
@@ -4914,7 +4915,7 @@ public class MainThread implements Runnable {
                     MarvinSegment superHealSeg = detectCue(cues.get("SuperAvailable"));
 
                     if (superHealSeg != null) {
-                        if (detectCue(cues.get("ScrollerRightDisabled")) != null ) {
+                        if (detectCue(cues.get("ScrollerRightDisabled")) != null) {
                             BHBot.logger.debug("Slot " + slotNum + " is up for super potion, closing revive window.");
                             seg = detectCue(cues.get("X"));
                             clickOnSeg(seg);
@@ -5326,7 +5327,7 @@ public class MainThread implements Runnable {
                 }
                 break;
             case 10:
-                switch (d){
+                switch (d) {
                     case 1:
                         return new Point(468, 389);
                     case 2:
@@ -5761,7 +5762,7 @@ public class MainThread implements Runnable {
 
         int selectedRaid = 0;
         if (!onlyR1) {
-            for (MarvinSegment raidDotSeg: raidDotsList) {
+            for (MarvinSegment raidDotSeg : raidDotsList) {
                 selectedRaid++;
                 if (raidDotSeg.getX1() == selectedRaidX1) break;
             }
@@ -6157,7 +6158,7 @@ public class MainThread implements Runnable {
         input.update(); // must be called! Or else things won't work...
     }
 
-    int detectDifficulty(){
+    int detectDifficulty() {
         return detectDifficulty(cues.get("Difficulty"));
     }
 
@@ -6203,7 +6204,7 @@ public class MainThread implements Runnable {
 
         tierDropDown = detectCue("WorldBossTierDropDown", SECOND); // For tier drop down menu
 
-        if (tierDropDown == null ) {
+        if (tierDropDown == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
             return 0; // error
         }
