@@ -2264,8 +2264,13 @@ public class MainThread implements Runnable {
                                 readScreen(2 * SECOND);
 
                                 seg = detectCue(cues.get("Accept"), 5 * SECOND);
+                                if (seg == null) {
+                                    BHBot.logger.error("Unable to find the Accept button in the Invasion screen, restarting!");
+                                    restart();
+                                    continue;
+                                }
                                 clickOnSeg(seg);
-                                sleep(5 * SECOND);
+                                sleep(2 * SECOND);
 
                                 if (handleTeamMalformedWarning()) {
                                     BHBot.logger.error("Team incomplete, doing emergency restart..");
@@ -7049,7 +7054,8 @@ public class MainThread implements Runnable {
         specialDungeon = false;
         potionsUsed = 0;
 
-        if ((globalShards - 1) > BHBot.settings.minShards && state == State.Raid) timeLastShardsCheck = 0;
+        if ((globalShards - 1) > BHBot.settings.minShards && state == State.Raid)
+            timeLastShardsCheck = 0;
 
         if ((globalBadges - BHBot.settings.costExpedition) > BHBot.settings.minBadges && (state == State.Expedition))
             timeLastExpBadgesCheck = 0;
