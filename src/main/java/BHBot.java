@@ -89,7 +89,8 @@ public class BHBot {
                     try {
                         Settings.resetIniFile();
                     } catch (IOException ex) {
-                        System.out.println("It was impossible to create settings.ini in main folder");
+                        System.out.println("Error while creating settings.ini in main folder");
+                        ex.printStackTrace();
                         return;
                     }
                 }

@@ -1140,6 +1140,7 @@ public class Settings {
         if (resourceURL != null) {
             Files.copy(resourceURL, iniFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             System.out.println("Standard ini setting file created in '" + iniFile.getPath() + "' please review it and start the bot again.");
+            resourceURL.close();
         } else {
             System.out.println("Impossible to load standard ini setting file from resources!");
         }
