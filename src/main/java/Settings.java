@@ -1139,10 +1139,21 @@ public class Settings {
 
         if (resourceURL != null) {
             Files.copy(resourceURL, iniFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("Standard ini setting file created in '" + iniFile.getPath() + "' please review it and start the bot again.");
+            String fileCreatedMsg = "Standard ini setting file created in '" + iniFile.getPath() + "' please review it and start the bot again.";
+            if (BHBot.logger != null) {
+                BHBot.logger.info(fileCreatedMsg);
+            } else {
+                System.out.println(fileCreatedMsg);
+            }
             resourceURL.close();
         } else {
-            System.out.println("Impossible to load standard ini setting file from resources!");
+            String nullResourceMsg = "Impossible to load standard ini setting file from resources!";
+
+            if (BHBot.logger != null) {
+                BHBot.logger.error(nullResourceMsg);
+            } else {
+                System.out.println(nullResourceMsg);
+            }
         }
     }
 }
