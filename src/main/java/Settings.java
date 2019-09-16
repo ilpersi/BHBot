@@ -1,6 +1,12 @@
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.Level;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -634,9 +640,9 @@ public class Settings {
         return String.join("; ", actionList);
     }
 
-    private String getDifficultyFailsafeAsString(){
+    private String getDifficultyFailsafeAsString() {
         StringBuilder dfsBuilder = new StringBuilder();
-        for (Map.Entry<String, Map.Entry<Integer, Integer>> entry: difficultyFailsafe.entrySet()){
+        for (Map.Entry<String, Map.Entry<Integer, Integer>> entry : difficultyFailsafe.entrySet()) {
             if (dfsBuilder.length() > 0) dfsBuilder.append(" ");
             dfsBuilder.append(entry.getKey())
                     .append(":")
@@ -949,7 +955,11 @@ public class Settings {
      * Loads settings from disk.
      */
     void load() {
-        load(configurationFile);
+        try {
+            load(configurationFile);
+        } catch (FileNotFoundException e) {
+            BHBot.logger.error("It was impossible to load settings from " + configurationFile + ".");
+        }
         checkDeprecatedSettings();
         sanitizeSetting();
     }
@@ -957,7 +967,7 @@ public class Settings {
     /**
      * Loads settings from disk.
      */
-    void load(String file) {
+    void load(String file) throws FileNotFoundException {
         List<String> lines = Misc.readTextFile2(file);
         if (lines == null || lines.size() == 0)
             return;
@@ -1118,6 +1128,20 @@ public class Settings {
                     "this feature will be disabled");
             lastUsedMap.put("autoBossRune", "");
             setAutoBossRuneFromString("");
+        }
+    }
+
+    static void resetIniFile() throws IOException {
+        ClassLoader classLoader = MainThread.class.getClassLoader();
+        InputStream resourceURL = classLoader.getResourceAsStream(Settings.configurationFile);
+
+        File iniFile = new File(Settings.configurationFile);
+
+        if (resourceURL != null) {
+            Files.copy(resourceURL, iniFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("Standard ini setting file created in '" + iniFile.getPath() + "' please review it and start the bot again.");
+        } else {
+            System.out.println("Impossible to load standard ini setting file from resources!");
         }
     }
 }
