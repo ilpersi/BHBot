@@ -119,14 +119,17 @@ class Scheduler {
     }
 
     void resetIdleTime() {
+        BHBot.logger.debug("resetIdleTime()");
         idleTime = Misc.getTime();
     }
 
     void backupIdleTime() {
+        BHBot.logger.debug("backupIdleTime()");
         idleTimeBackup = idleTime;
     }
 
     void restoreIdleTime() {
+        BHBot.logger.debug("restoreIdleTime()");
         idleTime = idleTimeBackup;
     }
 }

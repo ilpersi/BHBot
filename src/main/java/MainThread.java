@@ -3694,14 +3694,14 @@ public class MainThread implements Runnable {
         if (guildButtonSeg != null) {
             outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             if (combatIdleChecker) {
-                BHBot.logger.debug("Updating idle time (Out of combat)");
+//                BHBot.logger.debug("Updating idle time (Out of combat)");
                 BHBot.scheduler.resetIdleTime();
                 combatIdleChecker = false;
             }
         } else {
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             if (!combatIdleChecker) {
-                BHBot.logger.debug("Updating idle time (In combat)");
+//                BHBot.logger.debug("Updating idle time (In combat)");
                 BHBot.scheduler.resetIdleTime();
                 combatIdleChecker = true;
             }
