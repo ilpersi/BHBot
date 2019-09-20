@@ -3695,14 +3695,14 @@ public class MainThread implements Runnable {
             outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             if (combatIdleChecker) {
 //                BHBot.logger.debug("Updating idle time (Out of combat)");
-                BHBot.scheduler.resetIdleTime();
+                BHBot.scheduler.resetIdleTime(true);
                 combatIdleChecker = false;
             }
         } else {
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             if (!combatIdleChecker) {
 //                BHBot.logger.debug("Updating idle time (In combat)");
-                BHBot.scheduler.resetIdleTime();
+                BHBot.scheduler.resetIdleTime(true);
                 combatIdleChecker = true;
             }
         }
@@ -4159,7 +4159,7 @@ public class MainThread implements Runnable {
                         }
 
                         autoShrined = true;
-                        BHBot.scheduler.resetIdleTime();
+                        BHBot.scheduler.resetIdleTime(true);
                     }
                 }
             }
@@ -4773,7 +4773,7 @@ public class MainThread implements Runnable {
             BHBot.logger.debug("AutoRevive disabled, reenabling auto.. State = '" + state + "'");
             seg = detectCue(cues.get("AutoOff"));
             if (seg != null) clickOnSeg(seg);
-            BHBot.scheduler.resetIdleTime();
+            BHBot.scheduler.resetIdleTime(true);
             return;
         }
 
@@ -4784,7 +4784,7 @@ public class MainThread implements Runnable {
             seg = detectCue(cues.get("AutoOff"), SECOND);
             if (seg != null) clickOnSeg(seg);
             readScreen(SECOND);
-            BHBot.scheduler.resetIdleTime();
+            BHBot.scheduler.resetIdleTime(true);
             return;
         }
 
@@ -4801,7 +4801,7 @@ public class MainThread implements Runnable {
                 BHBot.logger.warn("Problem: 'Victory' window has been detected, but no 'Close' button. Ignoring...");
                 return;
             }
-            BHBot.scheduler.resetIdleTime();
+            BHBot.scheduler.resetIdleTime(true);
             return;
         }
 
@@ -4810,7 +4810,7 @@ public class MainThread implements Runnable {
             BHBot.logger.autorevive("Potion limit reached, skipping revive check");
             seg = detectCue(cues.get("AutoOff"), SECOND);
             if (seg != null) clickOnSeg(seg);
-            BHBot.scheduler.resetIdleTime();
+            BHBot.scheduler.resetIdleTime(true);
             return;
         }
 
@@ -4833,7 +4833,7 @@ public class MainThread implements Runnable {
                     saveGameScreen("autorevive-no-potions-no-close", img);
                     restart();
                 }
-                BHBot.scheduler.resetIdleTime();
+                BHBot.scheduler.resetIdleTime(true);
                 return;
             }
 
@@ -4957,7 +4957,7 @@ public class MainThread implements Runnable {
                     if (availablePotions.get('1') == null && availablePotions.get('2') == null && availablePotions.get('3') == null) {
                         BHBot.logger.warn("No potions are avilable, autoRevive well be temporary disabled!");
                         BHBot.settings.autoRevive = new ArrayList<>();
-                        BHBot.scheduler.resetIdleTime();
+                        BHBot.scheduler.resetIdleTime(true);
                         return;
                     }
 
@@ -4978,7 +4978,7 @@ public class MainThread implements Runnable {
                                 revived[BHBot.settings.tankPosition - 1] = true;
                                 potionsUsed++;
                                 readScreen(SECOND);
-                                BHBot.scheduler.resetIdleTime();
+                                BHBot.scheduler.resetIdleTime(true);
                                 break;
                             }
                         }
@@ -4997,7 +4997,7 @@ public class MainThread implements Runnable {
                                 revived[slotNum - 1] = true;
                                 potionsUsed++;
                                 readScreen(SECOND);
-                                BHBot.scheduler.resetIdleTime();
+                                BHBot.scheduler.resetIdleTime(true);
                                 break;
                             }
                         }
@@ -5023,7 +5023,7 @@ public class MainThread implements Runnable {
 
         seg = detectCue(cues.get("AutoOff"), SECOND);
         if (seg != null) clickOnSeg(seg);
-        BHBot.scheduler.resetIdleTime();
+        BHBot.scheduler.resetIdleTime(true);
     }
 
     private void closeWorldBoss() {
