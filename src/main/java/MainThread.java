@@ -493,6 +493,7 @@ public class MainThread implements Runnable {
         addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"), new Bounds(200, 40, 600, 100)); //Inferno Expedition
         addCue("Expedition3", loadImage("cues/expedition/cueExpedition3Jammie.png"), new Bounds(230, 40, 565, 100)); //Jammie Dimension
         addCue("Expedition4", loadImage("cues/expedition/cueExpedition4Idol.png"), new Bounds(230, 40, 565, 100)); //Idol Dimension
+        addCue("Expedition5", loadImage("cues/expedition/cueExpedition5BattleBards.png"), new Bounds(230, 40, 565, 100)); //Battle Bards!
 
         //WorldBoss Related
         addCue("WorldBoss", loadImage("cues/cueWorldBoss.png"), null);
@@ -2397,6 +2398,8 @@ public class MainThread implements Runnable {
                                     currentExpedition = 3;
                                 } else if (detectCue(cues.get("Expedition4")) != null) {
                                     currentExpedition = 4;
+                                } else if (detectCue("Expedition5") != null) {
+                                    currentExpedition = 5;
                                 } else {
                                     BHBot.settings.activitiesEnabled.remove("e");
                                     BHBot.logger.error("It was impossible to get the current expedition type!");
@@ -5347,7 +5350,7 @@ public class MainThread implements Runnable {
      * Function to return the name of the portal for console output
      */
     private String getExpeditionName(int currentExpedition, String targetPortal) {
-        if (currentExpedition > 4) {
+        if (currentExpedition > 5) {
             BHBot.logger.error("Unexpected expedition int in getExpeditionName: " + currentExpedition);
             return null;
         }
@@ -5411,6 +5414,19 @@ public class MainThread implements Runnable {
                     default:
                         return null;
                 }
+            case 5: // Battle Bards!
+                switch (targetPortal) {
+                    case "p1":
+                        return "Hero Fest";
+                    case "p2":
+                        return "Burning Fam";
+                    case "p3":
+                        return "Melvapaloozo";
+                    case "p4":
+                        return "Bitstock";
+                    default:
+                        return null;
+                }
             default:
                 return null;
         }
@@ -5435,6 +5451,8 @@ public class MainThread implements Runnable {
             portalName = "Jammie";
         } else if (currentExpedition == 4) {
             portalName = "Idol";
+        } else if (currentExpedition == 5) {
+            portalName = "Battle Bards";
         } else {
             BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
             saveGameScreen("unknown-expedition");
@@ -5518,7 +5536,7 @@ public class MainThread implements Runnable {
             colorCheck[1] = Color.WHITE;
             colorCheck[2] = Color.WHITE;
             colorCheck[3] = Color.WHITE;
-        } else { // Idol
+        } else if (currentExpedition == 4) { // Idol
             portalCheck[0] = new Point(370, 140); // Blublix
             portalCheck[1] = new Point(226, 369); // Mowhi
             portalCheck[2] = new Point(534, 350); // Wizbot
@@ -5533,6 +5551,21 @@ public class MainThread implements Runnable {
             colorCheck[1] = Color.WHITE;
             colorCheck[2] = Color.WHITE;
             colorCheck[3] = new Color(251, 201, 126);
+        } else { // Battle Bards!
+            portalCheck[0] = new Point(387, 152); // Hero Fest
+            portalCheck[1] = new Point(253, 412); // Burning Fam
+            portalCheck[2] = new Point(568, 418); // Melvapaloozo
+            portalCheck[3] = new Point(435, 306); // Bitstock
+
+            portalPosition[0] = new Point(402, 172); // Hero Fest
+            portalPosition[1] = new Point(240, 371); // Burning Fam
+            portalPosition[2] = new Point(565, 383); // Melvapaloozo
+            portalPosition[3] = new Point(396, 315); // Bitstock
+
+            colorCheck[0] = Color.WHITE;
+            colorCheck[1] = Color.WHITE;
+            colorCheck[2] = Color.WHITE;
+            colorCheck[3] = Color.WHITE;
         }
 
         // We check which of the portals are enabled
