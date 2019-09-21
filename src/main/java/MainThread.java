@@ -82,8 +82,15 @@ public class MainThread implements Runnable {
     private long runMillisAvg = 0;
     private boolean specialDungeon; //d4 check for closing properly when no energy
     private int dungeonCounter = 0;
+
+    // Raid counters
     private int raidVictoryCounter = 0;
     private int raidDefeatCounter = 0;
+
+    // Expedition counters
+    private int expVictoryCounter = 0;
+    private int expDefeatCounter = 0;
+
     private int numFailedRestarts = 0; // in a row
     // When we do not have anymore gems to use this is true
     private boolean noGemsToBribe = false;
@@ -1353,6 +1360,14 @@ public class MainThread implements Runnable {
                                     .append(String.format("Raid success rate is %s%%: W:%d L:%d",
                                             df.format(((double) raidVictoryCounter / (raidVictoryCounter + raidDefeatCounter)) * 100),
                                             raidVictoryCounter, raidDefeatCounter));
+                        }
+
+                        // Same logic we use for raids applied to expeditions
+                        if ((expVictoryCounter + expDefeatCounter) > 0) {
+                            aliveMsg.append("\n\n")
+                                    .append(String.format("Expedition success rate is %s%%: W:%d L:%d",
+                                            df.format(((double) expVictoryCounter / (expVictoryCounter + expDefeatCounter)) * 100),
+                                            expVictoryCounter, expDefeatCounter));
                         }
 
                         sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
@@ -3822,6 +3837,11 @@ public class MainThread implements Runnable {
 
             sleep(SECOND);
             if (state == State.Expedition) {
+                expVictoryCounter++;
+                int totalExp = expVictoryCounter + expDefeatCounter;
+                BHBot.logger.info("Expedition #" + totalExp + " completed. Result: Victory");
+                BHBot.logger.stats("Expedition success rate: " + df.format(((double) expVictoryCounter / totalExp) * 100) + "%.");
+
                 sleep(SECOND);
 
                 // Close Portal Map after expedition
@@ -3905,6 +3925,11 @@ public class MainThread implements Runnable {
                 BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
             sleep(SECOND);
             if (state == State.Expedition) {
+                expDefeatCounter++;
+                int totalExp = expVictoryCounter + expDefeatCounter;
+                BHBot.logger.warn("Expedition #" + totalExp + " completed. Result: Defeat.");
+                BHBot.logger.stats("Expedition success rate: " + df.format(((double) expVictoryCounter / totalExp) * 100) + "%");
+
                 sleep(SECOND);
 
                 // Close Portal Map after expedition
