@@ -73,6 +73,7 @@ command input box):
   - `version`: output the version of BHBot. This is is useful when reporting a bug
 - `readouts`: will reset readout timers (and hence immediately commence reading out resources).
 - `reload`: will reload the 'settings.ini' file from disk and apply any changes on-the-fly.
+- `resetini`: will reset your current ini file to the default content.
 - `restart`: restarts the chromedriver (closes Chromium and opens a fresh Chromium window). Use only when something goes wrong (should restart automatically after some time in that case though).
 - `resume`: resumes bot's execution.
 - `set`: sets a setting line, just like from a 'settings.ini' file. Example: "set raids 1 3 100", or "set difficulty 70". Note that this overwritten setting is NOT saved to the 'settings.ini' file! Once you issue <reload> command, it will get discharged.
