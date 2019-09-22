@@ -1604,6 +1604,10 @@ public class MainThread implements Runnable {
                                     BHBot.logger.error("Due to an error#2 in cost selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
                                     continue;
                                 }
+
+                                // We wait for the cost selector window to close
+                                detectCue("TrialsOrGauntletWindow", SECOND * 2);
+                                readScreen();
                             }
 
                             seg = detectCue(cues.get("Play"), 2 * SECOND);
