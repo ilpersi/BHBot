@@ -3504,7 +3504,7 @@ public class MainThread implements Runnable {
         if (seg == null) // this should probably not happen
             return -1;
 
-        int left = seg.x2 + 1;
+        int left = seg.x2;
         int top = seg.y1 + 6;
 
         final Color full = new Color(17, 208, 226);
@@ -3514,16 +3514,15 @@ public class MainThread implements Runnable {
 
         // tokens bar is 78 pixels wide (however last two pixels will have "medium" color and not full color (it's so due to shading))
         for (int i = 0; i < 76; i++) {
-            value = i;
+            value = i + 1;
             Color col = new Color(img.getRGB(left + i, top));
 
             if (!col.equals(full))
                 break;
         }
 
-        value = value + 2; //add the last 2 pixels to get an accurate count
 //		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxTokens / 77.0f)));
-        return Math.round(value * (maxTokens / 75.0f)); // scale it to interval [0..10]
+        return Math.round(value * (maxTokens / 76.0f)); // scale it to interval [0..10]
     }
 
     /**
