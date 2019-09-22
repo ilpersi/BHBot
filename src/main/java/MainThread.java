@@ -593,69 +593,11 @@ public class MainThread implements Runnable {
         // disable ephemeral flash permissions flag
         options.addArguments("--disable-features=EnableEphemeralFlashPermission");
         options.addArguments("disable-infobars");
-//		options.addArguments("--log-level=OFF");
-//		options.addArguments("--silent");
+
         Map<String, Object> prefs = new HashMap<>();
         // Enable flash for all sites for Chrome 69
         prefs.put("profile.content_settings.exceptions.plugins.*,*.setting", 1);
         options.setExperimentalOption("prefs", prefs);
-
-//		if (BHBot.settings.useHeadlessMode) {
-//			options.setBinary("C:\\Users\\"+System.getProperty("user.name")+"\\AppData\\Local\\Chromium\\Application\\chrome.exe"); //set chromium v69 binary location
-
-//
-//
-//			// https://sites.google.com/a/chromium.org/chromedriver/capabilities
-//
-//			options.addArguments("--headless");
-//			//options.addArguments("--disable-gpu"); // in future versions of Chrome this flag will not be needed
-//
-//			/*
-//			options.addArguments("--disable-plugins");
-//			options.addArguments("--disable-internal-flash");
-//			options.addArguments("--disable-plugins-discovery");
-//			*/
-//			//options.addArguments("--disable-bundled-ppapi-flash");
-//
-//
-//
-//			options.addArguments("--always-authorize-plugins");
-//			options.addArguments("--allow-outdated-plugins");
-//			options.addArguments("--allow-file-access-from-files");
-//			options.addArguments("--allow-running-insecure-content");
-//			options.addArguments("--disable-translate");
-//			options.addArguments("-�allow-webui-compositing"); // https://adestefawp.wordpress.com/software/chromium-command-line-switches/
-//			options.addArguments("-�ppapi-flash-in-process");
-//
-//			options.addArguments("--use-fake-device-for-media-stream");
-//			options.addArguments("--disable-web-security");
-//
-//
-//			options.setExperimentalOption("excludeSwitches", Arrays.asList("disable-component-update", "disable-default-apps"));
-
-        //options.setExperimentalOption("#run-all-flash-in-allow-mode", Arrays.asList("Enabled"));
-        //options.setExperimentalOption("#run-all-flash-in-allow-mode", "Enabled");
-
-//			Map<String, Object> prefs = new HashMap<>();
-//			prefs.put("run-all-flash-in-allow-mode", Boolean.valueOf(true));
-//			prefs.put("profile.run_all_flash_in_allow_mode", Boolean.valueOf(true));
-//			options.setExperimentalOption("prefs", prefs);
-
-        //options.addExtensions(new File("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/Application/chrome_profile_test/PepperFlash/26.0.0.137/pepflashplayer.dll"));
-        //options.addExtensions(new File("C:/Users/Betalord/AppData/Local/Google/Chrome SxS/User Data/PepperFlash/26.0.0.137/pepflashplayer.dll"));
-
-        //options.addArguments("--remote-debugging-port=9222"); // this doesn't work because ChromeDriver uses dubuging port internally. Read about it here: https://bugs.chromium.org/p/chromedriver/issues/detail?id=878#c16
-//		}
-
-        //options.addArguments("--no-startup-window"); // does not work with WebDriver. Read about it here: https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/5351
-
-
-        //options.addArguments("--headless");
-        //options.addArguments("--disable-gpu");
-//		options.addArguments("--mute-audio"); // found this solution here: https://stackoverflow.com/questions/39392479/how-to-mute-all-sounds-in-chrome-webdriver-with-selenium/39392601#39392601
-
-        //***ChromeDriverService chromeDriverService = ChromeDriverService.createDefaultService();
-        //***chromeDriverService.CHROME_DRIVER_SILENT_OUTPUT_PROPERTY
 
         DesiredCapabilities capabilities = DesiredCapabilities.chrome();
         capabilities.setCapability("chrome.verbose", false);
@@ -999,65 +941,7 @@ public class MainThread implements Runnable {
             return;
         }
 
-//		BHBot.logger.info("Window handle is: " + driver.getWindowHandle());
         BHBot.logger.info("Game element found. Starting to run bot..");
-
-        //Code under is all debugging
-
-//		BHBot.logger.info("Current Raid tier unlocked set to R" + BHBot.settings.currentRaidTier + " in settings. Make sure this is correct!");
-//		String invasionSetting = Boolean.toString(collectedFishingRewards);
-//		BHBot.logger.info("doInvasions set to " + invasionSetting);
-//		BHBot.logger.info("Session id is: " + driver.getSessionId());
-
-//		for (String e : BHBot.settings.expeditions) { //cycle through array
-//			BHBot.logger.info(e);
-//		}
-//			BHBot.logger.info(Integer.toString(checkFamiliarCounter(fUpper)));
-//			int testCount = checkFamiliarCounter(f);
-//			String fam = f.toUpperCase().split(" ")[0];
-//			BHBot.logger.info(Integer.toString(checkFamiliarCounter(fam)));
-//			BHBot.logger.info(f);
-//			BHBot.logger.info(f.toUpperCase().split(" ")[0]);
-//			int catchCount = Integer.parseInt(f.split(" ")[1]);
-//			BHBot.logger.info(Integer.toString(catchCount));
-//		}
-
-//		for (String f : BHBot.settings.familiars) { //cycle through array
-//			String fUpper = f.toUpperCase().split(" ")[0];
-//			int catchCount = Integer.parseInt(f.split(" ")[1]);
-//			updateFamiliarCounter(fUpper, catchCount);
-//		}
-
-//		BHBot.logger.info(Integer.toString(BHBot.settings.minSolo));
-
-//		BHBot.logger.info("collectBounties = " + Boolean.toString(BHBot.settings.collectBounties));
-
-//		BHBot.logger.info("Dungeons run:");
-//		BHBot.logger.info(BHBot.settings.dungeonsRun);
-
-//		if (new SimpleDateFormat("EEE").format(new Date()).equals("Tue")) {
-//			BHBot.logger.info("Tuesday");
-//		} else BHBot.logger.info("Not Tuesday");
-
-//		BHBot.logger.info(Integer.toString(BHBot.settings.openSkeleton));
-
-//		BHBot.logger.info(Boolean.toString(BHBot.settings.worldBossSolo));
-//		BHBot.logger.info(Integer.toString(BHBot.settings.battleDelay));
-//		BHBot.logger.info(Integer.toString(BHBot.settings.shrineDelay));
-
-
-////		BHBot.logger.info(BHBot.settings.activitiesEnabled);
-//		long firstTime = Misc.getTime();
-////		BHBot.logger.info(long.toString(firstTime));
-//		sleep(10 * SECOND);
-//		long secondTime = Misc.getTime();
-//		String runtime = String.format("%01dm %02ds",
-//				  TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime),
-//				  TimeUnit.MILLISECONDS.toSeconds(secondTime - firstTime) -
-//				  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime)));
-//		BHBot.logger.info(runtime);
-
-        //End debugging section
 
         if (BHBot.settings.idleMode) { //skip startup checks if we are in idle mode
             oneTimeshrineCheck = true;
@@ -2764,13 +2648,7 @@ public class MainThread implements Runnable {
                                             BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + " started!");
                                             state = State.WorldBoss;
                                             sleep(6 * SECOND); //long wait to make sure we are in the world boss dungeon
-//                                            readScreen();
-//                                            seg = detectCue(cues.get("AutoOff")); // takes processDungeon too long so we do it manually
-//                                            if (seg != null) {
-//                                                clickOnSeg(seg);
-//                                                BHBot.logger.info("Auto-pilot is disabled. Enabling...");
-//                                            }
-//                                            sleep(4 * SECOND);
+
                                             readScreen();
                                             MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
                                             if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
@@ -3038,12 +2916,6 @@ public class MainThread implements Runnable {
             return null; //return null if no matches
         }
     }
-
-	/*public void hideBrowserStartup() {
-		sleep(10000);
-		driver.manage().window().setPosition(new Point(-10000, 0)); // just to make sure
-		BHBot.logger.info("Chrome window has been hidden.");
-	}*/
 
     private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {
         readScreen();
@@ -3880,9 +3752,7 @@ public class MainThread implements Runnable {
             } else {
                 BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
             }
-//			if (state == State.Dungeon && (BHBot.settings.countActivities)) {
-//				updateActivityCounter(state.getName());
-//			}
+
             resetAppropriateTimers();
             resetRevives();
             if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
