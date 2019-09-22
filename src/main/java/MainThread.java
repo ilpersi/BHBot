@@ -1613,6 +1613,7 @@ public class MainThread implements Runnable {
                             seg = detectCue(cues.get("Play"), 2 * SECOND);
                             if (seg == null) {
                                 BHBot.logger.error("Error: Play button not found while trying to do " + (trials ? "trials" : "gauntlet") + ". Ignoring...");
+                                tryClosingWindow(cues.get("TrialsOrGauntletWindow"));
                                 continue;
                             }
                             clickOnSeg(seg);
