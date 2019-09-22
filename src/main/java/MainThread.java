@@ -412,6 +412,8 @@ public class MainThread implements Runnable {
         addCue("InGamePM", loadImage("cues/cueInGamePM.png"), new Bounds(450, 330, 530, 380)); // note that the guild window uses the same cue! That's why it's important that user doesn't open guild window while bot is working!
 
         addCue("TrialsOrGauntletWindow", loadImage("cues/cueTrialsOrGauntletWindow.png"), new Bounds(300, 30, 510, 105)); // cue for a trials/gauntlet window
+        addCue("NotEnoughTokens", loadImage("cues/cueNotEnoughTokens.png"), Bounds.fromWidthHeight(274, 228, 253, 79)); // cue to check for the not enough tokens popup
+
         addCue("Difficulty", loadImage("cues/cueDifficulty.png"), new Bounds(450, 330, 640, 450)); // selected difficulty in trials/gauntlet window
         addCue("DifficultyDisabled", loadImage("cues/cueDifficultyDisabled.png"), new Bounds(450, 330, 640, 450)); // selected difficulty in trials/gauntlet window (disabled - because game is still fetching data from server)
         addCue("SelectDifficulty", loadImage("cues/cueSelectDifficulty.png"), new Bounds(400, 260, 0, 0)/*not exact bounds... the lower-right part of screen!*/); // select difficulty button in trials/gauntlet
@@ -1618,6 +1620,24 @@ public class MainThread implements Runnable {
                             }
                             clickOnSeg(seg);
                             readScreen(2 * SECOND);
+
+                            if (detectCue("NotEnoughTokens", SECOND) != null) {
+                                BHBot.logger.warn("Not enough token popup detected! Closing trial window.");
+
+                                if (!closePopupSecurely(cues.get("NotEnoughTokens"), cues.get("No"))) {
+                                    BHBot.logger.error("Impossible to close the 'Not Enough Tokens' pop-up window. Restarting");
+                                    restart();
+                                    continue;
+                                }
+
+                                if (!closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"))) {
+                                    BHBot.logger.error("Impossible to close the 'TrialsOrGauntletWindow' window. Restarting");
+                                    restart();
+                                    continue;
+                                }
+
+                                continue;
+                            }
 
                             // dismiss character dialog if it pops up:
                             detectCharacterDialogAndHandleIt();
