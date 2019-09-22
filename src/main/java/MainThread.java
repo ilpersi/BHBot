@@ -313,7 +313,7 @@ public class MainThread implements Runnable {
         addCue("TicketBar", loadImage("cues/cueTicketBar.png"), new Bounds(540, 0, 770, 20));
 
         addCue("RaidButton", loadImage("cues/cueRaidButton.png"), new Bounds(0, 200, 40, 400));
-        addCue("RaidPopup", loadImage("cues/cueRaidPopup.png"), new Bounds(300, 35, 340, 70));
+        addCue("RaidPopup", loadImage("cues/cueRaidPopup.png"), Bounds.fromWidthHeight(300, 35, 70, 60));
         addCue("RaidSummon", loadImage("cues/cueRaidSummon.png"), new Bounds(480, 360, 540, 380));
         addCue("RaidLevel", loadImage("cues/cueRaidLevel.png"), new Bounds(300, 435, 510, 455)); // selected raid type button cue
         addCue("cueRaidLevelEmpty", loadImage("cues/cueRaidLevelEmpty.png"), new Bounds(300, 435, 510, 455)); // selected raid type button cue
@@ -1432,10 +1432,12 @@ public class MainThread implements Runnable {
                         }
                         clickOnSeg(raidBTNSeg);
 
-                        seg = detectCue(cues.get("RaidPopup"), 10 * SECOND); // wait until the raid window opens
+                        seg = detectCue("RaidPopup", 5 * SECOND); // wait until the raid window opens
                         if (seg == null) {
                             BHBot.logger.warn("Error: attempt at opening raid window failed. No window cue detected. Ignoring...");
                             BHBot.scheduler.restoreIdleTime();
+                            // we make sure that everything that can be closed is actually closed to avoid idle timeout
+                            closePopupSecurely(cues.get("X"), cues.get("X"));
                             continue;
                         }
 
@@ -3402,7 +3404,7 @@ public class MainThread implements Runnable {
      * @param screenFilePath the path to the image to be used to load the screen
      */
     @SuppressWarnings("unused")
-    private void loadScreen(String screenFilePath) {
+    void loadScreen(String screenFilePath) {
         File screenImgFile = new File(screenFilePath);
 
         if (screenImgFile.exists()) {
