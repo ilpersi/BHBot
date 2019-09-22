@@ -91,8 +91,15 @@ public class MainThread implements Runnable {
     private boolean specialDungeon; //d4 check for closing properly when no energy
 
     private int dungeonCounter = 0;
+
+    // Raid counters
     private int raidVictoryCounter = 0;
     private int raidDefeatCounter = 0;
+
+    // Expedition counters
+    private int expVictoryCounter = 0;
+    private int expDefeatCounter = 0;
+
     private int numFailedRestarts = 0; // in a row
     // When we do not have anymore gems to use this is true
     private boolean noGemsToBribe = false;
@@ -426,6 +433,8 @@ public class MainThread implements Runnable {
         addCue("InGamePM", loadImage("cues/cueInGamePM.png"), new Bounds(450, 330, 530, 380)); // note that the guild window uses the same cue! That's why it's important that user doesn't open guild window while bot is working!
 
         addCue("TrialsOrGauntletWindow", loadImage("cues/trial-gauntlet/cueTrialsOrGauntletWindow_Steam.png"), Bounds.fromWidthHeight(308, 67, 178, 54)); // cue for a trials/gauntlet window
+        addCue("NotEnoughTokens", loadImage("cues/cueNotEnoughTokens.png"), Bounds.fromWidthHeight(274, 228, 253, 79)); // cue to check for the not enough tokens popup
+
         addCue("Difficulty", loadImage("cues/trial-gauntlet/cueDifficulty_Steam.png"), Bounds.fromWidthHeight(466, 379, 160, 64)); // selected difficulty in trials/gauntlet window
         addCue("DifficultyDisabled", loadImage("cues/cueDifficultyDisabled_Steam.png"), Bounds.fromWidthHeight(467, 379, 159, 64)); // selected difficulty in trials/gauntlet window (disabled - because game is still fetching data from server)
         addCue("SelectDifficulty", loadImage("cues/cueSelectDifficulty.png"), new Bounds(400, 260, 0, 0)/*not exact bounds... the lower-right part of screen!*/); // select difficulty button in trials/gauntlet
@@ -526,6 +535,7 @@ public class MainThread implements Runnable {
         addCue("Expedition2", loadImage("cues/expedition/cueExpedition2Inferno.png"), new Bounds(200, 40, 600, 100)); //Inferno Expedition
         addCue("Expedition3", loadImage("cues/expedition/cueExpedition3Jammie.png"), new Bounds(230, 40, 565, 100)); //Jammie Dimension
         addCue("Expedition4", loadImage("cues/expedition/cueExpedition4Idol.png"), new Bounds(230, 40, 565, 100)); //Idol Dimension
+        addCue("Expedition5", loadImage("cues/expedition/cueExpedition5BattleBards.png"), new Bounds(230, 40, 565, 100)); //Battle Bards!
 
         //WorldBoss Related
         addCue("WorldBossSelector", loadImage("cues/cueWorldBossSelector.png"), null);
@@ -865,63 +875,6 @@ public class MainThread implements Runnable {
 
         BHBot.logger.info("Game window found. Starting to run bot..");
 
-        //Code under is all debugging
-
-//		BHBot.logger.info("Current Raid tier unlocked set to R" + BHBot.settings.currentRaidTier + " in settings. Make sure this is correct!");
-//		String invasionSetting = Boolean.toString(collectedFishingRewards);
-//		BHBot.logger.info("doInvasions set to " + invasionSetting);
-//		BHBot.logger.info("Session id is: " + driver.getSessionId());
-
-//		for (String e : BHBot.settings.expeditions) { //cycle through array
-//			BHBot.logger.info(e);
-//		}
-//			BHBot.logger.info(Integer.toString(checkFamiliarCounter(fUpper)));
-//			int testCount = checkFamiliarCounter(f);
-//			String fam = f.toUpperCase().split(" ")[0];
-//			BHBot.logger.info(Integer.toString(checkFamiliarCounter(fam)));
-//			BHBot.logger.info(f);
-//			BHBot.logger.info(f.toUpperCase().split(" ")[0]);
-//			int catchCount = Integer.parseInt(f.split(" ")[1]);
-//			BHBot.logger.info(Integer.toString(catchCount));
-//		}
-
-//		for (String f : BHBot.settings.familiars) { //cycle through array
-//			String fUpper = f.toUpperCase().split(" ")[0];
-//			int catchCount = Integer.parseInt(f.split(" ")[1]);
-//			updateFamiliarCounter(fUpper, catchCount);
-//		}
-
-//		BHBot.logger.info(Integer.toString(BHBot.settings.minSolo));
-
-//		BHBot.logger.info("collectBounties = " + Boolean.toString(BHBot.settings.collectBounties));
-
-//		BHBot.logger.info("Dungeons run:");
-//		BHBot.logger.info(BHBot.settings.dungeonsRun);
-
-//		if (new SimpleDateFormat("EEE").format(new Date()).equals("Tue")) {
-//			BHBot.logger.info("Tuesday");
-//		} else BHBot.logger.info("Not Tuesday");
-
-//		BHBot.logger.info(Integer.toString(BHBot.settings.openSkeleton));
-
-//		BHBot.logger.info(Boolean.toString(BHBot.settings.worldBossSolo));
-//		BHBot.logger.info(Integer.toString(BHBot.settings.battleDelay));
-//		BHBot.logger.info(Integer.toString(BHBot.settings.shrineDelay));
-
-
-////		BHBot.logger.info(BHBot.settings.activitiesEnabled);
-//		long firstTime = Misc.getTime();
-////		BHBot.logger.info(long.toString(firstTime));
-//		sleep(10 * SECOND);
-//		long secondTime = Misc.getTime();
-//		String runtime = String.format("%01dm %02ds",
-//				  TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime),
-//				  TimeUnit.MILLISECONDS.toSeconds(secondTime - firstTime) -
-//				  TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(secondTime - firstTime)));
-//		BHBot.logger.info(runtime);
-
-        //End debugging section
-
         if (BHBot.settings.idleMode) { //skip startup checks if we are in idle mode
             oneTimeshrineCheck = true;
             oneTimeRuneCheck = true;
@@ -1205,6 +1158,14 @@ public class MainThread implements Runnable {
                                             raidVictoryCounter, raidDefeatCounter));
                         }
 
+                        // Same logic we use for raids applied to expeditions
+                        if ((expVictoryCounter + expDefeatCounter) > 0) {
+                            aliveMsg.append("\n\n")
+                                    .append(String.format("Expedition success rate is %s%%: W:%d L:%d",
+                                            df.format(((double) expVictoryCounter / (expVictoryCounter + expDefeatCounter)) * 100),
+                                            expVictoryCounter, expDefeatCounter));
+                        }
+
                         sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
                         if (!aliveScreenFile.delete())
                             BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
@@ -1263,10 +1224,12 @@ public class MainThread implements Runnable {
                         }
                         clickOnSeg(raidBTNSeg);
 
-                        seg = detectCue(cues.get("RaidPopup"), 10 * SECOND); // wait until the raid window opens
+                        seg = detectCue("RaidPopup", 5 * SECOND); // wait until the raid window opens
                         if (seg == null) {
                             BHBot.logger.warn("Error: attempt at opening raid window failed. No window cue detected. Ignoring...");
                             BHBot.scheduler.restoreIdleTime();
+                            // we make sure that everything that can be closed is actually closed to avoid idle timeout
+                            closePopupSecurely(cues.get("X"), cues.get("X"));
                             continue;
                         }
 
@@ -1549,15 +1512,38 @@ public class MainThread implements Runnable {
                                     BHBot.logger.error("Due to an error#2 in cost selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
                                     continue;
                                 }
+
+                                // We wait for the cost selector window to close
+                                detectCue("TrialsOrGauntletWindow", SECOND * 2);
+                                readScreen();
                             }
 
                             seg = detectCue(cues.get("Play"), 2 * SECOND);
                             if (seg == null) {
                                 BHBot.logger.error("Error: Play button not found while trying to do " + (trials ? "trials" : "gauntlet") + ". Ignoring...");
+                                tryClosingWindow(cues.get("TrialsOrGauntletWindow"));
                                 continue;
                             }
                             clickOnSeg(seg);
                             readScreen(2 * SECOND);
+
+                            if (detectCue("NotEnoughTokens", SECOND) != null) {
+                                BHBot.logger.warn("Not enough token popup detected! Closing trial window.");
+
+                                if (!closePopupSecurely(cues.get("NotEnoughTokens"), cues.get("No"))) {
+                                    BHBot.logger.error("Impossible to close the 'Not Enough Tokens' pop-up window. Restarting");
+                                    restart();
+                                    continue;
+                                }
+
+                                if (!closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"))) {
+                                    BHBot.logger.error("Impossible to close the 'TrialsOrGauntletWindow' window. Restarting");
+                                    restart();
+                                    continue;
+                                }
+
+                                continue;
+                            }
 
                             // dismiss character dialog if it pops up:
                             detectCharacterDialogAndHandleIt();
@@ -2233,6 +2219,8 @@ public class MainThread implements Runnable {
                                     currentExpedition = 3;
                                 } else if (detectCue(cues.get("Expedition4")) != null) {
                                     currentExpedition = 4;
+                                } else if (detectCue("Expedition5") != null) {
+                                    currentExpedition = 5;
                                 } else {
                                     BHBot.settings.activitiesEnabled.remove("e");
                                     BHBot.logger.error("It was impossible to get the current expedition type!");
@@ -2581,13 +2569,7 @@ public class MainThread implements Runnable {
                                             BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + " started!");
                                             state = State.WorldBoss;
                                             sleep(6 * SECOND); //long wait to make sure we are in the world boss dungeon
-//                                            readScreen();
-//                                            seg = detectCue(cues.get("AutoOff")); // takes processDungeon too long so we do it manually
-//                                            if (seg != null) {
-//                                                clickOnSeg(seg);
-//                                                BHBot.logger.info("Auto-pilot is disabled. Enabling...");
-//                                            }
-//                                            sleep(4 * SECOND);
+
                                             readScreen();
                                             MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
                                             if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
@@ -3153,7 +3135,7 @@ public class MainThread implements Runnable {
      * @param screenFilePath the path to the image to be used to load the screen
      */
     @SuppressWarnings("unused")
-    private void loadScreen(String screenFilePath) {
+    void loadScreen(String screenFilePath) {
         File screenImgFile = new File(screenFilePath);
 
         if (screenImgFile.exists()) {
@@ -3413,7 +3395,7 @@ public class MainThread implements Runnable {
         if (seg == null) // this should probably not happen
             return -1;
 
-        int left = seg.x2 + 1;
+        int left = seg.x2;
         int top = seg.y1 + 6;
 
         ArrayList<Color> blueColors = new ArrayList<>();
@@ -3426,7 +3408,7 @@ public class MainThread implements Runnable {
 
         // tokens bar is 78 pixels wide (however last two pixels will have "medium" color and not full color (it's so due to shading))
         for (int i = 0; i < 76; i++) {
-            value = i;
+            value = i + 1;
             Color col = new Color(img.getRGB(left + i, top));
 
             if (!blueColors.contains(col))
@@ -3434,7 +3416,7 @@ public class MainThread implements Runnable {
         }
 
 //		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxTokens / 77.0f)));
-        return Math.round(value * (maxTokens / 75.0f)); // scale it to interval [0..10]
+        return Math.round(value * (maxTokens / 76.0f)); // scale it to interval [0..10]
     }
 
     /**
@@ -3498,15 +3480,15 @@ public class MainThread implements Runnable {
         if (guildButtonSeg != null) {
             outOfEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             if (combatIdleChecker) {
-                BHBot.logger.debug("Updating idle time (Out of combat)");
-                BHBot.scheduler.resetIdleTime();
+                BHBot.logger.trace("Updating idle time (Out of combat)");
+                BHBot.scheduler.resetIdleTime(true);
                 combatIdleChecker = false;
             }
         } else {
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             if (!combatIdleChecker) {
-                BHBot.logger.debug("Updating idle time (In combat)");
-                BHBot.scheduler.resetIdleTime();
+                BHBot.logger.trace("Updating idle time (In combat)");
+                BHBot.scheduler.resetIdleTime(true);
                 combatIdleChecker = true;
             }
         }
@@ -3623,6 +3605,11 @@ public class MainThread implements Runnable {
 
             sleep(SECOND);
             if (state == State.Expedition) {
+                expVictoryCounter++;
+                int totalExp = expVictoryCounter + expDefeatCounter;
+                BHBot.logger.info("Expedition #" + totalExp + " completed. Result: Victory");
+                BHBot.logger.stats("Expedition success rate: " + df.format(((double) expVictoryCounter / totalExp) * 100) + "%.");
+
                 sleep(SECOND);
 
                 // Close Portal Map after expedition
@@ -3659,9 +3646,7 @@ public class MainThread implements Runnable {
             } else {
                 BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
             }
-//			if (state == State.Dungeon && (BHBot.settings.countActivities)) {
-//				updateActivityCounter(state.getName());
-//			}
+
             resetAppropriateTimers();
             resetRevives();
             if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
@@ -3706,6 +3691,11 @@ public class MainThread implements Runnable {
                 BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
             sleep(SECOND);
             if (state == State.Expedition) {
+                expDefeatCounter++;
+                int totalExp = expVictoryCounter + expDefeatCounter;
+                BHBot.logger.warn("Expedition #" + totalExp + " completed. Result: Defeat.");
+                BHBot.logger.stats("Expedition success rate: " + df.format(((double) expVictoryCounter / totalExp) * 100) + "%");
+
                 sleep(SECOND);
 
                 // Close Portal Map after expedition
@@ -3963,7 +3953,7 @@ public class MainThread implements Runnable {
                         }
 
                         autoShrined = true;
-                        BHBot.scheduler.resetIdleTime();
+                        BHBot.scheduler.resetIdleTime(true);
                     }
                 }
             }
@@ -4577,7 +4567,7 @@ public class MainThread implements Runnable {
             BHBot.logger.debug("AutoRevive disabled, reenabling auto.. State = '" + state + "'");
             seg = detectCue(cues.get("AutoOff"));
             if (seg != null) clickOnSeg(seg);
-            BHBot.scheduler.resetIdleTime();
+            BHBot.scheduler.resetIdleTime(true);
             return;
         }
 
@@ -4588,7 +4578,7 @@ public class MainThread implements Runnable {
             seg = detectCue(cues.get("AutoOff"), SECOND);
             if (seg != null) clickOnSeg(seg);
             readScreen(SECOND);
-            BHBot.scheduler.resetIdleTime();
+            BHBot.scheduler.resetIdleTime(true);
             return;
         }
 
@@ -4605,7 +4595,7 @@ public class MainThread implements Runnable {
                 BHBot.logger.warn("Problem: 'Victory' window has been detected, but no 'Close' button. Ignoring...");
                 return;
             }
-            BHBot.scheduler.resetIdleTime();
+            BHBot.scheduler.resetIdleTime(true);
             return;
         }
 
@@ -4614,7 +4604,7 @@ public class MainThread implements Runnable {
             BHBot.logger.autorevive("Potion limit reached, skipping revive check");
             seg = detectCue(cues.get("AutoOff"), SECOND);
             if (seg != null) clickOnSeg(seg);
-            BHBot.scheduler.resetIdleTime();
+            BHBot.scheduler.resetIdleTime(true);
             return;
         }
 
@@ -4637,7 +4627,7 @@ public class MainThread implements Runnable {
                     saveGameScreen("autorevive-no-potions-no-close", img);
                     restart();
                 }
-                BHBot.scheduler.resetIdleTime();
+                BHBot.scheduler.resetIdleTime(true);
                 return;
             }
 
@@ -4761,7 +4751,7 @@ public class MainThread implements Runnable {
                     if (availablePotions.get('1') == null && availablePotions.get('2') == null && availablePotions.get('3') == null) {
                         BHBot.logger.warn("No potions are avilable, autoRevive well be temporary disabled!");
                         BHBot.settings.autoRevive = new ArrayList<>();
-                        BHBot.scheduler.resetIdleTime();
+                        BHBot.scheduler.resetIdleTime(true);
                         return;
                     }
 
@@ -4782,7 +4772,7 @@ public class MainThread implements Runnable {
                                 revived[BHBot.settings.tankPosition - 1] = true;
                                 potionsUsed++;
                                 readScreen(SECOND);
-                                BHBot.scheduler.resetIdleTime();
+                                BHBot.scheduler.resetIdleTime(true);
                                 break;
                             }
                         }
@@ -4801,7 +4791,7 @@ public class MainThread implements Runnable {
                                 revived[slotNum - 1] = true;
                                 potionsUsed++;
                                 readScreen(SECOND);
-                                BHBot.scheduler.resetIdleTime();
+                                BHBot.scheduler.resetIdleTime(true);
                                 break;
                             }
                         }
@@ -4827,7 +4817,7 @@ public class MainThread implements Runnable {
 
         seg = detectCue(cues.get("AutoOff"), SECOND);
         if (seg != null) clickOnSeg(seg);
-        BHBot.scheduler.resetIdleTime();
+        BHBot.scheduler.resetIdleTime(true);
     }
 
     private void closeWorldBoss() {
@@ -5151,7 +5141,7 @@ public class MainThread implements Runnable {
      * Function to return the name of the portal for console output
      */
     private String getExpeditionName(int currentExpedition, String targetPortal) {
-        if (currentExpedition > 4) {
+        if (currentExpedition > 5) {
             BHBot.logger.error("Unexpected expedition int in getExpeditionName: " + currentExpedition);
             return null;
         }
@@ -5215,6 +5205,19 @@ public class MainThread implements Runnable {
                     default:
                         return null;
                 }
+            case 5: // Battle Bards!
+                switch (targetPortal) {
+                    case "p1":
+                        return "Hero Fest";
+                    case "p2":
+                        return "Burning Fam";
+                    case "p3":
+                        return "Melvapaloozo";
+                    case "p4":
+                        return "Bitstock";
+                    default:
+                        return null;
+                }
             default:
                 return null;
         }
@@ -5239,6 +5242,8 @@ public class MainThread implements Runnable {
             portalName = "Jammie";
         } else if (currentExpedition == 4) {
             portalName = "Idol";
+        } else if (currentExpedition == 5) {
+            portalName = "Battle Bards";
         } else {
             BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
             saveGameScreen("unknown-expedition");
@@ -5322,7 +5327,7 @@ public class MainThread implements Runnable {
             colorCheck[1] = Color.WHITE;
             colorCheck[2] = Color.WHITE;
             colorCheck[3] = Color.WHITE;
-        } else { // Idol
+        } else if (currentExpedition == 4) { // Idol
             portalCheck[0] = new Point(370, 140); // Blublix
             portalCheck[1] = new Point(226, 369); // Mowhi
             portalCheck[2] = new Point(534, 350); // Wizbot
@@ -5337,6 +5342,21 @@ public class MainThread implements Runnable {
             colorCheck[1] = Color.WHITE;
             colorCheck[2] = Color.WHITE;
             colorCheck[3] = new Color(251, 201, 126);
+        } else { // Battle Bards!
+            portalCheck[0] = new Point(387, 152); // Hero Fest
+            portalCheck[1] = new Point(253, 412); // Burning Fam
+            portalCheck[2] = new Point(568, 418); // Melvapaloozo
+            portalCheck[3] = new Point(435, 306); // Bitstock
+
+            portalPosition[0] = new Point(402, 172); // Hero Fest
+            portalPosition[1] = new Point(240, 371); // Burning Fam
+            portalPosition[2] = new Point(565, 383); // Melvapaloozo
+            portalPosition[3] = new Point(396, 315); // Bitstock
+
+            colorCheck[0] = Color.WHITE;
+            colorCheck[1] = Color.WHITE;
+            colorCheck[2] = Color.WHITE;
+            colorCheck[3] = Color.WHITE;
         }
 
         // We check which of the portals are enabled
