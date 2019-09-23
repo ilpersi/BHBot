@@ -2784,6 +2784,18 @@ public class MainThread implements Runnable {
                             BHBot.scheduler.doFishingImmediately = false; //disable collectImmediately again if its been activated
                         }
 
+                        if ((Misc.getTime() - timeLastFishingBaitsCheck) > DAY) { //if we haven't collected bait today we need to do that first
+                            handleFishingBaits();
+                        }
+
+                        boolean botPresent = new File("bh-fisher.jar").exists();
+                        if (!botPresent) {
+                            BHBot.logger.warn("bh-fisher.jar not found in root directory, fishing disabled.");
+                            BHBot.logger.warn("For information on configuring fishing check the wiki page on github");
+                            BHBot.settings.activitiesEnabled.remove("f");
+                            return;
+                        }
+
                         handleFishing();
                         continue;
                     }
@@ -7122,15 +7134,13 @@ public class MainThread implements Runnable {
                     BHBot.logger.info("Pausing for " + fishingTime + " seconds to fish");
                     BHBot.scheduler.pause();
 
-                    Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fisherCLI.exe\" " + BHBot.settings.baitAmount);
+                    Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & java -jar bh-fisher.jar\" " + BHBot.settings.baitAmount);
                     if (!fisher.waitFor(fishingTime, TimeUnit.SECONDS)) { //run and wait for fishingTime seconds
                         BHBot.scheduler.resume();
                     }
-                    Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisherCLI.exe\"\"");
-                    fisherClose.waitFor(1, TimeUnit.SECONDS);
 
                 } catch (IOException | InterruptedException ex) {
-                    BHBot.logger.error("Can't start fisher.exe");
+                    BHBot.logger.error("Can't start bh-fisher.jar");
                 }
 
             } else BHBot.logger.info("start not found");
