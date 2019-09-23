@@ -7017,28 +7017,28 @@ public class MainThread implements Runnable {
         specialDungeon = false;
         potionsUsed = 0;
 
-        if ((globalShards - 1) > BHBot.settings.minShards && state == State.Raid)
+        if ((globalShards - 1) < BHBot.settings.minShards && state == State.Raid)
             timeLastShardsCheck = 0;
 
-        if ((globalBadges - BHBot.settings.costExpedition) > BHBot.settings.minBadges && (state == State.Expedition))
+        if ((globalBadges - BHBot.settings.costExpedition) < BHBot.settings.minBadges && (state == State.Expedition))
             timeLastExpBadgesCheck = 0;
 
-        if ((globalBadges - BHBot.settings.costInvasion) > BHBot.settings.minBadges && (state == State.Invasion))
+        if ((globalBadges - BHBot.settings.costInvasion) < BHBot.settings.minBadges && (state == State.Invasion))
             timeLastInvBadgesCheck = 0;
 
-        if ((globalBadges - BHBot.settings.costGVG) > BHBot.settings.minBadges && (state == State.GVG))
+        if ((globalBadges - BHBot.settings.costGVG) < BHBot.settings.minBadges && (state == State.GVG))
             timeLastGVGBadgesCheck = 0;
 
-        if ((globalEnergy - 10) > BHBot.settings.minEnergyPercentage && (state == State.Dungeon || state == State.WorldBoss))
+        if ((globalEnergy - 10) < BHBot.settings.minEnergyPercentage && (state == State.Dungeon || state == State.WorldBoss))
             timeLastEnergyCheck = 0;
 
-        if ((globalTickets - BHBot.settings.costPVP) > BHBot.settings.minTickets && state == State.PVP)
+        if ((globalTickets - BHBot.settings.costPVP) < BHBot.settings.minTickets && state == State.PVP)
             timeLastTicketsCheck = 0;
 
-        if ((globalTokens - BHBot.settings.costTrials) > BHBot.settings.minTokens && (state == State.Trials))
+        if ((globalTokens - BHBot.settings.costTrials) < BHBot.settings.minTokens && (state == State.Trials))
             timeLastTrialsTokensCheck = 0;
 
-        if ((globalTokens - BHBot.settings.costGauntlet) > BHBot.settings.minTokens && (state == State.Gauntlet))
+        if ((globalTokens - BHBot.settings.costGauntlet) < BHBot.settings.minTokens && (state == State.Gauntlet))
             timeLastGauntletTokensCheck = 0;
     }
 
