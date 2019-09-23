@@ -5523,7 +5523,6 @@ public class MainThread implements Runnable {
         }
 
         if (portalEnabled[portalInt - 1]) {
-            BHBot.logger.info(portalName + " found, selecting..");
             return portalPosition[portalInt - 1];
         }
 
