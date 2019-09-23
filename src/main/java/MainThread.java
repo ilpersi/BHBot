@@ -82,6 +82,8 @@ public class MainThread implements Runnable {
     private long runMillisAvg = 0;
     private boolean specialDungeon; //d4 check for closing properly when no energy
     private int dungeonCounter = 0;
+    private String expeditionFailsafePortal = "";
+    private int expeditionFailsafeDifficulty = 0;
 
     // Raid counters
     private int raidVictoryCounter = 0;
@@ -2300,9 +2302,9 @@ public class MainThread implements Runnable {
                                 String randomExpedition = BHBot.settings.expeditions.next();
                                 if (randomExpedition == null) {
                                     BHBot.settings.activitiesEnabled.remove("e");
-                                    BHBot.logger.error("It was impossible to randomly choose an expedtion. Expeditions are disabled.");
+                                    BHBot.logger.error("It was impossible to randomly choose an expedition. Expeditions are disabled.");
                                     if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-                                        sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedtion. Expeditions are disabled.", "siren");
+                                        sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedition. Expeditions are disabled.", "siren");
                                     continue;
                                 }
 
@@ -2335,16 +2337,20 @@ public class MainThread implements Runnable {
                                     continue;
                                 }
 
-                                String expedName = getExpeditionName(currentExpedition, targetPortal);
-                                BHBot.logger.info("Attempting " + expedName + " Portal at difficulty " + targetDifficulty);
+                                String portalName = getExpeditionPortalName(currentExpedition, targetPortal);
+                                BHBot.logger.info("Attempting " + portalName + " Portal at difficulty " + targetDifficulty);
+
+                                //write current portal and difficulty to global values for difficultyFailsafe
+                                expeditionFailsafePortal = targetPortal;
+                                expeditionFailsafeDifficulty = targetDifficulty;
 
                                 // click on the chosen portal:
                                 Point p = getExpeditionIconPos(currentExpedition, targetPortal);
                                 if (p == null) {
                                     BHBot.settings.activitiesEnabled.remove("e");
-                                    BHBot.logger.error("It was impossible to get portal position for " + expedName + ". Expeditions are now disabled!");
+                                    BHBot.logger.error("It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!");
                                     if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-                                        sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + expedName + ". Expeditions are now disabled!", "siren");
+                                        sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!", "siren");
 
                                     readScreen();
                                     seg = detectCue(cues.get("X"), SECOND);
@@ -2405,7 +2411,7 @@ public class MainThread implements Runnable {
                                     continue;
                                 } else {
                                     state = State.Expedition;
-                                    BHBot.logger.info(expedName + " portal initiated!");
+                                    BHBot.logger.info(portalName + " portal initiated!");
                                     autoShrined = false;
                                     autoBossRuned = false;
                                 }
@@ -3847,6 +3853,26 @@ public class MainThread implements Runnable {
                 seg = detectCue(cues.get("X"));
                 clickOnSeg(seg);
                 sleep(SECOND);
+
+                if (BHBot.settings.difficultyFailsafe.containsKey("e")) {
+                    // The key is the difficulty decrease, the value is the minimum level
+                    Map.Entry<Integer, Integer> expedDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("e");
+                    int levelOffset = expedDifficultyFailsafe.getKey();
+                    int minimumLevel = expedDifficultyFailsafe.getValue();
+
+                    // We calculate the new difficulty
+                    int newExpedDifficulty = expeditionFailsafeDifficulty - levelOffset;
+
+                    // We check that the new difficulty is not lower than the minimum
+                    if (newExpedDifficulty < minimumLevel) newExpedDifficulty = minimumLevel;
+
+                    // If the new difficulty is different from the current one, we update the ini setting
+                    if (newExpedDifficulty != expeditionFailsafeDifficulty) {
+                        String original = expeditionFailsafePortal + " " + expeditionFailsafeDifficulty;
+                        String updated = expeditionFailsafePortal + " " + newExpedDifficulty;
+                        settingsUpdate(original, updated);
+                    }
+                }
             }
             if (state.equals(State.Invasion)) {
                 BHBot.logger.info("Invasion completed.");
@@ -3866,28 +3892,21 @@ public class MainThread implements Runnable {
                 BHBot.logger.stats("Run time: " + runtime);
             } else if (state.equals(State.Trials)) {
                 if (BHBot.settings.difficultyFailsafe.containsKey("t")) {
-//                    BHBot.logger.debug("t key found");
-
                     // The key is the difficulty decrease, the value is the minimum level
                     Map.Entry<Integer, Integer> trialDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("t");
                     int levelOffset = trialDifficultyFailsafe.getKey();
-                    int minimunLevel = trialDifficultyFailsafe.getValue();
-//                    BHBot.logger.debug("offset " + levelOffset);
-//                    BHBot.logger.debug("min level " + minimunLevel);
+                    int minimumLevel = trialDifficultyFailsafe.getValue();
 
                     // We calculate the new difficulty
                     int newTrialDifficulty = BHBot.settings.difficultyTrials - levelOffset;
-//                    BHBot.logger.debug("new diff " + newTrialDifficulty);
 
                     // We check that the new difficulty is not lower than the minimum
-                    if (newTrialDifficulty < minimunLevel) newTrialDifficulty = minimunLevel;
+                    if (newTrialDifficulty < minimumLevel) newTrialDifficulty = minimumLevel;
 
                     // If the new difficulty is different from the current one, we update the ini setting
                     if (newTrialDifficulty != BHBot.settings.difficultyTrials) {
                         String original = "difficultyTrials " + BHBot.settings.difficultyTrials;
                         String updated = "difficultyTrials " + newTrialDifficulty;
-//                        BHBot.logger.debug("string orig " + original);
-//                        BHBot.logger.debug("string updated " + updated);
                         settingsUpdate(original, updated);
                     }
                 }
@@ -3897,13 +3916,13 @@ public class MainThread implements Runnable {
                     // The key is the difficulty decrease, the value is the minimum level
                     Map.Entry<Integer, Integer> gauntletDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("g");
                     int levelOffset = gauntletDifficultyFailsafe.getKey();
-                    int minimunLevel = gauntletDifficultyFailsafe.getValue();
+                    int minimumLevel = gauntletDifficultyFailsafe.getValue();
 
                     // We calculate the new difficulty
                     int newGauntletDifficulty = BHBot.settings.difficultyGauntlet - levelOffset;
 
                     // We check that the new difficulty is not lower than the minimum
-                    if (newGauntletDifficulty < minimunLevel) newGauntletDifficulty = minimunLevel;
+                    if (newGauntletDifficulty < minimumLevel) newGauntletDifficulty = minimumLevel;
 
                     // If the new difficulty is different from the current one, we update the ini setting
                     if (newGauntletDifficulty != BHBot.settings.difficultyGauntlet) {
@@ -5278,15 +5297,15 @@ public class MainThread implements Runnable {
     /**
      * Function to return the name of the portal for console output
      */
-    private String getExpeditionName(int currentExpedition, String targetPortal) {
+    private String getExpeditionPortalName(int currentExpedition, String targetPortal) {
         if (currentExpedition > 5) {
-            BHBot.logger.error("Unexpected expedition int in getExpeditionName: " + currentExpedition);
+            BHBot.logger.error("Unexpected expedition int in getExpeditionPortalName: " + currentExpedition);
             return null;
         }
 
         if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
                 && !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
-            BHBot.logger.error("Unexpected target portal in getExpeditionName: " + targetPortal);
+            BHBot.logger.error("Unexpected target portal in getExpeditionPortalName: " + targetPortal);
             return null;
         }
 
@@ -5371,22 +5390,22 @@ public class MainThread implements Runnable {
             return null;
         }
 
-        String portalName;
-        if (currentExpedition == 1) {
-            portalName = "Hallowed";
-        } else if (currentExpedition == 2) {
-            portalName = "Inferno";
-        } else if (currentExpedition == 3) {
-            portalName = "Jammie";
-        } else if (currentExpedition == 4) {
-            portalName = "Idol";
-        } else if (currentExpedition == 5) {
-            portalName = "Battle Bards";
-        } else {
-            BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
-            saveGameScreen("unknown-expedition");
-            return null;
-        }
+        String portalName = getExpeditionPortalName(currentExpedition, targetPortal);
+//        if (currentExpedition == 1) {
+//            portalName = "Hallowed";
+//        } else if (currentExpedition == 2) {
+//            portalName = "Inferno";
+//        } else if (currentExpedition == 3) {
+//            portalName = "Jammie";
+//        } else if (currentExpedition == 4) {
+//            portalName = "Idol";
+//        } else if (currentExpedition == 5) {
+//            portalName = "Battle Bards";
+//        } else {
+//            BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
+//            saveGameScreen("unknown-expedition");
+//            return null;
+//        }
 
         if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
                 && !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
@@ -5503,16 +5522,19 @@ public class MainThread implements Runnable {
             portalEnabled[i] = col.equals(colorCheck[i]);
         }
 
-        if (portalEnabled[portalInt - 1]) return portalPosition[portalInt - 1];
+        if (portalEnabled[portalInt - 1]) {
+            BHBot.logger.info(portalName + " found, selecting..");
+            return portalPosition[portalInt - 1];
+        }
 
-        // If the desired portal is not enabled, we try to find the first enabled one
+        // If the desired portal is not enabled, we try to find the highest enabled one
         int i = 3;
         while (i >= 0) {
             if (portalEnabled[i]) {
                 BHBot.logger.warn(portalName + " is not available! Falling back on p" + (i + 1) + "...");
                 return portalPosition[i];
             }
-            i--;
+            i--; //cycle down through 4 - 1 until we return an activated portal
         }
 
         return null;
