@@ -1353,50 +1353,35 @@ public class MainThread implements Runnable {
                             if (BHBot.scheduler.doRaidImmediately)
                                 BHBot.scheduler.doRaidImmediately = false; // reset it
 
-                            //configure shrine for raid if applicable
-                            if (BHBot.settings.autoShrine.contains("r")) {
-
-                                // we need to close the raid window to check the autoshrine
+                            //if we need to configure runes/settings we close the window first
+                            if ( BHBot.settings.autoShrine.contains("r") || BHBot.settings.autoRune.containsKey("r") || BHBot.settings.autoBossRune.containsKey("r") ) {
                                 readScreen();
                                 seg = detectCue(cues.get("X"), SECOND);
                                 clickOnSeg(seg);
                                 readScreen(SECOND);
+                            }
 
+                            //autoshrine
+                            if ( BHBot.settings.autoShrine.contains("r") ) {
                                 BHBot.logger.info("Configuring autoShrine for Raid");
                                 if (!checkShrineSettings(true, true)) {
                                     BHBot.logger.error("Impossible to configure autoShrine for Raid!");
                                 }
-
-                                readScreen(SECOND);
-                                clickOnSeg(raidBTNSeg);
                             }
 
-                            //configure activity runes
-                            if (handleMinorRunes("r")) {
-                                readScreen(SECOND);
-                                seg = detectCue(cues.get("RaidButton"), SECOND);
-                                if (seg == null) {
-                                    BHBot.logger.error("Can't find raid button after switching runes!");
-                                }
-                                clickOnSeg(seg);
-                                sleep(SECOND);
-                            }
-
-                            //configure boss runes if no autoshrine
-                            if (BHBot.settings.autoBossRune.containsKey("r") && !BHBot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autorune enabled
-                                readScreen();
-                                seg = detectCue(cues.get("X"), SECOND);
-                                clickOnSeg(seg);
-                                readScreen(SECOND);
-
+                            //autoBossRune
+                            if (BHBot.settings.autoBossRune.containsKey("r") && !BHBot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autobossrune enabled
                                 BHBot.logger.info("Configuring autoBossRune for Raid");
                                 if (!checkShrineSettings(true, false)) {
                                     BHBot.logger.error("Impossible to configure autoBossRune for Raid!");
                                 }
-
-                                readScreen(SECOND);
-                                clickOnSeg(raidBTNSeg);
                             }
+
+                            //activity runes
+                            handleMinorRunes("r");
+
+                            readScreen(SECOND);
+                            clickOnSeg(raidBTNSeg);
 
                             String raid = decideRaidRandomly();
                             if (raid == null) {
@@ -1526,29 +1511,36 @@ public class MainThread implements Runnable {
                             // One time check for Autoshrine
                             if (trials) {
 
-                                if (BHBot.settings.autoShrine.contains("t") || BHBot.settings.autoRune.containsKey("t")) {
+                                //if we need to configure runes/settings we close the window first
+                                if ( BHBot.settings.autoShrine.contains("t") || BHBot.settings.autoRune.containsKey("t") || BHBot.settings.autoBossRune.containsKey("t") ) {
                                     readScreen();
                                     seg = detectCue(cues.get("X"), SECOND);
                                     clickOnSeg(seg);
                                     readScreen(SECOND);
-
-                                    if (BHBot.settings.autoShrine.contains("t")) {
-                                        BHBot.logger.info("Configuring autoShrine for Trial");
-                                        if (!checkShrineSettings(true, true)) {
-                                            BHBot.logger.error("Impossible to configure autoShrine for Trial");
-                                        }
-                                        readScreen(SECOND);
-                                    }
-
-                                    if (BHBot.settings.autoRune.containsKey("t")) {
-                                        handleMinorRunes("t");
-                                        readScreen(SECOND);
-                                    }
-
-                                    readScreen(SECOND);
-                                    clickOnSeg(trialBTNSeg);
-                                    readScreen(SECOND); //wait for window animation
                                 }
+
+                                //autoshrine
+                                if ( BHBot.settings.autoShrine.contains("t") ) {
+                                    BHBot.logger.info("Configuring autoShrine for Trials");
+                                    if (!checkShrineSettings(true, true)) {
+                                        BHBot.logger.error("Impossible to configure autoShrine for Trials!");
+                                    }
+                                }
+
+                                //autoBossRune
+                                if (BHBot.settings.autoBossRune.containsKey("t") && !BHBot.settings.autoShrine.contains("t")) { //if autoshrine disabled but autobossrune enabled
+                                    BHBot.logger.info("Configuring autoBossRune for Trials");
+                                    if (!checkShrineSettings(true, false)) {
+                                        BHBot.logger.error("Impossible to configure autoBossRune for Trials!");
+                                    }
+                                }
+
+                                //activity runes
+                                handleMinorRunes("t");
+
+                                readScreen(SECOND);
+                                clickOnSeg(trialBTNSeg);
+                                readScreen(SECOND); //wait for window animation
 
                             } else {
 
@@ -2242,32 +2234,36 @@ public class MainThread implements Runnable {
                                     continue;
                                 }
 
-                                // One time check for Autoshrine
-                                if (BHBot.settings.autoShrine.contains("e") || BHBot.settings.autoBossRune.containsKey("e")) {
-                                    seg = detectCue(cues.get("X"));
+                                //if we need to configure runes/settings we close the window first
+                                if ( BHBot.settings.autoShrine.contains("e") || BHBot.settings.autoRune.containsKey("e") || BHBot.settings.autoBossRune.containsKey("e") ) {
+                                    readScreen();
+                                    seg = detectCue(cues.get("X"), SECOND);
                                     clickOnSeg(seg);
-                                    readScreen(2 * SECOND);
-
-
-                                    if (BHBot.settings.autoShrine.contains("e")) {
-                                        BHBot.logger.info("Configuring autoShrine for Expedition");
-                                        if (!checkShrineSettings(true, true)) {
-                                            BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
-                                        }
-                                    }
-
-                                    if (BHBot.settings.autoBossRune.containsKey("e")) {
-                                        //configure activity runes
-                                        BHBot.logger.info("Configuring autoBossRune for Expedition");
-                                        handleMinorRunes("e");
-                                        readScreen(SECOND);
-                                        clickOnSeg(badgeBtn);
-                                    }
-
                                     readScreen(SECOND);
-                                    clickOnSeg(badgeBtn);
-                                    readScreen(SECOND * 2);
                                 }
+
+                                //autoshrine
+                                if ( BHBot.settings.autoShrine.contains("e") ) {
+                                    BHBot.logger.info("Configuring autoShrine for Expedition");
+                                    if (!checkShrineSettings(true, true)) {
+                                        BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
+                                    }
+                                }
+
+                                //autoBossRune
+                                if (BHBot.settings.autoBossRune.containsKey("e") && !BHBot.settings.autoShrine.contains("e")) { //if autoshrine disabled but autobossrune enabled
+                                    BHBot.logger.info("Configuring autoBossRune for Expedition");
+                                    if (!checkShrineSettings(true, false)) {
+                                        BHBot.logger.error("Impossible to configure autoBossRune for Expedition!");
+                                    }
+                                }
+
+                                //activity runes
+                                handleMinorRunes("e");
+
+                                readScreen(SECOND);
+                                clickOnSeg(badgeBtn);
+                                readScreen(SECOND * 2);
 
                                 BHBot.logger.info("Attempting expedition...");
 
