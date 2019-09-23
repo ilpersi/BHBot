@@ -5493,7 +5493,7 @@ public class MainThread implements Runnable {
 
             colorCheck[0] = Color.WHITE;
             colorCheck[1] = Color.WHITE;
-            colorCheck[2] = Color.WHITE;
+            colorCheck[2] = new Color(255, 254, 255); //Melvapaloozo is one bit off pure white for some reason
             colorCheck[3] = Color.WHITE;
         }
 
