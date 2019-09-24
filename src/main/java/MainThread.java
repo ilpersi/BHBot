@@ -1615,21 +1615,8 @@ public class MainThread implements Runnable {
                             clickOnSeg(seg);
                             readScreen(2 * SECOND);
 
-                            if (detectCue("NotEnoughTokens", SECOND) != null) {
-                                BHBot.logger.warn("Not enough token popup detected! Closing trial window.");
-
-                                if (!closePopupSecurely(cues.get("NotEnoughTokens"), cues.get("No"))) {
-                                    BHBot.logger.error("Impossible to close the 'Not Enough Tokens' pop-up window. Restarting");
-                                    restart();
-                                    continue;
-                                }
-
-                                if (!closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"))) {
-                                    BHBot.logger.error("Impossible to close the 'TrialsOrGauntletWindow' window. Restarting");
-                                    restart();
-                                    continue;
-                                }
-
+                            if (!handleNotEnoughTokensPopup(false)) {
+                                restart();
                                 continue;
                             }
 
@@ -1638,7 +1625,17 @@ public class MainThread implements Runnable {
 
                             seg = detectCue(cues.get("Accept"), 5 * SECOND);
                             clickOnSeg(seg);
-                            sleep(5 * SECOND);
+                            readScreen(2 * SECOND);
+
+                            // This is a Bit Heroes bug!
+                            // On t/g main screen the token bar is wrongly full so it goes trough the "Play" button and
+                            // then it fails on the team "Accept" button
+                            if (!handleNotEnoughTokensPopup(true)) {
+                                restart();
+                                continue;
+                            }
+
+                            sleep(3 * SECOND);
 
                             if (handleTeamMalformedWarning()) {
                                 BHBot.logger.error("Team incomplete, doing emergency restart..");
@@ -6077,6 +6074,38 @@ public class MainThread implements Runnable {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Will check if "Not enough tokens" popup is open. If it is, it will automatically close it and close all other windows
+     * until it returns to the main screen.
+     *
+     * @return true in case popup was detected and closed.
+     */
+    private boolean handleNotEnoughTokensPopup (boolean closeTeamWindow) {
+        MarvinSegment seg = detectCue("NotEnoughTokens");
+
+        if (seg != null) {
+            BHBot.logger.warn("Not enough token popup detected! Closing trial window.");
+
+            if (!closePopupSecurely(cues.get("NotEnoughTokens"), cues.get("No"))) {
+                BHBot.logger.error("Impossible to close the 'Not Enough Tokens' pop-up window. Restarting");
+                return false;
+            }
+
+            if (closeTeamWindow) {
+                if (!closePopupSecurely(cues.get("Accept"), cues.get("X"))) {
+                    BHBot.logger.error("Impossible to close the team window when no tokens are available. Restarting");
+                    return false;
+                }
+            }
+
+            if (!closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"))) {
+                BHBot.logger.error("Impossible to close the 'TrialsOrGauntletWindow' window. Restarting");
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
