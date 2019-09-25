@@ -3704,7 +3704,6 @@ public class MainThread implements Runnable {
                 if (seg != null)
                     closePopupSecurely(cues.get("PVPWindow"), cues.get("X")); // ignore failure
                 sleep(SECOND);
-                BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
                 resetAppropriateTimers();
                 if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
                 if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
@@ -3962,7 +3961,6 @@ public class MainThread implements Runnable {
                 BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 
             sleep(SECOND);
-            BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
             if (state == State.WorldBoss && (BHBot.settings.countActivities)) {
                 updateActivityCounter(state.getName());
             }
