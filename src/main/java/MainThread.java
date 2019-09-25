@@ -7088,9 +7088,14 @@ public class MainThread implements Runnable {
             timeLastGVGBadgesCheck = 0;
         }
 
-        if (((globalEnergy - 10) >= BHBot.settings.minEnergyPercentage) && (state == State.Dungeon || state == State.WorldBoss)) {
+        if (((globalEnergy - 10) >= BHBot.settings.minEnergyPercentage) && state == State.Dungeon) {
             timeLastEnergyCheck = 0;
         }
+
+        if (((globalEnergy - 10) >= BHBot.settings.minEnergyPercentage) && state == State.WorldBoss) {
+            timeLastEnergyCheck = 0;
+        }
+
         if (((globalTickets - BHBot.settings.costPVP) >= BHBot.settings.costPVP ) && state == State.PVP) {
             timeLastTicketsCheck = 0;
         }
