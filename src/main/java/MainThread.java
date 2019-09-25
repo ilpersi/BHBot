@@ -139,6 +139,21 @@ public class MainThread implements Runnable {
     private MinorRune rightMinorRune;
     private Iterator<String> activitysIterator = BHBot.settings.activitiesEnabled.iterator();
 
+    /*
+          Match the character “z” literally (case sensitive) «z»
+          Match the regex below and capture its match into a backreference named “zone” (also backreference number 1) «(?<zone>\d{1,2})»
+             Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+                Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+          Match the character “d” literally (case sensitive) «d»
+          Match the regex below and capture its match into a backreference named “dungeon” (also backreference number 2) «(?<dungeon>[1234])»
+             Match a single character from the list “1234” «[1234]»
+          Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s+»
+             Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
+          Match the regex below and capture its match into a backreference named “difficulty” (also backreference number 3) «(?<difficulty>[123])»
+             Match a single character from the list “123” «[123]»
+         */
+    private Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])\\s+(?<difficulty>[123])");
+
     private static BufferedImage loadImage(String f) {
         BufferedImage img = null;
         ClassLoader classLoader = MainThread.class.getClassLoader();
@@ -988,21 +1003,6 @@ public class MainThread implements Runnable {
         BHBot.logger.info("Driver started succesfully");
 
         restart(false);
-
-        /*
-          Match the character “z” literally (case sensitive) «z»
-          Match the regex below and capture its match into a backreference named “zone” (also backreference number 1) «(?<zone>\d{1,2})»
-             Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
-                Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
-          Match the character “d” literally (case sensitive) «d»
-          Match the regex below and capture its match into a backreference named “dungeon” (also backreference number 2) «(?<dungeon>[1234])»
-             Match a single character from the list “1234” «[1234]»
-          Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s+»
-             Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
-          Match the regex below and capture its match into a backreference named “difficulty” (also backreference number 3) «(?<difficulty>[123])»
-             Match a single character from the list “123” «[123]»
-         */
-        Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])\\s+(?<difficulty>[123])");
 
         while (!finished) {
             BHBot.scheduler.backupIdleTime();
