@@ -29,7 +29,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
@@ -81,17 +80,11 @@ public class MainThread implements Runnable {
     private long inEncounterTimestamp = 0;
     private long runMillisAvg = 0;
     private boolean specialDungeon; //d4 check for closing properly when no energy
-    private int dungeonCounter = 0;
     private String expeditionFailsafePortal = "";
     private int expeditionFailsafeDifficulty = 0;
 
-    // Raid counters
-    private int raidVictoryCounter = 0;
-    private int raidDefeatCounter = 0;
-
-    // Expedition counters
-    private int expVictoryCounter = 0;
-    private int expDefeatCounter = 0;
+    // Generic counters HashMap
+    private HashMap<State, DungeonCounter> counters = new HashMap<>();
 
     private int numFailedRestarts = 0; // in a row
     // When we do not have anymore gems to use this is true
@@ -121,10 +114,7 @@ public class MainThread implements Runnable {
      * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale.
      */
     private int numConsecutiveException = 0;
-    /**
-     * Used to format double numbers in a human readable way
-     */
-    private DecimalFormat df = new DecimalFormat("#.00");
+
     /**
      * autoshrine settings save
      */
@@ -1004,6 +994,11 @@ public class MainThread implements Runnable {
 
         restart(false);
 
+        // We initialize the counter HasMap using the state as key
+        for (State state : State.values()) {
+            counters.put(state, new DungeonCounter(0, 0));
+        }
+
         while (!finished) {
             BHBot.scheduler.backupIdleTime();
             try {
@@ -1240,22 +1235,14 @@ public class MainThread implements Runnable {
                         File aliveScreenFile = new File(aliveScreenName);
 
                         StringBuilder aliveMsg = new StringBuilder();
-                        aliveMsg.append("I am alive and doing fine!");
+                        aliveMsg.append("I am alive and doing fine!\n\n");
 
-                        // If they are both equal to zero, the percentage will divide by 0 and give a Nan
-                        if ((raidVictoryCounter + raidDefeatCounter) > 0) {
-                            aliveMsg.append("\n\n")
-                                    .append(String.format("Raid success rate is %s%%: W:%d L:%d",
-                                            df.format(((double) raidVictoryCounter / (raidVictoryCounter + raidDefeatCounter)) * 100),
-                                            raidVictoryCounter, raidDefeatCounter));
-                        }
-
-                        // Same logic we use for raids applied to expeditions
-                        if ((expVictoryCounter + expDefeatCounter) > 0) {
-                            aliveMsg.append("\n\n")
-                                    .append(String.format("Expedition success rate is %s%%: W:%d L:%d",
-                                            df.format(((double) expVictoryCounter / (expVictoryCounter + expDefeatCounter)) * 100),
-                                            expVictoryCounter, expDefeatCounter));
+                        for (State state : State.values()) {
+                            if (counters.get(state).getTotal() > 0) {
+                                aliveMsg.append(state.getName()).append(" ")
+                                        .append(counters.get(state).successRateDesc())
+                                        .append("\n");
+                            }
                         }
 
                         sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
@@ -1356,7 +1343,7 @@ public class MainThread implements Runnable {
                                 BHBot.scheduler.doRaidImmediately = false; // reset it
 
                             //if we need to configure runes/settings we close the window first
-                            if ( BHBot.settings.autoShrine.contains("r") || BHBot.settings.autoRune.containsKey("r") || BHBot.settings.autoBossRune.containsKey("r") ) {
+                            if (BHBot.settings.autoShrine.contains("r") || BHBot.settings.autoRune.containsKey("r") || BHBot.settings.autoBossRune.containsKey("r")) {
                                 readScreen();
                                 seg = detectCue(cues.get("X"), SECOND);
                                 clickOnSeg(seg);
@@ -1364,7 +1351,7 @@ public class MainThread implements Runnable {
                             }
 
                             //autoshrine
-                            if ( BHBot.settings.autoShrine.contains("r") ) {
+                            if (BHBot.settings.autoShrine.contains("r")) {
                                 BHBot.logger.info("Configuring autoShrine for Raid");
                                 if (!checkShrineSettings(true, true)) {
                                     BHBot.logger.error("Impossible to configure autoShrine for Raid!");
@@ -1514,7 +1501,7 @@ public class MainThread implements Runnable {
                             if (trials) {
 
                                 //if we need to configure runes/settings we close the window first
-                                if ( BHBot.settings.autoShrine.contains("t") || BHBot.settings.autoRune.containsKey("t") || BHBot.settings.autoBossRune.containsKey("t") ) {
+                                if (BHBot.settings.autoShrine.contains("t") || BHBot.settings.autoRune.containsKey("t") || BHBot.settings.autoBossRune.containsKey("t")) {
                                     readScreen();
                                     seg = detectCue(cues.get("X"), SECOND);
                                     clickOnSeg(seg);
@@ -1522,7 +1509,7 @@ public class MainThread implements Runnable {
                                 }
 
                                 //autoshrine
-                                if ( BHBot.settings.autoShrine.contains("t") ) {
+                                if (BHBot.settings.autoShrine.contains("t")) {
                                     BHBot.logger.info("Configuring autoShrine for Trials");
                                     if (!checkShrineSettings(true, true)) {
                                         BHBot.logger.error("Impossible to configure autoShrine for Trials!");
@@ -2234,7 +2221,7 @@ public class MainThread implements Runnable {
                                 }
 
                                 //if we need to configure runes/settings we close the window first
-                                if ( BHBot.settings.autoShrine.contains("e") || BHBot.settings.autoRune.containsKey("e") || BHBot.settings.autoBossRune.containsKey("e") ) {
+                                if (BHBot.settings.autoShrine.contains("e") || BHBot.settings.autoRune.containsKey("e") || BHBot.settings.autoBossRune.containsKey("e")) {
                                     readScreen();
                                     seg = detectCue(cues.get("X"), SECOND);
                                     clickOnSeg(seg);
@@ -2242,7 +2229,7 @@ public class MainThread implements Runnable {
                                 }
 
                                 //autoshrine
-                                if ( BHBot.settings.autoShrine.contains("e") ) {
+                                if (BHBot.settings.autoShrine.contains("e")) {
                                     BHBot.logger.info("Configuring autoShrine for Expedition");
                                     if (!checkShrineSettings(true, true)) {
                                         BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
@@ -3704,6 +3691,9 @@ public class MainThread implements Runnable {
             if (seg != null) {
 
                 handleVictory();
+                counters.get(state).increaseVictories(1);
+                BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
+                BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
 
                 closePopupSecurely(cues.get("VictoryPopup"), cues.get("CloseGreen")); // ignore failure
 
@@ -3732,6 +3722,11 @@ public class MainThread implements Runnable {
         // check if we're done (cleared):
         seg = detectCue(cues.get("Cleared"));
         if (seg != null) {
+            counters.get(state).increaseVictories(1);
+
+            BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
+            BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
+
             closePopupSecurely(cues.get("Cleared"), cues.get("YesGreen"));
 
             // close the raid/dungeon/trials/gauntlet window:
@@ -3746,10 +3741,6 @@ public class MainThread implements Runnable {
 
             sleep(SECOND);
             if (state == State.Expedition) {
-                expVictoryCounter++;
-                int totalExp = expVictoryCounter + expDefeatCounter;
-                BHBot.logger.info("Expedition #" + totalExp + " completed. Result: Victory");
-                BHBot.logger.stats("Expedition success rate: " + df.format(((double) expVictoryCounter / totalExp) * 100) + "%.");
 
                 sleep(SECOND);
 
@@ -3765,14 +3756,7 @@ public class MainThread implements Runnable {
                 clickOnSeg(seg);
                 sleep(SECOND);
             }
-            if (state == State.Dungeon) {
-                dungeonCounter++;
-                BHBot.logger.info("Dungeon #" + dungeonCounter + " completed. Result: Victory");
-            } else if (state == State.Raid) {
-                raidVictoryCounter++;
-                int totalRaids = raidVictoryCounter + raidDefeatCounter;
-                BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
-                BHBot.logger.stats("Raid success rate: " + df.format(((double) raidVictoryCounter / totalRaids) * 100) + "%.");
+            if (state == State.Raid) {
                 long runMillis = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
                 String runtime = String.format("%01dm%02ds", //format to mss
                         TimeUnit.MILLISECONDS.toMinutes(runMillis),
@@ -3780,12 +3764,10 @@ public class MainThread implements Runnable {
                                 TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
                 runMillisAvg += runMillis; //on success add runtime to runMillisAvg
                 String runtimeAvg = String.format("%01dm%02ds", //format to mss
-                        TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter), //then we divide runMillisavg by completed raids to get average time
-                        TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / raidVictoryCounter) -
-                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter)));
+                        TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / counters.get(State.Raid).getVictories()), //then we divide runMillisavg by completed raids to get average time
+                        TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / counters.get(State.Raid).getVictories()) -
+                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / counters.get(State.Raid).getVictories())));
                 BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
-            } else {
-                BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
             }
 
             resetAppropriateTimers();
@@ -3799,6 +3781,10 @@ public class MainThread implements Runnable {
         // check if we're done (defeat):
         seg = detectCue(cues.get("Defeat"));
         if (seg != null) {
+            counters.get(state).increaseDefeats(1);
+            BHBot.logger.warn(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Defeat.");
+            BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
+
             boolean closed = false;
             // close button in dungeons is blue, in gauntlet it is green:
             seg = detectCue(cues.get("Close"), 2 * SECOND);
@@ -3832,11 +3818,6 @@ public class MainThread implements Runnable {
                 BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
             sleep(SECOND);
             if (state == State.Expedition) {
-                expDefeatCounter++;
-                int totalExp = expVictoryCounter + expDefeatCounter;
-                BHBot.logger.warn("Expedition #" + totalExp + " completed. Result: Defeat.");
-                BHBot.logger.stats("Expedition success rate: " + df.format(((double) expVictoryCounter / totalExp) * 100) + "%");
-
                 sleep(SECOND);
 
                 // Close Portal Map after expedition
@@ -3871,16 +3852,8 @@ public class MainThread implements Runnable {
                     }
                 }
             }
-            if (state.equals(State.Invasion)) {
-                BHBot.logger.info("Invasion completed.");
-            } else if (state == State.Dungeon) {
-                dungeonCounter++;
-                BHBot.logger.warn("Dungeon #" + dungeonCounter + " completed. Result: Defeat.");
-            } else if (state.equals(State.Raid)) {
-                raidDefeatCounter++;
-                int totalRaids = raidVictoryCounter + raidDefeatCounter;
-                BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
-                BHBot.logger.stats("Raid success rate: " + df.format(((double) raidVictoryCounter / totalRaids) * 100) + "%");
+            if (state.equals(State.Raid)) {
+
                 long runMillis = Misc.getTime() - (activityStartTime * 1000);
                 String runtime = String.format("%01dm%02ds",
                         TimeUnit.MILLISECONDS.toMinutes(runMillis),
@@ -3907,7 +3880,6 @@ public class MainThread implements Runnable {
                         settingsUpdate(original, updated);
                     }
                 }
-                BHBot.logger.warn("Trials completed. Result: Defeat.");
             } else if (state.equals(State.Gauntlet)) {
                 if (BHBot.settings.difficultyFailsafe.containsKey("g")) {
                     // The key is the difficulty decrease, the value is the minimum level
@@ -3928,9 +3900,6 @@ public class MainThread implements Runnable {
                         settingsUpdate(original, updated);
                     }
                 }
-                BHBot.logger.warn("Gauntlet completed. Result: Defeat.");
-            } else {
-                BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
             }
             resetAppropriateTimers();
             resetRevives();
@@ -3967,6 +3936,10 @@ public class MainThread implements Runnable {
         MarvinSegment seg1 = detectCue(cues.get("Victory"));
         MarvinSegment seg2 = detectCue(cues.get("WorldBossVictory"));
         if (seg1 != null || (state == State.WorldBoss && seg2 != null)) { //seg2 needs state defined as otherwise the battle victory screen in dungeon-type encounters triggers it
+            counters.get(state).increaseVictories(1);
+
+            BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
+            BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
 
             handleVictory();
 
@@ -6082,7 +6055,7 @@ public class MainThread implements Runnable {
      *
      * @return true in case popup was detected and closed.
      */
-    private boolean handleNotEnoughTokensPopup (boolean closeTeamWindow) {
+    private boolean handleNotEnoughTokensPopup(boolean closeTeamWindow) {
         MarvinSegment seg = detectCue("NotEnoughTokens");
 
         if (seg != null) {
@@ -7076,7 +7049,7 @@ public class MainThread implements Runnable {
             timeLastShardsCheck = 0;
         }
 
-        if (((globalBadges - BHBot.settings.costExpedition) >= BHBot.settings.costExpedition ) && state == State.Expedition) {
+        if (((globalBadges - BHBot.settings.costExpedition) >= BHBot.settings.costExpedition) && state == State.Expedition) {
             timeLastExpBadgesCheck = 0;
         }
 
@@ -7096,11 +7069,11 @@ public class MainThread implements Runnable {
             timeLastEnergyCheck = 0;
         }
 
-        if (((globalTickets - BHBot.settings.costPVP) >= BHBot.settings.costPVP ) && state == State.PVP) {
+        if (((globalTickets - BHBot.settings.costPVP) >= BHBot.settings.costPVP) && state == State.PVP) {
             timeLastTicketsCheck = 0;
         }
 
-        if (((globalTokens - BHBot.settings.costTrials) >= BHBot.settings.costTrials ) && state == State.Trials){
+        if (((globalTokens - BHBot.settings.costTrials) >= BHBot.settings.costTrials) && state == State.Trials) {
             timeLastTrialsTokensCheck = 0;
         }
 
