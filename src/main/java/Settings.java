@@ -432,11 +432,10 @@ public class Settings {
 
     private void setDifficultyFailsafe(String... failSafes) {
         this.difficultyFailsafe.clear();
-        // We only support Trial and Gauntlets, so we do sanity checks here only settings the right letters t,g
-        String pattern = "([tg]):([0-9])(:([\\d]+))?";
+        // We only support Trial and Gauntlets and Expedition, so we do sanity checks here only settings the right letters t,g
+        String pattern = "([tge]):([\\d]+?)(:([\\d]+))?";
         int minimumDifficulty = 1;
         Pattern r = Pattern.compile(pattern);
-
         for (String f : failSafes) {
             f = f.trim();
 

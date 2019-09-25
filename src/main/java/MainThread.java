@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
@@ -89,16 +90,11 @@ public class MainThread implements Runnable {
     private long runMillisAvg = 0;
 
     private boolean specialDungeon; //d4 check for closing properly when no energy
+    private String expeditionFailsafePortal = "";
+    private int expeditionFailsafeDifficulty = 0;
 
-    private int dungeonCounter = 0;
-
-    // Raid counters
-    private int raidVictoryCounter = 0;
-    private int raidDefeatCounter = 0;
-
-    // Expedition counters
-    private int expVictoryCounter = 0;
-    private int expDefeatCounter = 0;
+    // Generic counters HashMap
+    private HashMap<State, DungeonCounter> counters = new HashMap<>();
 
     private int numFailedRestarts = 0; // in a row
     // When we do not have anymore gems to use this is true
@@ -132,10 +128,7 @@ public class MainThread implements Runnable {
      * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting Steam. Or else it could get into loop and stale.
      */
     private int numConsecutiveException = 0;
-    /**
-     * Used to format double numbers in a human readable way
-     */
-    private DecimalFormat df = new DecimalFormat("#.00");
+
     /**
      * autoshrine settings save
      */
@@ -151,6 +144,21 @@ public class MainThread implements Runnable {
     //	/** Amount of ads that were offered in main screen since last restart. We need it in order to do restart() after 2 ads, since sometimes ads won't get offered anymore after two restarts. */
 //	private int numAdOffers = 0;
     private Iterator<String> activitysIterator = BHBot.settings.activitiesEnabled.iterator();
+
+    /*
+          Match the character “z” literally (case sensitive) «z»
+          Match the regex below and capture its match into a backreference named “zone” (also backreference number 1) «(?<zone>\d{1,2})»
+             Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+                Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+          Match the character “d” literally (case sensitive) «d»
+          Match the regex below and capture its match into a backreference named “dungeon” (also backreference number 2) «(?<dungeon>[1234])»
+             Match a single character from the list “1234” «[1234]»
+          Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s+»
+             Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
+          Match the regex below and capture its match into a backreference named “difficulty” (also backreference number 3) «(?<difficulty>[123])»
+             Match a single character from the list “123” «[123]»
+         */
+    private Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])\\s+(?<difficulty>[123])");
 
     private static BufferedImage loadImage(String f) {
         BufferedImage img = null;
@@ -897,20 +905,10 @@ public class MainThread implements Runnable {
 
         restart(false);
 
-        /*
-          Match the character “z” literally (case sensitive) «z»
-          Match the regex below and capture its match into a backreference named “zone” (also backreference number 1) «(?<zone>\d{1,2})»
-             Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
-                Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
-          Match the character “d” literally (case sensitive) «d»
-          Match the regex below and capture its match into a backreference named “dungeon” (also backreference number 2) «(?<dungeon>[1234])»
-             Match a single character from the list “1234” «[1234]»
-          Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s+»
-             Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
-          Match the regex below and capture its match into a backreference named “difficulty” (also backreference number 3) «(?<difficulty>[123])»
-             Match a single character from the list “123” «[123]»
-         */
-        Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])\\s+(?<difficulty>[123])");
+        // We initialize the counter HasMap using the state as key
+        for (State state : State.values()) {
+            counters.put(state, new DungeonCounter(0, 0));
+        }
 
         while (!finished) {
             BHBot.scheduler.backupIdleTime();
@@ -1148,22 +1146,14 @@ public class MainThread implements Runnable {
                         File aliveScreenFile = new File(aliveScreenName);
 
                         StringBuilder aliveMsg = new StringBuilder();
-                        aliveMsg.append("I am alive and doing fine!");
+                        aliveMsg.append("I am alive and doing fine!\n\n");
 
-                        // If they are both equal to zero, the percentage will divide by 0 and give a Nan
-                        if ((raidVictoryCounter + raidDefeatCounter) > 0) {
-                            aliveMsg.append("\n\n")
-                                    .append(String.format("Raid success rate is %s%%: W:%d L:%d",
-                                            df.format(((double) raidVictoryCounter / (raidVictoryCounter + raidDefeatCounter)) * 100),
-                                            raidVictoryCounter, raidDefeatCounter));
-                        }
-
-                        // Same logic we use for raids applied to expeditions
-                        if ((expVictoryCounter + expDefeatCounter) > 0) {
-                            aliveMsg.append("\n\n")
-                                    .append(String.format("Expedition success rate is %s%%: W:%d L:%d",
-                                            df.format(((double) expVictoryCounter / (expVictoryCounter + expDefeatCounter)) * 100),
-                                            expVictoryCounter, expDefeatCounter));
+                        for (State state : State.values()) {
+                            if (counters.get(state).getTotal() > 0) {
+                                aliveMsg.append(state.getName()).append(" ")
+                                        .append(counters.get(state).successRateDesc())
+                                        .append("\n");
+                            }
                         }
 
                         sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
@@ -1259,50 +1249,35 @@ public class MainThread implements Runnable {
                             if (BHBot.scheduler.doRaidImmediately)
                                 BHBot.scheduler.doRaidImmediately = false; // reset it
 
-                            //configure shrine for raid if applicable
-                            if (BHBot.settings.autoShrine.contains("r")) {
-
-                                // we need to close the raid window to check the autoshrine
+                            //if we need to configure runes/settings we close the window first
+                            if (BHBot.settings.autoShrine.contains("r") || BHBot.settings.autoRune.containsKey("r") || BHBot.settings.autoBossRune.containsKey("r")) {
                                 readScreen();
                                 seg = detectCue(cues.get("X"), SECOND);
                                 clickOnSeg(seg);
                                 readScreen(SECOND);
+                            }
 
+                            //autoshrine
+                            if (BHBot.settings.autoShrine.contains("r")) {
                                 BHBot.logger.info("Configuring autoShrine for Raid");
                                 if (!checkShrineSettings(true, true)) {
                                     BHBot.logger.error("Impossible to configure autoShrine for Raid!");
                                 }
-
-                                readScreen(SECOND);
-                                clickOnSeg(raidBTNSeg);
                             }
 
-                            //configure activity runes
-                            if (handleMinorRunes("r")) {
-                                readScreen(SECOND);
-                                seg = detectCue(cues.get("RaidButton"), SECOND);
-                                if (seg == null) {
-                                    BHBot.logger.error("Can't find raid button after switching runes!");
-                                }
-                                clickOnSeg(seg);
-                                sleep(SECOND);
-                            }
-
-                            //configure boss runes if no autoshrine
-                            if (BHBot.settings.autoBossRune.containsKey("r") && !BHBot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autorune enabled
-                                readScreen();
-                                seg = detectCue(cues.get("X"), SECOND);
-                                clickOnSeg(seg);
-                                readScreen(SECOND);
-
+                            //autoBossRune
+                            if (BHBot.settings.autoBossRune.containsKey("r") && !BHBot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autobossrune enabled
                                 BHBot.logger.info("Configuring autoBossRune for Raid");
                                 if (!checkShrineSettings(true, false)) {
                                     BHBot.logger.error("Impossible to configure autoBossRune for Raid!");
                                 }
-
-                                readScreen(SECOND);
-                                clickOnSeg(raidBTNSeg);
                             }
+
+                            //activity runes
+                            handleMinorRunes("r");
+
+                            readScreen(SECOND);
+                            clickOnSeg(raidBTNSeg);
 
                             String raid = decideRaidRandomly();
                             if (raid == null) {
@@ -1432,29 +1407,36 @@ public class MainThread implements Runnable {
                             // One time check for Autoshrine
                             if (trials) {
 
-                                if (BHBot.settings.autoShrine.contains("t") || BHBot.settings.autoRune.containsKey("t")) {
+                                //if we need to configure runes/settings we close the window first
+                                if (BHBot.settings.autoShrine.contains("t") || BHBot.settings.autoRune.containsKey("t") || BHBot.settings.autoBossRune.containsKey("t")) {
                                     readScreen();
                                     seg = detectCue(cues.get("X"), SECOND);
                                     clickOnSeg(seg);
                                     readScreen(SECOND);
-
-                                    if (BHBot.settings.autoShrine.contains("t")) {
-                                        BHBot.logger.info("Configuring autoShrine for Trial");
-                                        if (!checkShrineSettings(true, true)) {
-                                            BHBot.logger.error("Impossible to configure autoShrine for Trial");
-                                        }
-                                        readScreen(SECOND);
-                                    }
-
-                                    if (BHBot.settings.autoRune.containsKey("t")) {
-                                        handleMinorRunes("t");
-                                        readScreen(SECOND);
-                                    }
-
-                                    readScreen(SECOND);
-                                    clickOnSeg(trialBTNSeg);
-                                    readScreen(SECOND); //wait for window animation
                                 }
+
+                                //autoshrine
+                                if (BHBot.settings.autoShrine.contains("t")) {
+                                    BHBot.logger.info("Configuring autoShrine for Trials");
+                                    if (!checkShrineSettings(true, true)) {
+                                        BHBot.logger.error("Impossible to configure autoShrine for Trials!");
+                                    }
+                                }
+
+                                //autoBossRune
+                                if (BHBot.settings.autoBossRune.containsKey("t") && !BHBot.settings.autoShrine.contains("t")) { //if autoshrine disabled but autobossrune enabled
+                                    BHBot.logger.info("Configuring autoBossRune for Trials");
+                                    if (!checkShrineSettings(true, false)) {
+                                        BHBot.logger.error("Impossible to configure autoBossRune for Trials!");
+                                    }
+                                }
+
+                                //activity runes
+                                handleMinorRunes("t");
+
+                                readScreen(SECOND);
+                                clickOnSeg(trialBTNSeg);
+                                readScreen(SECOND); //wait for window animation
 
                             } else {
 
@@ -1527,21 +1509,8 @@ public class MainThread implements Runnable {
                             clickOnSeg(seg);
                             readScreen(2 * SECOND);
 
-                            if (detectCue("NotEnoughTokens", SECOND) != null) {
-                                BHBot.logger.warn("Not enough token popup detected! Closing trial window.");
-
-                                if (!closePopupSecurely(cues.get("NotEnoughTokens"), cues.get("No"))) {
-                                    BHBot.logger.error("Impossible to close the 'Not Enough Tokens' pop-up window. Restarting");
-                                    restart();
-                                    continue;
-                                }
-
-                                if (!closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"))) {
-                                    BHBot.logger.error("Impossible to close the 'TrialsOrGauntletWindow' window. Restarting");
-                                    restart();
-                                    continue;
-                                }
-
+                            if (!handleNotEnoughTokensPopup(false)) {
+                                restart();
                                 continue;
                             }
 
@@ -1550,7 +1519,17 @@ public class MainThread implements Runnable {
 
                             seg = detectCue(cues.get("Accept"), 5 * SECOND);
                             clickOnSeg(seg);
-                            sleep(5 * SECOND);
+                            readScreen(2 * SECOND);
+
+                            // This is a Bit Heroes bug!
+                            // On t/g main screen the token bar is wrongly full so it goes trough the "Play" button and
+                            // then it fails on the team "Accept" button
+                            if (!handleNotEnoughTokensPopup(true)) {
+                                restart();
+                                continue;
+                            }
+
+                            sleep(3 * SECOND);
 
                             if (handleTeamMalformedWarning()) {
                                 BHBot.logger.error("Team incomplete, doing emergency restart..");
@@ -2137,32 +2116,36 @@ public class MainThread implements Runnable {
                                     continue;
                                 }
 
-                                // One time check for Autoshrine
-                                if (BHBot.settings.autoShrine.contains("e") || BHBot.settings.autoBossRune.containsKey("e")) {
-                                    seg = detectCue(cues.get("X"));
+                                //if we need to configure runes/settings we close the window first
+                                if (BHBot.settings.autoShrine.contains("e") || BHBot.settings.autoRune.containsKey("e") || BHBot.settings.autoBossRune.containsKey("e")) {
+                                    readScreen();
+                                    seg = detectCue(cues.get("X"), SECOND);
                                     clickOnSeg(seg);
-                                    readScreen(2 * SECOND);
-
-
-                                    if (BHBot.settings.autoShrine.contains("e")) {
-                                        BHBot.logger.info("Configuring autoShrine for Expedition");
-                                        if (!checkShrineSettings(true, true)) {
-                                            BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
-                                        }
-                                    }
-
-                                    if (BHBot.settings.autoBossRune.containsKey("e")) {
-                                        //configure activity runes
-                                        BHBot.logger.info("Configuring autoBossRune for Expedition");
-                                        handleMinorRunes("e");
-                                        readScreen(SECOND);
-                                        clickOnSeg(badgeBtn);
-                                    }
-
                                     readScreen(SECOND);
-                                    clickOnSeg(badgeBtn);
-                                    readScreen(SECOND * 2);
                                 }
+
+                                //autoshrine
+                                if (BHBot.settings.autoShrine.contains("e")) {
+                                    BHBot.logger.info("Configuring autoShrine for Expedition");
+                                    if (!checkShrineSettings(true, true)) {
+                                        BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
+                                    }
+                                }
+
+                                //autoBossRune
+                                if (BHBot.settings.autoBossRune.containsKey("e") && !BHBot.settings.autoShrine.contains("e")) { //if autoshrine disabled but autobossrune enabled
+                                    BHBot.logger.info("Configuring autoBossRune for Expedition");
+                                    if (!checkShrineSettings(true, false)) {
+                                        BHBot.logger.error("Impossible to configure autoBossRune for Expedition!");
+                                    }
+                                }
+
+                                //activity runes
+                                handleMinorRunes("e");
+
+                                readScreen(SECOND);
+                                clickOnSeg(badgeBtn);
+                                readScreen(SECOND * 2);
 
                                 BHBot.logger.info("Attempting expedition...");
 
@@ -2199,9 +2182,9 @@ public class MainThread implements Runnable {
                                 String randomExpedition = BHBot.settings.expeditions.next();
                                 if (randomExpedition == null) {
                                     BHBot.settings.activitiesEnabled.remove("e");
-                                    BHBot.logger.error("It was impossible to randomly choose an expedtion. Expeditions are disabled.");
+                                    BHBot.logger.error("It was impossible to randomly choose an expedition. Expeditions are disabled.");
                                     if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-                                        sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedtion. Expeditions are disabled.", "siren");
+                                        sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedition. Expeditions are disabled.", "siren");
                                     continue;
                                 }
 
@@ -2234,16 +2217,20 @@ public class MainThread implements Runnable {
                                     continue;
                                 }
 
-                                String expedName = getExpeditionName(currentExpedition, targetPortal);
-                                BHBot.logger.info("Attempting " + expedName + " Portal at difficulty " + targetDifficulty);
+                                String portalName = getExpeditionPortalName(currentExpedition, targetPortal);
+                                BHBot.logger.info("Attempting " + portalName + " Portal at difficulty " + targetDifficulty);
+
+                                //write current portal and difficulty to global values for difficultyFailsafe
+                                expeditionFailsafePortal = targetPortal;
+                                expeditionFailsafeDifficulty = targetDifficulty;
 
                                 // click on the chosen portal:
                                 Point p = getExpeditionIconPos(currentExpedition, targetPortal);
                                 if (p == null) {
                                     BHBot.settings.activitiesEnabled.remove("e");
-                                    BHBot.logger.error("It was impossible to get portal position for " + expedName + ". Expeditions are now disabled!");
+                                    BHBot.logger.error("It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!");
                                     if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors)
-                                        sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + expedName + ". Expeditions are now disabled!", "siren");
+                                        sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!", "siren");
 
                                     readScreen();
                                     seg = detectCue(cues.get("X"), SECOND);
@@ -2304,7 +2291,7 @@ public class MainThread implements Runnable {
                                     continue;
                                 } else {
                                     state = State.Expedition;
-                                    BHBot.logger.info(expedName + " portal initiated!");
+                                    BHBot.logger.info(portalName + " portal initiated!");
                                     autoShrined = false;
                                     autoBossRuned = false;
                                 }
@@ -2682,6 +2669,18 @@ public class MainThread implements Runnable {
 
                         if (BHBot.scheduler.doFishingImmediately) {
                             BHBot.scheduler.doFishingImmediately = false; //disable collectImmediately again if its been activated
+                        }
+
+                        if ((Misc.getTime() - timeLastFishingBaitsCheck) > DAY) { //if we haven't collected bait today we need to do that first
+                            handleFishingBaits();
+                        }
+
+                        boolean botPresent = new File("bh-fisher.jar").exists();
+                        if (!botPresent) {
+                            BHBot.logger.warn("bh-fisher.jar not found in root directory, fishing disabled.");
+                            BHBot.logger.warn("For information on configuring fishing check the wiki page on github");
+                            BHBot.settings.activitiesEnabled.remove("f");
+                            return;
                         }
 
                         handleFishing();
@@ -3563,6 +3562,9 @@ public class MainThread implements Runnable {
             if (seg != null) {
 
                 handleVictory();
+                counters.get(state).increaseVictories(1);
+                BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
+                BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
 
                 closePopupSecurely(cues.get("Victory"), cues.get("CloseGreen")); // ignore failure
 
@@ -3591,6 +3593,11 @@ public class MainThread implements Runnable {
         // check if we're done (cleared):
         seg = detectCue(cues.get("Cleared"));
         if (seg != null) {
+            counters.get(state).increaseVictories(1);
+
+            BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
+            BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
+
             closePopupSecurely(cues.get("Cleared"), cues.get("Yes"));
 
             // close the raid/dungeon/trials/gauntlet window:
@@ -3605,10 +3612,6 @@ public class MainThread implements Runnable {
 
             sleep(SECOND);
             if (state == State.Expedition) {
-                expVictoryCounter++;
-                int totalExp = expVictoryCounter + expDefeatCounter;
-                BHBot.logger.info("Expedition #" + totalExp + " completed. Result: Victory");
-                BHBot.logger.stats("Expedition success rate: " + df.format(((double) expVictoryCounter / totalExp) * 100) + "%.");
 
                 sleep(SECOND);
 
@@ -3624,14 +3627,7 @@ public class MainThread implements Runnable {
                 clickOnSeg(seg);
                 sleep(SECOND);
             }
-            if (state == State.Dungeon) {
-                dungeonCounter++;
-                BHBot.logger.info("Dungeon #" + dungeonCounter + " completed. Result: Victory");
-            } else if (state == State.Raid) {
-                raidVictoryCounter++;
-                int totalRaids = raidVictoryCounter + raidDefeatCounter;
-                BHBot.logger.info("Raid #" + totalRaids + " completed. Result: Victory");
-                BHBot.logger.stats("Raid success rate: " + df.format(((double) raidVictoryCounter / totalRaids) * 100) + "%.");
+            if (state == State.Raid) {
                 long runMillis = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
                 String runtime = String.format("%01dm%02ds", //format to mss
                         TimeUnit.MILLISECONDS.toMinutes(runMillis),
@@ -3639,12 +3635,10 @@ public class MainThread implements Runnable {
                                 TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
                 runMillisAvg += runMillis; //on success add runtime to runMillisAvg
                 String runtimeAvg = String.format("%01dm%02ds", //format to mss
-                        TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter), //then we divide runMillisavg by completed raids to get average time
-                        TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / raidVictoryCounter) -
-                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / raidVictoryCounter)));
+                        TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / counters.get(State.Raid).getVictories()), //then we divide runMillisavg by completed raids to get average time
+                        TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / counters.get(State.Raid).getVictories()) -
+                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / counters.get(State.Raid).getVictories())));
                 BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
-            } else {
-                BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
             }
 
             resetAppropriateTimers();
@@ -3658,6 +3652,10 @@ public class MainThread implements Runnable {
         // check if we're done (defeat):
         seg = detectCue(cues.get("Defeat"));
         if (seg != null) {
+            counters.get(state).increaseDefeats(1);
+            BHBot.logger.warn(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Defeat.");
+            BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
+
             boolean closed = false;
             // close button in dungeons is blue, in gauntlet it is green:
             seg = detectCue(cues.get("Close"), 2 * SECOND);
@@ -3691,11 +3689,6 @@ public class MainThread implements Runnable {
                 BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
             sleep(SECOND);
             if (state == State.Expedition) {
-                expDefeatCounter++;
-                int totalExp = expVictoryCounter + expDefeatCounter;
-                BHBot.logger.warn("Expedition #" + totalExp + " completed. Result: Defeat.");
-                BHBot.logger.stats("Expedition success rate: " + df.format(((double) expVictoryCounter / totalExp) * 100) + "%");
-
                 sleep(SECOND);
 
                 // Close Portal Map after expedition
@@ -3709,17 +3702,29 @@ public class MainThread implements Runnable {
                 seg = detectCue(cues.get("X"));
                 clickOnSeg(seg);
                 sleep(SECOND);
+
+                if (BHBot.settings.difficultyFailsafe.containsKey("e")) {
+                    // The key is the difficulty decrease, the value is the minimum level
+                    Map.Entry<Integer, Integer> expedDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("e");
+                    int levelOffset = expedDifficultyFailsafe.getKey();
+                    int minimumLevel = expedDifficultyFailsafe.getValue();
+
+                    // We calculate the new difficulty
+                    int newExpedDifficulty = expeditionFailsafeDifficulty - levelOffset;
+
+                    // We check that the new difficulty is not lower than the minimum
+                    if (newExpedDifficulty < minimumLevel) newExpedDifficulty = minimumLevel;
+
+                    // If the new difficulty is different from the current one, we update the ini setting
+                    if (newExpedDifficulty != expeditionFailsafeDifficulty) {
+                        String original = expeditionFailsafePortal + " " + expeditionFailsafeDifficulty;
+                        String updated = expeditionFailsafePortal + " " + newExpedDifficulty;
+                        settingsUpdate(original, updated);
+                    }
+                }
             }
-            if (state.equals(State.Invasion)) {
-                BHBot.logger.info("Invasion completed.");
-            } else if (state == State.Dungeon) {
-                dungeonCounter++;
-                BHBot.logger.warn("Dungeon #" + dungeonCounter + " completed. Result: Defeat.");
-            } else if (state.equals(State.Raid)) {
-                raidDefeatCounter++;
-                int totalRaids = raidVictoryCounter + raidDefeatCounter;
-                BHBot.logger.warn("Raid #" + totalRaids + " completed. Result: Defeat.");
-                BHBot.logger.stats("Raid success rate: " + df.format(((double) raidVictoryCounter / totalRaids) * 100) + "%");
+            if (state.equals(State.Raid)) {
+
                 long runMillis = Misc.getTime() - (activityStartTime * 1000);
                 String runtime = String.format("%01dm%02ds",
                         TimeUnit.MILLISECONDS.toMinutes(runMillis),
@@ -3728,44 +3733,36 @@ public class MainThread implements Runnable {
                 BHBot.logger.stats("Run time: " + runtime);
             } else if (state.equals(State.Trials)) {
                 if (BHBot.settings.difficultyFailsafe.containsKey("t")) {
-//                    BHBot.logger.debug("t key found");
-
                     // The key is the difficulty decrease, the value is the minimum level
                     Map.Entry<Integer, Integer> trialDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("t");
                     int levelOffset = trialDifficultyFailsafe.getKey();
-                    int minimunLevel = trialDifficultyFailsafe.getValue();
-//                    BHBot.logger.debug("offset " + levelOffset);
-//                    BHBot.logger.debug("min level " + minimunLevel);
+                    int minimumLevel = trialDifficultyFailsafe.getValue();
 
                     // We calculate the new difficulty
                     int newTrialDifficulty = BHBot.settings.difficultyTrials - levelOffset;
-//                    BHBot.logger.debug("new diff " + newTrialDifficulty);
 
                     // We check that the new difficulty is not lower than the minimum
-                    if (newTrialDifficulty < minimunLevel) newTrialDifficulty = minimunLevel;
+                    if (newTrialDifficulty < minimumLevel) newTrialDifficulty = minimumLevel;
 
                     // If the new difficulty is different from the current one, we update the ini setting
                     if (newTrialDifficulty != BHBot.settings.difficultyTrials) {
                         String original = "difficultyTrials " + BHBot.settings.difficultyTrials;
                         String updated = "difficultyTrials " + newTrialDifficulty;
-//                        BHBot.logger.debug("string orig " + original);
-//                        BHBot.logger.debug("string updated " + updated);
                         settingsUpdate(original, updated);
                     }
                 }
-                BHBot.logger.warn("Trials completed. Result: Defeat.");
             } else if (state.equals(State.Gauntlet)) {
                 if (BHBot.settings.difficultyFailsafe.containsKey("g")) {
                     // The key is the difficulty decrease, the value is the minimum level
                     Map.Entry<Integer, Integer> gauntletDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("g");
                     int levelOffset = gauntletDifficultyFailsafe.getKey();
-                    int minimunLevel = gauntletDifficultyFailsafe.getValue();
+                    int minimumLevel = gauntletDifficultyFailsafe.getValue();
 
                     // We calculate the new difficulty
                     int newGauntletDifficulty = BHBot.settings.difficultyGauntlet - levelOffset;
 
                     // We check that the new difficulty is not lower than the minimum
-                    if (newGauntletDifficulty < minimunLevel) newGauntletDifficulty = minimunLevel;
+                    if (newGauntletDifficulty < minimumLevel) newGauntletDifficulty = minimumLevel;
 
                     // If the new difficulty is different from the current one, we update the ini setting
                     if (newGauntletDifficulty != BHBot.settings.difficultyGauntlet) {
@@ -3774,9 +3771,6 @@ public class MainThread implements Runnable {
                         settingsUpdate(original, updated);
                     }
                 }
-                BHBot.logger.warn("Gauntlet completed. Result: Defeat.");
-            } else {
-                BHBot.logger.warn(state.getName() + " completed. Result: Defeat.");
             }
             resetAppropriateTimers();
             resetRevives();
@@ -3813,6 +3807,10 @@ public class MainThread implements Runnable {
         MarvinSegment seg1 = detectCue(cues.get("Victory"));
         MarvinSegment seg2 = detectCue(cues.get("WorldBossVictory"));
         if (seg1 != null || (state == State.WorldBoss && seg2 != null)) { //seg2 needs state defined as otherwise the battle victory screen in dungeon-type encounters triggers it
+            counters.get(state).increaseVictories(1);
+
+            BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
+            BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
 
             handleVictory();
 
@@ -5140,15 +5138,15 @@ public class MainThread implements Runnable {
     /**
      * Function to return the name of the portal for console output
      */
-    private String getExpeditionName(int currentExpedition, String targetPortal) {
+    private String getExpeditionPortalName(int currentExpedition, String targetPortal) {
         if (currentExpedition > 5) {
-            BHBot.logger.error("Unexpected expedition int in getExpeditionName: " + currentExpedition);
+            BHBot.logger.error("Unexpected expedition int in getExpeditionPortalName: " + currentExpedition);
             return null;
         }
 
         if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
                 && !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
-            BHBot.logger.error("Unexpected target portal in getExpeditionName: " + targetPortal);
+            BHBot.logger.error("Unexpected target portal in getExpeditionPortalName: " + targetPortal);
             return null;
         }
 
@@ -5233,22 +5231,22 @@ public class MainThread implements Runnable {
             return null;
         }
 
-        String portalName;
-        if (currentExpedition == 1) {
-            portalName = "Hallowed";
-        } else if (currentExpedition == 2) {
-            portalName = "Inferno";
-        } else if (currentExpedition == 3) {
-            portalName = "Jammie";
-        } else if (currentExpedition == 4) {
-            portalName = "Idol";
-        } else if (currentExpedition == 5) {
-            portalName = "Battle Bards";
-        } else {
-            BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
-            saveGameScreen("unknown-expedition");
-            return null;
-        }
+        String portalName = getExpeditionPortalName(currentExpedition, targetPortal);
+//        if (currentExpedition == 1) {
+//            portalName = "Hallowed";
+//        } else if (currentExpedition == 2) {
+//            portalName = "Inferno";
+//        } else if (currentExpedition == 3) {
+//            portalName = "Jammie";
+//        } else if (currentExpedition == 4) {
+//            portalName = "Idol";
+//        } else if (currentExpedition == 5) {
+//            portalName = "Battle Bards";
+//        } else {
+//            BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
+//            saveGameScreen("unknown-expedition");
+//            return null;
+//        }
 
         if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
                 && !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
@@ -5355,7 +5353,7 @@ public class MainThread implements Runnable {
 
             colorCheck[0] = Color.WHITE;
             colorCheck[1] = Color.WHITE;
-            colorCheck[2] = Color.WHITE;
+            colorCheck[2] = new Color(255, 254, 255); //Melvapaloozo is one bit off pure white for some reason
             colorCheck[3] = Color.WHITE;
         }
 
@@ -5365,16 +5363,18 @@ public class MainThread implements Runnable {
             portalEnabled[i] = col.equals(colorCheck[i]);
         }
 
-        if (portalEnabled[portalInt - 1]) return portalPosition[portalInt - 1];
+        if (portalEnabled[portalInt - 1]) {
+            return portalPosition[portalInt - 1];
+        }
 
-        // If the desired portal is not enabled, we try to find the first enabled one
+        // If the desired portal is not enabled, we try to find the highest enabled one
         int i = 3;
         while (i >= 0) {
             if (portalEnabled[i]) {
                 BHBot.logger.warn(portalName + " is not available! Falling back on p" + (i + 1) + "...");
                 return portalPosition[i];
             }
-            i--;
+            i--; //cycle down through 4 - 1 until we return an activated portal
         }
 
         return null;
@@ -5897,6 +5897,38 @@ public class MainThread implements Runnable {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Will check if "Not enough tokens" popup is open. If it is, it will automatically close it and close all other windows
+     * until it returns to the main screen.
+     *
+     * @return true in case popup was detected and closed.
+     */
+    private boolean handleNotEnoughTokensPopup(boolean closeTeamWindow) {
+        MarvinSegment seg = detectCue("NotEnoughTokens");
+
+        if (seg != null) {
+            BHBot.logger.warn("Not enough token popup detected! Closing trial window.");
+
+            if (!closePopupSecurely(cues.get("NotEnoughTokens"), cues.get("No"))) {
+                BHBot.logger.error("Impossible to close the 'Not Enough Tokens' pop-up window. Restarting");
+                return false;
+            }
+
+            if (closeTeamWindow) {
+                if (!closePopupSecurely(cues.get("Accept"), cues.get("X"))) {
+                    BHBot.logger.error("Impossible to close the team window when no tokens are available. Restarting");
+                    return false;
+                }
+            }
+
+            if (!closePopupSecurely(cues.get("TrialsOrGauntletWindow"), cues.get("X"))) {
+                BHBot.logger.error("Impossible to close the 'TrialsOrGauntletWindow' window. Restarting");
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -6859,29 +6891,46 @@ public class MainThread implements Runnable {
         specialDungeon = false;
         potionsUsed = 0;
 
-        if ((globalShards - 1) > BHBot.settings.minShards && state == State.Raid)
+        /*
+            In this section we check if we are able to run the activity again and if so reset the timer to 0
+            else we wait for the standard timer until we check again
+         */
+
+        if (((globalShards - 1) >= BHBot.settings.minShards) && state == State.Raid) {
             timeLastShardsCheck = 0;
+        }
 
-        if ((globalBadges - BHBot.settings.costExpedition) > BHBot.settings.minBadges && (state == State.Expedition))
+        if (((globalBadges - BHBot.settings.costExpedition) >= BHBot.settings.costExpedition) && state == State.Expedition) {
             timeLastExpBadgesCheck = 0;
+        }
 
-        if ((globalBadges - BHBot.settings.costInvasion) > BHBot.settings.minBadges && (state == State.Invasion))
+        if (((globalBadges - BHBot.settings.costInvasion) >= BHBot.settings.costInvasion) && state == State.Invasion) {
             timeLastInvBadgesCheck = 0;
+        }
 
-        if ((globalBadges - BHBot.settings.costGVG) > BHBot.settings.minBadges && (state == State.GVG))
+        if (((globalBadges - BHBot.settings.costGVG) >= BHBot.settings.costGVG && state == State.GVG)) {
             timeLastGVGBadgesCheck = 0;
+        }
 
-        if ((globalEnergy - 10) > BHBot.settings.minEnergyPercentage && (state == State.Dungeon || state == State.WorldBoss))
+        if (((globalEnergy - 10) >= BHBot.settings.minEnergyPercentage) && state == State.Dungeon) {
             timeLastEnergyCheck = 0;
+        }
 
-        if ((globalTickets - BHBot.settings.costPVP) > BHBot.settings.minTickets && state == State.PVP)
+        if (((globalEnergy - 10) >= BHBot.settings.minEnergyPercentage) && state == State.WorldBoss) {
+            timeLastEnergyCheck = 0;
+        }
+
+        if (((globalTickets - BHBot.settings.costPVP) >= BHBot.settings.costPVP) && state == State.PVP) {
             timeLastTicketsCheck = 0;
+        }
 
-        if ((globalTokens - BHBot.settings.costTrials) > BHBot.settings.minTokens && (state == State.Trials))
+        if (((globalTokens - BHBot.settings.costTrials) >= BHBot.settings.costTrials) && state == State.Trials) {
             timeLastTrialsTokensCheck = 0;
+        }
 
-        if ((globalTokens - BHBot.settings.costGauntlet) > BHBot.settings.minTokens && (state == State.Gauntlet))
+        if (((globalTokens - BHBot.settings.costGauntlet) >= BHBot.settings.costGauntlet && state == State.Gauntlet)) {
             timeLastGauntletTokensCheck = 0;
+        }
     }
 
     private void resetRevives() {
@@ -6976,15 +7025,13 @@ public class MainThread implements Runnable {
                     BHBot.logger.info("Pausing for " + fishingTime + " seconds to fish");
                     BHBot.scheduler.pause();
 
-                    Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & fisherCLI.exe\" " + BHBot.settings.baitAmount);
+                    Process fisher = Runtime.getRuntime().exec("cmd /k \"cd DIRECTORY & java -jar bh-fisher.jar\" " + BHBot.settings.baitAmount);
                     if (!fisher.waitFor(fishingTime, TimeUnit.SECONDS)) { //run and wait for fishingTime seconds
                         BHBot.scheduler.resume();
                     }
-                    Process fisherClose = Runtime.getRuntime().exec("cmd /k \"taskkill /f /im \"fisherCLI.exe\"\"");
-                    fisherClose.waitFor(1, TimeUnit.SECONDS);
 
                 } catch (IOException | InterruptedException ex) {
-                    BHBot.logger.error("Can't start fisher.exe");
+                    BHBot.logger.error("Can't start bh-fisher.jar");
                 }
 
             } else BHBot.logger.info("start not found");
