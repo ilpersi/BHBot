@@ -34,7 +34,7 @@ class DungeonCounter {
                 if (total.get() == 0) {
                     return 0.0;
                 } else {
-                    return (((double) DungeonCounter.this.victories.get() / (total.get())) * 100);
+                    return (((double) victories.get() / (total.get())) * 100);
                 }
             }
         };

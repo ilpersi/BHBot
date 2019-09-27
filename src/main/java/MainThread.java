@@ -7274,18 +7274,18 @@ public class MainThread implements Runnable {
     }
 
     public enum State {
-        Loading("Loading..."),
-        Main("Main screen"),
-        Raid("Raid", "r"),
-        Trials("Trials", "t"),
-        Gauntlet("Gauntlet", "g"),
         Dungeon("Dungeon", "d"),
-        PVP("PVP", "p"),
+        Expedition("Expedition", "e"),
+        Gauntlet("Gauntlet", "g"),
         GVG("GVG", "v"),
         Invasion("Invasion", "i"),
-        Expedition("Expedition", "e"),
-        WorldBoss("World Boss", "w"),
-        UnidentifiedDungeon("Unidentified dungeon", "ud"); // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
+        Loading("Loading..."),
+        Main("Main screen"),
+        PVP("PVP", "p"),
+        Raid("Raid", "r"),
+        Trials("Trials", "t"),
+        UnidentifiedDungeon("Unidentified dungeon", "ud"), // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
+        WorldBoss("World Boss", "w");
 
         private String name;
         private String shortcut;
