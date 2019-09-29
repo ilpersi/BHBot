@@ -3854,6 +3854,7 @@ public class MainThread implements Runnable {
 
                     // We check that the new difficulty is not lower than the minimum
                     if (newExpedDifficulty < minimumLevel) newExpedDifficulty = minimumLevel;
+                    if (newExpedDifficulty < 5) newExpedDifficulty = 5;
 
                     // If the new difficulty is different from the current one, we update the ini setting
                     if (newExpedDifficulty != expeditionFailsafeDifficulty) {
