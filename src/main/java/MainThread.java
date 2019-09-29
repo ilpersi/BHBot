@@ -1,4 +1,5 @@
 import com.assertthat.selenium_shutterbug.core.Shutterbug;
+import com.google.common.collect.Maps;
 import net.pushover.client.MessagePriority;
 import net.pushover.client.PushoverException;
 import net.pushover.client.PushoverMessage;
@@ -3848,6 +3849,16 @@ public class MainThread implements Runnable {
                     Map.Entry<Integer, Integer> expedDifficultyFailsafe = BHBot.settings.difficultyFailsafe.get("e");
                     int levelOffset = expedDifficultyFailsafe.getKey();
                     int minimumLevel = expedDifficultyFailsafe.getValue();
+
+                    // We check that the level offset for expedition is a multiplier of 5
+                    int levelOffsetModule = levelOffset % 5;
+                    if (levelOffsetModule != 0) {
+
+                        int newLevelOffset = levelOffset + (5 - levelOffsetModule);
+                        BHBot.logger.warn("Level offset " + levelOffset + " is not multiplier of 5, rounding it to " + newLevelOffset);
+
+                        BHBot.settings.difficultyFailsafe.put("e", Maps.immutableEntry(newLevelOffset, minimumLevel));
+                    }
 
                     // We calculate the new difficulty
                     int newExpedDifficulty = expeditionFailsafeDifficulty - levelOffset;
