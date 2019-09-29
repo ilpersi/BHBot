@@ -2296,6 +2296,15 @@ public class MainThread implements Runnable {
                                 String targetPortal = expedition[0];
                                 int targetDifficulty = Integer.parseInt(expedition[1]);
 
+                                //if exped difficulty isn't a multiple of 5 we reduce it until it is
+                                if (targetDifficulty % 5 != 0) {
+                                    BHBot.logger.warn("Expedition difficulty (" + targetDifficulty + ")  not a factor of 5, reducing until it is..");
+                                    while (targetDifficulty % 5 != 0) {
+                                        targetDifficulty--;
+                                        sleep(100);
+                                    }
+                                }
+
                                 readScreen();
                                 int currentExpedition;
                                 if (detectCue(cues.get("Expedition1")) != null) {
