@@ -2,6 +2,7 @@ import com.evanlennick.retry4j.CallExecutor;
 import com.evanlennick.retry4j.CallExecutorBuilder;
 import com.evanlennick.retry4j.config.RetryConfig;
 import com.evanlennick.retry4j.config.RetryConfigBuilder;
+import com.google.common.collect.Maps;
 import com.sun.jna.Memory;
 import com.sun.jna.platform.DesktopWindow;
 import com.sun.jna.platform.WindowUtils;
