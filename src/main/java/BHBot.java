@@ -413,6 +413,9 @@ public class BHBot {
                 main.resetTimers();
                 logger.info("Readout timers reset.");
                 break;
+            case "softreset":
+                main.softReset();
+                break;
             case "reload":
                 settings.load();
                 reloadLogger();
@@ -491,9 +494,6 @@ public class BHBot {
                     case "e":
                     case "expeditionread":
                         main.expeditionReadTest();
-                        break;
-                    case "softreset":
-                        main.softReset();
                         break;
                     case "runes":
                         main.detectEquippedMinorRunes(true, true);

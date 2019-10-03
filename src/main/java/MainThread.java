@@ -2192,6 +2192,18 @@ public class MainThread implements Runnable {
                                 String targetPortal = expedition[0];
                                 int targetDifficulty = Integer.parseInt(expedition[1]);
 
+                                // if exped difficulty isn't a multiple of 5 we reduce it
+                                int difficultyModule = targetDifficulty % 5;
+                                if (difficultyModule != 0) {
+                                    BHBot.logger.warn(targetDifficulty + " is not a multiplier of 5! Rounding it to " + (targetDifficulty - difficultyModule) + "..." );
+                                    targetDifficulty -= difficultyModule;
+                                }
+                                // If difficulty is lesser that 5, we round it
+                                if (targetDifficulty < 5) {
+                                    BHBot.logger.warn("Expedition difficulty can not be smaller than 5, rounding it to 5.");
+                                    targetDifficulty = 5;
+                                }
+
                                 readScreen();
                                 int currentExpedition;
                                 if (detectCue(cues.get("Expedition1")) != null) {
@@ -3575,7 +3587,6 @@ public class MainThread implements Runnable {
                 if (seg != null)
                     closePopupSecurely(cues.get("PVPWindow"), cues.get("X")); // ignore failure
                 sleep(SECOND);
-                BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
                 resetAppropriateTimers();
                 if (state == State.PVP) dressUp(BHBot.settings.pvpstrip);
                 if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
@@ -3709,11 +3720,22 @@ public class MainThread implements Runnable {
                     int levelOffset = expedDifficultyFailsafe.getKey();
                     int minimumLevel = expedDifficultyFailsafe.getValue();
 
+                    // We check that the level offset for expedition is a multiplier of 5
+                    int levelOffsetModule = levelOffset % 5;
+                    if (levelOffsetModule != 0) {
+
+                        int newLevelOffset = levelOffset + (5 - levelOffsetModule);
+                        BHBot.logger.warn("Level offset " + levelOffset + " is not multiplier of 5, rounding it to " + newLevelOffset);
+
+                        BHBot.settings.difficultyFailsafe.put("e", Maps.immutableEntry(newLevelOffset, minimumLevel));
+                    }
+
                     // We calculate the new difficulty
                     int newExpedDifficulty = expeditionFailsafeDifficulty - levelOffset;
 
                     // We check that the new difficulty is not lower than the minimum
                     if (newExpedDifficulty < minimumLevel) newExpedDifficulty = minimumLevel;
+                    if (newExpedDifficulty < 5) newExpedDifficulty = 5;
 
                     // If the new difficulty is different from the current one, we update the ini setting
                     if (newExpedDifficulty != expeditionFailsafeDifficulty) {
@@ -3833,7 +3855,6 @@ public class MainThread implements Runnable {
                 BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 
             sleep(SECOND);
-            BHBot.logger.info(state.getName() + " completed successfully. Result: Victory");
             if (state == State.WorldBoss && (BHBot.settings.countActivities)) {
                 updateActivityCounter(state.getName());
             }
@@ -7127,18 +7148,18 @@ public class MainThread implements Runnable {
     }
 
     public enum State {
-        Loading("Loading..."),
-        Main("Main screen"),
-        Raid("Raid", "r"),
-        Trials("Trials", "t"),
-        Gauntlet("Gauntlet", "g"),
         Dungeon("Dungeon", "d"),
-        PVP("PVP", "p"),
+        Expedition("Expedition", "e"),
+        Gauntlet("Gauntlet", "g"),
         GVG("GVG", "v"),
         Invasion("Invasion", "i"),
-        Expedition("Expedition", "e"),
-        WorldBoss("World Boss", "w"),
-        UnidentifiedDungeon("Unidentified dungeon", "ud"); // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
+        Loading("Loading..."),
+        Main("Main screen"),
+        PVP("PVP", "p"),
+        Raid("Raid", "r"),
+        Trials("Trials", "t"),
+        UnidentifiedDungeon("Unidentified dungeon", "ud"), // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
+        WorldBoss("World Boss", "w");
 
         private String name;
         private String shortcut;
