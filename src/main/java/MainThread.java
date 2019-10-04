@@ -124,7 +124,7 @@ public class MainThread implements Runnable {
     private long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
     private long timeLastFishingBaitsCheck = 0; // when did we check for fishing baits the last time?
     private long timeLastFishingCheck = 0; // when did we check for fishing last time?
-    private long timeLastPOAlive = Misc.getTime(); // when did we send the last PO Notification?
+    private long timeLastPOAlive = 0; // when did we send the last PO Notification?
     /**
      * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting Steam. Or else it could get into loop and stale.
      */
@@ -1140,26 +1140,42 @@ public class MainThread implements Runnable {
                     }
 
                     // check for pushover alive notifications!
-                    if ((BHBot.settings.enablePushover && BHBot.settings.poNotifyAlive > 0) &&
-                            ((Misc.getTime() - timeLastPOAlive) > (BHBot.settings.poNotifyAlive * HOUR))) {
-                        timeLastPOAlive = Misc.getTime();
-                        String aliveScreenName = saveGameScreen("alive-screen");
-                        File aliveScreenFile = new File(aliveScreenName);
+                    if (BHBot.settings.enablePushover && BHBot.settings.poNotifyAlive > 0) {
 
-                        StringBuilder aliveMsg = new StringBuilder();
-                        aliveMsg.append("I am alive and doing fine!\n\n");
+                        // startup notification
+                        if (timeLastPOAlive == 0) {
+                            timeLastPOAlive = Misc.getTime();
 
-                        for (State state : State.values()) {
-                            if (counters.get(state).getTotal() > 0) {
-                                aliveMsg.append(state.getName()).append(" ")
-                                        .append(counters.get(state).successRateDesc())
-                                        .append("\n");
-                            }
+                            timeLastPOAlive = Misc.getTime();
+                            String aliveScreenName = saveGameScreen("alive-screen");
+                            File aliveScreenFile = new File(aliveScreenName);
+
+                            sendPushOverMessage("Startup notification", "BHBot has been succesfully started!", MessagePriority.QUIET, aliveScreenFile);
+                            if (!aliveScreenFile.delete())
+                                BHBot.logger.warn("Impossible to delete tmp img for startup notification.");
                         }
 
-                        sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
-                        if (!aliveScreenFile.delete())
-                            BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
+                        // periodic notification
+                        if ((Misc.getTime() - timeLastPOAlive) > (BHBot.settings.poNotifyAlive * HOUR)) {
+                            timeLastPOAlive = Misc.getTime();
+                            String aliveScreenName = saveGameScreen("alive-screen");
+                            File aliveScreenFile = new File(aliveScreenName);
+
+                            StringBuilder aliveMsg = new StringBuilder();
+                            aliveMsg.append("I am alive and doing fine!\n\n");
+
+                            for (State state : State.values()) {
+                                if (counters.get(state).getTotal() > 0) {
+                                    aliveMsg.append(state.getName()).append(" ")
+                                            .append(counters.get(state).successRateDesc())
+                                            .append("\n");
+                                }
+                            }
+
+                            sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
+                            if (!aliveScreenFile.delete())
+                                BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
+                        }
                     }
 
                     // check for bonuses:
