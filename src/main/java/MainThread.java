@@ -1308,8 +1308,13 @@ public class MainThread implements Runnable {
                     }
 
                     String currentActivity = activitySelector(); //else select the activity to attempt
-                    if (currentActivity != null) BHBot.logger.debug("Checking activity: " + currentActivity);
-
+                    if (currentActivity != null) {
+                        BHBot.logger.debug("Checking activity: " + currentActivity);
+                    } else {
+                        // If we don't have any activity to perform, we reset the idle timer check
+                        BHBot.scheduler.resetIdleTime(true);
+                        continue;
+                    }
 
                     // check for shards:
                     if ("r".equals(currentActivity)) {
@@ -2781,6 +2786,7 @@ public class MainThread implements Runnable {
                             restart();
                         }
                         readScreen(SECOND * 2);
+                        continue;
                     }
 
                     //fishing baits
@@ -2818,7 +2824,6 @@ public class MainThread implements Runnable {
                         handleFishing();
                         continue;
                     }
-
 
                 } // main screen processing
             } catch (Exception e) {
