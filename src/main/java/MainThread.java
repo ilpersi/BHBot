@@ -7197,6 +7197,10 @@ public class MainThread implements Runnable {
 
         seg = detectCue(cues.get("Fishing"), SECOND * 5);
         if (seg != null) {
+
+            //we make sure that the window is visible
+            showBrowser();
+
             clickOnSeg(seg);
             sleep(SECOND); // we allow some seconds as maybe the reward popup is sliding down
 
@@ -7235,6 +7239,8 @@ public class MainThread implements Runnable {
 
             readScreen(SECOND);
             enterGuildHall();
+
+            if (BHBot.settings.hideWindowOnRestart) hideBrowser();
         }
 
     }
