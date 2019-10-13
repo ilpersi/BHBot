@@ -7223,7 +7223,7 @@ public class MainThread implements Runnable {
                     }
 
                 } catch (IOException | InterruptedException ex) {
-                    BHBot.logger.error("Can't start bh-fisher.jar");
+                    BHBot.logger.error("Can't start bh-fisher.jar", ex);
                 }
 
             } else BHBot.logger.info("start not found");
