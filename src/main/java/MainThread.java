@@ -290,7 +290,7 @@ public class MainThread implements Runnable {
         addCue("AreYouThere", loadImage("cues/cueAreYouThere.png"), new Bounds(240, 245, 265, 260));
         addCue("Yes", loadImage("cues/cueYes.png"), null);
 
-        addCue("Disconnected", loadImage("cues/cueDisconnected.png"), new Bounds(290, 230, 315, 250)); // cue for "You have been disconnected" popup
+        addCue("Disconnected", loadImage("cues/cueDisconnected.png"), Bounds.fromWidthHeight(299, 232, 202, 70)); // cue for "You have been disconnected" popup
         addCue("Reconnect", loadImage("cues/cueReconnectButton.png"), new Bounds(320, 330, 400, 360)); // used with "You have been disconnected" dialog and also with the "maintenance" dialog
         addCue("Reload", loadImage("cues/cueReload.png"), new Bounds(320, 330, 360, 360)); // used in "There is a new update required to play" dialog (happens on Friday night)
         addCue("Maintenance", loadImage("cues/cueMaintenance.png"), new Bounds(230, 200, 320, 250)); // cue for "Bit Heroes is currently down for maintenance. Please check back shortly!"
@@ -1309,8 +1309,13 @@ public class MainThread implements Runnable {
                     }
 
                     String currentActivity = activitySelector(); //else select the activity to attempt
-                    if (currentActivity != null) BHBot.logger.debug("Checking activity: " + currentActivity);
-
+                    if (currentActivity != null) {
+                        BHBot.logger.debug("Checking activity: " + currentActivity);
+                    } else {
+                        // If we don't have any activity to perform, we reset the idle timer check
+                        BHBot.scheduler.resetIdleTime(true);
+                        continue;
+                    }
 
                     // check for shards:
                     if ("r".equals(currentActivity)) {
@@ -2784,6 +2789,7 @@ public class MainThread implements Runnable {
                             restart();
                         }
                         readScreen(SECOND * 2);
+                        continue;
                     }
 
                     //fishing baits
@@ -2821,7 +2827,6 @@ public class MainThread implements Runnable {
                         handleFishing();
                         continue;
                     }
-
 
                 } // main screen processing
             } catch (Exception e) {
@@ -7197,6 +7202,10 @@ public class MainThread implements Runnable {
 
         seg = detectCue(cues.get("Fishing"), SECOND * 5);
         if (seg != null) {
+
+            //we make sure that the window is visible
+            showBrowser();
+
             clickOnSeg(seg);
             sleep(SECOND); // we allow some seconds as maybe the reward popup is sliding down
 
@@ -7223,7 +7232,7 @@ public class MainThread implements Runnable {
                     }
 
                 } catch (IOException | InterruptedException ex) {
-                    BHBot.logger.error("Can't start bh-fisher.jar");
+                    BHBot.logger.error("Can't start bh-fisher.jar", ex);
                 }
 
             } else BHBot.logger.info("start not found");
@@ -7235,6 +7244,8 @@ public class MainThread implements Runnable {
 
             readScreen(SECOND);
             enterGuildHall();
+
+            if (BHBot.settings.hideWindowOnRestart) hideBrowser();
         }
 
     }
