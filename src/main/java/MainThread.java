@@ -2541,25 +2541,10 @@ public class MainThread implements Runnable {
                             readScreen(2 * SECOND); //wait for screen to stablise
 
                             //world boss type selection
-                            String selectedWB = readSelectedWorldBoss();
-                            if (selectedWB == null) {
-                                BHBot.logger.error("Impossible to read current selected world boss.");
-								/*BHBot.logger.error("Impossible to read current selected world boss. Dungeons will be activated instead of World Boss!");
-								BHBot.settings.activitiesEnabled.remove("w");
-								BHBot.settings.activitiesEnabled.add("d");*/
-
-                                String WBErrorScreen = saveGameScreen("wb-no-read-selected", img);
-                                if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
-                                    sendPushOverMessage("World Boss error", "Impossible to read current selected world boss.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
-                                }
-
-                                closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
+                            if (!handleWorldBossSelection(worldBossType)){
+                                BHBot.logger.error("Impossible to change select the desired World Boss. Restarting...");
+                                restart();
                                 continue;
-                            }
-
-                            if (!worldBossType.equals(selectedWB)) {
-                                BHBot.logger.info(wbNameDecode.get(selectedWB) + " selected, changing..");
-                                changeSelectedWorldBoss(worldBossType);
                             }
 
 //							sleep(SECOND); //more stabilising if we changed world boss type
@@ -5674,6 +5659,88 @@ public class MainThread implements Runnable {
             expedition = expedition.split(" ")[0];
             BHBot.logger.info("Expedition chosen: " + expedition);
         }
+    }
+
+    /**
+     * Note: world boss window must be open for this to work!
+     * <p>
+     * Returns false in case it failed.
+     */
+    private boolean handleWorldBossSelection(String desiredWorldBoss) {
+
+        HashMap<String, Integer> wbNameDecode = new HashMap<>();
+        wbNameDecode.put("o", 1);
+        wbNameDecode.put("n", 2);
+        wbNameDecode.put("m", 3);
+        wbNameDecode.put("3", 4);
+        wbNameDecode.put("b", 5);
+
+        HashMap<Integer, String> wbIntDecode = new HashMap<>();
+        wbIntDecode.put(1, "Orlang Clan");
+        wbIntDecode.put(2, "Netherworld");
+        wbIntDecode.put(3, "Melvin");
+        wbIntDecode.put(4, "3xt3rmin4tion");
+        wbIntDecode.put(5, "Brimstone Syndicate");
+
+        MarvinSegment seg;
+
+        // we refresh the screen
+        readScreen(SECOND);
+
+        int wbUnlocked = 0;
+        int desiredWB = wbNameDecode.get(desiredWorldBoss);
+
+        // we get the grey dots on the raid selection popup
+        List<MarvinSegment> wbDotsList = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
+        // we update the number of unlocked raids
+        wbUnlocked += wbDotsList.size();
+
+        // A  temporary variable to save the position of the current selected raid
+        int selectedWBX1 = 0;
+
+        seg = detectCue(cues.get("RaidLevel"));
+        if (seg != null) {
+            wbUnlocked += 1;
+            selectedWBX1 = seg.getX1();
+            wbDotsList.add(seg);
+        } else {
+            BHBot.logger.error("Impossible to detect the currently selected green cue!");
+            return false;
+        }
+
+        BHBot.logger.debug("Detected: WB " + wbIntDecode.get(wbUnlocked) + " unlocked");
+
+        if (wbUnlocked < desiredWB) {
+            BHBot.logger.warn("World Boss selected in settings (" + wbIntDecode.get(desiredWB) + ") is higher than world boss unlocked, running highest available (" + wbIntDecode.get(wbUnlocked) + ")");
+            desiredWB = wbUnlocked;
+        }
+
+        BHBot.logger.info("Attempting WB " + wbIntDecode.get(desiredWB));
+
+        // we sort the list of dots, using the x1 coordinate
+        wbDotsList.sort(comparing(MarvinSegment::getX1));
+
+        int selectedWB = 0;
+        for (MarvinSegment raidDotSeg : wbDotsList) {
+            selectedWB++;
+            if (raidDotSeg.getX1() == selectedWBX1) break;
+        }
+
+        BHBot.logger.debug("WB selected is " + wbIntDecode.get(selectedWB));
+
+        if (selectedWB == 0) { // an error!
+            BHBot.logger.error("It was impossible to determine the currently selected raid!");
+            return false;
+        }
+
+        if (selectedWB != desiredWB) {
+            // we need to change the raid type!
+            BHBot.logger.info("Changing from WB" + wbIntDecode.get(selectedWB) + " to WB" + wbIntDecode.get(desiredWB));
+            // we click on the desired cue
+            clickOnSeg(wbDotsList.get(desiredWB - 1));
+        }
+
+        return true;
     }
 
     /**
