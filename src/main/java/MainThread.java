@@ -3982,7 +3982,7 @@ public class MainThread implements Runnable {
         //Victory screen on world boss is slightly different, so we check both
         MarvinSegment seg1 = detectCue(cues.get("Victory"));
         MarvinSegment seg2 = detectCue(cues.get("WorldBossVictory"));
-        if (seg1 != null || (state == State.WorldBoss && seg2 != null)) { //seg2 needs state defined as otherwise the battle victory screen in dungeon-type encounters triggers it
+        if (state != State.Raid && seg1 != null || (state == State.WorldBoss && seg2 != null)) { //seg2 needs state defined as otherwise the battle victory screen in dungeon-type encounters triggers it
             counters.get(state).increaseVictories(1);
 
             BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
