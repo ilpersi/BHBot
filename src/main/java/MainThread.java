@@ -5566,11 +5566,18 @@ public class MainThread implements Runnable {
                 BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 3 and 9");
                 failed = true;
             }
-        } else if ("m".equals(worldBossType) || "3".equals(worldBossType) || "b".equals(worldBossType)) {
+        } else if ("m".equals(worldBossType) || "3".equals(worldBossType)) {
             if (worldBossTier >= 10 && worldBossTier <= 11) {
                 passed++;
             } else {
                 BHBot.logger.error("Invalid world boss tier for Melvin, 3xt3rmin4tion or Brimstone, must be T10 or higher.");
+                failed = true;
+            }
+        } else if ("b".equals(worldBossType)) {
+            if (worldBossTier == 11) {
+                passed++;
+            } else {
+                BHBot.logger.error("Invalid world boss tier for Brimstone, must be T11.");
                 failed = true;
             }
         }
