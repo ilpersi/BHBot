@@ -2501,26 +2501,25 @@ public class MainThread implements Runnable {
                             readScreen();
                             detectCharacterDialogAndHandleIt(); //clear dialogue
 
+                            WorldBoss wbType = WorldBoss.fromLetter(BHBot.settings.worldBossSettings.get(0));
+                            if (wbType == null) {
+                                BHBot.logger.error("Unkwon World Boss type: " + BHBot.settings.worldBossSettings.get(0) + ". Disabling World Boss");
+                                BHBot.settings.activitiesEnabled.remove("w");
+                                restart();
+                                continue;
+                            }
 
-                            String worldBossType = BHBot.settings.worldBossSettings.get(0);
                             int worldBossDifficulty = Integer.parseInt(BHBot.settings.worldBossSettings.get(1));
                             int worldBossTier = Integer.parseInt(BHBot.settings.worldBossSettings.get(2));
                             int worldBossTimer = BHBot.settings.worldBossTimer;
 
                             //new settings loading
-                            HashMap<String, String> wbNameDecode = new HashMap<>();
-                            wbNameDecode.put("o", "Orlang Clan");
-                            wbNameDecode.put("n", "Netherworld");
-                            wbNameDecode.put("m", "Melvin");
-                            wbNameDecode.put("3", "3xt3rmin4tion");
-                            wbNameDecode.put("b", "Brimstone Syndicate");
-
                             String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
 
                             if (!BHBot.settings.worldBossSolo) {
-                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + ". Lobby timeout is " + worldBossTimer + "s.");
+                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + ". Lobby timeout is " + worldBossTimer + "s.");
                             } else {
-                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + " Solo");
+                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " Solo");
                             }
 
                             readScreen();
@@ -2541,7 +2540,7 @@ public class MainThread implements Runnable {
                             readScreen(2 * SECOND); //wait for screen to stablise
 
                             //world boss type selection
-                            if (!handleWorldBossSelection(worldBossType)){
+                            if (!handleWorldBossSelection(wbType)){
                                 BHBot.logger.error("Impossible to change select the desired World Boss. Restarting...");
                                 restart();
                                 continue;
@@ -2612,7 +2611,7 @@ public class MainThread implements Runnable {
                                     sleep(SECOND);
                                     readScreen();
 
-                                    switch (worldBossType) {
+                                    switch (wbType.getLetter()) {
                                         case "o":  //shouldn't have this inside the loop but it doesn't work if its outside
                                             seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
                                             break;
@@ -2678,7 +2677,7 @@ public class MainThread implements Runnable {
                                                 sleep(2 * SECOND); //wait for animation to finish
                                                 clickInGame(330, 360); //yesgreen cue has issues so we use XY to click on Yes
                                             }
-                                            BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbNameDecode.get(worldBossType) + " started!");
+                                            BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " started!");
                                             state = State.WorldBoss;
                                             sleep(6 * SECOND); //long wait to make sure we are in the world boss dungeon
 
@@ -2710,7 +2709,7 @@ public class MainThread implements Runnable {
                                         clickOnSeg(seg);
                                         clickInGame(330, 360); //click anyway this cue has issues
                                     }
-                                    BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + worldBossType + " Solo started!");
+                                    BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " Solo started!");
                                     state = State.WorldBoss;
                                     continue;
                                 }
@@ -5666,21 +5665,7 @@ public class MainThread implements Runnable {
      * <p>
      * Returns false in case it failed.
      */
-    private boolean handleWorldBossSelection(String desiredWorldBoss) {
-
-        HashMap<String, Integer> wbNameDecode = new HashMap<>();
-        wbNameDecode.put("o", 1);
-        wbNameDecode.put("n", 2);
-        wbNameDecode.put("m", 3);
-        wbNameDecode.put("3", 4);
-        wbNameDecode.put("b", 5);
-
-        HashMap<Integer, String> wbIntDecode = new HashMap<>();
-        wbIntDecode.put(1, "Orlang Clan");
-        wbIntDecode.put(2, "Netherworld");
-        wbIntDecode.put(3, "Melvin");
-        wbIntDecode.put(4, "3xt3rmin4tion");
-        wbIntDecode.put(5, "Brimstone Syndicate");
+    private boolean handleWorldBossSelection(WorldBoss desiredWorldBoss) {
 
         MarvinSegment seg;
 
@@ -5688,7 +5673,7 @@ public class MainThread implements Runnable {
         readScreen(SECOND);
 
         int wbUnlocked = 0;
-        int desiredWB = wbNameDecode.get(desiredWorldBoss);
+        int desiredWB = desiredWorldBoss.getNumber();
 
         // we get the grey dots on the raid selection popup
         List<MarvinSegment> wbDotsList = FindSubimage.findSubimage(img, cues.get("cueRaidLevelEmpty").im, 1.0, true, false, 0, 0, 0, 0);
@@ -5708,14 +5693,18 @@ public class MainThread implements Runnable {
             return false;
         }
 
-        BHBot.logger.debug("Detected: WB " + wbIntDecode.get(wbUnlocked) + " unlocked");
-
-        if (wbUnlocked < desiredWB) {
-            BHBot.logger.warn("World Boss selected in settings (" + wbIntDecode.get(desiredWB) + ") is higher than world boss unlocked, running highest available (" + wbIntDecode.get(wbUnlocked) + ")");
-            desiredWB = wbUnlocked;
+        WorldBoss unlockedWB = WorldBoss.fromNumber(wbUnlocked);
+        if (unlockedWB == null) {
+            BHBot.logger.error("Unknown unlocked World Boss integer: " + wbUnlocked);
+            return false;
         }
 
-        BHBot.logger.info("Attempting WB " + wbIntDecode.get(desiredWB));
+        BHBot.logger.debug("Detected: WB " + unlockedWB.getName() + " unlocked");
+
+        if (wbUnlocked < desiredWB) {
+            BHBot.logger.warn("World Boss selected in settings (" + desiredWorldBoss.getName() + ") is higher than world boss unlocked, running highest available (" + unlockedWB.getName() + ")");
+            desiredWB = wbUnlocked;
+        }
 
         // we sort the list of dots, using the x1 coordinate
         wbDotsList.sort(comparing(MarvinSegment::getX1));
@@ -5726,7 +5715,13 @@ public class MainThread implements Runnable {
             if (raidDotSeg.getX1() == selectedWBX1) break;
         }
 
-        BHBot.logger.debug("WB selected is " + wbIntDecode.get(selectedWB));
+        WorldBoss wbSelected = WorldBoss.fromNumber(selectedWB);
+        if (wbSelected == null) {
+            BHBot.logger.error("Unknown selected World Boss integer: " + wbUnlocked);
+            return false;
+        }
+
+        BHBot.logger.debug("WB selected is " + wbSelected.getName());
 
         if (selectedWB == 0) { // an error!
             BHBot.logger.error("It was impossible to determine the currently selected raid!");
@@ -5735,7 +5730,7 @@ public class MainThread implements Runnable {
 
         if (selectedWB != desiredWB) {
             // we need to change the raid type!
-            BHBot.logger.info("Changing from WB" + wbIntDecode.get(selectedWB) + " to WB" + wbIntDecode.get(desiredWB));
+            BHBot.logger.info("Changing from WB" + wbSelected.getName() + " to WB" + desiredWorldBoss.getName());
             // we click on the desired cue
             clickOnSeg(wbDotsList.get(desiredWB - 1));
         }
@@ -7750,6 +7745,51 @@ public class MainThread implements Runnable {
         @Override
         public String toString() {
             return grade.toString().toLowerCase() + "_" + effect.toString().toLowerCase();
+        }
+    }
+
+    private enum WorldBoss {
+
+        Orlag("o", "Orlag Clan", 1),
+        Netherworld("n", "Netherworld", 2),
+        Melvin("m", "Melvin", 3),
+        Ext3rmin4tion("3", "3xt3rmin4tion", 4),
+        BrimstoneSyndicate("b", "Brimstone Syndicate", 5);
+
+        private String letter;
+        private String Name;
+        private int number;
+
+        WorldBoss(String letter, String Name, int number) {
+            this.letter = letter;
+            this.Name = Name;
+            this.number = number;
+        }
+
+        String getLetter() {
+            return letter;
+        }
+
+        String getName() {
+            return Name;
+        }
+
+        int getNumber() {
+            return number;
+        }
+
+        static WorldBoss fromLetter(String Letter) {
+            for (WorldBoss wb: WorldBoss.values()) {
+                if (wb.getLetter().equals(Letter)) return wb;
+            }
+            return null;
+        }
+
+        static WorldBoss fromNumber(int number) {
+            for (WorldBoss wb: WorldBoss.values()) {
+                if (wb.getNumber() == number) return wb;
+            }
+            return null;
         }
     }
 
