@@ -541,6 +541,7 @@ public class MainThread implements Runnable {
         addCue("NetherWB", loadImage("cues/worldboss/netherworld.png"), new Bounds(190, 355, 400, 390));
         addCue("MelvinWB", loadImage("cues/worldboss/melvinfactory.png"), new Bounds(190, 355, 400, 390));
         addCue("3xt3rWB", loadImage("cues/worldboss/3xt3rmin4tion.png"), new Bounds(190, 355, 400, 390));
+        addCue("BrimstoneWB", loadImage("cues/worldboss/brimstone.png"), new Bounds(190, 355, 400, 390));
         addCue("WorldBossTitle", loadImage("cues/worldboss/cueWorldBossTitle.png"), new Bounds(280, 90, 515, 140));
         addCue("WorldBossSummonTitle", loadImage("cues/worldboss/cueWorldBossSummonTitle.png"), new Bounds(325, 100, 480, 150));
 
@@ -2507,6 +2508,7 @@ public class MainThread implements Runnable {
                             wbNameDecode.put("n", "Netherworld");
                             wbNameDecode.put("m", "Melvin");
                             wbNameDecode.put("3", "3xt3rmin4tion");
+                            wbNameDecode.put("b", "Brimstone Syndicate");
 
                             String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
 
@@ -2626,7 +2628,8 @@ public class MainThread implements Runnable {
                                             break;
                                         case "n":
                                         case "3":
-                                            seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether and 3xt3rmin4tion
+                                        case "b":
+                                            seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether, 3xt3rmin4tion & Brimstone
                                             break;
                                         case "m":
                                             seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
@@ -5559,7 +5562,7 @@ public class MainThread implements Runnable {
 
         //check name
         if ("o".equals(worldBossType) || "n".equals(worldBossType) || "m".equals(worldBossType)
-                || "3".equals(worldBossType)) {
+                || "3".equals(worldBossType) || "b".equals(worldBossType)) {
             passed++;
         } else {
             BHBot.logger.error("Invalid world boss name, check settings file");
@@ -5574,11 +5577,11 @@ public class MainThread implements Runnable {
                 BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 3 and 9");
                 failed = true;
             }
-        } else if ("m".equals(worldBossType) || "3".equals(worldBossType)) {
+        } else if ("m".equals(worldBossType) || "3".equals(worldBossType) || "b".equals(worldBossType)) {
             if (worldBossTier >= 10 && worldBossTier <= 11) {
                 passed++;
             } else {
-                BHBot.logger.error("Invalid world boss tier for Melvin or 3xt3rmin4tion, must be equal to 10");
+                BHBot.logger.error("Invalid world boss tier for Melvin, 3xt3rmin4tion or Brimstone, must be T10 or higher.");
                 failed = true;
             }
         }
@@ -5682,6 +5685,8 @@ public class MainThread implements Runnable {
             return "m";
         else if (detectCue(cues.get("3xt3rWB"), SECOND) != null)
             return "3";
+        else if (detectCue(cues.get("BrimstoneWB"), SECOND) != null)
+            return "b";
         else return null;
     }
 
