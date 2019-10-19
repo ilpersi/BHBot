@@ -144,9 +144,7 @@ public class BHBot {
             String s = null;
             try {
                 //System.out.print("> ");
-                if (br.ready() && System.in.available() > 0) {
-                    s = br.readLine();
-                }
+                s = br.readLine();
             } catch (IOException e) {
                 logger.error("Impossible to read user input", e);
                 return;
