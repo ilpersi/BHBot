@@ -1926,7 +1926,7 @@ public class MainThread implements Runnable {
                             Bounds pvpOpponentBounds = opponentSelector(BHBot.settings.pvpOpponent);
                             String opponentName = (BHBot.settings.pvpOpponent == 1 ? "1st" : BHBot.settings.pvpOpponent == 2 ? "2nd" : BHBot.settings.pvpOpponent == 3 ? "3rd" : "4th");
                             BHBot.logger.info("Selecting " + opponentName + " opponent");
-                            seg = detectCue(cues.get("Fight"), 5 * SECOND, pvpOpponentBounds);
+                            seg = detectCue("Fight", 5 * SECOND, pvpOpponentBounds);
                             if (seg == null) {
                                 BHBot.logger.error("Imppossible to find the Fight button in the PVP screen, restarting!");
                                 restart();
@@ -1935,7 +1935,7 @@ public class MainThread implements Runnable {
                             clickOnSeg(seg);
 
                             readScreen();
-                            seg = detectCue(cues.get("Accept"), 5 * SECOND, new Bounds(430, 430, 630, 500));
+                            seg = detectCue("Accept", 5 * SECOND, new Bounds(430, 430, 630, 500));
                             if (seg == null) {
                                 BHBot.logger.error("Impossible to find the Accept button in the PVP screen, restarting");
                                 restart();
@@ -4117,12 +4117,12 @@ public class MainThread implements Runnable {
         }
     }
 
-    private boolean handleMinorRunes(String activity) {
+    private void handleMinorRunes(String activity) {
         List<String> desiredRunesAsStrs;
         String activityName = state.getNameFromShortcut(activity);
         if (BHBot.settings.autoRuneDefault.isEmpty()) {
             BHBot.logger.debug("autoRunesDefault not defined; aborting autoRunes");
-            return false;
+            return;
         }
 
         if (!BHBot.settings.autoRune.containsKey(activity)) {
@@ -4135,7 +4135,7 @@ public class MainThread implements Runnable {
 
         List<MinorRuneEffect> desiredRunes = resolveDesiredRunes(desiredRunesAsStrs);
         if (noRunesNeedSwitching(desiredRunes)) {
-            return false;
+            return;
         }
 
         // Back out of any raid/gauntlet/trial/GvG/etc pre-menu
@@ -4147,8 +4147,6 @@ public class MainThread implements Runnable {
 
         if (!switchMinorRunes(desiredRunes))
             BHBot.logger.info("AutoRune failed!");
-
-        return true;
 
     }
 
@@ -4773,7 +4771,7 @@ public class MainThread implements Runnable {
             // If no potions are needed, we re-enable the Auto function
             seg = detectCue(cues.get("NoPotions"), SECOND); // Everyone is Full HP
             if (seg != null) {
-                seg = detectCue(cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400));
+                seg = detectCue("Close", SECOND, new Bounds(300, 330, 500, 400));
                 if (seg != null) {
                     BHBot.logger.autorevive("None of the team members need a consumable, exiting from autoRevive");
                     clickOnSeg(seg);
@@ -5688,7 +5686,7 @@ public class MainThread implements Runnable {
         wbUnlocked += wbDotsList.size();
 
         // A  temporary variable to save the position of the current selected raid
-        int selectedWBX1 = 0;
+        int selectedWBX1;
 
         seg = detectCue(cues.get("RaidLevel"));
         if (seg != null) {
@@ -5743,38 +5741,6 @@ public class MainThread implements Runnable {
         }
 
         return true;
-    }
-
-    /**
-     * Read Selected World Boss
-     **/
-
-    private String readSelectedWorldBoss() {
-        readScreen(SECOND * 2);
-        if (detectCue(cues.get("OrlagWB"), SECOND) != null)
-            return "o";
-        else if (detectCue(cues.get("NetherWB"), SECOND) != null)
-            return "n";
-        else if (detectCue(cues.get("MelvinWB"), SECOND) != null)
-            return "m";
-        else if (detectCue(cues.get("3xt3rWB"), SECOND) != null)
-            return "3";
-        else if (detectCue(cues.get("BrimstoneWB"), SECOND) != null)
-            return "b";
-        else return null;
-    }
-
-    private void changeSelectedWorldBoss(String bossname) {
-
-        if ("o".equals(bossname))
-            clickInGame(363, 445);
-        else if ("n".equals(bossname))
-            clickInGame(390, 445);
-        else if ("m".equals(bossname))
-            clickInGame(414, 445);
-        else if ("3".equals(bossname))
-            clickInGame(440, 445);
-        else BHBot.logger.warn("Unknown bossname '" + bossname + "' in changeSelectedWorldBoss.");
     }
 
     /**
@@ -6172,6 +6138,7 @@ public class MainThread implements Runnable {
      *
      * @return true in case popup was detected and closed.
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean handleNotEnoughTokensPopup(boolean closeTeamWindow) {
         MarvinSegment seg = detectCue("NotEnoughTokens");
 
@@ -6207,7 +6174,7 @@ public class MainThread implements Runnable {
         return readNumFromImg(im, "", new HashSet<>());
     }
 
-    private int readNumFromImg(BufferedImage im, String numberPrefix, HashSet<Integer> intToSkip) {
+    private int readNumFromImg(BufferedImage im, @SuppressWarnings("SameParameterValue") String numberPrefix, HashSet<Integer> intToSkip) {
         List<ScreenNum> nums = new ArrayList<>();
 
         //MarvinImageIO.saveImage(im, "difficulty_test.png");
