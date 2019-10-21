@@ -4526,9 +4526,7 @@ public class MainThread implements Runnable {
 
         // We save all the errors and persuasions based on settings
         if ((familiarLevel.getValue() >= BHBot.settings.familiarScreenshot) || familiarLevel == FamiliarType.ERROR) {
-            if ((BHBot.settings.screenshots.contains("fe"))) {
-                saveGameScreen(persuasionLog.toString());
-            }
+            saveGameScreen(persuasionLog.toString());
 
             if (BHBot.settings.contributeFamiliars) {
                 contributeFamiliarShoot(persuasionLog.toString(), familiarLevel);
