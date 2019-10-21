@@ -33,8 +33,9 @@ public class Settings {
     private boolean collectFishingBaits = false;
     boolean dungeonOnTimeout = true;
     boolean countActivities = false;
+    LinkedHashSet<String> screenshots;
 
-    //activity settings alpha
+    //activity settings
     LinkedHashSet<String> activitiesEnabled;
     boolean activitiesRoundRobin = true;
     // Pushover settings
@@ -210,6 +211,8 @@ public class Settings {
     public Settings() {
         activitiesEnabled = new LinkedHashSet<>();
         setactivitiesEnabledFromString("r d t g p e i v"); // some default values
+        screenshots = new LinkedHashSet<>();
+        setScreenshotsFromString("w d f b dg wg fe"); // enabled all by default
         worldBossSettings = new ArrayList<>();
         dungeons = new RandomCollection<>();
         setDungeons("z1d4 3 100"); // some default value
@@ -277,6 +280,16 @@ public class Settings {
             if ("".equals(add))
                 continue;
             this.activitiesEnabled.add(add);
+        }
+    }
+
+    private void setScreenshots(String... types) {
+        this.screenshots.clear();
+        for (String t : types) {
+            String add = t.trim();
+            if ("".equals(add))
+                continue;
+            this.screenshots.add(add);
         }
     }
 
@@ -559,6 +572,15 @@ public class Settings {
         return result.toString();
     }
 
+    private String getScreenshotsAsString() {
+        StringBuilder result = new StringBuilder();
+        for (String s : screenshots)
+            result.append(s).append(" ");
+        if (result.length() > 0)
+            result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+        return result.toString();
+    }
+
     private String getDungeonsAsString() {
         return dungeons.toString();
     }
@@ -700,6 +722,8 @@ public class Settings {
     private void setactivitiesEnabledFromString(String s) {
         setactivitiesEnabled(s.split(" "));
     }
+
+    private void setScreenshotsFromString(String s) { setScreenshots(s.split(" ")); }
 
     private void setWorldBossFromString(String s) {
         setWorldBoss(s.split(" "));
@@ -866,6 +890,7 @@ public class Settings {
         resetTimersOnBattleEnd = lastUsedMap.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("1");
         autoStartChromeDriver = lastUsedMap.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
         reconnectTimer = Integer.parseInt(lastUsedMap.getOrDefault("reconnectTimer", "" + reconnectTimer));
+        setScreenshotsFromString(lastUsedMap.getOrDefault("screenshots", getScreenshotsAsString()));
 
         setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()));
         activitiesRoundRobin = lastUsedMap.getOrDefault("activitiesRoundRobin", activitiesRoundRobin ? "1" : "0").equals("1");

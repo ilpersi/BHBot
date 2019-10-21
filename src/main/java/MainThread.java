@@ -1138,9 +1138,12 @@ public class MainThread implements Runnable {
                 seg = detectCue(cues.get("DailyRewards"));
                 if (seg != null) {
                     seg = detectCue(cues.get("Claim"), 5 * SECOND);
-                    if (seg != null)
-                        clickOnSeg(seg);
-                    else {
+                    if (seg != null) {
+                        if ((BHBot.settings.screenshots.contains("d"))) {
+                            saveGameScreen("daily_reward");
+                        }
+                         clickOnSeg(seg);
+                    } else {
                         BHBot.logger.error("Problem: 'Daily reward' popup detected, however could not detect the 'claim' button. Restarting...");
                         restart();
                         continue; // may happen every while, rarely though
@@ -1158,6 +1161,27 @@ public class MainThread implements Runnable {
                     clickOnSeg(seg);
                     BHBot.logger.info("Daily reward claimed successfully.");
                     sleep(2 * SECOND);
+
+                    //We check for news and close so we don't take a gem count every time the bot starts
+                    seg = detectCue(cues.get("News"), 1 * SECOND);
+                    if (seg != null) {
+                        seg = detectCue(cues.get("Close"), 2 * SECOND);
+                        clickOnSeg(seg);
+                        BHBot.logger.info("News popup dismissed.");
+                        readScreen(2 * SECOND);
+
+                        if ("7".equals(new SimpleDateFormat("u").format(new Date()))) { //if it's Sunday
+                            if ((BHBot.settings.screenshots.contains("wg"))) {
+                                saveGameScreen("weekly-gem-count");
+                            }
+                        } else {
+                            if ((BHBot.settings.screenshots.contains("dg"))) {
+                                saveGameScreen("daily-gem-count"); //else screenshot daily count
+                            }
+                        }
+
+                        continue;
+                    }
 
                     continue;
                 }
@@ -1180,7 +1204,9 @@ public class MainThread implements Runnable {
 
                     if (state == State.Loading || state == State.Main) { // inform about weekly reward only if we're not in a dungeon (in a dungeon it will close the normal reward popup)
                         BHBot.logger.info("Weekly reward claimed successfully.");
-                        saveGameScreen("weekly_reward", weeklyImg);
+                        if ((BHBot.settings.screenshots.contains("w"))) {
+                            saveGameScreen("weekly_reward", weeklyImg);
+                        }
                     }
                     readScreen(2 * SECOND);
 
@@ -2740,7 +2766,9 @@ public class MainThread implements Runnable {
                                 if (seg != null) {
                                     seg = detectCue(cues.get("X"), 5 * SECOND);
                                     if (seg != null) {
-                                        saveGameScreen("bounty-loot");
+                                        if ((BHBot.settings.screenshots.contains("b"))) {
+                                            saveGameScreen("bounty-loot");
+                                        }
                                         clickOnSeg(seg);
                                         BHBot.logger.info("Collected bounties");
                                         sleep(SECOND * 2);
@@ -4502,7 +4530,9 @@ public class MainThread implements Runnable {
 
         // We save all the errors and persuasions based on settings
         if ((familiarLevel.getValue() >= BHBot.settings.familiarScreenshot) || familiarLevel == FamiliarType.ERROR) {
-            saveGameScreen(persuasionLog.toString());
+            if ((BHBot.settings.screenshots.contains("fe"))) {
+                saveGameScreen(persuasionLog.toString());
+            }
 
             if (BHBot.settings.contributeFamiliars) {
                 contributeFamiliarShoot(persuasionLog.toString(), familiarLevel);
@@ -6846,7 +6876,9 @@ public class MainThread implements Runnable {
             if (seg != null) {
                 seg = detectCue(cues.get("X"), 5 * SECOND);
                 if (seg != null) {
-                    saveGameScreen("fishing-baits");
+                    if ((BHBot.settings.screenshots.contains("f"))) {
+                        saveGameScreen("fishing-baits");
+                    }
                     clickOnSeg(seg);
                     BHBot.logger.info("Correctly collected fishing baits");
                     readScreen(SECOND * 2);
