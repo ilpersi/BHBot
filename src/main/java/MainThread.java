@@ -1011,6 +1011,7 @@ public class MainThread implements Runnable {
 
                 if (Misc.getTime() - BHBot.scheduler.getIdleTime() > MAX_IDLE_TIME) {
                     BHBot.logger.warn("Idle time exceeded... perhaps caught in a loop? Restarting... (state=" + state + ")");
+                    saveGameScreen("idle-timeout-error");
 
                     // Safety measure to avoid being stuck forever in dungeons
                     if (state != State.Main && state != State.Loading) {
@@ -1129,8 +1130,7 @@ public class MainThread implements Runnable {
                     seg = detectCue(cues.get("Close"), 2 * SECOND);
                     clickOnSeg(seg);
                     BHBot.logger.info("News popup dismissed.");
-                    sleep(2 * SECOND);
-
+                    readScreen(2 * SECOND);
                     continue;
                 }
 
@@ -1720,8 +1720,8 @@ public class MainThread implements Runnable {
                             //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
                             int energyDifference = BHBot.settings.minEnergyPercentage - energy; //difference between needed and current resource
                             if (energyDifference > 1) {
-                                int increase = (energyDifference - 1) * 5;
-                                ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 5 minutes to the check interval for each energy % needed above 1
+                                int increase = (energyDifference - 1) * 8;
+                                ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 8 minutes to the check interval for each energy % needed above 1
                             } else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
 
                             continue;
@@ -7263,6 +7263,7 @@ public class MainThread implements Runnable {
 
     void softReset() {
         state = State.Main;
+        resetTimers();
     }
 
     private void handleFishing() {

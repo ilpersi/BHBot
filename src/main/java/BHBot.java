@@ -155,7 +155,7 @@ public class BHBot {
                     logger.info("User command: <" + s + ">");
                     processCommand(s);
                 } catch (Exception e) {
-                    logger.error("Impossile to process user command: " + s, e);
+                    logger.error("Impossible to process user command: " + s, e);
                 }
             }
 
