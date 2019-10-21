@@ -6872,7 +6872,7 @@ public class MainThread implements Runnable {
             if (seg != null) {
                 seg = detectCue(cues.get("X"), 5 * SECOND);
                 if (seg != null) {
-                    if ((BHBot.settings.screenshots.contains("f"))) {
+                    if ((BHBot.settings.screenshots.contains("a"))) {
                         saveGameScreen("fishing-baits");
                     }
                     clickOnSeg(seg);
