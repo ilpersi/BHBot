@@ -3778,19 +3778,15 @@ public class MainThread implements Runnable {
             closePopupSecurely(cues.get("Cleared"), cues.get("YesGreen"));
 
             // close the raid/dungeon/trials/gauntlet window:
-            readScreen(2 * SECOND);
-            detectCue(cues.get("X"), 15 * SECOND);
-            sleep(2 * SECOND); // because the popup window may still be sliding down so the "X" button is changing position and we must wait for it to stabilize
-            seg = detectCue(cues.get("X"), SECOND);
+            readScreen(2 * SECOND); //we need a delay so we don't detect the button before the window has finished sliding in
+            seg = detectCue(cues.get("X"), 5 * SECOND);
             if (seg != null)
                 clickOnSeg(seg);
-            else
-                BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
+            else BHBot.logger.warn("Error #1: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 
-            sleep(SECOND);
             if (state == State.Expedition) {
 
-                sleep(SECOND);
+                readScreen(2 * SECOND);
 
                 // Close Portal Map after expedition
                 readScreen(2 * SECOND);
@@ -3863,7 +3859,7 @@ public class MainThread implements Runnable {
             if (seg != null)
                 clickOnSeg(seg);
             else
-                BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
+                BHBot.logger.warn("Error #2: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
             sleep(SECOND);
             if (state == State.Expedition) {
                 sleep(SECOND);
@@ -4006,7 +4002,7 @@ public class MainThread implements Runnable {
             if (seg != null)
                 clickOnSeg(seg);
             else {
-                BHBot.logger.warn("Problem: 'Victory' window (as found in e.g. gauntlets) has been detected, but no 'Close' button. Ignoring...");
+                BHBot.logger.debug("Problem: 'Victory' window (as found in e.g. gauntlets) has been detected, but no 'Close' button. Ignoring...");
                 return;
             }
 
@@ -4018,7 +4014,7 @@ public class MainThread implements Runnable {
             if (seg != null)
                 clickOnSeg(seg);
             else
-                BHBot.logger.warn("Error: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
+                BHBot.logger.warn("Error #3: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 
             sleep(SECOND);
             if (state == State.WorldBoss && (BHBot.settings.countActivities)) {
