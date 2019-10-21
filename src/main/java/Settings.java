@@ -441,14 +441,25 @@ public class Settings {
         this.difficultyFailsafe.clear();
         // We only support Trial and Gauntlets and Expedition, so we do sanity checks here only settings the right letters t,g
         String pattern = "([tge]):([\\d]+)(:([\\d]+))?";
-        int minimumDifficulty = 1;
         Pattern r = Pattern.compile(pattern);
         for (String f : failSafes) {
+
             f = f.trim();
 
             Matcher m = r.matcher(f);
             if (m.find()) {
-                if (m.group(4) != null) minimumDifficulty = Integer.parseInt(m.group(4));
+                int minimumDifficulty;
+
+                if (m.group(4) != null) {
+                    minimumDifficulty = Integer.parseInt(m.group(4));
+                } else {
+                    if ("e".equals(m.group(1))) {
+                        minimumDifficulty = 5;
+                    } else {
+                        minimumDifficulty = 1;
+                    }
+                }
+
                 Map.Entry<Integer, Integer> entry = Maps.immutableEntry(Integer.parseInt(m.group(2)), minimumDifficulty);
                 difficultyFailsafe.put(m.group(1), entry);
 
