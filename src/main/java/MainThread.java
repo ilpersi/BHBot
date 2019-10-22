@@ -4260,6 +4260,7 @@ public class MainThread implements Runnable {
 
         if (desiredLeftRune != leftMinorRune.getRuneEffect()) {
             BHBot.logger.debug("Switching left minor rune.");
+            sleep(500); //sleep for window animation to finish
             clickInGame(280, 290); // Click on left rune
             if (!switchSingleMinorRune(desiredLeftRune)) {
                 BHBot.logger.error("Failed to switch left minor rune.");
@@ -4270,6 +4271,7 @@ public class MainThread implements Runnable {
 
         if (desiredRightRune != rightMinorRune.getRuneEffect()) {
             BHBot.logger.debug("Switching right minor rune.");
+            sleep(500); //sleep for window animation to finish
             clickInGame(520, 290); // Click on right rune
             if (!switchSingleMinorRune(desiredRightRune)) {
                 BHBot.logger.error("Failed to switch right minor rune.");
