@@ -7801,4 +7801,12 @@ public class MainThread implements Runnable {
         }
     }
 
+    void cueDifference(){
+        BufferedImage img1 = img;
+        sleep(3000);
+        BufferedImage img2 = img;
+        double result = CueCompare.imageDifference(img1, img2);
+        BHBot.logger.info(String.format("%.2f%%",result * 100));
+    }
+
 }
