@@ -4106,16 +4106,20 @@ public class MainThread implements Runnable {
                         // We disable and re-enable the auto feature
                         while (detectCue(cues.get("AutoOn"), 500) != null) {
                             clickInGame(780, 270); //auto off
-                            readScreen(500);
+                            readScreen(100);
                         }
                         while (detectCue(cues.get("AutoOff"), 500) != null) {
                             clickInGame(780, 270); //auto on again
-                            readScreen(500);
+                            readScreen(100);
                         }
 
-                        BHBot.logger.autoshrine("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
-                        handleMinorBossRunes();
-                        sleep(BHBot.settings.shrineDelay * SECOND); //long sleep while we activate shrines
+                        if ((state == State.Raid && BHBot.settings.autoBossRune.containsKey("r")) || (state == State.Trials && BHBot.settings.autoBossRune.containsKey("t")) ||
+                                (state == State.Expedition && BHBot.settings.autoBossRune.containsKey("e")) || (state == State.Dungeon && BHBot.settings.autoBossRune.containsKey("d"))) {
+                                     handleMinorBossRunes();
+                        } else {
+                            BHBot.logger.autoshrine("Waiting 10s to use shrines");
+                            sleep(10 * SECOND); //if we're not changing runes we sleep while we activate shrines
+                        }
 
                         if (!checkShrineSettings(false, false)) {
                             BHBot.logger.error("Impossible to disable Ignore Boss in handleAutoShrine!");
