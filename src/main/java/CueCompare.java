@@ -16,6 +16,40 @@ import java.io.IOException;
  * This tool has been created to ease the porting of BHBot to Steam and can be used for other meaning also.
  */
 public class CueCompare {
+    /*
+        cueCompare compares the pixels of two images, and divides matching pixels by the total pixel count
+        this can be used to compare percentage similarity between two cues
+     */
+
+    public static double imageDifference(BufferedImage img1, BufferedImage img2) {
+        int totalPixels = img1.getHeight() * img1.getWidth();
+        double matchingPixels = 0;
+        double result = 0;
+
+        // If both the input cues are ok, we go on with the processing
+        if ((img1 != null && img2 != null) && (img1.getWidth() != img2.getWidth() && img1.getHeight() != img2.getHeight())) {
+
+            // Buffered image to handle the output
+            int[][] pixelMatrix1 = Misc.convertTo2D(img1);
+            int[][] pixelMatrix2 = Misc.convertTo2D(img2);
+
+            for (int y = 0; y < img1.getHeight(); y++) {
+                for (int x = 0; x < img1.getWidth(); x++) {
+                    //we check each pixel, if it matchs we increase the counter
+                    if (pixelMatrix1[x][y] == pixelMatrix2[x][y]) {
+                        matchingPixels++;
+                    }
+                }
+            }
+            result = matchingPixels / totalPixels;
+            return result;
+        } else {
+            //return -1 on error
+            BHBot.logger.error("Error while comparing cue difference");
+            return -1;
+        }
+    }
+
     public static void main(String[] args) {
         // Images paths
         String img1Path = "steam_restores_1.png";

@@ -143,7 +143,6 @@ public class BHBot {
         while (!finished) {
             String s = null;
             try {
-                //System.out.print("> ");
                 s = br.readLine();
             } catch (IOException e) {
                 logger.error("Impossible to read user input", e);
@@ -416,6 +415,9 @@ public class BHBot {
             case "resettimers":
                 main.resetTimers();
                 logger.info("Readout timers reset.");
+                break;
+            case "compare":
+                main.cueDifference();
                 break;
             case "softreset":
                 main.softReset();
