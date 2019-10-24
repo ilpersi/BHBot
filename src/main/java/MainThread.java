@@ -4106,19 +4106,19 @@ public class MainThread implements Runnable {
                         // We disable and re-enable the auto feature
                         while (detectCue(cues.get("AutoOn"), 500) != null) {
                             clickInGame(780, 270); //auto off
-                            readScreen(100);
+                            readScreen(500);
                         }
                         while (detectCue(cues.get("AutoOff"), 500) != null) {
                             clickInGame(780, 270); //auto on again
-                            readScreen(100);
+                            readScreen(500);
                         }
 
                         if ((state == State.Raid && BHBot.settings.autoBossRune.containsKey("r")) || (state == State.Trials && BHBot.settings.autoBossRune.containsKey("t")) ||
                                 (state == State.Expedition && BHBot.settings.autoBossRune.containsKey("e")) || (state == State.Dungeon && BHBot.settings.autoBossRune.containsKey("d"))) {
                                      handleMinorBossRunes();
                         } else {
-                            BHBot.logger.autoshrine("Waiting 10s to use shrines");
-                            sleep(10 * SECOND); //if we're not changing runes we sleep while we activate shrines
+                            BHBot.logger.autoshrine("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
+                            sleep(BHBot.settings.shrineDelay * SECOND); //if we're not changing runes we sleep while we activate shrines
                         }
 
                         if (!checkShrineSettings(false, false)) {
