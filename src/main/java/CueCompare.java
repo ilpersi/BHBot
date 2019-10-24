@@ -17,24 +17,25 @@ import java.io.IOException;
  */
 public class CueCompare {
     /*
-        cueCompare compares the pixels of two images, and divides matching pixels by the total pixel count
-        this can be used to compare percentage similarity between two cues
+        cueCompare compares the pixels in the bounds of two images, and divides matching pixels by the area pixel count
+        to return a percent similarity match.
+
+        If the result is more than the sensitivity (decimal percentage) it will return true
      */
 
-    public static double imageDifference(BufferedImage img1, BufferedImage img2) {
-        int totalPixels = img1.getHeight() * img1.getWidth();
+    public static boolean imageDifference(BufferedImage img1, BufferedImage img2, double sensitivity, int x1, int x2, int y1, int y2) {
+        int totalPixels = ((x2 - x1) * (y2 - y1));
         double matchingPixels = 0;
         double result = 0;
 
-        // If both the input cues are ok, we go on with the processing
-        if ((img1 != null && img2 != null) && (img1.getWidth() != img2.getWidth() && img1.getHeight() != img2.getHeight())) {
+        if (img1 != null && img2 != null) {
 
-            // Buffered image to handle the output
-            int[][] pixelMatrix1 = Misc.convertTo2D(img1);
-            int[][] pixelMatrix2 = Misc.convertTo2D(img2);
+        // Buffered image to handle the output
+        int[][] pixelMatrix1 = Misc.convertTo2D(img1);
+        int[][] pixelMatrix2 = Misc.convertTo2D(img2);
 
-            for (int y = 0; y < img1.getHeight(); y++) {
-                for (int x = 0; x < img1.getWidth(); x++) {
+            for (int y = y1; y < y2; y++) {
+                for (int x = x1; x < x2; x++) {
                     //we check each pixel, if it matchs we increase the counter
                     if (pixelMatrix1[x][y] == pixelMatrix2[x][y]) {
                         matchingPixels++;
@@ -42,11 +43,15 @@ public class CueCompare {
                 }
             }
             result = matchingPixels / totalPixels;
-            return result;
+            BHBot.logger.debug(matchingPixels);
+            BHBot.logger.debug(totalPixels);
+            BHBot.logger.debug(String.format("%.2f%%",result * 100) + " similarity between last two screenshots.");
+            if (result > sensitivity) {
+                return true;
+            } else return false;
         } else {
-            //return -1 on error
-            BHBot.logger.error("Error while comparing cue difference");
-            return -1;
+            BHBot.logger.error("Compare failed.");
+            return false;
         }
     }
 

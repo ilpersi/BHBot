@@ -7801,12 +7801,13 @@ public class MainThread implements Runnable {
         }
     }
 
-    void cueDifference(){
+    void cueDifference(){ //return similarity % between two screenshots taken 3 seconds apart
+        readScreen();
         BufferedImage img1 = img;
-        sleep(3000);
+        sleep(2500);
+        readScreen();
         BufferedImage img2 = img;
-        double result = CueCompare.imageDifference(img1, img2);
-        BHBot.logger.info(String.format("%.2f%%",result * 100));
+        CueCompare.imageDifference(img1, img2, 0.8, 0, 800, 0 ,520);
     }
 
 }
