@@ -82,9 +82,21 @@ public class Settings {
      */
     int difficultyTrials = 60;
     int difficultyGauntlet = 60;
-    // The HashMap key is the activity lecter: t for trial, g for gauntlet
-    // The Map.Entry is composed by two Integers: the key is the number of levels to decrease, the value is the minimum level
+
+    /**
+     * Automatically decrease the difficulty when you get defeated
+     * The HashMap key is the activity lecter: t for trial, g for gauntlet, e for expedition
+     * The Map.Entry is composed by two Integers: the key is the number of levels to decrease, the value is the minimum level
+     */
     HashMap<String, Map.Entry<Integer, Integer>> difficultyFailsafe = new HashMap<>();
+
+    /**
+     * Similar to difficultyFailsafe, but to increase the difficulty after a certain number of wins
+     * The HashMap key is the activity lecter: t for trial, g for gauntlet, e for expedition
+     * The Map.Entry is composed by two Integers: the key is the number of levels to increase, the value is the maximum level
+     */
+    HashMap<String, Map.Entry<Integer, Integer>> successTreshold = new HashMap<>();
+
     /**
      * PvP/GvG Opponent
      */
@@ -452,7 +464,7 @@ public class Settings {
 
     private void setDifficultyFailsafe(String... failSafes) {
         this.difficultyFailsafe.clear();
-        // We only support Trial and Gauntlets and Expedition, so we do sanity checks here only settings the right letters t,g
+        // We only support Trial and Gauntlets and Expedition, so we do sanity checks here only settings the right letters t, g, e
         String pattern = "([tge]):([\\d]+)(:([\\d]+))?";
         Pattern r = Pattern.compile(pattern);
         for (String f : failSafes) {
@@ -476,6 +488,21 @@ public class Settings {
                 Map.Entry<Integer, Integer> entry = Maps.immutableEntry(Integer.parseInt(m.group(2)), minimumDifficulty);
                 difficultyFailsafe.put(m.group(1), entry);
 
+            }
+        }
+    }
+
+    private void setSuccessTreshold (String... tresholds) {
+        this.successTreshold.clear();
+        // We only support Trial and Gauntlets, so we do sanity checks here only settings the right letters t and g
+        String tresholdPatternStr = "([tg]):([\\d]+):([\\d]+)";
+        Pattern tresholdPattern = Pattern.compile(tresholdPatternStr);
+        for (String t : tresholds) {
+            Matcher m = tresholdPattern.matcher(t.trim());
+
+            if (m.find()) {
+                Map.Entry<Integer, Integer> entry = Maps.immutableEntry(Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
+                successTreshold.put(m.group(1), entry);
             }
         }
     }
@@ -686,6 +713,20 @@ public class Settings {
         return dfsBuilder.toString();
     }
 
+    private String getSuccessTresholdAsString() {
+        StringBuilder sfsBuilder = new StringBuilder();
+        for (Map.Entry<String, Map.Entry<Integer, Integer>> entry : successTreshold.entrySet()) {
+            if (sfsBuilder.length() > 0) sfsBuilder.append(" ");
+            sfsBuilder.append(entry.getKey())
+                    .append(":")
+                    .append(entry.getValue().getKey())
+                    .append(":")
+                    .append(entry.getValue().getValue());
+        }
+
+        return sfsBuilder.toString();
+    }
+
     private String getGVGStripsAsString() {
         StringBuilder result = new StringBuilder();
         for (String s : gvgstrip)
@@ -819,6 +860,10 @@ public class Settings {
 
     private void setDifficultyFailsafeFromString(String s) {
         setDifficultyFailsafe(s.trim().split(" "));
+    }
+
+    private void setSuccessTresholdFromString(String s) {
+        setSuccessTreshold(s.trim().split(" "));
     }
 
     private void setGVGStripsFromString(String s) {
@@ -972,6 +1017,7 @@ public class Settings {
         setAutoBossRuneFromString(lastUsedMap.getOrDefault("autoBossRune", getAutoBossRuneAsString()));
 
         setDifficultyFailsafeFromString(lastUsedMap.getOrDefault("difficultyFailsafe", getDifficultyFailsafeAsString()));
+        setSuccessTresholdFromString(lastUsedMap.getOrDefault("successTreshold", getSuccessTresholdAsString()));
 
         persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", "" + persuasionLevel));
         bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", "" + bribeLevel));
