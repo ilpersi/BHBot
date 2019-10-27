@@ -5629,9 +5629,9 @@ public class MainThread implements Runnable {
      */
     private String decideDungeonRandomly() {
 
-        if ("4".equals(new SimpleDateFormat("u").format(new Date())) &&
-                BHBot.settings.thursdayDungeons.size() > 0) { // if its thursday and thursdayRaids is not empty
-            return BHBot.settings.thursdayDungeons.next();
+        if ("3".equals(new SimpleDateFormat("u").format(new Date())) &&
+                BHBot.settings.wednesdayDungeons.size() > 0) { // if its wednesday and wednesdayRaids is not empty
+            return BHBot.settings.wednesdayDungeons.next();
         } else {
             return BHBot.settings.dungeons.next();
         }
@@ -5641,9 +5641,9 @@ public class MainThread implements Runnable {
      * Returns raid type (1, 2 or 3) and difficulty level (1, 2 or 3, which correspond to normal, hard and heroic), e.g. '1 3'.
      */
     private String decideRaidRandomly() {
-        if ("4".equals(new SimpleDateFormat("u").format(new Date())) &&
-                BHBot.settings.thursdayRaids.size() > 0) { // if its thursday and thursdayRaids is not empty
-            return BHBot.settings.thursdayRaids.next();
+        if ("3".equals(new SimpleDateFormat("u").format(new Date())) &&
+                BHBot.settings.wednesdayRaids.size() > 0) { // if its wednesday and wednesdayRaids is not empty
+            return BHBot.settings.wednesdayRaids.next();
         } else {
             return BHBot.settings.raids.next();
         }

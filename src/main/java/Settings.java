@@ -116,7 +116,7 @@ public class Settings {
      * Example of full string: 'z2d4 3 50'.
      */
     RandomCollection<String> dungeons;
-    RandomCollection<String> thursdayDungeons;
+    RandomCollection<String> wednesdayDungeons;
     /**
      * List of raids we want to do with a difficulty level and percentage.
      * Examples:
@@ -124,7 +124,7 @@ public class Settings {
      * '1 3 100' ==> in 100% of cases it will do R1 on heroic
      */
     RandomCollection<String> raids;
-    RandomCollection<String> thursdayRaids;
+    RandomCollection<String> wednesdayRaids;
     /**
      * World Boss Settings
      **/
@@ -228,12 +228,12 @@ public class Settings {
         worldBossSettings = new ArrayList<>();
         dungeons = new RandomCollection<>();
         setDungeons("z1d4 3 100"); // some default value
-        thursdayDungeons = new RandomCollection<>();
-        setThursdayDungeons(""); // default is empty, else if people delete the line it will load this value
+        wednesdayDungeons = new RandomCollection<>();
+        setWednesdayDungeons(""); // default is empty, else if people delete the line it will load this value
         raids = new RandomCollection<>();
         setRaids("1 3 100"); // some default value
-        thursdayRaids = new RandomCollection<>();
-        setThursdayRaids(""); // default is empty, else if people delete the line it will load this value
+        wednesdayRaids = new RandomCollection<>();
+        setWednesdayRaids(""); // default is empty, else if people delete the line it will load this value
         expeditions = new RandomCollection<>();
         setExpeditions("p1 100 100"); // some default value
         pvpstrip = new ArrayList<>();
@@ -332,20 +332,20 @@ public class Settings {
         }
     }
 
-    private void setThursdayDungeons(String... thursdayDungeons) {
-        this.thursdayDungeons.clear();
+    private void setWednesdayDungeons(String... wednesdayDungeons) {
+        this.wednesdayDungeons.clear();
         double weight;
         String name;
         String[] config;
 
-        for (String d : thursdayDungeons) {
+        for (String d : wednesdayDungeons) {
             String add = d.trim();
             if ("".equals(add))
                 continue;
             config = add.split(" ");
             weight = Double.parseDouble(config[2]);
             name = config[0] + " " + config[1];
-            this.thursdayDungeons.add(weight, name);
+            this.wednesdayDungeons.add(weight, name);
         }
     }
 
@@ -383,20 +383,20 @@ public class Settings {
         }
     }
 
-    private void setThursdayRaids(String... thursdayRaids) {
-        this.thursdayRaids.clear();
+    private void setWednesdayRaids(String... wednesdayRaids) {
+        this.wednesdayRaids.clear();
         double weight;
         String name;
         String[] config;
 
-        for (String d : thursdayRaids) {
+        for (String d : wednesdayRaids) {
             String add = d.trim();
             if ("".equals(add))
                 continue;
             config = add.split(" ");
             weight = Double.parseDouble(config[2]);
             name = config[0] + " " + config[1];
-            this.thursdayRaids.add(weight, name);
+            this.wednesdayRaids.add(weight, name);
         }
     }
 
@@ -612,8 +612,8 @@ public class Settings {
         return dungeons.toString();
     }
 
-    private String getThursdayDungeonsAsString() {
-        return thursdayDungeons.toString();
+    private String getWednesdayDungeonsAsString() {
+        return wednesdayDungeons.toString();
     }
 
     private String getExpeditionsAsString() {
@@ -624,8 +624,8 @@ public class Settings {
         return raids.toString();
     }
 
-    private String getThursdayRaidsAsString() {
-        return thursdayRaids.toString();
+    private String getWednesdayRaidsAsString() {
+        return wednesdayRaids.toString();
     }
 
     private String getStripsAsString() {
@@ -780,8 +780,8 @@ public class Settings {
         setDungeons(s.split(";"));
     }
 
-    private void setThursdayDungeonsFromString(String s) {
-        setThursdayDungeons(s.split(";"));
+    private void setWednesdayDungeonsFromString(String s) {
+        setWednesdayDungeons(s.split(";"));
     }
 
     private void setExpeditionsFromString(String s) {
@@ -792,8 +792,8 @@ public class Settings {
         setRaids(s.split(";"));
     }
 
-    private void setThursdayRaidsFromString(String s) {
-        setThursdayRaids(s.split(";"));
+    private void setWednesdayRaidsFromString(String s) {
+        setWednesdayRaids(s.split(";"));
     }
 
     private void setStripsFromString(String s) {
@@ -985,9 +985,9 @@ public class Settings {
         minSolo = Integer.parseInt(lastUsedMap.getOrDefault("minSolo", "" + minSolo));
 
         setDungeonsFromString(lastUsedMap.getOrDefault("dungeons", getDungeonsAsString()));
-        setThursdayDungeonsFromString(lastUsedMap.getOrDefault("thursdayDungeons", getThursdayDungeonsAsString()));
+        setWednesdayDungeonsFromString(lastUsedMap.getOrDefault("wednesdayDungeons", getWednesdayDungeonsAsString()));
         setRaidsFromString(lastUsedMap.getOrDefault("raids", getRaidsAsString()));
-        setThursdayRaidsFromString(lastUsedMap.getOrDefault("thursdayRaids", getThursdayRaidsAsString()));
+        setWednesdayRaidsFromString(lastUsedMap.getOrDefault("wednesdayRaids", getWednesdayRaidsAsString()));
         setExpeditionsFromString(lastUsedMap.getOrDefault("expeditions", getExpeditionsAsString()));
         setStripsFromString(lastUsedMap.getOrDefault("pvpstrip", getStripsAsString()));
         setGVGStripsFromString(lastUsedMap.getOrDefault("gvgstrip", getGVGStripsAsString()));
@@ -1118,6 +1118,12 @@ public class Settings {
         }
         if (lastUsedMap.getOrDefault("collectFishingBaits", null) != null) {
             BHBot.logger.warn("Deprecated setting detected: collectFishingBaits. Use the new activitiesEnabled with 'f' letter instead.");
+        }
+        if (lastUsedMap.getOrDefault("thursdayRaids", null) != null) {
+            BHBot.logger.warn("Deprecated setting detected: thursdayRaids. Use the new wednesdayRaids instead.");
+        }
+        if (lastUsedMap.getOrDefault("thursdayDungeons", null) != null) {
+            BHBot.logger.warn("Deprecated setting detected: thursdayDungeons. Use the new wednesdayDungeons instead.");
         }
     }
 
