@@ -77,6 +77,11 @@ public class MainThread implements Runnable {
     private long activityStartTime;
     private long activityDuration;
     private boolean combatIdleChecker = true;
+    private boolean motionChecker = false;
+    private int stationaryCounter = 0;
+    private boolean stationary = false;
+    private BufferedImage movement1;
+    private BufferedImage movement2;
     private long outOfEncounterTimestamp = 0;
     private long inEncounterTimestamp = 0;
     private long runMillisAvg = 0;
@@ -3648,9 +3653,21 @@ public class MainThread implements Runnable {
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             startTimeCheck = true;
             combatIdleChecker = true;
+            motionChecker = true;
+            stationaryCounter = 0;
+            stationary = false;
+            movement2 = img; //so we don't return error on our first movement check
         }
 
         activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
+
+        if (state == state.Invasion) {
+            //we check the invasion level bounds, if it is static for 30s we stop resetting idle timer
+            motionChecker(1.0, 356, 445, 21, 40, 30);
+            if (!stationary) {
+                BHBot.scheduler.resetIdleTime(true);
+            }
+        }
 
         //We use guild button visibility to determine whether we are in an encounter or not
         MarvinSegment guildButtonSeg = detectCue(cues.get("GuildButton"));
@@ -4142,6 +4159,30 @@ public class MainThread implements Runnable {
                     }
                 }
             }
+        }
+    }
+
+    private void motionChecker(double sensitivity, int x1, int x2, int y1, int y2, int counter) {
+        if (motionChecker) {
+            readScreen();
+            movement1 = img;
+            if (CueCompare.imageDifference(movement1, movement2, sensitivity, x1 ,x2 ,y1 ,y2)) {
+                stationaryCounter++;
+            } else stationaryCounter = 0;
+            motionChecker = false;
+        } else {
+            readScreen();
+            movement2 = img;
+            if (CueCompare.imageDifference(movement1, movement2, sensitivity, x1 ,x2 ,y1 ,y2)) {
+                stationaryCounter++;
+            } else stationaryCounter = 0;
+            motionChecker = true;
+        }
+
+        if (stationaryCounter >= counter) { //if we have 2 stationary reports in a row
+            BHBot.logger.debug("Looks like we are stationary");
+            stationary = true;
+            stationaryCounter = 0;
         }
     }
 

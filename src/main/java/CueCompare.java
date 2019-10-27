@@ -43,10 +43,10 @@ public class CueCompare {
                 }
             }
             result = matchingPixels / totalPixels;
-            BHBot.logger.debug(matchingPixels);
-            BHBot.logger.debug(totalPixels);
-            BHBot.logger.debug(String.format("%.2f%%",result * 100) + " similarity between last two screenshots.");
-            if (result > sensitivity) {
+            BHBot.logger.trace(matchingPixels);
+            BHBot.logger.trace(totalPixels);
+            BHBot.logger.trace(String.format("%.2f%%",result * 100) + " similarity between last two screenshots.");
+            if (result >= sensitivity) {
                 return true;
             } else return false;
         } else {
