@@ -3757,7 +3757,7 @@ public class MainThread implements Runnable {
             if (seg != null) {
 
                 handleVictory();
-                counters.get(state).increaseVictories(1);
+                counters.get(state).increaseVictories();
                 BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
                 BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
 
@@ -3787,7 +3787,8 @@ public class MainThread implements Runnable {
         // check if we're done (cleared):
         seg = detectCue(cues.get("Cleared"));
         if (seg != null) {
-            counters.get(state).increaseVictories(1);
+            counters.get(state).increaseVictories();
+            handleSuccessTreshold(state);
 
             BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
             BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
@@ -3842,7 +3843,7 @@ public class MainThread implements Runnable {
         // check if we're done (defeat):
         seg = detectCue(cues.get("Defeat"));
         if (seg != null) {
-            counters.get(state).increaseDefeats(1);
+            counters.get(state).increaseDefeats();
             BHBot.logger.warn(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Defeat.");
             BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
 
@@ -4008,7 +4009,8 @@ public class MainThread implements Runnable {
         MarvinSegment seg1 = detectCue(cues.get("Victory"));
         MarvinSegment seg2 = detectCue(cues.get("WorldBossVictory"));
         if (state != State.Raid && seg1 != null || (state == State.WorldBoss && seg2 != null)) { //seg2 needs state defined as otherwise the battle victory screen in dungeon-type encounters triggers it
-            counters.get(state).increaseVictories(1);
+            counters.get(state).increaseVictories();
+            handleSuccessTreshold(state);
 
             BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
             BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
@@ -5668,9 +5670,9 @@ public class MainThread implements Runnable {
      */
     private String decideDungeonRandomly() {
 
-        if ("4".equals(new SimpleDateFormat("u").format(new Date())) &&
-                BHBot.settings.thursdayDungeons.size() > 0) { // if its thursday and thursdayRaids is not empty
-            return BHBot.settings.thursdayDungeons.next();
+        if ("3".equals(new SimpleDateFormat("u").format(new Date())) &&
+                BHBot.settings.wednesdayDungeons.size() > 0) { // if its wednesday and wednesdayRaids is not empty
+            return BHBot.settings.wednesdayDungeons.next();
         } else {
             return BHBot.settings.dungeons.next();
         }
@@ -5680,9 +5682,9 @@ public class MainThread implements Runnable {
      * Returns raid type (1, 2 or 3) and difficulty level (1, 2 or 3, which correspond to normal, hard and heroic), e.g. '1 3'.
      */
     private String decideRaidRandomly() {
-        if ("4".equals(new SimpleDateFormat("u").format(new Date())) &&
-                BHBot.settings.thursdayRaids.size() > 0) { // if its thursday and thursdayRaids is not empty
-            return BHBot.settings.thursdayRaids.next();
+        if ("3".equals(new SimpleDateFormat("u").format(new Date())) &&
+                BHBot.settings.wednesdayRaids.size() > 0) { // if its wednesday and wednesdayRaids is not empty
+            return BHBot.settings.wednesdayRaids.next();
         } else {
             return BHBot.settings.raids.next();
         }
@@ -6234,6 +6236,44 @@ public class MainThread implements Runnable {
             }
         }
         return true;
+    }
+
+    /**
+     * This method will handle the success threshold based on the state
+     * @param state the State used to check the success threshold
+     */
+    private void handleSuccessTreshold(State state) {
+
+        // We only handle Trials and Gautlets
+        if (state != State.Gauntlet && state != State.Trials) return;
+
+        BHBot.logger.debug("Victories in a row for " + state + " is " + counters.get(state).getVictoriesInARow());
+
+        // We make sure that we have a setting for the current state
+        if (BHBot.settings.successTreshold.containsKey(state.getShortcut())) {
+            Map.Entry<Integer, Integer> successTreshold = BHBot.settings.successTreshold.get(state.getShortcut());
+            int minimumVictories = successTreshold.getKey();
+            int lvlIncrease = successTreshold.getValue();
+
+            if (counters.get(state).getVictoriesInARow() >= minimumVictories) {
+                if ("t".equals(state.getShortcut()) || "g".equals(state.getShortcut())) {
+                    int newDifficulty;
+                    String original, updated;
+
+                    if ("t".equals(state.getShortcut())) {
+                        newDifficulty = BHBot.settings.difficultyTrials + lvlIncrease;
+                        original = "difficultyTrials " + BHBot.settings.difficultyTrials;
+                        updated = "difficultyTrials " + newDifficulty;
+                    } else { // Gauntlets
+                        newDifficulty = BHBot.settings.difficultyGauntlet + lvlIncrease;
+                        original = "difficultyGauntlet " + BHBot.settings.difficultyGauntlet;
+                        updated = "difficultyGauntlet " + newDifficulty;
+                    }
+
+                    settingsUpdate(original, updated);
+                }
+            }
+        }
     }
 
     /**
