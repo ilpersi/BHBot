@@ -7227,6 +7227,8 @@ public class MainThread implements Runnable {
         timeLastTrialsTokensCheck = 0;
         timeLastGauntletTokensCheck = 0;
         timeLastBonusCheck = 0;
+        timeLastFishingCheck = 0;
+        timeLastFishingBaitsCheck = 0;
     }
 
     /* This will only reset timers for activities we still have resources to run */
