@@ -198,7 +198,6 @@ public class Settings {
      * Fishing Settings
      **/
     private boolean doFishing = false;
-    private int rodType = 4;
     int baitAmount = 5;
     /**
      * log4j settings
@@ -1023,7 +1022,6 @@ public class Settings {
         bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", "" + bribeLevel));
 
         doFishing = lastUsedMap.getOrDefault("doFishing", doFishing ? "1" : "0").equals("1");
-        rodType = Integer.parseInt(lastUsedMap.getOrDefault("rodType", "" + rodType));
         baitAmount = Integer.parseInt(lastUsedMap.getOrDefault("baitAmount", "" + baitAmount));
 
         logMaxDays = Integer.parseInt(lastUsedMap.getOrDefault("logMaxDays", "" + logMaxDays));
