@@ -4538,6 +4538,10 @@ public class MainThread implements Runnable {
                 return true;
             }
             clickOnSeg(seg);
+            sleep(500);
+            if ((BHBot.settings.screenshots.contains("s"))) {
+                saveGameScreen("skeleton-contents", img, "rewards");
+            }
             return false;
 
         } else
