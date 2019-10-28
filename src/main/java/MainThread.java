@@ -1043,7 +1043,7 @@ public class MainThread implements Runnable {
                         if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
                             sendPushOverMessage("Idle timer exceeded", "Idle time exceeded while state = " + state, "siren", MessagePriority.NORMAL, idleTimerScreenFile);
 
-                            if (!idleTimerScreenFile.delete()) {
+                            if (idleTimerScreenFile != null && !idleTimerScreenFile.delete()) {
                                 BHBot.logger.error("Impossible to delete idle timer screenshot.");
                             }
                         }
@@ -1277,7 +1277,7 @@ public class MainThread implements Runnable {
                             File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
 
                             sendPushOverMessage("Startup notification", "BHBot has been succesfully started!", MessagePriority.QUIET, aliveScreenFile);
-                            if (!aliveScreenFile.delete())
+                            if (aliveScreenFile != null && !aliveScreenFile.delete())
                                 BHBot.logger.warn("Impossible to delete tmp img for startup notification.");
                         }
 
@@ -1299,7 +1299,7 @@ public class MainThread implements Runnable {
                             }
 
                             sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
-                            if (!aliveScreenFile.delete())
+                            if (aliveScreenFile != null && !aliveScreenFile.delete())
                                 BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
                         }
                     }
@@ -3852,7 +3852,7 @@ public class MainThread implements Runnable {
         // check if we're done (defeat):
         seg = detectCue(cues.get("Defeat"));
         if (seg != null) {
-            if (state == state.Invasion) {
+            if (state == State.Invasion) {
                 counters.get(state).increaseDefeats();
                 BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed.");
             } else {
