@@ -846,7 +846,7 @@ public class MainThread implements Runnable {
 
     private void dumpCrashLog() {
         // save screen shot:
-        String file = saveGameScreen("crash");
+        String file = saveGameScreen("crash", img, "errors");
 
         if (file == null) {
             BHBot.logger.error("Impossible to create crash screenshot");
@@ -1150,7 +1150,7 @@ public class MainThread implements Runnable {
                     seg = detectCue(cues.get("Claim"), 5 * SECOND);
                     if (seg != null) {
                         if ((BHBot.settings.screenshots.contains("d"))) {
-                            saveGameScreen("daily_reward");
+                            saveGameScreen("daily_reward", img, "rewards");
                         }
                          clickOnSeg(seg);
                     } else {
@@ -1182,11 +1182,11 @@ public class MainThread implements Runnable {
 
                         if ("7".equals(new SimpleDateFormat("u").format(new Date()))) { //if it's Sunday
                             if ((BHBot.settings.screenshots.contains("wg"))) {
-                                saveGameScreen("weekly-gem-count");
+                                saveGameScreen("weekly-gem-count", img, "gems");
                             }
                         } else {
                             if ((BHBot.settings.screenshots.contains("dg"))) {
-                                saveGameScreen("daily-gem-count"); //else screenshot daily count
+                                saveGameScreen("daily-gem-count", img, "gems"); //else screenshot daily count
                             }
                         }
 
@@ -1262,6 +1262,8 @@ public class MainThread implements Runnable {
                     if (seg != null) {
                         state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
                         BHBot.logger.warn("Possible dungeon crash, activating failsafe");
+                        saveGameScreen("dungeon-crash-failsafe", img, "errors");
+                        checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
                         continue;
                     }
 
@@ -2456,7 +2458,7 @@ public class MainThread implements Runnable {
                                     clickOnSeg(seg);
                                 } else {
                                     BHBot.logger.error("No accept button for expedition team!");
-                                    saveGameScreen("expedtion-no-accept", img);
+                                    saveGameScreen("expedtion-no-accept", img, "errors");
                                     restart();
                                 }
 
@@ -2565,7 +2567,7 @@ public class MainThread implements Runnable {
                             } else {
                                 BHBot.logger.error("Impossible to find blue summon in world boss.");
 
-                                String WBErrorScreen = saveGameScreen("wb-no-blue-summon", img);
+                                String WBErrorScreen = saveGameScreen("wb-no-blue-summon", img, "errors");
                                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
                                     if (WBErrorScreen != null) {
                                         sendPushOverMessage("World Boss error", "Impossible to find blue summon.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
@@ -2729,7 +2731,7 @@ public class MainThread implements Runnable {
                                             }
                                         } else { //generic error / unknown action restart
                                             BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
-                                            saveGameScreen("wb-no-start-button", img);
+                                            saveGameScreen("wb-no-start-button", img, "errors");
                                             restart();
                                         }
 
@@ -2781,14 +2783,14 @@ public class MainThread implements Runnable {
                                     seg = detectCue(cues.get("X"), 5 * SECOND);
                                     if (seg != null) {
                                         if ((BHBot.settings.screenshots.contains("b"))) {
-                                            saveGameScreen("bounty-loot");
+                                            saveGameScreen("bounty-loot", img, "rewards");
                                         }
                                         clickOnSeg(seg);
                                         BHBot.logger.info("Collected bounties");
                                         sleep(SECOND * 2);
                                     } else {
                                         BHBot.logger.error("Error when collecting bounty items, restarting...");
-                                        saveGameScreen("bounties-error-collect");
+                                        saveGameScreen("bounties-error-collect", img, "errors");
                                         restart();
                                     }
                                 } else {
@@ -3014,7 +3016,7 @@ public class MainThread implements Runnable {
             return seg != null;
         } else {
             BHBot.logger.error("Impossible to find the settings button!");
-            saveGameScreen("open-settings-no-btn", img);
+            saveGameScreen("open-settings-no-btn", img, "errors");
             return false;
         }
     }
@@ -4600,7 +4602,7 @@ public class MainThread implements Runnable {
 
         // We save all the errors and persuasions based on settings
         if ((familiarLevel.getValue() >= BHBot.settings.familiarScreenshot) || familiarLevel == FamiliarType.ERROR) {
-            saveGameScreen(persuasionLog.toString());
+            saveGameScreen(persuasionLog.toString(), img, "familiars");
 
             if (BHBot.settings.contributeFamiliars) {
                 contributeFamiliarShoot(persuasionLog.toString(), familiarLevel);
@@ -5928,18 +5930,18 @@ public class MainThread implements Runnable {
      * @return name of the path in which the screenshot has been saved (successfully or not)
      */
     String saveGameScreen(String prefix) {
-        return saveGameScreen(prefix, null, takeScreenshot(true));
+        return saveGameScreen(prefix, takeScreenshot(true), null);
     }
 
     private String saveGameScreen(String prefix, BufferedImage img) {
-        return saveGameScreen(prefix, null, img);
+        return saveGameScreen(prefix, img, null);
     }
 
     private String saveGameScreen(String prefix, String subFolder) {
-        return saveGameScreen(prefix, subFolder, takeScreenshot(true));
+        return saveGameScreen(prefix, takeScreenshot(true), subFolder);
     }
 
-    private String saveGameScreen(String prefix, String subFolder, BufferedImage img) {
+    private String saveGameScreen(String prefix, BufferedImage img, String subFolder) {
 
         // sub-folder logic management
         String screenshotPath = BHBot.screenshotPath;
