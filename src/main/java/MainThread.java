@@ -1173,7 +1173,7 @@ public class MainThread implements Runnable {
                     sleep(2 * SECOND);
 
                     //We check for news and close so we don't take a gem count every time the bot starts
-                    seg = detectCue(cues.get("News"), 1 * SECOND);
+                    seg = detectCue(cues.get("News"), SECOND);
                     if (seg != null) {
                         seg = detectCue(cues.get("Close"), 2 * SECOND);
                         clickOnSeg(seg);
@@ -3670,7 +3670,7 @@ public class MainThread implements Runnable {
 
         activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
 
-        if (state == state.Invasion) {
+        if (state == State.Invasion) {
             //we check the invasion level bounds, if it is static for 30s we stop resetting idle timer
             motionChecker(1.0, 356, 445, 21, 40, 30);
             if (!stationary) {

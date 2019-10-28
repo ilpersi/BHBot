@@ -141,7 +141,7 @@ public class BHBot {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while (!finished) {
-            String s = null;
+            String s;
             try {
                 s = br.readLine();
             } catch (IOException e) {
