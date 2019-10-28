@@ -3698,10 +3698,15 @@ public class MainThread implements Runnable {
 
         if ((outOfEncounterTimestamp - inEncounterTimestamp) > 0) { //if we're out of combat
             if (state != State.Raid) {
+                //we check the bounds for an inner square of the game, roughly inside from the icons/buttons/portraits
                 motionChecker(0.75, 110, 680, 40, 400, 2);
-            } else motionChecker(0.75, 110, 680, 40, 400, 2); //raid has a lot more animated elements on the map, so we need a lower threshold
+            } else {
+                //raid has a lot more animated elements on the map, so we need a lower threshold
+                motionChecker(0.3, 110, 680, 40, 400, 2);
+            }
             BHBot.logger.debug("Seconds since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
             if (stationary) {
+                //testing log to see how quickly we detect stationary status
                 BHBot.logger.info("Stationary detected in: " + (outOfEncounterTimestamp - inEncounterTimestamp));
             }
         }
@@ -4099,6 +4104,7 @@ public class MainThread implements Runnable {
                             BHBot.logger.autorune("No movement detected, changing runes for boss encounter");
                         } else {
                             BHBot.logger.autorune("30s since last encounter, changing runes for boss encounter");
+                            //debug screen to see why we couldn't detect stationary
                             saveGameScreen("stationary-debug");
                         }
 
@@ -4144,6 +4150,7 @@ public class MainThread implements Runnable {
                             BHBot.logger.autorune("No movement detected, disabling ignore shrines");
                         } else {
                             BHBot.logger.autorune("30s since last encounter, disabling ignore shrines");
+                            //debug screen to see why we couldn't detect stationary
                             saveGameScreen("stationary-debug");
                         }
 
