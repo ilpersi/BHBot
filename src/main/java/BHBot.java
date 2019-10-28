@@ -348,10 +348,10 @@ public class BHBot {
                     logger.info(poLogMessage);
 
                     String poScreenName = main.saveGameScreen("pomessage");
-                    File poScreenFile = new File(poScreenName);
+                    File poScreenFile = poScreenName != null ? new File(poScreenName) : null;
 
                     main.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
-                    if (!poScreenFile.delete()) logger.warn("Impossible to delete tmp img for pomessage command.");
+                    if (poScreenFile != null && !poScreenFile.delete()) logger.warn("Impossible to delete tmp img for pomessage command.");
 
                 } else {
                     logger.warn("Pushover integration is disabled in the settings!");

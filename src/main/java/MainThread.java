@@ -848,6 +848,11 @@ public class MainThread implements Runnable {
         // save screen shot:
         String file = saveGameScreen("crash");
 
+        if (file == null) {
+            BHBot.logger.error("Impossible to create crash screenshot");
+            return;
+        }
+
         // save stack trace:
         boolean savedST = Misc.saveTextFile(file.substring(0, file.length() - 4) + ".txt", Misc.getStackTrace());
         if (!savedST) {
@@ -1036,7 +1041,7 @@ public class MainThread implements Runnable {
 
                     if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
                         String idleTimerScreenName = saveGameScreen("idle-timer", img);
-                        File idleTimerScreenFile = new File(idleTimerScreenName);
+                        File idleTimerScreenFile = idleTimerScreenName != null ? new File(idleTimerScreenName) : null;
                         if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
                             sendPushOverMessage("Idle timer exceeded", "Idle time exceeded while state = " + state, "siren", MessagePriority.NORMAL, idleTimerScreenFile);
 
@@ -1269,7 +1274,7 @@ public class MainThread implements Runnable {
 
                             timeLastPOAlive = Misc.getTime();
                             String aliveScreenName = saveGameScreen("alive-screen");
-                            File aliveScreenFile = new File(aliveScreenName);
+                            File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
 
                             sendPushOverMessage("Startup notification", "BHBot has been succesfully started!", MessagePriority.QUIET, aliveScreenFile);
                             if (!aliveScreenFile.delete())
@@ -1280,7 +1285,7 @@ public class MainThread implements Runnable {
                         if ((Misc.getTime() - timeLastPOAlive) > (BHBot.settings.poNotifyAlive * HOUR)) {
                             timeLastPOAlive = Misc.getTime();
                             String aliveScreenName = saveGameScreen("alive-screen");
-                            File aliveScreenFile = new File(aliveScreenName);
+                            File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
 
                             StringBuilder aliveMsg = new StringBuilder();
                             aliveMsg.append("I am alive and doing fine!\n\n");
@@ -2562,7 +2567,11 @@ public class MainThread implements Runnable {
 
                                 String WBErrorScreen = saveGameScreen("wb-no-blue-summon", img);
                                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
-                                    sendPushOverMessage("World Boss error", "Impossible to find blue summon.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
+                                    if (WBErrorScreen != null) {
+                                        sendPushOverMessage("World Boss error", "Impossible to find blue summon.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
+                                    } else {
+                                        sendPushOverMessage("World Boss error", "Impossible to find blue summon.", "siren", MessagePriority.NORMAL, null);
+                                    }
                                 }
 
                                 closePopupSecurely(cues.get("WorldBossTitle"), cues.get("X"));
@@ -4467,7 +4476,11 @@ public class MainThread implements Runnable {
                 BHBot.logger.error("Open button not found, restarting");
                 String STScreen = saveGameScreen("skeleton-treasure-no-open");
                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
-                    sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                    if (STScreen != null) {
+                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                    } else {
+                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, null);
+                    }
                 }
                 return true;
             }
@@ -4478,7 +4491,11 @@ public class MainThread implements Runnable {
                 BHBot.logger.error("Yes button not found, restarting");
                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
                     String STScreen = saveGameScreen("skeleton-treasure-no-yes");
-                    sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                    if (STScreen != null) {
+                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                    } else {
+                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, null);
+                    }
                 }
                 return true;
             }
@@ -4492,7 +4509,11 @@ public class MainThread implements Runnable {
                 BHBot.logger.error("Open button not found, restarting");
                 String STScreen = saveGameScreen("skeleton-treasure-no-open");
                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
-                    sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                    if (STScreen != null) {
+                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                    } else {
+                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, null);
+                    }
                 }
                 return true;
             }
@@ -4503,7 +4524,11 @@ public class MainThread implements Runnable {
                 BHBot.logger.error("Yes button not found, restarting");
                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
                     String STScreen = saveGameScreen("skeleton-treasure-no-yes");
-                    sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                    if (STScreen != null) {
+                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                    } else {
+                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, null);
+                    }
                 }
                 return true;
             }
@@ -4753,9 +4778,9 @@ public class MainThread implements Runnable {
             }
             if (BHBot.settings.enablePushover && BHBot.settings.poNotifyBribe) {
                 String bribeScreenName = saveGameScreen("bribe-screen", tmpScreen);
-                File bribeScreenFile = new File(bribeScreenName);
+                File bribeScreenFile = bribeScreenName != null ? new File(bribeScreenName) : null;
                 sendPushOverMessage("Creature Bribe", "A familiar has been bribed!", "bugle", MessagePriority.NORMAL, bribeScreenFile);
-                if (!bribeScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img file for bribe.");
+                if (bribeScreenFile != null && !bribeScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img file for bribe.");
             }
             return true;
         }
@@ -5903,35 +5928,46 @@ public class MainThread implements Runnable {
      * @return name of the path in which the screenshot has been saved (successfully or not)
      */
     String saveGameScreen(String prefix) {
-        Date date = new Date();
-        String name = prefix + "_" + dateFormat.format(date) + ".png";
-        int num = 0;
-        File f = new File(BHBot.screenshotPath + name);
-        while (f.exists()) {
-            num++;
-            name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
-            f = new File(BHBot.screenshotPath + name);
-        }
-
-        // save screen shot:
-        try {
-            Shutterbug.shootElement(driver, driver.findElement(By.id("game")), false).withName(name.substring(0, name.length() - 4)).save();
-        } catch (Exception e) {
-            BHBot.logger.error("Error while saving game screenshot", e);
-        }
-
-        return BHBot.screenshotPath + name;
+        return saveGameScreen(prefix, null, takeScreenshot(true));
     }
 
     private String saveGameScreen(String prefix, BufferedImage img) {
+        return saveGameScreen(prefix, null, img);
+    }
+
+    private String saveGameScreen(String prefix, String subFolder) {
+        return saveGameScreen(prefix, subFolder, takeScreenshot(true));
+    }
+
+    private String saveGameScreen(String prefix, String subFolder, BufferedImage img) {
+
+        // sub-folder logic management
+        String screenshotPath = BHBot.screenshotPath;
+        if (subFolder != null) {
+            File subFolderPath = new File(BHBot.screenshotPath + subFolder + "/");
+            if (!subFolderPath.exists()) {
+                if (!subFolderPath.mkdir()) {
+                    BHBot.logger.error("Impossible to create screenshot sub folder in " + subFolder);
+                    return null;
+                } else {
+                    try {
+                        BHBot.logger.info("Created screenshot sub-folder " + subFolderPath.getCanonicalPath());
+                    } catch (IOException e) {
+                        BHBot.logger.error("Error while getting Canonical Path for newly created screenshots sub-folder", e);
+                    }
+                }
+            }
+            screenshotPath += subFolder + "/";
+        }
+
         Date date = new Date();
         String name = prefix + "_" + dateFormat.format(date) + ".png";
         int num = 0;
-        File f = new File(BHBot.screenshotPath + name);
+        File f = new File(screenshotPath + name);
         while (f.exists()) {
             num++;
             name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
-            f = new File(BHBot.screenshotPath + name);
+            f = new File(screenshotPath + name);
         }
 
         // save screen shot:
@@ -6054,7 +6090,11 @@ public class MainThread implements Runnable {
             try {
                 String pmFileName = saveGameScreen("pm");
                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyPM) {
-                    sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
+                    if (pmFileName != null) {
+                        sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
+                    } else {
+                        sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, null);
+                    }
                 }
                 clickOnSeg(seg);
             } catch (Exception e) {
@@ -6110,9 +6150,9 @@ public class MainThread implements Runnable {
 
             if (BHBot.settings.enablePushover && BHBot.settings.poNotifyErrors) {
                 String teamScreen = saveGameScreen("auto-team");
-                File teamFile = new File(teamScreen);
+                File teamFile = teamScreen != null ? new File(teamScreen) : null;
                 sendPushOverMessage("Team auto assigned", message, "siren", MessagePriority.NORMAL, teamFile);
-                if (!teamFile.delete())
+                if (teamFile != null && !teamFile.delete())
                     BHBot.logger.warn("Impossible to delete tmp error img file for team auto assign");
             }
 
@@ -7472,9 +7512,9 @@ public class MainThread implements Runnable {
 
             if (DroppedItem.length() > 0) {
                 String victoryScreenName = saveGameScreen("victory-screen", victoryPopUpImg);
-                File victoryScreenFile = new File(victoryScreenName);
+                File victoryScreenFile = victoryScreenName != null ? new File(victoryScreenName): null;
                 sendPushOverMessage(state + " item Drop", DroppedItem, "magic", MessagePriority.HIGH, victoryScreenFile);
-                if (!victoryScreenFile.delete())
+                if (victoryScreenFile != null && !victoryScreenFile.delete())
                     BHBot.logger.warn("Impossible to delete tmp img file for victory drop.");
             }
         }
@@ -7838,6 +7878,7 @@ public class MainThread implements Runnable {
         }
     }
 
+    @SuppressWarnings("unused")
     private enum WorldBoss {
 
         Orlag("o", "Orlag Clan", 1),
