@@ -3852,9 +3852,14 @@ public class MainThread implements Runnable {
         // check if we're done (defeat):
         seg = detectCue(cues.get("Defeat"));
         if (seg != null) {
-            counters.get(state).increaseDefeats();
-            BHBot.logger.warn(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Defeat.");
-            BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
+            if (state == state.Invasion) {
+                counters.get(state).increaseDefeats();
+                BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed.");
+            } else {
+                counters.get(state).increaseDefeats();
+                BHBot.logger.warn(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Defeat.");
+                BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
+            }
 
             boolean closed = false;
             // close button in dungeons is blue, in gauntlet it is green:
