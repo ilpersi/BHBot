@@ -90,7 +90,7 @@ public class MainThread implements Runnable {
     private int expeditionFailsafeDifficulty = 0;
 
     // Generic counters HashMap
-    private HashMap<State, DungeonCounter> counters = new HashMap<>();
+    HashMap<State, DungeonCounter> counters = new HashMap<>();
 
     private int numFailedRestarts = 0; // in a row
     // When we do not have anymore gems to use this is true

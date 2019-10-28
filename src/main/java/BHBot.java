@@ -369,6 +369,23 @@ public class BHBot {
                     case "fam":
                         MainThread.printFamiliars();
                         break;
+                    case "stats":
+                    case "stat":
+                    case "statistics":
+
+                        StringBuilder aliveMsg = new StringBuilder();
+                        aliveMsg.append("Current session statistics:\n\n");
+
+                        for (MainThread.State state : MainThread.State.values()) {
+                            if (main.counters.get(state).getTotal() > 0) {
+                                aliveMsg.append(state.getName()).append(" ")
+                                        .append(main.counters.get(state).successRateDesc())
+                                        .append("\n");
+                            }
+                        }
+                        logger.info(aliveMsg.toString());
+
+                        break;
                     case "version":
                         try {
                             logger.info(PROGRAM_NAME + " v" + BHBotVersion + " build on " + new Date(Misc.classBuildTimeMillis()) + " started.");
