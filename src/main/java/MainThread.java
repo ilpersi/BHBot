@@ -2225,9 +2225,9 @@ public class MainThread implements Runnable {
 
                                 seg = detectCue(cues.get("Play"), 5 * SECOND);
                                 clickOnSeg(seg);
-                                readScreen(2 * SECOND);
 
-                                seg = detectCue(cues.get("Accept"), 5 * SECOND);
+                                readScreen(3000);
+                                seg = detectCue(cues.get("Accept"));
                                 if (seg == null) {
                                     BHBot.logger.error("Unable to find the Accept button in the Invasion screen, restarting!");
                                     restart();
