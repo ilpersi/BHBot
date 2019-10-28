@@ -3696,8 +3696,14 @@ public class MainThread implements Runnable {
             }
         }
 
-        if ((outOfEncounterTimestamp - inEncounterTimestamp) > 0) {
+        if ((outOfEncounterTimestamp - inEncounterTimestamp) > 0) { //if we're out of combat
+            if (state != State.Raid) {
+                motionChecker(0.75, 110, 680, 40, 400, 2);
+            } else motionChecker(0.75, 110, 680, 40, 400, 2); //raid has a lot more animated elements on the map, so we need a lower threshold
             BHBot.logger.debug("Seconds since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
+            if (stationary) {
+                BHBot.logger.info("Stationary detected in: " + (outOfEncounterTimestamp - inEncounterTimestamp));
+            }
         }
 
         /*
@@ -4086,17 +4092,23 @@ public class MainThread implements Runnable {
                 (state == State.Expedition && !BHBot.settings.autoShrine.contains("e") && BHBot.settings.autoBossRune.containsKey("e")) ||
                 (state == State.Dungeon && BHBot.settings.autoBossRune.containsKey("d")) ||
                 state == State.UnidentifiedDungeon) {
-            if (activityDuration > 60) { //if we're past 60 seconds into the activity
+            if (activityDuration > 30) { //if we're past 30 seconds into the activity
                 if (!autoBossRuned) {
-                    if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay && guildButtonSeg != null) { //and it's been the battleDelay setting since last encounter
-                        BHBot.logger.autorune("No activity for " + BHBot.settings.battleDelay + "s, changing runes for boss encounter");
+                    if ((stationary) || (((outOfEncounterTimestamp - inEncounterTimestamp) > 30) && guildButtonSeg != null)) {
+                        if (stationary) {
+                            BHBot.logger.autorune("No movement detected, changing runes for boss encounter");
+                        } else {
+                            BHBot.logger.autorune("30s since last encounter, changing runes for boss encounter");
+                            saveGameScreen("stationary-debug");
+                        }
 
                         handleMinorBossRunes();
 
                         if (!checkShrineSettings(false, false)) {
-                            BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoBossRune!");
-                            BHBot.logger.warn("Resetting encounter timer to try again in " + BHBot.settings.battleDelay + " seconds.");
+                            BHBot.logger.error("Impossible to disable Ignore Boss in handleAutoBossRune!");
+                            BHBot.logger.warn("Resetting encounter timer to try again in 30 seconds.");
                             inEncounterTimestamp = Misc.getTime() / 1000;
+                            stationary = false;
                             return;
                         }
 
@@ -4109,7 +4121,7 @@ public class MainThread implements Runnable {
                             clickInGame(780, 270); //auto on again
                             readScreen(500);
                         }
-
+                        stationary = false;
                         autoBossRuned = true;
                     }
                 }
@@ -4127,11 +4139,17 @@ public class MainThread implements Runnable {
                 (state == State.UnidentifiedDungeon)) {
             if (activityDuration > 60) { //if we're past 60 seconds into the activity
                 if (!autoShrined) {
-                    if ((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay && guildButtonSeg != null) { //and it's been the battleDelay setting since last encounter
-                        BHBot.logger.autoshrine("No activity for " + BHBot.settings.battleDelay + "s, disabling ignore shrines");
+                    if ((stationary) || (((outOfEncounterTimestamp - inEncounterTimestamp) > 30) && guildButtonSeg != null)) {
+                        if (stationary) {
+                            BHBot.logger.autorune("No movement detected, disabling ignore shrines");
+                        } else {
+                            BHBot.logger.autorune("30s since last encounter, disabling ignore shrines");
+                            saveGameScreen("stationary-debug");
+                        }
 
                         if (!checkShrineSettings(true, false)) {
                             BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoShrine!");
+                            stationary = false;
                             return;
                         }
                         readScreen(100);
@@ -4146,12 +4164,20 @@ public class MainThread implements Runnable {
                             readScreen(500);
                         }
 
-                        if ((state == State.Raid && BHBot.settings.autoBossRune.containsKey("r")) || (state == State.Trials && BHBot.settings.autoBossRune.containsKey("t")) ||
-                                (state == State.Expedition && BHBot.settings.autoBossRune.containsKey("e")) || (state == State.Dungeon && BHBot.settings.autoBossRune.containsKey("d"))) {
-                                     handleMinorBossRunes();
-                        } else {
-                            BHBot.logger.autoshrine("Waiting " + BHBot.settings.shrineDelay + "s to use shrines");
-                            sleep(BHBot.settings.shrineDelay * SECOND); //if we're not changing runes we sleep while we activate shrines
+                        stationary = false;
+                        handleMinorBossRunes();
+
+                        while (!stationary) {
+                            //check for movement once a second, until we hit shrineDelay
+                            for (int i = 0; i <= BHBot.settings.shrineDelay; i++) {
+                                sleep(1000);
+                                motionChecker(0.2, 110, 680, 40, 400,2);;
+                                if (stationary) {
+                                    break;
+                                }
+                            }
+                            //if we don't pass the stationary check after shrineDelay we continue
+                            stationary = true;
                         }
 
                         if (!checkShrineSettings(false, false)) {
@@ -4171,6 +4197,7 @@ public class MainThread implements Runnable {
                         }
 
                         autoShrined = true;
+                        stationary = false;
                         BHBot.scheduler.resetIdleTime(true);
                     }
                 }
@@ -4195,7 +4222,7 @@ public class MainThread implements Runnable {
             motionChecker = true;
         }
 
-        if (stationaryCounter >= counter) { //if we have 2 stationary reports in a row
+        if (stationaryCounter >= counter) { //if we exceed the counter
             BHBot.logger.debug("Looks like we are stationary");
             stationary = true;
             stationaryCounter = 0;
