@@ -1014,14 +1014,12 @@ public class MainThread implements Runnable {
         while (!finished) {
             BHBot.scheduler.backupIdleTime();
             try {
-                // do some sleeping at the start of loop:
-                sleep(500);
                 BHBot.scheduler.process();
                 if (BHBot.scheduler.isPaused()) continue;
 
                 if (Misc.getTime() - BHBot.scheduler.getIdleTime() > MAX_IDLE_TIME) {
                     BHBot.logger.warn("Idle time exceeded... perhaps caught in a loop? Restarting... (state=" + state + ")");
-                    saveGameScreen("idle-timeout-error");
+                    saveGameScreen("idle-timeout-error", img, "errors");
 
                     // Safety measure to avoid being stuck forever in dungeons
                     if (state != State.Main && state != State.Loading) {
@@ -4068,7 +4066,7 @@ public class MainThread implements Runnable {
         }
 
         //small sleep so this function isn't too taxing on performance
-        sleep(2000);
+//        sleep(2000);
 
         // at the end of this method, revert idle time change (in order for idle detection to function properly):
         BHBot.scheduler.restoreIdleTime();
