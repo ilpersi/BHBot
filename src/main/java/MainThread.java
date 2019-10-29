@@ -2778,7 +2778,7 @@ public class MainThread implements Runnable {
                         if (BHBot.scheduler.collectBountiesImmediately) {
                             BHBot.scheduler.collectBountiesImmediately = false; //disable collectImmediately again if its been activated
                         }
-                        BHBot.logger.debug("Attempting bounties collection.");
+                        BHBot.logger.info("Checking for completed bounties");
 
                         clickInGame(130, 440);
 
