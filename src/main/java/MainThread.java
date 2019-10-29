@@ -450,6 +450,18 @@ public class MainThread implements Runnable {
         addCue("7", loadImage("cues/numbers/cue7.png"), null);
         addCue("8", loadImage("cues/numbers/cue8.png"), null);
         addCue("9", loadImage("cues/numbers/cue9.png"), null);
+        addCue("small0", loadImage("cues/numbers/small0.png"), null);
+        addCue("small1", loadImage("cues/numbers/small1.png"), null);
+        addCue("small2", loadImage("cues/numbers/small2.png"), null);
+        addCue("small3", loadImage("cues/numbers/small3.png"), null);
+        addCue("small4", loadImage("cues/numbers/small4.png"), null);
+        addCue("small5", loadImage("cues/numbers/small5.png"), null);
+        addCue("small6", loadImage("cues/numbers/small6.png"), null);
+        addCue("small7", loadImage("cues/numbers/small7.png"), null);
+        addCue("small8", loadImage("cues/numbers/small8.png"), null);
+        addCue("small9", loadImage("cues/numbers/small9.png"), null);
+
+
 
         // PvP strip related:
         addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos.png"), new Bounds(525, 140, 540, 370));
@@ -3853,8 +3865,16 @@ public class MainThread implements Runnable {
         seg = detectCue(cues.get("Defeat"));
         if (seg != null) {
             if (state == State.Invasion) {
+                readScreen();
+
+                //we read and store the Invasion level to return
+                MarvinImage subm = new MarvinImage(img.getSubimage(375, 20, 55, 20));
+                makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255), 64);
+                BufferedImage subimagetestbw = subm.getBufferedImage();
+                int num = readNumFromImg(subimagetestbw, "small");
+
                 counters.get(state).increaseDefeats();
-                BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed.");
+                BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Level reached: " + num);
             } else {
                 counters.get(state).increaseDefeats();
                 BHBot.logger.warn(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Defeat.");
@@ -6330,15 +6350,13 @@ public class MainThread implements Runnable {
      *
      * @return 0 in case of error.
      */
-    private int readNumFromImg(BufferedImage im) {
-        return readNumFromImg(im, "", new HashSet<>());
+    private int readNumFromImg(BufferedImage im, String numberPrefix) {
+        return readNumFromImg(im, numberPrefix, new HashSet<>());
     }
 
     private int readNumFromImg(BufferedImage im, @SuppressWarnings("SameParameterValue") String numberPrefix, HashSet<Integer> intToSkip) {
         List<ScreenNum> nums = new ArrayList<>();
 
-        //MarvinImageIO.saveImage(im, "difficulty_test.png");
-        //Misc.saveImage(imb, "difficulty_test2.png");
         for (int i = 0; i < 10; i++) {
             if (intToSkip.contains(i)) continue;
             List<MarvinSegment> list = FindSubimage.findSubimage(im, cues.get(numberPrefix + "" + i).im, 1.0, true, false, 0, 0, 0, 0);
@@ -6364,7 +6382,11 @@ public class MainThread implements Runnable {
         return d;
     }
 
-    private void makeImageBlackWhite(MarvinImage input, Color black, Color white) {
+    private void makeImageBlackWhite(MarvinImage input, Color black, Color white, int custom) {
+        /**
+         * Use the custom value to search for a specific RGB value if the numbers are not white
+         * E.G for invasion defeat screen the number colour is 64,64,64 in the background
+         */
         int[] map = input.getIntColorArray();
         int white_rgb = white.getRGB();
         int black_rgb = black.getRGB();
@@ -6377,7 +6399,7 @@ public class MainThread implements Runnable {
             int min = Misc.min(r, g, b);
             //int diff = (max-r) + (max-g) + (max-b);
             int diff = max - min;
-            if (diff >= 90 || (diff == 0 && max == 254)) { // it's a number color
+            if (diff >= 80 || (diff == 0 && max == custom)) { // it's a number color
                 map[i] = white_rgb;
             } else { // it's a blackish background
                 map[i] = black_rgb;
@@ -6417,11 +6439,11 @@ public class MainThread implements Runnable {
         MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 35, seg.y1 + 30, 55, 19));
 
         // make it white-gray (to facilitate cue recognition):
-        makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
+        makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255), 254);
 
         BufferedImage imb = im.getBufferedImage();
 
-        return readNumFromImg(imb);
+        return readNumFromImg(imb, "");
     }
 
     /* World boss reading and changing section */
@@ -6441,11 +6463,11 @@ public class MainThread implements Runnable {
         MarvinImage im = new MarvinImage(img.getSubimage(xOffset, yOffset, w, h));
 
         // make it white-gray (to facilitate cue recognition):
-        makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
+        makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255), 254);
 
         BufferedImage imb = im.getBufferedImage();
 
-        return readNumFromImg(imb);
+        return readNumFromImg(imb, "");
     }
 
     private void changeWorldBossTier(int target) {
@@ -6605,9 +6627,9 @@ public class MainThread implements Runnable {
         MarvinSegment seg;
 
         MarvinImage subm = new MarvinImage(img.getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu. Note that every while a "tier x" is written bellow it, so text is higher up (hence we need to scan a larger area)
-        makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
+        makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255), 254);
         BufferedImage sub = subm.getBufferedImage();
-        int num = readNumFromImg(sub);
+        int num = readNumFromImg(sub, "");
 //		BHBot.logger.info("num = " + Integer.toString(num));
         if (num == 0) {
             BHBot.logger.error("Error: unable to read difficulty level from a drop-down menu!");
@@ -6683,9 +6705,9 @@ public class MainThread implements Runnable {
         boolean success = true;
         while (true) {
             MarvinImage im = new MarvinImage(img.getSubimage(seg.x1 + 2, seg.y1 + 20, 35, 24));
-            makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
+            makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255), 254);
             BufferedImage imb = im.getBufferedImage();
-            d = readNumFromImg(imb);
+            d = readNumFromImg(imb, "");
             if (d != 0)
                 break; // success
 
@@ -6970,9 +6992,9 @@ public class MainThread implements Runnable {
 			readScreen(500);
 
 			MarvinImage subm = new MarvinImage(img.getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu
-			makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
+			makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255), 254);
 			BufferedImage sub = subm.getBufferedImage();
-			int num = readNumFromImg(sub);
+			int num = readNumFromImg(sub, "");
 			if (num == 0) {
 				BHBot.logger.info("Error: unable to read difficulty level from a drop-down menu!");
 				return;
