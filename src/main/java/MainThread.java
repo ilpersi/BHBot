@@ -723,13 +723,21 @@ public class MainThread implements Runnable {
 
         MarvinSegment seg;
 
+        int x1Mod = 0, x2Mod = 0, y1Mod = 0, y2Mod = 0;
+        if (!"".equals(doNotShareUrl)) {
+            x1Mod = -1;
+            x2Mod = -1;
+            y1Mod = -3;
+            y2Mod = -3;
+        }
+
         seg = FindSubimage.findImage(
                 src,
                 cue.im,
-                cue.bounds != null ? cue.bounds.x1 : 0,
-                cue.bounds != null ? cue.bounds.y1 : 0,
-                cue.bounds != null ? cue.bounds.x2 : 0,
-                cue.bounds != null ? cue.bounds.y2 : 0
+                cue.bounds != null ? cue.bounds.x1 + x1Mod : 0,
+                cue.bounds != null ? cue.bounds.y1 + y1Mod : 0,
+                cue.bounds != null ? cue.bounds.x2 + x2Mod : 0,
+                cue.bounds != null ? cue.bounds.y2 + y2Mod : 0
         );
 
         //source.drawRect(seg.x1, seg.y1, seg.x2-seg.x1, seg.y2-seg.y1, Color.blue);
