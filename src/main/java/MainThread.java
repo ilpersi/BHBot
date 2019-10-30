@@ -62,6 +62,7 @@ public class MainThread implements Runnable {
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     private static Map<String, Cue> cues = new HashMap<>();
     private static WebDriver driver;
+    private static By byElement;
     private static JavascriptExecutor jsExecutor;
     private static WebElement game;
     @SuppressWarnings("FieldCanBeLocal")
@@ -926,15 +927,16 @@ public class MainThread implements Runnable {
                 hideBrowser();
             if ("".equals(doNotShareUrl)) {
                 driver.navigate().to("http://www.kongregate.com/games/Juppiomenz/bit-heroes");
+                byElement = By.id("game");
             } else {
                 driver.navigate().to(doNotShareUrl);
-                doNotShareUrl = "";
+                byElement = By.xpath("//div[1]");
             }
             //sleep(5000);
             //driver.navigate().to("chrome://flags/#run-all-flash-in-allow-mode");
             //driver.navigate().to("chrome://settings/content");
             //BHBot.processCommand("shot");
-            game = driver.findElement(By.id("game"));
+            game = driver.findElement(byElement);
         } catch (Exception e) {
 
             if (e instanceof org.openqa.selenium.NoSuchElementException)
@@ -1012,7 +1014,7 @@ public class MainThread implements Runnable {
     }
 
     private void scrollGameIntoView() {
-        WebElement element = driver.findElement(By.id("game"));
+        WebElement element = driver.findElement(byElement);
 
         String scrollElementIntoMiddle = "var viewPortHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);"
                 + "var elementTop = arguments[0].getBoundingClientRect().top;"
@@ -1284,23 +1286,23 @@ public class MainThread implements Runnable {
                 // check if we are in the main menu:
                 seg = detectCue(cues.get("Main"));
 
+                if (seg != null) {
 
-                if ("".equals(doNotShareUrl)) {
-                    Pattern regex = Pattern.compile("\"(https://.+?\\?DO_NOT_SHARE_THIS_LINK[^\"]+?)\"");
-                    LogEntries les = driver.manage().logs().get(LogType.PERFORMANCE);
-                    for (LogEntry le : les) {
-                        Matcher regexMatcher = regex.matcher(le.getMessage());
-                        if (regexMatcher.find()) {
-                            BHBot.logger.debug("DO NOT SHARE URL = " + regexMatcher.group(1));
-                            doNotShareUrl = regexMatcher.group(1);
-                            break;
+                    if ("".equals(doNotShareUrl)) {
+                        Pattern regex = Pattern.compile("\"(https://.+?\\?DO_NOT_SHARE_THIS_LINK[^\"]+?)\"");
+                        LogEntries les = driver.manage().logs().get(LogType.PERFORMANCE);
+                        for (LogEntry le : les) {
+                            Matcher regexMatcher = regex.matcher(le.getMessage());
+                            if (regexMatcher.find()) {
+                                BHBot.logger.debug("DO NOT SHARE URL = " + regexMatcher.group(1));
+                                doNotShareUrl = regexMatcher.group(1);
+                                break;
+                            }
                         }
+                        restart(false);
+                        continue;
                     }
 
-                    restart();
-                }
-
-                if (seg != null) {
                     state = State.Main;
 
                     //Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
