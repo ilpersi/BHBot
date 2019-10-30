@@ -723,6 +723,7 @@ public class MainThread implements Runnable {
 
         MarvinSegment seg;
 
+        // Offset for do_not_share url missplacement of cues
         int x1Mod = 0, x2Mod = 0, y1Mod = 0, y2Mod = 0;
         if (!"".equals(doNotShareUrl)) {
             x1Mod = -1;
