@@ -17,6 +17,11 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
@@ -134,6 +139,8 @@ public class MainThread implements Runnable {
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
     private Iterator<String> activitysIterator = BHBot.settings.activitiesEnabled.iterator();
+
+    private static String doNotShareUrl = "";
 
     /*
           Match the character “z” literally (case sensitive) «z»
@@ -628,6 +635,13 @@ public class MainThread implements Runnable {
         options.setExperimentalOption("prefs", prefs);
 
         DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+
+        if ("".equals(doNotShareUrl)) {
+            LoggingPreferences logPrefs = new LoggingPreferences();
+            logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
+            options.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
+        }
+
         capabilities.setCapability("chrome.verbose", false);
         capabilities.setCapability(ChromeOptions.CAPABILITY, options);
 //		driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
@@ -910,7 +924,12 @@ public class MainThread implements Runnable {
             connectDriver();
             if (BHBot.settings.hideWindowOnRestart)
                 hideBrowser();
-            driver.navigate().to("http://www.kongregate.com/games/Juppiomenz/bit-heroes");
+            if ("".equals(doNotShareUrl)) {
+                driver.navigate().to("http://www.kongregate.com/games/Juppiomenz/bit-heroes");
+            } else {
+                driver.navigate().to(doNotShareUrl);
+                doNotShareUrl = "";
+            }
             //sleep(5000);
             //driver.navigate().to("chrome://flags/#run-all-flash-in-allow-mode");
             //driver.navigate().to("chrome://settings/content");
@@ -1264,6 +1283,23 @@ public class MainThread implements Runnable {
 
                 // check if we are in the main menu:
                 seg = detectCue(cues.get("Main"));
+
+
+                if ("".equals(doNotShareUrl)) {
+                    Pattern regex = Pattern.compile("\"(https://.+?\\?DO_NOT_SHARE_THIS_LINK[^\"]+?)\"");
+                    LogEntries les = driver.manage().logs().get(LogType.PERFORMANCE);
+                    for (LogEntry le : les) {
+                        Matcher regexMatcher = regex.matcher(le.getMessage());
+                        if (regexMatcher.find()) {
+                            BHBot.logger.debug("DO NOT SHARE URL = " + regexMatcher.group(1));
+                            doNotShareUrl = regexMatcher.group(1);
+                            break;
+                        }
+                    }
+
+                    restart();
+                }
+
                 if (seg != null) {
                     state = State.Main;
 
