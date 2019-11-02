@@ -596,6 +596,16 @@ public class MainThread implements Runnable {
         addCue("ItemSet", loadImage("cues/items/cueItemSet.png"), null); // Set Item border
         addCue("ItemMyt", loadImage("cues/items/cueItemMyt.png"), null); // Mythical Item border
 
+        //weekly reward cues
+        //these include the top of the loot window so they aren't triggered by the text in the activity panel
+        addCue("PVP_Rewards", loadImage("cues/weeklyrewards/pvp.png"), new Bounds(290, 130, 510, 160));
+        addCue("Trials_Rewards", loadImage("cues/weeklyrewards/trials.png"), new Bounds(290, 130, 510, 160));
+        addCue("Gauntlet_Rewards", loadImage("cues/weeklyrewards/gauntlet.png"), new Bounds(290, 130, 510, 160));
+        addCue("GVG_Rewards", loadImage("cues/weeklyrewards/gvg.png"), new Bounds(290, 130, 510, 160));
+        addCue("Invasion_Rewards", loadImage("cues/weeklyrewards/invasion.png"), new Bounds(290, 130, 510, 160));
+        addCue("Expedition_Rewards", loadImage("cues/weeklyrewards/expedition.png"), new Bounds(290, 130, 510, 160));
+        addCue("Fishing_Rewards", loadImage("cues/weeklyrewards/fishing.png"), new Bounds(290, 130, 510, 160));
+
 
         int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
 
@@ -1206,32 +1216,8 @@ public class MainThread implements Runnable {
                     continue;
                 }
 
-                // check for weekly (GvG, PvP, Trial, Gauntlet) rewards popup (and also for rewards in dungeons, which get auto-closed though):
-                // (note that several, 2 or even 3 such popups may open one after another)
-                seg = detectCue(cues.get("WeeklyRewards"));
-                if (seg != null) {
-                    BufferedImage weeklyImg = img;
-
-                    // hopefully we won't close some other important window that has the same fingerprint! (stuff that you find in dungeons has same fingerprint, but perhaps some other dialogs too...)
-                    seg = detectCue(cues.get("X"), 5 * SECOND);
-                    if (seg != null)
-                        clickOnSeg(seg);
-                    else if (state == State.Loading || state == State.Main) {
-                        BHBot.logger.error("Problem: 'Weekly reward' popup detected, however could not detect the close ('X') button. Restarting...");
-                        restart();
-                        continue;
-                    }
-
-                    if (state == State.Loading || state == State.Main) { // inform about weekly reward only if we're not in a dungeon (in a dungeon it will close the normal reward popup)
-                        BHBot.logger.info("Weekly reward claimed successfully.");
-                        if ((BHBot.settings.screenshots.contains("w"))) {
-                            saveGameScreen("weekly_reward", weeklyImg);
-                        }
-                    }
-                    readScreen(2 * SECOND);
-
-                    continue;
-                }
+                //Handle weekly rewards from events
+                handleWeeklyRewards();
 
                 // check for "recently disconnected" popup:
                 seg = detectCue(cues.get("RecentlyDisconnected"));
@@ -7970,6 +7956,127 @@ public class MainThread implements Runnable {
         readScreen();
         BufferedImage img2 = img;
         CueCompare.imageDifference(img1, img2, 0.8, 0, 800, 0 ,520);
+    }
+
+    void handleWeeklyRewards() {
+        // check for weekly rewards popup
+        // (note that several, 2 or even 3 such popups may open one after another)
+        MarvinSegment seg;
+        if (state == State.Loading || state == State.Main) {
+            readScreen();
+
+            seg = detectCue(cues.get("PVP_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("PvP reward popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("PVP reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("pvp_reward","rewards", reward);
+                }
+            }
+
+            seg = detectCue(cues.get("Trials_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("Trials reward popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("Trials reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("trials_reward","rewards", reward);
+                }
+            }
+
+            seg = detectCue(cues.get("Gauntlet_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("Gauntlet reward popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("Gauntlet reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("gauntlet_reward","rewards", reward);
+                }
+            }
+
+            seg = detectCue(cues.get("Fishing_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("Fishing reward popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("Fishing reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("fishing_reward","rewards", reward);
+                }
+            }
+
+            seg = detectCue(cues.get("Invasion_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("Invasion reward popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("Invasion reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("invasion_reward","rewards", reward);
+                }
+            }
+
+            seg = detectCue(cues.get("Expedition_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("Expedition popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("Expedition reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("expedition_reward","rewards", reward);
+                }
+            }
+
+            seg = detectCue(cues.get("GVG_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("GVG popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("GVG reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("gvg_reward","rewards", reward);
+                }
+            }
+        }
     }
 
 }
