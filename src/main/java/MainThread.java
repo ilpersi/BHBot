@@ -450,6 +450,18 @@ public class MainThread implements Runnable {
         addCue("7", loadImage("cues/numbers/cue7.png"), null);
         addCue("8", loadImage("cues/numbers/cue8.png"), null);
         addCue("9", loadImage("cues/numbers/cue9.png"), null);
+        addCue("small0", loadImage("cues/numbers/small0.png"), null);
+        addCue("small1", loadImage("cues/numbers/small1.png"), null);
+        addCue("small2", loadImage("cues/numbers/small2.png"), null);
+        addCue("small3", loadImage("cues/numbers/small3.png"), null);
+        addCue("small4", loadImage("cues/numbers/small4.png"), null);
+        addCue("small5", loadImage("cues/numbers/small5.png"), null);
+        addCue("small6", loadImage("cues/numbers/small6.png"), null);
+        addCue("small7", loadImage("cues/numbers/small7.png"), null);
+        addCue("small8", loadImage("cues/numbers/small8.png"), null);
+        addCue("small9", loadImage("cues/numbers/small9.png"), null);
+
+
 
         // PvP strip related:
         addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos.png"), new Bounds(525, 140, 540, 370));
@@ -583,6 +595,16 @@ public class MainThread implements Runnable {
         addCue("ItemLeg", loadImage("cues/items/cueItemLeg.png"), null); // Legendary Item border
         addCue("ItemSet", loadImage("cues/items/cueItemSet.png"), null); // Set Item border
         addCue("ItemMyt", loadImage("cues/items/cueItemMyt.png"), null); // Mythical Item border
+
+        //weekly reward cues
+        //these include the top of the loot window so they aren't triggered by the text in the activity panel
+        addCue("PVP_Rewards", loadImage("cues/weeklyrewards/pvp.png"), new Bounds(290, 130, 510, 160));
+        addCue("Trials_Rewards", loadImage("cues/weeklyrewards/trials.png"), new Bounds(290, 130, 510, 160));
+        addCue("Gauntlet_Rewards", loadImage("cues/weeklyrewards/gauntlet.png"), new Bounds(290, 130, 510, 160));
+        addCue("GVG_Rewards", loadImage("cues/weeklyrewards/gvg.png"), new Bounds(290, 130, 510, 160));
+        addCue("Invasion_Rewards", loadImage("cues/weeklyrewards/invasion.png"), new Bounds(290, 130, 510, 160));
+        addCue("Expedition_Rewards", loadImage("cues/weeklyrewards/expedition.png"), new Bounds(290, 130, 510, 160));
+        addCue("Fishing_Rewards", loadImage("cues/weeklyrewards/fishing.png"), new Bounds(290, 130, 510, 160));
 
 
         int newFamCnt = loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
@@ -1054,7 +1076,7 @@ public class MainThread implements Runnable {
                 }
                 BHBot.scheduler.resetIdleTime();
 
-                moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
+//                moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
                 readScreen();
                 MarvinSegment seg;
 
@@ -1194,32 +1216,8 @@ public class MainThread implements Runnable {
                     continue;
                 }
 
-                // check for weekly (GvG, PvP, Trial, Gauntlet) rewards popup (and also for rewards in dungeons, which get auto-closed though):
-                // (note that several, 2 or even 3 such popups may open one after another)
-                seg = detectCue(cues.get("WeeklyRewards"));
-                if (seg != null) {
-                    BufferedImage weeklyImg = img;
-
-                    // hopefully we won't close some other important window that has the same fingerprint! (stuff that you find in dungeons has same fingerprint, but perhaps some other dialogs too...)
-                    seg = detectCue(cues.get("X"), 5 * SECOND);
-                    if (seg != null)
-                        clickOnSeg(seg);
-                    else if (state == State.Loading || state == State.Main) {
-                        BHBot.logger.error("Problem: 'Weekly reward' popup detected, however could not detect the close ('X') button. Restarting...");
-                        restart();
-                        continue;
-                    }
-
-                    if (state == State.Loading || state == State.Main) { // inform about weekly reward only if we're not in a dungeon (in a dungeon it will close the normal reward popup)
-                        BHBot.logger.info("Weekly reward claimed successfully.");
-                        if ((BHBot.settings.screenshots.contains("w"))) {
-                            saveGameScreen("weekly_reward", weeklyImg);
-                        }
-                    }
-                    readScreen(2 * SECOND);
-
-                    continue;
-                }
+                //Handle weekly rewards from events
+                handleWeeklyRewards();
 
                 // check for "recently disconnected" popup:
                 seg = detectCue(cues.get("RecentlyDisconnected"));
@@ -2766,7 +2764,7 @@ public class MainThread implements Runnable {
                         if (BHBot.scheduler.collectBountiesImmediately) {
                             BHBot.scheduler.collectBountiesImmediately = false; //disable collectImmediately again if its been activated
                         }
-                        BHBot.logger.debug("Attempting bounties collection.");
+                        BHBot.logger.info("Checking for completed bounties");
 
                         clickInGame(130, 440);
 
@@ -3864,8 +3862,16 @@ public class MainThread implements Runnable {
         seg = detectCue(cues.get("Defeat"));
         if (seg != null) {
             if (state == State.Invasion) {
+                readScreen();
+
+                //we read and store the Invasion level to return
+                MarvinImage subm = new MarvinImage(img.getSubimage(375, 20, 55, 20));
+                makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255), 64);
+                BufferedImage subimagetestbw = subm.getBufferedImage();
+                int num = readNumFromImg(subimagetestbw, "small", new HashSet<>());
+
                 counters.get(state).increaseDefeats();
-                BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed.");
+                BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Level reached: " + num);
             } else {
                 counters.get(state).increaseDefeats();
                 BHBot.logger.warn(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Defeat.");
@@ -6129,7 +6135,7 @@ public class MainThread implements Runnable {
             }
 
             try {
-                String pmFileName = saveGameScreen("pm");
+                String pmFileName = saveGameScreen("pm","pm");
                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyPM) {
                     if (pmFileName != null) {
                         sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
@@ -6369,8 +6375,6 @@ public class MainThread implements Runnable {
     private int readNumFromImg(BufferedImage im, @SuppressWarnings("SameParameterValue") String numberPrefix, HashSet<Integer> intToSkip) {
         List<ScreenNum> nums = new ArrayList<>();
 
-        //MarvinImageIO.saveImage(im, "difficulty_test.png");
-        //Misc.saveImage(imb, "difficulty_test2.png");
         for (int i = 0; i < 10; i++) {
             if (intToSkip.contains(i)) continue;
             List<MarvinSegment> list = FindSubimage.findSubimage(im, cues.get(numberPrefix + "" + i).im, 1.0, true, false, 0, 0, 0, 0);
@@ -6397,6 +6401,17 @@ public class MainThread implements Runnable {
     }
 
     private void makeImageBlackWhite(MarvinImage input, Color black, Color white) {
+        makeImageBlackWhite(input, black, white, 254);
+    }
+
+    /**
+     * @param input The input image that will be converted in black and white scale
+     * @param black White color treshold
+     * @param white Black color treshold
+     * @param custom Use the custom value to search for a specific RGB value if the numbers are not white
+     *               E.G for invasion defeat screen the number colour is 64,64,64 in the background
+     */
+    private void makeImageBlackWhite(MarvinImage input, Color black, Color white, int custom) {
         int[] map = input.getIntColorArray();
         int white_rgb = white.getRGB();
         int black_rgb = black.getRGB();
@@ -6409,7 +6424,7 @@ public class MainThread implements Runnable {
             int min = Misc.min(r, g, b);
             //int diff = (max-r) + (max-g) + (max-b);
             int diff = max - min;
-            if (diff >= 90 || (diff == 0 && max == 254)) { // it's a number color
+            if (diff >= 80 || (diff == 0 && max == custom)) { // it's a number color
                 map[i] = white_rgb;
             } else { // it's a blackish background
                 map[i] = black_rgb;
@@ -7002,9 +7017,9 @@ public class MainThread implements Runnable {
 			readScreen(500);
 
 			MarvinImage subm = new MarvinImage(img.getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu
-			makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
+			makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255), 254);
 			BufferedImage sub = subm.getBufferedImage();
-			int num = readNumFromImg(sub);
+			int num = readNumFromImg(sub, "");
 			if (num == 0) {
 				BHBot.logger.info("Error: unable to read difficulty level from a drop-down menu!");
 				return;
@@ -7973,6 +7988,127 @@ public class MainThread implements Runnable {
         readScreen();
         BufferedImage img2 = img;
         CueCompare.imageDifference(img1, img2, 0.8, 0, 800, 0 ,520);
+    }
+
+    void handleWeeklyRewards() {
+        // check for weekly rewards popup
+        // (note that several, 2 or even 3 such popups may open one after another)
+        MarvinSegment seg;
+        if (state == State.Loading || state == State.Main) {
+            readScreen();
+
+            seg = detectCue(cues.get("PVP_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("PvP reward popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("PVP reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("pvp_reward","rewards", reward);
+                }
+            }
+
+            seg = detectCue(cues.get("Trials_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("Trials reward popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("Trials reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("trials_reward","rewards", reward);
+                }
+            }
+
+            seg = detectCue(cues.get("Gauntlet_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("Gauntlet reward popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("Gauntlet reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("gauntlet_reward","rewards", reward);
+                }
+            }
+
+            seg = detectCue(cues.get("Fishing_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("Fishing reward popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("Fishing reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("fishing_reward","rewards", reward);
+                }
+            }
+
+            seg = detectCue(cues.get("Invasion_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("Invasion reward popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("Invasion reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("invasion_reward","rewards", reward);
+                }
+            }
+
+            seg = detectCue(cues.get("Expedition_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("Expedition popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("Expedition reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("expedition_reward","rewards", reward);
+                }
+            }
+
+            seg = detectCue(cues.get("GVG_Rewards"));
+            if (seg != null) {
+                BufferedImage reward = img;
+                seg = detectCue(cues.get("X"), 5 * SECOND);
+                if (seg != null) clickOnSeg(seg);
+                else {
+                    BHBot.logger.error("GVG popup detected, however could not detect the X button. Restarting...");
+                    restart();
+                }
+
+                BHBot.logger.info("GVG reward claimed successfully.");
+                if ((BHBot.settings.screenshots.contains("w"))) {
+                    saveGameScreen("gvg_reward","rewards", reward);
+                }
+            }
+        }
     }
 
 }
