@@ -6135,7 +6135,7 @@ public class MainThread implements Runnable {
             }
 
             try {
-                String pmFileName = saveGameScreen("pm");
+                String pmFileName = saveGameScreen("pm","pm");
                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyPM) {
                     if (pmFileName != null) {
                         sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
