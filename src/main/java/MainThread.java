@@ -1076,7 +1076,7 @@ public class MainThread implements Runnable {
                 }
                 BHBot.scheduler.resetIdleTime();
 
-                moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
+//                moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
                 readScreen();
                 MarvinSegment seg;
 
