@@ -1075,7 +1075,7 @@ public class MainThread implements Runnable {
                 }
                 BHBot.scheduler.resetIdleTime();
 
-//                moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
+                moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
                 readScreen();
                 MarvinSegment seg;
 
@@ -7992,7 +7992,7 @@ public class MainThread implements Runnable {
         CueCompare.imageDifference(img1, img2, 0.8, 0, 800, 0, 520);
     }
 
-    void handleWeeklyRewards() {
+    private void handleWeeklyRewards() {
         // check for weekly rewards popup
         // (note that several, 2 or even 3 such popups may open one after another)
         MarvinSegment seg;
