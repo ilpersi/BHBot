@@ -462,7 +462,6 @@ public class MainThread implements Runnable {
         addCue("small9", loadImage("cues/numbers/small9.png"), null);
 
 
-
         // PvP strip related:
         addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos.png"), new Bounds(525, 140, 540, 370));
         addCue("StripEquipped", loadImage("cues/strip/cueStripEquipped.png"), new Bounds(465, 180, 485, 200)); // the little "E" icon upon an equipped item (the top-left item though, we want to detect just that one)
@@ -1172,7 +1171,7 @@ public class MainThread implements Runnable {
                         if ((BHBot.settings.screenshots.contains("d"))) {
                             saveGameScreen("daily_reward", "rewards");
                         }
-                         clickOnSeg(seg);
+                        clickOnSeg(seg);
                     } else {
                         BHBot.logger.error("Problem: 'Daily reward' popup detected, however could not detect the 'claim' button. Restarting...");
                         restart();
@@ -2356,7 +2355,7 @@ public class MainThread implements Runnable {
                                 // if exped difficulty isn't a multiple of 5 we reduce it
                                 int difficultyModule = targetDifficulty % 5;
                                 if (difficultyModule != 0) {
-                                    BHBot.logger.warn(targetDifficulty + " is not a multiplier of 5! Rounding it to " + (targetDifficulty - difficultyModule) + "..." );
+                                    BHBot.logger.warn(targetDifficulty + " is not a multiplier of 5! Rounding it to " + (targetDifficulty - difficultyModule) + "...");
                                     targetDifficulty -= difficultyModule;
                                 }
                                 // If difficulty is lesser that 5, we round it
@@ -2578,7 +2577,7 @@ public class MainThread implements Runnable {
                             readScreen(2 * SECOND); //wait for screen to stablise
 
                             //world boss type selection
-                            if (!handleWorldBossSelection(wbType)){
+                            if (!handleWorldBossSelection(wbType)) {
                                 BHBot.logger.error("Impossible to change select the desired World Boss. Restarting...");
                                 restart();
                                 continue;
@@ -3818,7 +3817,8 @@ public class MainThread implements Runnable {
             seg = detectCue(cues.get("X"), 5 * SECOND);
             if (seg != null)
                 clickOnSeg(seg);
-            else BHBot.logger.warn("Error #1: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
+            else
+                BHBot.logger.warn("Error #1: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 
             if (state == State.Expedition) {
 
@@ -4183,7 +4183,7 @@ public class MainThread implements Runnable {
                             //check for movement once a second, until we hit shrineDelay
                             for (int i = 0; i <= BHBot.settings.shrineDelay; i++) {
                                 sleep(1000);
-                                motionChecker(0.2, 110, 680, 40, 400,2);;
+                                motionChecker(0.2, 110, 680, 40, 400, 2);
                                 if (stationary) {
                                     break;
                                 }
@@ -4220,14 +4220,14 @@ public class MainThread implements Runnable {
         if (motionChecker) {
             readScreen();
             movement1 = img;
-            if (CueCompare.imageDifference(movement1, movement2, sensitivity, x1 ,x2 ,y1 ,y2)) {
+            if (CueCompare.imageDifference(movement1, movement2, sensitivity, x1, x2, y1, y2)) {
                 stationaryCounter++;
             } else stationaryCounter = 0;
             motionChecker = false;
         } else {
             readScreen();
             movement2 = img;
-            if (CueCompare.imageDifference(movement1, movement2, sensitivity, x1 ,x2 ,y1 ,y2)) {
+            if (CueCompare.imageDifference(movement1, movement2, sensitivity, x1, x2, y1, y2)) {
                 stationaryCounter++;
             } else stationaryCounter = 0;
             motionChecker = true;
@@ -4827,7 +4827,8 @@ public class MainThread implements Runnable {
                 String bribeScreenName = saveGameScreen("bribe-screen", tmpScreen);
                 File bribeScreenFile = bribeScreenName != null ? new File(bribeScreenName) : null;
                 sendPushOverMessage("Creature Bribe", "A familiar has been bribed!", "bugle", MessagePriority.NORMAL, bribeScreenFile);
-                if (bribeScreenFile != null && !bribeScreenFile.delete()) BHBot.logger.warn("Impossible to delete tmp img file for bribe.");
+                if (bribeScreenFile != null && !bribeScreenFile.delete())
+                    BHBot.logger.warn("Impossible to delete tmp img file for bribe.");
             }
             return true;
         }
@@ -6135,7 +6136,7 @@ public class MainThread implements Runnable {
             }
 
             try {
-                String pmFileName = saveGameScreen("pm","pm");
+                String pmFileName = saveGameScreen("pm", "pm");
                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyPM) {
                     if (pmFileName != null) {
                         sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
@@ -6327,6 +6328,7 @@ public class MainThread implements Runnable {
 
     /**
      * This method will handle the success threshold based on the state
+     *
      * @param state the State used to check the success threshold
      */
     private void handleSuccessTreshold(State state) {
@@ -6405,9 +6407,9 @@ public class MainThread implements Runnable {
     }
 
     /**
-     * @param input The input image that will be converted in black and white scale
-     * @param black White color treshold
-     * @param white Black color treshold
+     * @param input  The input image that will be converted in black and white scale
+     * @param black  White color treshold
+     * @param white  Black color treshold
      * @param custom Use the custom value to search for a specific RGB value if the numbers are not white
      *               E.G for invasion defeat screen the number colour is 64,64,64 in the background
      */
@@ -7568,7 +7570,7 @@ public class MainThread implements Runnable {
 
             if (DroppedItem.length() > 0) {
                 String victoryScreenName = saveGameScreen("victory-screen", victoryPopUpImg);
-                File victoryScreenFile = victoryScreenName != null ? new File(victoryScreenName): null;
+                File victoryScreenFile = victoryScreenName != null ? new File(victoryScreenName) : null;
                 sendPushOverMessage(state + " item Drop", DroppedItem, "magic", MessagePriority.HIGH, victoryScreenFile);
                 if (victoryScreenFile != null && !victoryScreenFile.delete())
                     BHBot.logger.warn("Impossible to delete tmp img file for victory drop.");
@@ -7967,27 +7969,27 @@ public class MainThread implements Runnable {
         }
 
         static WorldBoss fromLetter(String Letter) {
-            for (WorldBoss wb: WorldBoss.values()) {
+            for (WorldBoss wb : WorldBoss.values()) {
                 if (wb.getLetter().equals(Letter)) return wb;
             }
             return null;
         }
 
         static WorldBoss fromNumber(int number) {
-            for (WorldBoss wb: WorldBoss.values()) {
+            for (WorldBoss wb : WorldBoss.values()) {
                 if (wb.getNumber() == number) return wb;
             }
             return null;
         }
     }
 
-    void cueDifference(){ //return similarity % between two screenshots taken 3 seconds apart
+    void cueDifference() { //return similarity % between two screenshots taken 3 seconds apart
         readScreen();
         BufferedImage img1 = img;
         sleep(2500);
         readScreen();
         BufferedImage img2 = img;
-        CueCompare.imageDifference(img1, img2, 0.8, 0, 800, 0 ,520);
+        CueCompare.imageDifference(img1, img2, 0.8, 0, 800, 0, 520);
     }
 
     void handleWeeklyRewards() {
@@ -7997,115 +7999,30 @@ public class MainThread implements Runnable {
         if (state == State.Loading || state == State.Main) {
             readScreen();
 
-            seg = detectCue(cues.get("PVP_Rewards"));
-            if (seg != null) {
-                BufferedImage reward = img;
-                seg = detectCue(cues.get("X"), 5 * SECOND);
-                if (seg != null) clickOnSeg(seg);
-                else {
-                    BHBot.logger.error("PvP reward popup detected, however could not detect the X button. Restarting...");
-                    restart();
-                }
+            HashMap<String, Cue> weeklyRewards = new HashMap<>();
+            weeklyRewards.put("PVP", cues.get("PVP_Rewards"));
+            weeklyRewards.put("Trials", cues.get("Trials_Rewards"));
+            weeklyRewards.put("Gauntlet", cues.get("Gauntlet_Rewards"));
+            weeklyRewards.put("Fishing", cues.get("Fishing_Rewards"));
+            weeklyRewards.put("Invasion", cues.get("Invasion_Rewards"));
+            weeklyRewards.put("Expedition", cues.get("Expedition_Rewards"));
+            weeklyRewards.put("GVG", cues.get("GVG_Rewards"));
 
-                BHBot.logger.info("PVP reward claimed successfully.");
-                if ((BHBot.settings.screenshots.contains("w"))) {
-                    saveGameScreen("pvp_reward","rewards", reward);
-                }
-            }
+            for (Map.Entry<String, Cue> weeklyRewardEntry : weeklyRewards.entrySet()) {
+                seg = detectCue(weeklyRewardEntry.getValue());
+                if (seg != null) {
+                    BufferedImage reward = img;
+                    seg = detectCue("X", 5 * SECOND);
+                    if (seg != null) clickOnSeg(seg);
+                    else {
+                        BHBot.logger.error(weeklyRewardEntry.getKey() + " reward popup detected, however could not detect the X button. Restarting...");
+                        restart();
+                    }
 
-            seg = detectCue(cues.get("Trials_Rewards"));
-            if (seg != null) {
-                BufferedImage reward = img;
-                seg = detectCue(cues.get("X"), 5 * SECOND);
-                if (seg != null) clickOnSeg(seg);
-                else {
-                    BHBot.logger.error("Trials reward popup detected, however could not detect the X button. Restarting...");
-                    restart();
-                }
-
-                BHBot.logger.info("Trials reward claimed successfully.");
-                if ((BHBot.settings.screenshots.contains("w"))) {
-                    saveGameScreen("trials_reward","rewards", reward);
-                }
-            }
-
-            seg = detectCue(cues.get("Gauntlet_Rewards"));
-            if (seg != null) {
-                BufferedImage reward = img;
-                seg = detectCue(cues.get("X"), 5 * SECOND);
-                if (seg != null) clickOnSeg(seg);
-                else {
-                    BHBot.logger.error("Gauntlet reward popup detected, however could not detect the X button. Restarting...");
-                    restart();
-                }
-
-                BHBot.logger.info("Gauntlet reward claimed successfully.");
-                if ((BHBot.settings.screenshots.contains("w"))) {
-                    saveGameScreen("gauntlet_reward","rewards", reward);
-                }
-            }
-
-            seg = detectCue(cues.get("Fishing_Rewards"));
-            if (seg != null) {
-                BufferedImage reward = img;
-                seg = detectCue(cues.get("X"), 5 * SECOND);
-                if (seg != null) clickOnSeg(seg);
-                else {
-                    BHBot.logger.error("Fishing reward popup detected, however could not detect the X button. Restarting...");
-                    restart();
-                }
-
-                BHBot.logger.info("Fishing reward claimed successfully.");
-                if ((BHBot.settings.screenshots.contains("w"))) {
-                    saveGameScreen("fishing_reward","rewards", reward);
-                }
-            }
-
-            seg = detectCue(cues.get("Invasion_Rewards"));
-            if (seg != null) {
-                BufferedImage reward = img;
-                seg = detectCue(cues.get("X"), 5 * SECOND);
-                if (seg != null) clickOnSeg(seg);
-                else {
-                    BHBot.logger.error("Invasion reward popup detected, however could not detect the X button. Restarting...");
-                    restart();
-                }
-
-                BHBot.logger.info("Invasion reward claimed successfully.");
-                if ((BHBot.settings.screenshots.contains("w"))) {
-                    saveGameScreen("invasion_reward","rewards", reward);
-                }
-            }
-
-            seg = detectCue(cues.get("Expedition_Rewards"));
-            if (seg != null) {
-                BufferedImage reward = img;
-                seg = detectCue(cues.get("X"), 5 * SECOND);
-                if (seg != null) clickOnSeg(seg);
-                else {
-                    BHBot.logger.error("Expedition popup detected, however could not detect the X button. Restarting...");
-                    restart();
-                }
-
-                BHBot.logger.info("Expedition reward claimed successfully.");
-                if ((BHBot.settings.screenshots.contains("w"))) {
-                    saveGameScreen("expedition_reward","rewards", reward);
-                }
-            }
-
-            seg = detectCue(cues.get("GVG_Rewards"));
-            if (seg != null) {
-                BufferedImage reward = img;
-                seg = detectCue(cues.get("X"), 5 * SECOND);
-                if (seg != null) clickOnSeg(seg);
-                else {
-                    BHBot.logger.error("GVG popup detected, however could not detect the X button. Restarting...");
-                    restart();
-                }
-
-                BHBot.logger.info("GVG reward claimed successfully.");
-                if ((BHBot.settings.screenshots.contains("w"))) {
-                    saveGameScreen("gvg_reward","rewards", reward);
+                    BHBot.logger.info(weeklyRewardEntry.getKey() + " reward claimed successfully.");
+                    if ((BHBot.settings.screenshots.contains("w"))) {
+                        saveGameScreen(weeklyRewardEntry.getKey().toLowerCase() + "_reward", "rewards", reward);
+                    }
                 }
             }
         }
