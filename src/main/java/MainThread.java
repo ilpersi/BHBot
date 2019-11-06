@@ -4105,7 +4105,7 @@ public class MainThread implements Runnable {
                 state == State.UnidentifiedDungeon) {
             if (activityDuration > 30) { //if we're past 30 seconds into the activity
                 if (!autoBossRuned) {
-                    if ((stationary) || (((outOfEncounterTimestamp - inEncounterTimestamp) > 30) && guildButtonSeg != null)) {
+                    if ((stationary) || (((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) && guildButtonSeg != null)) {
                         if (stationary) {
                             BHBot.logger.autorune("No movement detected, changing runes for boss encounter");
                         } else {
