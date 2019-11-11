@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Betalord
@@ -198,5 +199,15 @@ public class Misc {
             BHBot.logger.error("Impossible to get GIT information", e);
         }
         return properties;
+    }
+
+    static String returnTime(Long time) {
+
+        String humanTime = String.format("%01dm%02ds", //format to mss
+                TimeUnit.MILLISECONDS.toMinutes(time),
+                TimeUnit.MILLISECONDS.toSeconds(time) -
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time)));
+
+        return humanTime;
     }
 }
