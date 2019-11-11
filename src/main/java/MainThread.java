@@ -84,7 +84,12 @@ public class MainThread implements Runnable {
     private BufferedImage movement2;
     private long outOfEncounterTimestamp = 0;
     private long inEncounterTimestamp = 0;
-    private long runMillisAvg = 0;
+    private long raidRuntimeAverage = 0;
+    private long dungeonRuntimeAverage = 0;
+    private long trialsRuntimeAverage = 0;
+    private long gauntletRuntimeAverage = 0;
+    private long expeditionRuntimeAverage = 0;
+    private long invasionRuntimeAverage = 0;
     private boolean specialDungeon; //d4 check for closing properly when no energy
     private String expeditionFailsafePortal = "";
     private int expeditionFailsafeDifficulty = 0;
@@ -1308,7 +1313,7 @@ public class MainThread implements Runnable {
                         handleConsumables();
                     }
 
-                    //comment for faster testing
+                    //uncommentcomment for faster launching while testing
 //					oneTimeshrineCheck = true;
 //					oneTimeRuneCheck = true;
 
@@ -2716,14 +2721,6 @@ public class MainThread implements Runnable {
                                             }
                                             BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " started!");
                                             state = State.WorldBoss;
-                                            sleep(6 * SECOND); //long wait to make sure we are in the world boss dungeon
-
-                                            readScreen();
-                                            MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
-                                            if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
-                                                BHBot.logger.info("World Boss started but no encounter detected, restarting");
-                                                restart();
-                                            }
                                         } else { //generic error / unknown action restart
                                             BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
                                             saveGameScreen("wb-no-start-button", "errors");
@@ -2907,7 +2904,7 @@ public class MainThread implements Runnable {
             numConsecutiveException = 0; // reset exception counter
             BHBot.scheduler.restoreIdleTime(); // revert changes to idle time
             if (finished) break; // skip sleeping if finished flag has been set!
-            sleep(SECOND);
+            sleep(1 * SECOND);
         } // main while loop
 
         BHBot.logger.info("Stopping main thread...");
@@ -3436,7 +3433,21 @@ public class MainThread implements Runnable {
     }
 
     /**
-     * Moves mouse to position (0,0) in the 'game' element (so that it doesn't trigger any highlight popups or similar
+     *  Returns the position of the detected cue as an array ( [x1, x2, y1, y2] )
+     */
+
+    private int[] getSegPos(MarvinSegment seg) {
+        int pos[] = new int[4];
+            pos[0] = seg.x1;
+            pos[1] = seg.x2;
+            pos[2] = seg.y1;
+            pos[3] = seg.y2;
+
+            return pos;
+    }
+
+    /**
+     * Moves mouse to position (0,520) in the 'game' element (so that it doesn't trigger any highlight popups or similar
      */
     private void moveMouseAway() {
         try {
@@ -3704,7 +3715,7 @@ public class MainThread implements Runnable {
             BHBot.logger.debug("Seconds since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
             if (stationary) {
                 //testing log to see how quickly we detect stationary status
-                BHBot.logger.info("Stationary detected in: " + (outOfEncounterTimestamp - inEncounterTimestamp));
+                BHBot.logger.debug("Stationary detected in: " + (outOfEncounterTimestamp - inEncounterTimestamp));
             }
         }
 
@@ -3822,6 +3833,12 @@ public class MainThread implements Runnable {
 
             if (state == State.Expedition) {
 
+                long expeditionRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
+                String runtime = Misc.returnTime(expeditionRuntime);
+                expeditionRuntimeAverage += expeditionRuntime; //on success add runtime to runMillisAvg
+                String runtimeAvg = Misc.returnTime(expeditionRuntimeAverage / counters.get(State.Expedition).getVictories());
+                BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
+
                 readScreen(2 * SECOND);
 
                 // Close Portal Map after expedition
@@ -3837,16 +3854,26 @@ public class MainThread implements Runnable {
                 sleep(SECOND);
             }
             if (state == State.Raid) {
-                long runMillis = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
-                String runtime = String.format("%01dm%02ds", //format to mss
-                        TimeUnit.MILLISECONDS.toMinutes(runMillis),
-                        TimeUnit.MILLISECONDS.toSeconds(runMillis) -
-                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillis)));
-                runMillisAvg += runMillis; //on success add runtime to runMillisAvg
-                String runtimeAvg = String.format("%01dm%02ds", //format to mss
-                        TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / counters.get(State.Raid).getVictories()), //then we divide runMillisavg by completed raids to get average time
-                        TimeUnit.MILLISECONDS.toSeconds(runMillisAvg / counters.get(State.Raid).getVictories()) -
-                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(runMillisAvg / counters.get(State.Raid).getVictories())));
+                long raidRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
+                String runtime = Misc.returnTime(raidRuntime);
+                raidRuntimeAverage += raidRuntime; //on success add runtime to runMillisAvg
+                String runtimeAvg = Misc.returnTime(raidRuntimeAverage / counters.get(State.Raid).getVictories());
+                BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
+            }
+
+            if (state == State.Dungeon) {
+                long dungeonRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
+                String runtime = Misc.returnTime(dungeonRuntime);
+                dungeonRuntimeAverage += dungeonRuntime; //on success add runtime to runMillisAvg
+                String runtimeAvg = Misc.returnTime(dungeonRuntimeAverage / counters.get(State.Dungeon).getVictories());
+                BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
+            }
+
+            if (state == State.Trials) {
+                long trialsRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
+                String runtime = Misc.returnTime(trialsRuntime);
+                trialsRuntimeAverage += trialsRuntime; //on success add runtime to runMillisAvg
+                String runtimeAvg = Misc.returnTime(trialsRuntimeAverage / counters.get(State.Trials).getVictories());
                 BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
             }
 
@@ -3872,11 +3899,20 @@ public class MainThread implements Runnable {
 
                 counters.get(state).increaseDefeats();
                 BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Level reached: " + num);
+
+                long invasionRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
+                String runtime = Misc.returnTime(invasionRuntime);
+                invasionRuntimeAverage += invasionRuntime; //on success add runtime to runMillisAvg
+                String runtimeAvg = Misc.returnTime(invasionRuntimeAverage / counters.get(State.Invasion).getTotal());
+                BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
+
             } else {
                 counters.get(state).increaseDefeats();
                 BHBot.logger.warn(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Defeat.");
                 BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
             }
+
+
 
             boolean closed = false;
             // close button in dungeons is blue, in gauntlet it is green:
