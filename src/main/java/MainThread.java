@@ -3433,7 +3433,21 @@ public class MainThread implements Runnable {
     }
 
     /**
-     * Moves mouse to position (0,0) in the 'game' element (so that it doesn't trigger any highlight popups or similar
+     *  Returns the position of the detected cue as an array ( [x1, x2, y1, y2] )
+     */
+
+    private int[] getSegPos(MarvinSegment seg) {
+        int pos[] = new int[4];
+            pos[0] = seg.x1;
+            pos[1] = seg.x2;
+            pos[2] = seg.y1;
+            pos[3] = seg.y2;
+
+            return pos;
+    }
+
+    /**
+     * Moves mouse to position (0,520) in the 'game' element (so that it doesn't trigger any highlight popups or similar
      */
     private void moveMouseAway() {
         try {
