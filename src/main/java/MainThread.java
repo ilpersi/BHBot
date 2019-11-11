@@ -2721,14 +2721,6 @@ public class MainThread implements Runnable {
                                             }
                                             BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " started!");
                                             state = State.WorldBoss;
-                                            sleep(6 * SECOND); //long wait to make sure we are in the world boss dungeon
-
-                                            readScreen();
-                                            MarvinSegment segAutoOn = detectCue(cues.get("AutoOn"));
-                                            if (segAutoOn == null) { // if state = worldboss but there's no auto button something went wrong, so restart
-                                                BHBot.logger.info("World Boss started but no encounter detected, restarting");
-                                                restart();
-                                            }
                                         } else { //generic error / unknown action restart
                                             BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
                                             saveGameScreen("wb-no-start-button", "errors");
