@@ -1313,7 +1313,7 @@ public class MainThread implements Runnable {
                         handleConsumables();
                     }
 
-                    //comment for faster testing
+                    //uncommentcomment for faster launching while testing
 //					oneTimeshrineCheck = true;
 //					oneTimeRuneCheck = true;
 
@@ -2904,7 +2904,7 @@ public class MainThread implements Runnable {
             numConsecutiveException = 0; // reset exception counter
             BHBot.scheduler.restoreIdleTime(); // revert changes to idle time
             if (finished) break; // skip sleeping if finished flag has been set!
-            sleep(SECOND);
+            sleep(1 * SECOND);
         } // main while loop
 
         BHBot.logger.info("Stopping main thread...");
@@ -3715,7 +3715,7 @@ public class MainThread implements Runnable {
             BHBot.logger.debug("Seconds since last encounter: " + (outOfEncounterTimestamp - inEncounterTimestamp));
             if (stationary) {
                 //testing log to see how quickly we detect stationary status
-                BHBot.logger.info("Stationary detected in: " + (outOfEncounterTimestamp - inEncounterTimestamp));
+                BHBot.logger.debug("Stationary detected in: " + (outOfEncounterTimestamp - inEncounterTimestamp));
             }
         }
 
