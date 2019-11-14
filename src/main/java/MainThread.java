@@ -2904,7 +2904,7 @@ public class MainThread implements Runnable {
             numConsecutiveException = 0; // reset exception counter
             BHBot.scheduler.restoreIdleTime(); // revert changes to idle time
             if (finished) break; // skip sleeping if finished flag has been set!
-            sleep(1 * SECOND);
+            sleep(SECOND);
         } // main while loop
 
         BHBot.logger.info("Stopping main thread...");
@@ -3432,11 +3432,11 @@ public class MainThread implements Runnable {
         return (seg.y1 + seg.y2) / 2;
     }
 
-    /**
-     *  Returns the position of the detected cue as an array ( [x1, x2, y1, y2] )
-     */
+//    /**
+//     *  Returns the position of the detected cue as an array ( [x1, x2, y1, y2] )
+//     */
 
-    private int[] getSegPos(MarvinSegment seg) {
+    /*private int[] getSegPos(MarvinSegment seg) {
         int pos[] = new int[4];
             pos[0] = seg.x1;
             pos[1] = seg.x2;
@@ -3444,7 +3444,7 @@ public class MainThread implements Runnable {
             pos[3] = seg.y2;
 
             return pos;
-    }
+    }*/
 
     /**
      * Moves mouse to position (0,520) in the 'game' element (so that it doesn't trigger any highlight popups or similar
