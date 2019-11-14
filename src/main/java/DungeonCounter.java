@@ -1,4 +1,5 @@
 import javafx.beans.binding.DoubleBinding;
+import javafx.beans.binding.LongBinding;
 import javafx.beans.binding.StringExpression;
 import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
@@ -11,6 +12,11 @@ class DungeonCounter {
     private IntegerProperty total;
     private IntegerProperty victoriesInARow;
 
+    private LongProperty totalVictoryDuration;
+    private LongProperty victoryAverageDuration;
+    private LongProperty totalDefeatDuration;
+    private LongProperty defeatAverageDuration;
+
     // String description for success rate
     private StringExpression successRateDesc;
 
@@ -22,6 +28,11 @@ class DungeonCounter {
         this.total = new SimpleIntegerProperty(victoryCnt + defeatCnt);
         this.victoriesInARow = new SimpleIntegerProperty(0);
         DoubleProperty succesRate = new SimpleDoubleProperty(0);
+
+        this.totalVictoryDuration = new SimpleLongProperty(0);
+        this.victoryAverageDuration = new SimpleLongProperty(0);
+        this.totalDefeatDuration = new SimpleLongProperty(0);
+        this.defeatAverageDuration = new SimpleLongProperty(0);
 
         // We create the bindings
         total.bind(this.victories.add(this.defeats));
@@ -47,6 +58,12 @@ class DungeonCounter {
         };
         succesRate.bind(succesBinding);
 
+        // Duration management
+        LongBinding victoryDurationBinding = new NoZeroDivision(totalVictoryDuration, victories);
+        victoryAverageDuration.bind(victoryDurationBinding);
+        LongBinding defeatDurationBinding = new NoZeroDivision(totalDefeatDuration, defeats);
+        defeatAverageDuration.bind(defeatDurationBinding);
+
         StringProperty initStr = new SimpleStringProperty("success rate is ");
         successRateDesc = initStr.concat(succesRate.asString("%.02f%%"))
                 .concat(" W:").concat(this.victories.asString())
@@ -58,6 +75,14 @@ class DungeonCounter {
         victories.setValue(victories.get() + 1);
     }
 
+    void increaseVictoriesDuration(long milliSeconds) {
+        totalVictoryDuration.setValue(totalVictoryDuration.get() + milliSeconds);
+    }
+
+    void increaseDefeatsDuration(long milliSeconds) {
+        totalDefeatDuration.setValue(totalDefeatDuration.get() + milliSeconds);
+    }
+
     void increaseDefeats() {
         defeats.setValue(defeats.get() + 1);
     }
@@ -66,13 +91,17 @@ class DungeonCounter {
         return this.total.get();
     }
 
-    int getVictories() { return this.victories.get();}
+//    int getVictories() { return this.victories.get();}
 
     int getVictoriesInARow() { return this.victoriesInARow.get();}
 
     String successRateDesc() {
         return successRateDesc.getValue();
     }
+
+    long getVictoryAverageDuration() {return  victoryAverageDuration.get();}
+
+    long getDefeatAverageDuration() {return  defeatAverageDuration.get();}
 
     private void onVictoriesChange(ObservableValue<? extends Number> prop, Number oldValue, Number newValue) {
         this.victoriesInARow.setValue(victoriesInARow.get() + 1);
@@ -82,4 +111,28 @@ class DungeonCounter {
         this.victoriesInARow.setValue(0);
     }
 
+}
+
+class NoZeroDivision extends LongBinding {
+
+    private LongProperty total;
+    private IntegerProperty counter;
+
+    NoZeroDivision (LongProperty numerator, IntegerProperty denominator) {
+        total = new SimpleLongProperty(0);
+        counter = new SimpleIntegerProperty(0);
+
+        this.bind(numerator, denominator);
+        total.bind(numerator);
+        counter.bind(denominator);
+    }
+
+    @Override
+    protected long computeValue() {
+        if (counter.get() == 0) {
+            return 0;
+        } else {
+            return total.get() / counter.get();
+        }
+    }
 }
