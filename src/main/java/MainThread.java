@@ -2683,7 +2683,8 @@ public class MainThread implements Runnable {
                                                 BHBot.scheduler.doDungeonImmediately = true;
                                             } else {
                                                 BHBot.logger.info("Lobby timed out, returning to main screen.");
-                                                timeLastEnergyCheck -= 9 * MINUTE; // remove 9 minutes from the check time so we check again in a minute
+                                                // we say we checked (interval - 1) minutes ago, so we check again in a minute
+                                                timeLastEnergyCheck = Misc.getTime() - ((ENERGY_CHECK_INTERVAL) - MINUTE);
                                                 closeWorldBoss();
                                             }
                                         }
