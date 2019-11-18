@@ -925,8 +925,6 @@ public class MainThread implements Runnable {
     public void run() {
         BHBot.logger.info("Bot started successfully!");
 
-        MarvinSegment seg;
-        readScreen();
         restart(false);
 
         // We initialize the counter HasMap using the state as key
@@ -978,6 +976,8 @@ public class MainThread implements Runnable {
                 BHBot.scheduler.resetIdleTime();
 
                 moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
+                MarvinSegment seg;
+                readScreen();
 
                 seg = detectCue(cues.get("UnableToConnect"));
                 if (seg != null) {
