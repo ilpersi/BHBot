@@ -277,6 +277,7 @@ public class Settings {
         autoConsume = false;
         setAutoRuneDefaultFromString("");
         setactivitiesEnabledFromString("");
+        setScreenshotsFromString("w d f b dg wg fe"); //so we dont miss any if we are in idle
         collectBounties = false;
         collectFishingBaits = false;
         idleMode = true;
