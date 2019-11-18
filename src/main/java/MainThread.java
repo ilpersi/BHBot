@@ -78,8 +78,6 @@ public class MainThread implements Runnable {
     private long activityDuration;
     private boolean combatIdleChecker = true;
     private boolean motionChecker = false;
-    private int stationaryCounter = 0;
-    private boolean stationary = false;
     private BufferedImage movement1;
     private BufferedImage movement2;
     private long outOfEncounterTimestamp = 0;
@@ -3665,20 +3663,10 @@ public class MainThread implements Runnable {
             startTimeCheck = true;
             combatIdleChecker = true;
             motionChecker = true;
-            stationaryCounter = 0;
-            stationary = false;
             movement2 = img; //so we don't return error on our first movement check
         }
 
         activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
-
-        if (state == State.Invasion) {
-            //we check the invasion level bounds, if it is static for 30s we stop resetting idle timer
-            motionChecker(1.0, 356, 445, 21, 40, 30);
-            if (!stationary) {
-                BHBot.scheduler.resetIdleTime(true);
-            }
-        }
 
         //We use guild button visibility to determine whether we are in an encounter or not
         MarvinSegment guildButtonSeg = detectCue(cues.get("GuildButton"));
@@ -4161,7 +4149,7 @@ public class MainThread implements Runnable {
                 (state == State.Trials && BHBot.settings.autoShrine.contains("t")) ||
                 (state == State.Expedition && BHBot.settings.autoShrine.contains("e")) ||
                 (state == State.UnidentifiedDungeon)) {
-            if (activityDuration > 60) { //if we're past 60 seconds into the activity
+            if (activityDuration > 30) { //if we're past 30 seconds into the activity
                 if (!autoShrined) {
                     if ((stationary) || (((outOfEncounterTimestamp - inEncounterTimestamp) > 30) && guildButtonSeg != null)) {
                         if (stationary) {
