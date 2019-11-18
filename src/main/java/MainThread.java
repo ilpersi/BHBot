@@ -1195,11 +1195,25 @@ public class MainThread implements Runnable {
 
                         if ("7".equals(new SimpleDateFormat("u").format(new Date()))) { //if it's Sunday
                             if ((BHBot.settings.screenshots.contains("wg"))) {
-                                saveGameScreen("weekly-gem-count", "gems");
+                                /* internal code for collecting number cues for the micro font
+                                MarvinImage gems = new MarvinImage(img.getSubimage(133, 16, 80, 14));
+                                makeImageBlackWhite(gems, new Color(25, 25, 25), new Color(255, 255, 255), 64);
+                                BufferedImage gemsbw = gems.getBufferedImage();
+                                int num = readNumFromImg(gemsbw, "micro", new HashSet<>());
+                                */
+                                BufferedImage gems = img.getSubimage(133, 16, 80, 14);
+                                saveGameScreen("weekly-gems", "gems", gems);
                             }
                         } else {
                             if ((BHBot.settings.screenshots.contains("dg"))) {
-                                saveGameScreen("daily-gem-count", "gems"); //else screenshot daily count
+                                /* internal code for collecting number cues for the micro font
+                                MarvinImage gems = new MarvinImage(img.getSubimage(133, 16, 80, 14));
+                                makeImageBlackWhite(gems, new Color(25, 25, 25), new Color(255, 255, 255), 64);
+                                BufferedImage gemsbw = gems.getBufferedImage();
+                                int num = readNumFromImg(gemsbw, "micro", new HashSet<>());
+                                */
+                                BufferedImage gems = img.getSubimage(133, 16, 80, 14);
+                                saveGameScreen("daily-gems", "gems", gems); //else screenshot daily count
                             }
                         }
 
