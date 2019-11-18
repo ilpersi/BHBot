@@ -302,12 +302,8 @@ public class MainThread implements Runnable {
         addCue("News", loadImage("cues/cueNewsPopup.png"), new Bounds(345, 60, 365, 85)); // news popup
         addCue("Close", loadImage("cues/cueClose.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
 
-        addCue("Ad", loadImage("cues/cueAd.png"), new Bounds(720, 100, 750, 410)); // main screen ad button cue. Note that sometimes it is higher up on the screen than other times (during GvG week, it will be higher up, above GvG icon)
-        addCue("AdPopup", loadImage("cues/cueAdPopup.png"), null);
         addCue("Watch", loadImage("cues/cueWatch.png"), null); // used with ad main screen watch button. Does not work in dungeons (button is a bit different there - used button there!)
         addCue("Watch2", loadImage("cues/cueWatch2.png"), null); // this is an alternative watch button. It is practically the same as the first one, but it has another shade of blue in the first row. Used with watching ads in dungeons (confirmed).
-        addCue("AdInProgress", loadImage("cues/cueAdInProgress.png"), null); // we currently don't really need this cue
-        addCue("AdFinished", loadImage("cues/cueAdFinished.png"), null); // we currently don't really need this cue
         addCue("Skip", loadImage("cues/cueSkip.png"), null);
 
         addCue("EnergyBar", loadImage("cues/cueEnergyBar.png"), new Bounds(390, 0, 420, 20));
@@ -338,7 +334,6 @@ public class MainThread implements Runnable {
         addCue("SkeletonTreasure", loadImage("cues/cueSkeletonTreasure.png"), new Bounds(185, 165, 295, 280)); // skeleton treasure found in dungeons (it's a dialog/popup cue)
         addCue("SkeletonNoKeys", loadImage("cues/cueSkeletonNoKeys.png"), new Bounds(478, 318, 500, 348)); // red 0
         addCue("Open", loadImage("cues/cueOpen.png"), null); // skeleton treasure open button
-        addCue("AdTreasure", loadImage("cues/cueAdTreasure.png"), null); // ad treasure found in dungeons (it's a dialog/popup cue)
         addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
         addCue("DeclineRed", loadImage("cues/cueDeclineRed.png"), null); // decline persuation attempts
         addCue("Merchant", loadImage("cues/cueMerchant.png"), null); // cue for merchant dialog/popup
