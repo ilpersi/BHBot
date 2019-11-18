@@ -77,9 +77,6 @@ public class MainThread implements Runnable {
     private long activityStartTime;
     private long activityDuration;
     private boolean combatIdleChecker = true;
-    private boolean motionChecker = false;
-    private BufferedImage movement1;
-    private BufferedImage movement2;
     private long outOfEncounterTimestamp = 0;
     private long inEncounterTimestamp = 0;
     private boolean specialDungeon; //d4 check for closing properly when no energy
@@ -3662,8 +3659,6 @@ public class MainThread implements Runnable {
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             startTimeCheck = true;
             combatIdleChecker = true;
-            motionChecker = true;
-            movement2 = img; //so we don't return error on our first movement check
         }
 
         activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
