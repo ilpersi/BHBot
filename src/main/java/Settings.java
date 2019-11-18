@@ -32,7 +32,6 @@ public class Settings {
     private boolean collectBounties = false;
     private boolean collectFishingBaits = false;
     boolean dungeonOnTimeout = true;
-    boolean countActivities = false;
     LinkedHashSet<String> screenshots;
 
     //activity settings

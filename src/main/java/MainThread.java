@@ -49,11 +49,13 @@ public class MainThread implements Runnable {
     static final int MINUTE = 60 * SECOND;
     private static final int HOUR = 60 * MINUTE;
     private static final int DAY = 24 * HOUR;
+
     private static int globalShards;
     private static int globalBadges;
     private static int globalEnergy;
     private static int globalTickets;
     private static int globalTokens;
+
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     private static Map<String, Cue> cues = new HashMap<>();
     private static WebDriver driver;
@@ -157,17 +159,10 @@ public class MainThread implements Runnable {
             }
         } else {
             BHBot.logger.error("Error with resource: " + f);
-//		try {
-//			img = ImageIO.read(new File(f));
-//		} catch (IOException e) {
-//			BHBot.logger.error("Error while loading image");
-//			BHBot.logger.error("Error while loading image", e);
         }
 
         return img;
     }
-//	/** Amount of ads that were offered in main screen since last restart. We need it in order to do restart() after 2 ads, since sometimes ads won't get offered anymore after two restarts. */
-//	private int numAdOffers = 0;
 
     private static void addCue(String name, BufferedImage im, Bounds bounds) {
         cues.put(name, new Cue(name, im, bounds));
@@ -397,7 +392,6 @@ public class MainThread implements Runnable {
         addCue("RightArrow", loadImage("cues/cueRightArrow.png"), null); // arrow used in quest screen to change zone
         addCue("LeftArrow", loadImage("cues/cueLeftArrow.png"), null); // arrow used in quest screen to change zone
         addCue("Enter", loadImage("cues/cueEnter.png"), null); // "Enter" button found on d4 window
-//		addCue("EnterExpedition", loadImage("cues/cueEnter.png"),null ); // "Enter" for Expeditions
         addCue("NotEnoughEnergy", loadImage("cues/cueNotEnoughEnergy.png"), new Bounds(260, 210, 290, 235)); // "Not enough Energy" popup cue
 
         addCue("PVP", loadImage("cues/cuePVP.png"), new Bounds(0, 70, 40, 110)); // PVP icon in main screen
@@ -426,9 +420,7 @@ public class MainThread implements Runnable {
         addCue("SelectDifficulty", loadImage("cues/cueSelectDifficulty.png"), new Bounds(400, 260, 0, 0)/*not exact bounds... the lower-right part of screen!*/); // select difficulty button in trials/gauntlet
         addCue("DifficultyDropDown", loadImage("cues/cueDifficultyDropDown.png"), new Bounds(260, 50, 550, 125)); // difficulty drop down menu cue
         addCue("DifficultyExpedition", loadImage("cues/cueDifficultyExpedition.png"), null); // selected difficulty in trials/gauntlet window
-//		addCue("DifficultyDisabled", loadImage("cues/cueDifficultyDisabled.png"), new Bounds(450, 330, 640, 450)); // selected difficulty in trials/gauntlet window (disabled - because game is still fetching data from server)
         addCue("SelectDifficultyExpedition", loadImage("cues/cueSelectDifficultyExpedition.png"), null);
-//		addCue("DifficultyDropDown", loadImage("cues/cueDifficultyDropDown.png"), new Bounds(260, 50, 550, 125)); // difficulty drop down menu cue
         addCue("DropDownUp", loadImage("cues/cueDropDownUp.png"), null); // up arrow in difficulty drop down menu (found in trials/gauntlet, for example)
         addCue("DropDownDown", loadImage("cues/cueDropDownDown.png"), null); // down arrow in difficulty drop down menu (found in trials/gauntlet, for example)
         addCue("Cost", loadImage("cues/cueCost.png"), new Bounds(400, 150, 580, 240)); // used both for PvP and Gauntlet/Trials costs. Note that bounds are very wide, because position of this cue in PvP is different from that in Gauntlet/Trials!
@@ -510,7 +502,6 @@ public class MainThread implements Runnable {
         }
 
         // invasion related:
-//		addCue("Invasion", loadImage("cues/cueInvasion.png"), new Bounds(720, 270, 770, 480)); // main Invasion button cue
         addCue("Invasion", loadImage("cues/cueInvasion.png"), null);
         addCue("InvasionWindow", loadImage("cues/cueInvasionWindow.png"), new Bounds(260, 90, 280, 110)); // GVG window cue
 
@@ -633,76 +624,12 @@ public class MainThread implements Runnable {
         DesiredCapabilities capabilities = DesiredCapabilities.chrome();
         capabilities.setCapability("chrome.verbose", false);
         capabilities.setCapability(ChromeOptions.CAPABILITY, options);
-//		driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
         if (BHBot.settings.autoStartChromeDriver) {
             driver = new ChromeDriver(options);
         } else {
             driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
         }
         jsExecutor = (JavascriptExecutor) driver;
-    }
-
-    // http://www.qaautomationsimplified.com/selenium/selenium-webdriver-get-cookies-from-an-existing-session-and-add-those-to-a-newly-instantiated-webdriver-browser-instance/
-    // http://www.guru99.com/handling-cookies-selenium-webdriver.html
-    static void saveCookies() {
-        // create file named Cookies to store Login Information
-        File file = new File("Cookies.data");
-        try {
-            // Delete old file if exists
-            Files.deleteIfExists(file.toPath());
-            boolean isCookieFile = file.createNewFile();
-            if (!isCookieFile) throw new Exception("Impossible to create cookie file!");
-            FileWriter fileWrite = new FileWriter(file);
-            BufferedWriter Bwrite = new BufferedWriter(fileWrite);
-            // loop for getting the cookie information
-            for (Cookie ck : driver.manage().getCookies()) {
-                Bwrite.write((ck.getName() + ";" + ck.getValue() + ";" + ck.getDomain() + ";" + ck.getPath() + ";" + (ck.getExpiry() == null ? 0 : ck.getExpiry().getTime()) + ";" + ck.isSecure()));
-                Bwrite.newLine();
-            }
-            Bwrite.flush();
-            Bwrite.close();
-            fileWrite.close();
-        } catch (Exception ex) {
-            BHBot.logger.error("Impossible to save cookies in saveCookies.", ex);
-        }
-
-        BHBot.logger.info("Cookies saved to disk.");
-    }
-
-    static void loadCookies() {
-        try {
-            File file = new File("Cookies.data");
-            FileReader fileReader = new FileReader(file);
-            BufferedReader Buffreader = new BufferedReader(fileReader);
-            String strline;
-            while ((strline = Buffreader.readLine()) != null) {
-                StringTokenizer token = new StringTokenizer(strline, ";");
-                while (token.hasMoreTokens()) {
-                    String name = token.nextToken();
-                    String value = token.nextToken();
-                    String domain = token.nextToken();
-                    String path = token.nextToken();
-
-                    String val;
-                    if (!(val = token.nextToken()).equals("null")) {
-                        new Date(Long.parseLong(val));
-                    }
-                    boolean isSecure = Boolean.parseBoolean(token.nextToken());
-                    Cookie ck = new Cookie(name, value, domain, path, null, isSecure);
-                    try {
-                        driver.manage().addCookie(ck); // This will add the stored cookie to your current session
-                    } catch (Exception e) {
-                        BHBot.logger.error("Error while adding cookie", e);
-                    }
-                }
-            }
-            Buffreader.close();
-            fileReader.close();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        BHBot.logger.info("Cookies loaded.");
     }
 
     // https://stackoverflow.com/questions/297762/find-known-sub-image-in-larger-image
@@ -722,11 +649,10 @@ public class MainThread implements Runnable {
 
         //source.drawRect(seg.x1, seg.y1, seg.x2-seg.x1, seg.y2-seg.y1, Color.blue);
         //MarvinImageIO.saveImage(source, "window_out.png");
-        if (BHBot.settings.debugDetectionTimes)
+        if (BHBot.settings.debugDetectionTimes) {
             BHBot.logger.info("cue detection time: " + (Misc.getTime() - timer) + "ms (" + cue.name + ") [" + (seg != null ? "true" : "false") + "]");
-//        if (seg == null) {
-//        	return -1;
-//        }
+        }
+
         return seg;
     }
 
@@ -876,7 +802,7 @@ public class MainThread implements Runnable {
 
         if (BHBot.settings.enablePushover && BHBot.settings.poNotifyCrash) {
             File poCrashScreen = new File(file);
-            sendPushOverMessage("BHbot CRASH!",
+            sendPushOverMessage("BHBot CRASH!",
                     "BHBot has crashed and a driver emergency restart has been performed!\n\n" + Misc.getStackTrace(), "falling",
                     MessagePriority.HIGH, poCrashScreen.exists() ? poCrashScreen : null);
         }
@@ -914,10 +840,6 @@ public class MainThread implements Runnable {
             if (BHBot.settings.hideWindowOnRestart)
                 hideBrowser();
             driver.navigate().to("http://www.kongregate.com/games/Juppiomenz/bit-heroes");
-            //sleep(5000);
-            //driver.navigate().to("chrome://flags/#run-all-flash-in-allow-mode");
-            //driver.navigate().to("chrome://settings/content");
-            //BHBot.processCommand("shot");
             game = driver.findElement(By.id("game"));
         } catch (Exception e) {
 
@@ -1003,22 +925,14 @@ public class MainThread implements Runnable {
                 + "window.scrollBy(0, elementTop-(viewPortHeight/2));";
 
         ((JavascriptExecutor) driver).executeScript(scrollElementIntoMiddle, element);
-        sleep(3000);
-        /*
-         * Bellow code doesn't work well (it does not scroll horizontally):
-         *
-         * ((JavascriptExecutor)driver).executeScript("arguments[0].scrollIntoView(true);", game);
-         */
-//		Actions actions = new Actions(driver);
-//		actions.moveToElement(game);
-//		sleep(5000);
-//		actions.perform();
+        sleep(1000);
     }
 
     public void run() {
+        BHBot.logger.info("Bot started successfully!");
 
-        BHBot.logger.info("Driver started succesfully");
-
+        MarvinSegment seg;
+        readScreen();
         restart(false);
 
         // We initialize the counter HasMap using the state as key
@@ -1070,8 +984,6 @@ public class MainThread implements Runnable {
                 BHBot.scheduler.resetIdleTime();
 
                 moveMouseAway(); // just in case. Sometimes we weren't able to claim daily reward because mouse was in center and popup window obfuscated the claim button (see screenshot of that error!)
-                readScreen();
-                MarvinSegment seg;
 
                 seg = detectCue(cues.get("UnableToConnect"));
                 if (seg != null) {
@@ -1717,16 +1629,6 @@ public class MainThread implements Runnable {
                             if (BHBot.scheduler.doDungeonImmediately)
                                 BHBot.scheduler.doDungeonImmediately = false; // reset it
                             continue;
-                        }
-
-                        if (BHBot.settings.countActivities) {
-                            int dungeonCounter = Integer.parseInt(BHBot.settings.dungeonsRun.split(" ")[1]);
-                            if (dungeonCounter >= 10) {
-                                if (BHBot.scheduler.doDungeonImmediately)
-                                    BHBot.scheduler.doDungeonImmediately = false; // reset it
-                                BHBot.scheduler.restoreIdleTime();
-                                continue;
-                            }
                         }
 
                         if (!BHBot.scheduler.doDungeonImmediately && (energy <= BHBot.settings.minEnergyPercentage || BHBot.settings.dungeons.size() == 0)) {
@@ -2904,7 +2806,7 @@ public class MainThread implements Runnable {
                 continue;
             }
 
-            // well, we got through all the checks. Means that nothing much has happened. So lets sleep for a few seconds in order to not make processing too heavy...
+            // well, we got through all the checks. Means that nothing much has happened. So lets sleep for a second in order to not make processing too heavy...
             numConsecutiveException = 0; // reset exception counter
             BHBot.scheduler.restoreIdleTime(); // revert changes to idle time
             if (finished) break; // skip sleeping if finished flag has been set!
@@ -3439,19 +3341,19 @@ public class MainThread implements Runnable {
 //    /**
 //     *  Returns the position of the detected cue as an array ( [x1, x2, y1, y2] )
 //     */
-
-    /*private int[] getSegPos(MarvinSegment seg) {
-        int pos[] = new int[4];
-            pos[0] = seg.x1;
-            pos[1] = seg.x2;
-            pos[2] = seg.y1;
-            pos[3] = seg.y2;
-
-            return pos;
-    }*/
+//
+//    private int[] getSegPos(MarvinSegment seg) {
+//        int pos[] = new int[4];
+//            pos[0] = seg.x1;
+//            pos[1] = seg.x2;
+//            pos[2] = seg.y1;
+//            pos[3] = seg.y2;
+//
+//            return pos;
+//    }
 
     /**
-     * Moves mouse to position (0,520) in the 'game' element (so that it doesn't trigger any highlight popups or similar
+     * Moves mouse to position (0,0) in the 'game' element (so that it doesn't trigger any highlight popups or similar
      */
     private void moveMouseAway() {
         try {
@@ -3522,10 +3424,6 @@ public class MainThread implements Runnable {
         return Math.round(value * (100 / 77.0f)); // scale it to interval [0..100]
     }
 
-	/*public MarvinSegment detectCue(Cue cue, Bounds bounds) {
-		return detectCue(new Cue(cue, bounds), 0, true);
-	}*/
-
     /**
      * Returns number of tickets left (for PvP) in interval [0..10]. Returns -1 in case it cannot read number of tickets for some reason.
      */
@@ -3555,7 +3453,6 @@ public class MainThread implements Runnable {
         }
 
         value = value + 2; //add the last 2 pixels to get an accurate count
-//		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxTickets / 77.0f)));
         return Math.round(value * (maxTickets / 77.0f)); // scale it to interval [0..10]
     }
 
@@ -3587,7 +3484,6 @@ public class MainThread implements Runnable {
         }
 
         value = value + 2; //add the last 2 pixels to get an accurate count
-//		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxShards / 77.0f)));
         return Math.round(value * (maxShards / 75.0f)); // round to nearest whole number
     }
 
@@ -3619,7 +3515,6 @@ public class MainThread implements Runnable {
                 break;
         }
 
-//		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxTokens / 77.0f)));
         return Math.round(value * (maxTokens / 76.0f)); // scale it to interval [0..10]
     }
 
@@ -3652,7 +3547,6 @@ public class MainThread implements Runnable {
         }
 
         value = value + 2; //add the last 2 pixels to get an accurate count
-//		BHBot.logger.info("Pre-rounded stat = " + Float.toString(value * (maxBadges / 77.0f)));
         return Math.round(value * (maxBadges / 75.0f)); // scale it to interval [0..10]
     }
 
@@ -4062,9 +3956,6 @@ public class MainThread implements Runnable {
                 BHBot.logger.warn("Error #3: unable to find 'X' button to close raid/dungeon/trials/gauntlet window. Ignoring...");
 
             sleep(SECOND);
-            if (state == State.WorldBoss && (BHBot.settings.countActivities)) {
-                updateActivityCounter(state.getName());
-            }
             resetAppropriateTimers();
             resetRevives();
             if (state == State.GVG) dressUp(BHBot.settings.gvgstrip);
@@ -4806,9 +4697,6 @@ public class MainThread implements Runnable {
     }
 
     private void handleAutoRevive() {
-
-        // We only use auto-revive for Trials, Gauntlet and Raids
-
         MarvinSegment seg;
 
         // Auto Revive is disabled, we re-enable it
@@ -5079,7 +4967,6 @@ public class MainThread implements Runnable {
             clickOnSeg(seg);
         } else {
             BHBot.logger.error("first x Error returning to main screen from World Boss, restarting");
-//			return false;
         }
 
         sleep(SECOND);
@@ -5088,7 +4975,6 @@ public class MainThread implements Runnable {
             clickOnSeg(seg);
         } else {
             BHBot.logger.error("yesgreen Error returning to main screen from World Boss, restarting");
-//			return false;
         }
 
         sleep(SECOND);
@@ -5097,10 +4983,8 @@ public class MainThread implements Runnable {
             clickOnSeg(seg);
         } else {
             BHBot.logger.error("second x Error returning to main screen from World Boss, restarting");
-//			return false;
         }
 
-//		return true;
     }
 
     private void updateFamiliarCounter(String fam) {
@@ -5114,8 +4998,6 @@ public class MainThread implements Runnable {
                 familiarToUpdate = fa; //write current status to String
                 currentCounter--; // decrease the counter
                 updatedFamiliar = (fString.toLowerCase() + " " + currentCounter); //update new string with familiar name and decrease counter
-//				BHBot.logger.info("Before: " + familiarToUpdate);
-//				BHBot.logger.info("Updated: " + updatedFamiliar);
             }
         }
 
@@ -5133,15 +5015,12 @@ public class MainThread implements Runnable {
             String inputStr = inputBuffer.toString(); //load lines to string
             file.close();
 
-//	        BHBot.logger.info(inputStr); // check that it's inputted right
-
             //find containing string and update with the output string from the function above
             if (inputStr.contains(familiarToUpdate)) {
                 inputStr = inputStr.replace(familiarToUpdate, updatedFamiliar);
             }
 
             // write the string from memory over the existing file
-            // a bit risky for crashes
             FileOutputStream fileOut = new FileOutputStream("settings.ini");
             fileOut.write(inputStr.getBytes());
             fileOut.close();
@@ -5169,8 +5048,6 @@ public class MainThread implements Runnable {
             String inputStr = inputBuffer.toString(); //load lines to string
             file.close();
 
-//	        BHBot.logger.info(inputStr); // check that it's inputted right
-
             //find containing string and update with the output string from the function above
             if (inputStr.contains(string)) {
                 inputStr = inputStr.replace(string, updatedString);
@@ -5178,67 +5055,7 @@ public class MainThread implements Runnable {
             } else BHBot.logger.error("Error finding string: " + string);
 
             // write the string from memory over the existing file
-            // a bit risky for crashes
             FileOutputStream fileOut = new FileOutputStream(Settings.configurationFile);
-            fileOut.write(inputStr.getBytes());
-            fileOut.close();
-
-            BHBot.settings.load();  //reload the new settings file so the counter will be updated for the next bribe
-
-        } catch (Exception e) {
-            System.out.println("Problem writing to settings file");
-        }
-    }
-
-    private void updateActivityCounter(String activity) {
-        String typeToUpdate = "";
-        String updatedType = "";
-
-        if ("Dungeon".equals(activity)) {
-            String numberRun = BHBot.settings.dungeonsRun.split(" ")[0]; //case sensitive for a match so convert to upper case
-            int currentCounter = Integer.parseInt(BHBot.settings.dungeonsRun.split(" ")[1]); //set the bribe counter to an int
-            typeToUpdate = numberRun + " " + currentCounter; //write current status to String
-            currentCounter++; // decrease the counter
-            updatedType = (numberRun + " " + currentCounter); //update new string with familiar name and decrease counter
-            BHBot.logger.info("Before: " + typeToUpdate);
-            BHBot.logger.info("Updated: " + updatedType);
-        }
-
-        if ("World Boss".equals(activity)) {
-            String numberRun = BHBot.settings.worldBossRun.split(" ")[0]; //case sensitive for a match so convert to upper case
-            int currentCounter = Integer.parseInt(BHBot.settings.worldBossRun.split(" ")[1]); //set the bribe counter to an int
-            typeToUpdate = numberRun + " " + currentCounter; //write current status to String
-            currentCounter++; // decrease the counter
-            updatedType = (numberRun + " " + currentCounter); //update new string with familiar name and decrease counter
-            BHBot.logger.info("Before: " + typeToUpdate);
-            BHBot.logger.info("Updated: " + updatedType);
-        }
-
-
-        try {
-            // input the file content to the StringBuffer "input"
-            BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
-            String line;
-            StringBuilder inputBuffer = new StringBuilder();
-
-            //print lines to string with linebreaks
-            while ((line = file.readLine()) != null) {
-                inputBuffer.append(line);
-                inputBuffer.append(System.getProperty("line.separator"));
-            }
-            String inputStr = inputBuffer.toString(); //load lines to string
-            file.close();
-
-//	        BHBot.logger.info(inputStr); // check that it's inputted right
-
-            //find containing string and update with the output from the function above
-            if (inputStr.contains(typeToUpdate)) {
-                inputStr = inputStr.replace(typeToUpdate, updatedType);
-            }
-
-            // write the string from memory over the existing file
-            // a bit risky for crashes
-            FileOutputStream fileOut = new FileOutputStream("settings.ini");
             fileOut.write(inputStr.getBytes());
             fileOut.close();
 
@@ -5484,21 +5301,6 @@ public class MainThread implements Runnable {
         }
 
         String portalName = getExpeditionPortalName(currentExpedition, targetPortal);
-//        if (currentExpedition == 1) {
-//            portalName = "Hallowed";
-//        } else if (currentExpedition == 2) {
-//            portalName = "Inferno";
-//        } else if (currentExpedition == 3) {
-//            portalName = "Jammie";
-//        } else if (currentExpedition == 4) {
-//            portalName = "Idol";
-//        } else if (currentExpedition == 5) {
-//            portalName = "Battle Bards";
-//        } else {
-//            BHBot.logger.error("Unknown Expedition in getExpeditionIconPos " + currentExpedition);
-//            saveGameScreen("unknown-expedition");
-//            return null;
-//        }
 
         if (!"p1".equals(targetPortal) && !"p2".equals(targetPortal)
                 && !"p3".equals(targetPortal) && !"p4".equals(targetPortal)) {
@@ -5740,17 +5542,6 @@ public class MainThread implements Runnable {
         else
             return 0;
     }
-
-	/*private int checkFamiliarCounter(String fam) { //returns current catch count for given familiar from the settings file
-		int catchCount = 0;
-		for (String f : BHBot.settings.familiars) { //cycle familiars defined in settings
-				String fString = f.toUpperCase().split(" ")[0]; //stringify the familiar name
-				if (fam.equals(fString)) { // on match return
-					catchCount = Integer.parseInt(f.split(" ")[1]);
-				}
-			}
-		return catchCount;
-		}*/
 
     void expeditionReadTest() {
         String expedition = BHBot.settings.expeditions.next();
@@ -6960,33 +6751,6 @@ public class MainThread implements Runnable {
         Collections.reverse(striplist);
     }
 
-    //*** for DEBUG only!
-	/*public void numTest() {
-		MarvinSegment seg;
-
-		while (true) {
-			readScreen(500);
-
-			MarvinImage subm = new MarvinImage(img.getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu
-			makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255), 254);
-			BufferedImage sub = subm.getBufferedImage();
-			int num = readNumFromImg(sub, "");
-			if (num == 0) {
-				BHBot.logger.info("Error: unable to read difficulty level from a drop-down menu!");
-				return;
-			}
-			BHBot.logger.info("Difficulty: " + num);
-
-			// move up
-			seg = detectCue(cues.get("DropDownUp"));
-			if (seg == null) {
-				BHBot.logger.info("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
-				return;
-			}
-			clickOnSeg(seg);
-		}
-	}*/
-
     /**
      * Daily collection of fishing baits!
      */
@@ -7185,7 +6949,7 @@ public class MainThread implements Runnable {
 
                     if (dist > 250) {
                         // don't consume the consumable... it's already in use!
-                        BHBot.logger.warn("Error: \"Replace consumable\" dialog detected, meaning consumable is already in use (" + c.getName() + "). Skipping...");
+                        BHBot.logger.warn("\"Replace consumable\" dialog detected for (" + c.getName() + "). Skipping...");
                         duplicateConsumables.add(c);
                         closePopupSecurely(cues.get("ConsumableTitle"), cues.get("No"));
                     } else {

@@ -294,9 +294,6 @@ public class BHBot {
                 main.hideBrowser();
                 settings.hideWindowOnRestart = true;
                 break;
-            case "load":
-                MainThread.loadCookies();
-                break;
             case "loadsettings":
                 String file = Settings.configurationFile;
                 if (params.length > 1)
@@ -410,9 +407,6 @@ public class BHBot {
                 break;
             case "restart":
                 main.restart(false);
-                break;
-            case "save":
-                MainThread.saveCookies();
                 break;
             case "shot":
                 String fileName = "shot";
