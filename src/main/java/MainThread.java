@@ -3986,8 +3986,8 @@ public class MainThread implements Runnable {
                 state == State.UnidentifiedDungeon) {
             if (activityDuration > 30) { //if we're past 30 seconds into the activity
                 if (!autoBossRuned) {
-                    if ((((outOfEncounterTimestamp - inEncounterTimestamp) > 30) && guildButtonSeg != null)) {
-                        BHBot.logger.autorune("30s since last encounter, changing runes for boss encounter");
+                    if ((((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) && guildButtonSeg != null)) {
+                        BHBot.logger.autorune(BHBot.settings.battleDelay + "s since last encounter, changing runes for boss encounter");
 
                         handleMinorBossRunes();
 
@@ -4024,8 +4024,8 @@ public class MainThread implements Runnable {
                 (state == State.UnidentifiedDungeon)) {
             if (activityDuration > 30) { //if we're past 30 seconds into the activity
                 if (!autoShrined) {
-                    if ((((outOfEncounterTimestamp - inEncounterTimestamp) > 30) && guildButtonSeg != null)) {
-                        BHBot.logger.autorune("30s since last encounter, disabling ignore shrines");
+                    if ((((outOfEncounterTimestamp - inEncounterTimestamp) > BHBot.settings.battleDelay) && guildButtonSeg != null)) {
+                        BHBot.logger.autorune(BHBot.settings.battleDelay + "s since last encounter, disabling ignore shrines");
 
                         if (!checkShrineSettings(true, false)) {
                             BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoShrine!");
