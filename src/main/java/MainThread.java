@@ -3689,7 +3689,7 @@ public class MainThread implements Runnable {
         seg = detectCue(cues.get("Cleared"));
         if (seg != null) {
             counters.get(state).increaseVictories();
-            handleSuccessTreshold(state);
+            handleSuccessThreshold(state);
 
             // Average duration management
             long activityRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
@@ -3918,7 +3918,7 @@ public class MainThread implements Runnable {
         MarvinSegment seg2 = detectCue(cues.get("WorldBossVictory"));
         if (state != State.Raid && seg1 != null || (state == State.WorldBoss && seg2 != null)) { //seg2 needs state defined as otherwise the battle victory screen in dungeon-type encounters triggers it
             counters.get(state).increaseVictories();
-            handleSuccessTreshold(state);
+            handleSuccessThreshold(state);
 
             long activityRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
             String runtime = Misc.returnTime(activityRuntime);
@@ -6065,7 +6065,7 @@ public class MainThread implements Runnable {
      *
      * @param state the State used to check the success threshold
      */
-    private void handleSuccessTreshold(State state) {
+    private void handleSuccessThreshold(State state) {
 
         // We only handle Trials and Gautlets
         if (state != State.Gauntlet && state != State.Trials) return;
@@ -6073,10 +6073,10 @@ public class MainThread implements Runnable {
         BHBot.logger.debug("Victories in a row for " + state + " is " + counters.get(state).getVictoriesInARow());
 
         // We make sure that we have a setting for the current state
-        if (BHBot.settings.successTreshold.containsKey(state.getShortcut())) {
-            Map.Entry<Integer, Integer> successTreshold = BHBot.settings.successTreshold.get(state.getShortcut());
-            int minimumVictories = successTreshold.getKey();
-            int lvlIncrease = successTreshold.getValue();
+        if (BHBot.settings.successThreshold.containsKey(state.getShortcut())) {
+            Map.Entry<Integer, Integer> successThreshold = BHBot.settings.successThreshold.get(state.getShortcut());
+            int minimumVictories = successThreshold.getKey();
+            int lvlIncrease = successThreshold.getValue();
 
             if (counters.get(state).getVictoriesInARow() >= minimumVictories) {
                 if ("t".equals(state.getShortcut()) || "g".equals(state.getShortcut())) {
