@@ -73,6 +73,7 @@ public class MainThread implements Runnable {
     private boolean[] revived = {false, false, false, false, false};
     private int potionsUsed = 0;
     private boolean startTimeCheck = false;
+    private boolean speedChecked = false;
     private boolean oneTimeshrineCheck = false;
     private boolean autoShrined = false;
     private long activityStartTime;
@@ -344,6 +345,7 @@ public class MainThread implements Runnable {
 
         addCue("AutoOn", loadImage("cues/cueAutoOn.png"), new Bounds(740, 180, 785, 220)); // cue for auto pilot on
         addCue("AutoOff", loadImage("cues/cueAutoOff.png"), new Bounds(740, 180, 785, 220)); // cue for auto pilot off
+        addCue("Speed_Full", loadImage("cues/Speed_Full.png"), new Bounds(7, 488, 65, 504)); // 3/3 speed bar in encounters
 
         addCue("Trials", loadImage("cues/cueTrials.png"), new Bounds(0, 0, 40, 400)); // cue for trials button (note that as of 23.9.2017 they changed the button position to the right side of the screen and modified the glyph)
         addCue("Trials2", loadImage("cues/cueTrials2.png"), new Bounds(720, 0, 770, 400)); // an alternative cue for trials (flipped horizontally, located on the right side of the screen). Used since 23.9.2017.
@@ -3553,6 +3555,7 @@ public class MainThread implements Runnable {
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             startTimeCheck = true;
             combatIdleChecker = true;
+            speedChecked = false;
         }
 
         activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
@@ -3572,6 +3575,23 @@ public class MainThread implements Runnable {
                 BHBot.logger.trace("Updating idle time (In combat)");
                 BHBot.scheduler.resetIdleTime(true);
                 combatIdleChecker = true;
+            }
+        }
+
+        //speed checking
+        if ((inEncounterTimestamp - outOfEncounterTimestamp) > 2) { //if we're in an encounter for more than 2 seconds (so we skip loading animation)
+            if (!speedChecked) { //if we haven't checked yet
+                seg = detectCue("Speed_Full");
+                if (seg == null) {
+                    BHBot.logger.warn("Speed not full, attempting to fix");
+                    seg = detectCue("Speed");
+                    if (seg != null) {
+                        clickOnSeg(seg);
+                        return;
+                    }
+                } else {
+                    speedChecked = true; //if we're full speed we stop checking for this activity
+                }
             }
         }
 
