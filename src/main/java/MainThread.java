@@ -6962,7 +6962,9 @@ public class MainThread implements Runnable {
 
                 // lets scroll down:
                 seg = detectCue(cues.get("DropDownDown"), 5 * SECOND);
-                clickOnSeg(seg);
+                for (int i = 0; i < 4; i++) { //the menu has 4 rows so we move to the next four rows and check again
+                    clickOnSeg(seg);
+                }
 
                 readScreen(SECOND); // so that the scroller stabilizes a bit
             }
