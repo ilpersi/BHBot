@@ -1063,13 +1063,17 @@ public class MainThread implements Runnable {
                     continue;
                 }
 
+                //Handle weekly rewards from events
+                handleWeeklyRewards();
+
                 // check for daily rewards popup:
                 seg = detectCue(cues.get("DailyRewards"));
                 if (seg != null) {
                     seg = detectCue(cues.get("Claim"), 5 * SECOND);
                     if (seg != null) {
                         if ((BHBot.settings.screenshots.contains("d"))) {
-                            saveGameScreen("daily_reward", "rewards");
+                            BufferedImage reward = img.getSubimage(131, 136, 513, 283);
+                            saveGameScreen("daily_reward", "rewards", reward);
                         }
                         clickOnSeg(seg);
                     } else {
@@ -1128,9 +1132,6 @@ public class MainThread implements Runnable {
 
                     continue;
                 }
-
-                //Handle weekly rewards from events
-                handleWeeklyRewards();
 
                 // check for "recently disconnected" popup:
                 seg = detectCue(cues.get("RecentlyDisconnected"));
