@@ -277,9 +277,7 @@ public class MainThread implements Runnable {
 
     static void loadCues() {
         addCue("Main", loadImage("cues/cueMainScreen.png"), new Bounds(90, 5, 100, 10));
-
         addCue("Login", loadImage("cues/cueLogin.png"), new Bounds(270, 260, 330, 300)); // login window (happens seldom)
-
         addCue("AreYouThere", loadImage("cues/cueAreYouThere.png"), new Bounds(240, 245, 265, 260));
         addCue("Yes", loadImage("cues/cueYes.png"), null);
 
@@ -302,10 +300,6 @@ public class MainThread implements Runnable {
         addCue("News", loadImage("cues/cueNewsPopup.png"), new Bounds(345, 60, 365, 85)); // news popup
         addCue("Close", loadImage("cues/cueClose.png"), null); // close button used with "News" popup, also when defeated in dungeon, etc.
 
-        addCue("Watch", loadImage("cues/cueWatch.png"), null); // used with ad main screen watch button. Does not work in dungeons (button is a bit different there - used button there!)
-        addCue("Watch2", loadImage("cues/cueWatch2.png"), null); // this is an alternative watch button. It is practically the same as the first one, but it has another shade of blue in the first row. Used with watching ads in dungeons (confirmed).
-        addCue("Skip", loadImage("cues/cueSkip.png"), null);
-
         addCue("EnergyBar", loadImage("cues/cueEnergyBar.png"), new Bounds(390, 0, 420, 20));
         addCue("TicketBar", loadImage("cues/cueTicketBar.png"), new Bounds(540, 0, 770, 20));
 
@@ -317,9 +311,7 @@ public class MainThread implements Runnable {
 
         // New Raid level detection logic
         addCue("Raid1Name", loadImage("cues/raid/r1Name.png"), new Bounds(185, 340, 485, 395));// Raid 1 Name
-
         addCue("R1Only", loadImage("cues/cueR1Only.png"), null); // cue for R1 type selected when R2 (and R3) is not open yet (in that case it won't show raid type selection buttons)
-
         addCue("Normal", loadImage("cues/cueNormal.png"), null);
         addCue("Hard", loadImage("cues/cueHard.png"), null);
         addCue("Heroic", loadImage("cues/cueHeroic.png"), null);
@@ -369,7 +361,6 @@ public class MainThread implements Runnable {
         addCue("GuildButton", loadImage("cues/cueGuildButton.png"), new Bounds(500, 420, 590, 520));
         addCue("IgnoreShrines", loadImage("cues/cueIgnoreShrines.png"), new Bounds(120, 250, 675, 475));
         addCue("IgnoreBoss", loadImage("cues/cueIgnoreBoss.png"), new Bounds(120, 250, 675, 475));
-
 
         addCue("Quest", loadImage("cues/cueQuest.png"), new Bounds(0, 0, 40, 40)); // cue for quest (dungeons) button
         addCue("ZonesButton", loadImage("cues/cueZonesButton.png"), new Bounds(105, 60, 125, 75));
@@ -441,12 +432,12 @@ public class MainThread implements Runnable {
         addCue("small8", loadImage("cues/numbers/small8.png"), null);
         addCue("small9", loadImage("cues/numbers/small9.png"), null);
 
-
         // PvP strip related:
         addCue("StripScrollerTopPos", loadImage("cues/strip/cueStripScrollerTopPos.png"), new Bounds(525, 140, 540, 370));
         addCue("StripEquipped", loadImage("cues/strip/cueStripEquipped.png"), new Bounds(465, 180, 485, 200)); // the little "E" icon upon an equipped item (the top-left item though, we want to detect just that one)
         addCue("StripItemsTitle", loadImage("cues/strip/cueStripItemsTitle.png"), new Bounds(335, 70, 360, 80));
         addCue("StripSelectorButton", loadImage("cues/strip/cueStripSelectorButton.png"), new Bounds(450, 115, 465, 130));
+
         // filter titles:
         addCue("StripTypeBody", loadImage("cues/strip/cueStripTypeBody.png"), new Bounds(460, 125, 550, 140));
         addCue("StripTypeHead", loadImage("cues/strip/cueStripTypeHead.png"), new Bounds(460, 125, 550, 140));
@@ -481,7 +472,6 @@ public class MainThread implements Runnable {
         addCue("ConsumableTitle", loadImage("cues/cueConsumableTitle.png"), new Bounds(280, 100, 310, 180)); // cue for title of the window that pops up when we want to consume a consumable. Note that vertical range is big here since sometimes is higher due to greater window size and sometimes is lower.
         addCue("FilterConsumables", loadImage("cues/cueFilterConsumables.png"), new Bounds(460, 125, 550, 140)); // cue for filter button name
         addCue("LoadingInventoryIcon", loadImage("cues/cueLoadingInventoryIcon.png"), null); // cue for loading animation for the icons inside inventory
-
 
         // rune management related:
         addCue("Runes", loadImage("cues/cueRunes.png"), new Bounds(120, 450, 245, 495)); // runes button in profile
