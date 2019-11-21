@@ -2779,6 +2779,7 @@ public class MainThread implements Runnable {
                 } else {
                     // unknown error!
                     BHBot.logger.error("Unmanaged exception in main run loop", e);
+                    restart();
                 }
 
                 numConsecutiveException++;
