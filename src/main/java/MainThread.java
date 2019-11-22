@@ -3582,10 +3582,11 @@ public class MainThread implements Runnable {
 
         //speed checking
         if ((inEncounterTimestamp - outOfEncounterTimestamp) > 2) { //if we're in an encounter for more than 2 seconds (so we skip loading animation)
-            if (!speedChecked) { //if we haven't checked yet
-                seg = detectCue("Speed_Full");
-                if (seg == null) {
-                    BHBot.logger.warn("Speed not full, attempting to fix");
+            if (!speedChecked) { //if we haven't checked yet this encounter
+                MarvinSegment speed = detectCue("Speed_Full");
+                MarvinSegment speedLabel = detectCue("Speed");
+                if (speed == null && speedLabel != null) { //if we see speed text but not 3/3 speed
+                    BHBot.logger.warn("1x speed detected, fixing..");
                     seg = detectCue("Speed");
                     if (seg != null) {
                         clickOnSeg(seg);
