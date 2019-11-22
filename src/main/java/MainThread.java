@@ -5887,9 +5887,13 @@ public class MainThread implements Runnable {
                 String pmFileName = saveGameScreen("pm", "pm");
                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyPM) {
                     if (pmFileName != null) {
-                        sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
+                        if (!BHBot.settings.username.equals("") && !BHBot.settings.username.equals("yourusername")) {
+                            sendPushOverMessage("New PM", BHBot.settings.username + " just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
+                        } else sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
                     } else {
-                        sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, null);
+                        if (!BHBot.settings.username.equals("") && !BHBot.settings.username.equals("yourusername")) {
+                            sendPushOverMessage("New PM", BHBot.settings.username + " just received a new PM, check it out!", MessagePriority.NORMAL, null);
+                        } else sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, null);
                     }
                 }
                 clickOnSeg(seg);
