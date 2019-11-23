@@ -92,7 +92,7 @@ class Scheduler {
         paused = true;
         pauseDuration = duration;
         pauseStart = Misc.getTime();
-        BHBot.logger.info("Paused for " + Misc.millisToHumanForm(duration) + ".");
+        BHBot.logger.info("Paused for " + Misc.millisToHumanForm((long) duration) + ".");
     }
 
     void resume() {

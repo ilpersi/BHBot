@@ -1009,7 +1009,7 @@ public class MainThread implements Runnable {
                     } else {
                         BHBot.scheduler.isUserInteracting = true;
                         // probably user has logged in, that's why we got disconnected. Lets leave him alone for some time and then resume!
-                        BHBot.logger.info("Disconnect has been detected. Probably due to user interaction. Sleeping for " + Misc.millisToHumanForm(BHBot.settings.reconnectTimer * MINUTE) + "...");
+                        BHBot.logger.info("Disconnect has been detected. Probably due to user interaction. Sleeping for " + Misc.millisToHumanForm((long) BHBot.settings.reconnectTimer * MINUTE) + "...");
                         BHBot.scheduler.pause(BHBot.settings.reconnectTimer * MINUTE);
                         state = State.Loading;
                         continue;
@@ -3668,9 +3668,9 @@ public class MainThread implements Runnable {
                 counters.get(state).increaseVictories();
 
                 long activityRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
-                String runtime = Misc.returnTime(activityRuntime);
+                String runtime = Misc.millisToHumanForm(activityRuntime);
                 counters.get(state).increaseVictoriesDuration(activityRuntime);
-                String runtimeAvg = Misc.returnTime(counters.get(state).getVictoryAverageDuration());
+                String runtimeAvg = Misc.millisToHumanForm(counters.get(state).getVictoryAverageDuration());
 
                 BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
                 BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
@@ -3707,9 +3707,9 @@ public class MainThread implements Runnable {
 
             // Average duration management
             long activityRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
-            String runtime = Misc.returnTime(activityRuntime);
+            String runtime = Misc.millisToHumanForm(activityRuntime);
             counters.get(state).increaseVictoriesDuration(activityRuntime);
-            String runtimeAvg = Misc.returnTime(counters.get(state).getVictoryAverageDuration());
+            String runtimeAvg = Misc.millisToHumanForm(counters.get(state).getVictoryAverageDuration());
 
             BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
             BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
@@ -3760,9 +3760,9 @@ public class MainThread implements Runnable {
             BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
 
             long activityRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
-            String runtime = Misc.returnTime(activityRuntime);
+            String runtime = Misc.millisToHumanForm(activityRuntime);
             counters.get(state).increaseDefeatsDuration(activityRuntime);
-            String runtimeAvg = Misc.returnTime(counters.get(state).getDefeatAverageDuration());
+            String runtimeAvg = Misc.millisToHumanForm(counters.get(state).getDefeatAverageDuration());
             BHBot.logger.stats("Defeat run time: " + runtime + ". Average: " + runtimeAvg + ".");
 
             if (state == State.Invasion) {
@@ -3935,9 +3935,9 @@ public class MainThread implements Runnable {
             handleSuccessThreshold(state);
 
             long activityRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
-            String runtime = Misc.returnTime(activityRuntime);
+            String runtime = Misc.millisToHumanForm(activityRuntime);
             counters.get(state).increaseVictoriesDuration(activityRuntime);
-            String runtimeAvg = Misc.returnTime(counters.get(state).getVictoryAverageDuration());
+            String runtimeAvg = Misc.millisToHumanForm(counters.get(state).getVictoryAverageDuration());
 
             BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
             BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());

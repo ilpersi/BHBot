@@ -58,13 +58,6 @@ public class Misc {
      * Returns true on success.
      */
     static boolean saveTextFile(String file, String contents) {
-        return saveTextFile(file, contents, false);
-    }
-
-    /**
-     * Returns true on success.
-     */
-    private static boolean saveTextFile(String file, String contents, boolean ignoreErrors) {
         BufferedWriter bw;
 
         try {
@@ -72,7 +65,10 @@ public class Misc {
             // create parent folder(s) if needed:
             File parent = f.getParentFile();
             if (parent != null && !parent.exists())
-                parent.mkdirs();
+                if (!parent.mkdirs()) {
+                    BHBot.logger.error("Error with parent.mkdirs() in saveTetFile!");
+                    return false;
+                }
 
             bw = new BufferedWriter(new FileWriter(f));
             try {
@@ -81,25 +77,36 @@ public class Misc {
                 bw.close();
             }
         } catch (IOException e) {
-            if (!ignoreErrors) {
-                BHBot.logger.error("saveTextFile could not save contents in file: " + file, e);
-            }
+            BHBot.logger.error("saveTextFile could not save contents in file: " + file, e);
             return false;
         }
         return true;
     }
 
-    static String millisToHumanForm(int millis) {
-        int s = millis / 1000;
-        int m = s / 60;
-        s = s % 60;
-        int h = m / 60;
-        m = m % 60;
+    static String millisToHumanForm(Long millis) {
 
-        if (s == 0 && m == 0 && h == 0)
+        // seconds
+        long seconds = millis / 1000;
+        // minutes
+        long minutes = seconds / 60;
+        seconds = seconds % 60;
+        // hours
+        long hours = minutes / 60;
+        minutes = minutes % 60;
+        // days
+        long days = hours / 24;
+        hours = hours % 24;
+
+        if (seconds == 0 && minutes == 0 && hours == 0 && days == 0)
             return "0s";
 
-        return (h > 0 ? (h + "h") : "") + (m > 0 ? (m + "m") : "") + (s > 0 ? (s + "s") : "");
+        StringBuilder humanStringBuilder = new StringBuilder();
+        if (days > 0) humanStringBuilder.append(String.format("%dd ", days));
+        if (hours > 0) humanStringBuilder.append(String.format("%02dh ", hours));
+        if (minutes > 0) humanStringBuilder.append(String.format("%02dm ", minutes));
+        if (seconds > 0) humanStringBuilder.append(String.format("%02ds", seconds));
+
+        return humanStringBuilder.toString();
     }
 
     static int max(int... values) {
@@ -199,15 +206,5 @@ public class Misc {
             BHBot.logger.error("Impossible to get GIT information", e);
         }
         return properties;
-    }
-
-    static String returnTime(Long time) {
-
-        String humanTime = String.format("%01dm%02ds", //format to mss
-                TimeUnit.MILLISECONDS.toMinutes(time),
-                TimeUnit.MILLISECONDS.toSeconds(time) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time)));
-
-        return humanTime;
     }
 }
