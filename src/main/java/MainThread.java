@@ -98,6 +98,7 @@ public class MainThread implements Runnable {
     private long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
     private long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
     private long BADGES_CHECK_INTERVAL = 10 * MINUTE;
+    private long BONUS_CHECK_INTERVAL = 10 * MINUTE;
 
     private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
     private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
@@ -327,6 +328,7 @@ public class MainThread implements Runnable {
         addCue("Bribe", loadImage("cues/cueBribe.png"), new Bounds(505, 305, 684, 375));
         addCue("SkeletonTreasure", loadImage("cues/cueSkeletonTreasure.png"), new Bounds(185, 165, 295, 280)); // skeleton treasure found in dungeons (it's a dialog/popup cue)
         addCue("SkeletonNoKeys", loadImage("cues/cueSkeletonNoKeys.png"), new Bounds(478, 318, 500, 348)); // red 0
+
         addCue("Open", loadImage("cues/cueOpen.png"), null); // skeleton treasure open button
         addCue("Decline", loadImage("cues/cueDecline.png"), null); // decline skeleton treasure button (found in dungeons), also with video ad treasures (found in dungeons)
         addCue("DeclineRed", loadImage("cues/cueDeclineRed.png"), null); // decline persuation attempts
@@ -1214,7 +1216,6 @@ public class MainThread implements Runnable {
                     }
 
                     // check for bonuses:
-                    long BONUS_CHECK_INTERVAL = 10 * MINUTE;
                     if (BHBot.settings.autoConsume && (Misc.getTime() - timeLastBonusCheck > BONUS_CHECK_INTERVAL)) {
                         timeLastBonusCheck = Misc.getTime();
                         handleConsumables();
