@@ -562,6 +562,7 @@ public class MainThread implements Runnable {
         addCue("SuperAvailable", loadImage("cues/autorevive/cueSuperAvailable.png"), new Bounds(140, 150, 300, 200));
         addCue("UnitSelect", loadImage("cues/autorevive/cueUnitSelect.png"), new Bounds(130, 20, 680, 95));
         addCue("ScrollerRightDisabled", loadImage("cues/autorevive/cueScrollerRightDisabled.png"), Bounds.fromWidthHeight(646, 425, 18, 18));
+        addCue("GravestoneHighlighted", loadImage("cues/autorevive/highlighted_gravestone.png"), new Bounds(50, 230, 340, 400));
 
         //Items related cues
         addCue("ItemLeg", loadImage("cues/items/cueItemLeg.png"), null); // Legendary Item border
@@ -3357,6 +3358,18 @@ public class MainThread implements Runnable {
         }
     }
 
+    //moves mouse to XY location (for triggering hover text)
+
+    private void moveMouseToPos(int x, int y) {
+        try {
+            Actions act = new Actions(driver);
+            act.moveToElement(game, x, y);
+            act.perform();
+        } catch (Exception e) {
+            // do nothing
+        }
+    }
+
     /**
      * Performs a mouse click on the center of the given segment
      */
@@ -4757,7 +4770,7 @@ public class MainThread implements Runnable {
             return;
         }
 
-        seg = detectCue(cues.get("Potions"), SECOND * 2);
+        seg = detectCue(cues.get("Potions"), SECOND * 1);
         if (seg != null) {
             clickOnSeg(seg);
             readScreen(SECOND);
@@ -4812,17 +4825,25 @@ public class MainThread implements Runnable {
                 potionTranslate.put('2', "Average");
                 potionTranslate.put('3', "Major");
 
+                //for loop for each entry in revivePositions
                 for (Map.Entry<Integer, Point> item : revivePositions.entrySet()) {
                     Integer slotNum = item.getKey();
                     Point slotPos = item.getValue();
 
-                    if (revived[slotNum - 1]) continue;
-
+                    //if we have reached potionLimit we exit autoRevive
                     if (potionsUsed == BHBot.settings.potionLimit) {
                         BHBot.logger.autorevive("Potion limit reached, exiting from Auto Revive");
                         readScreen(SECOND);
                         break;
                     }
+
+                    //if position has been revived don't check it again
+                    if (revived[slotNum - 1]) continue;
+
+                    //check if there is a gravestone to see if we need to revive
+                    //we MouseOver to make sure the grave is in the foreground and not covered
+                    moveMouseToPos(slotPos.x, slotPos.y);
+                    if (detectCue(cues.get("GravestoneHighlighted"), 1 * SECOND) == null) continue;
 
                     // If we revive a team member we need to reopen the potion menu again
                     seg = detectCue(cues.get("UnitSelect"), SECOND);
@@ -4858,14 +4879,6 @@ public class MainThread implements Runnable {
                     MarvinSegment superHealSeg = detectCue(cues.get("SuperAvailable"));
 
                     if (superHealSeg != null) {
-                        if (detectCue(cues.get("ScrollerRightDisabled")) != null) {
-                            BHBot.logger.debug("Slot " + slotNum + " is up for super potion, closing revive window.");
-                            seg = detectCue(cues.get("X"));
-                            clickOnSeg(seg);
-                            readScreen(SECOND);
-                            continue;
-                        }
-
                         // If super potion is available, we skip it
                         int superPotionMaxChecks = 10, superPotionCurrentCheck = 0;
                         while (superPotionCurrentCheck < superPotionMaxChecks && detectCue(cues.get("SuperAvailable")) != null) {
@@ -4873,21 +4886,6 @@ public class MainThread implements Runnable {
                             readScreen(500);
                             superPotionCurrentCheck++;
                         }
-                    }
-
-                    MarvinSegment reviveSeg = detectCue(cues.get("Revives"), SECOND);
-                    MarvinSegment restoreSeg = detectCue(cues.get("Restores"));
-
-                    if (restoreSeg != null) { // we can use one potion, we don't know which one: revive or healing
-                        if (reviveSeg == null) { // we can use a revive potion
-                            BHBot.logger.debug("Slot " + slotNum + " is up for healing potions, so it does not need revive");
-                            seg = detectCue(cues.get("X"));
-                            clickOnSeg(seg);
-                            readScreen(SECOND);
-                            continue;
-                        }
-                    } else {
-                        continue;
                     }
 
                     // We check what revives are available, and we save the seg for future reuse
