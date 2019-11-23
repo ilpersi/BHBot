@@ -54,24 +54,24 @@ public class BHBot {
                 case "settings":
                     Settings.configurationFile = args[i + 1];
                     i++;
-                    break;
+                    continue;
                 case "init":  //start bot in idle mode
                 case "idle":  //start bot in idle mode
                     Settings.configurationFile = "LOAD_IDLE_SETTINGS";
                     i++;
-                    break;
+                    continue;
                 case "chromium":
                 case "chromiumpath":
                     chromiumExePath = args[i + 1];
-                    break;
+                    continue;
                 case "chromedriver":
                 case "chromedriverpath":
                     chromeDriverExePath = args[i + 1];
-                    break;
+                    continue;
                 case "chromedriveraddress":  //change chrome driver port
                     chromeDriverAddress = args[i + 1];
                     i++;
-                    break;
+                    continue;
             }
         }
 
