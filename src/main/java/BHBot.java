@@ -71,7 +71,6 @@ public class BHBot {
                 case "chromedriveraddress":  //change chrome driver port
                     chromeDriverAddress = args[i + 1];
                     i++;
-                    continue;
             }
         }
 
