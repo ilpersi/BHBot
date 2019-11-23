@@ -191,8 +191,7 @@ public class Settings {
      **/
     int familiarScreenshot = 2;
     int minSolo = 2;
-    String dungeonsRun = "dungeonsrun 0";
-    String worldBossRun = "worldbossrun 0";
+
     /**
      * Fishing Settings
      **/
@@ -1003,9 +1002,6 @@ public class Settings {
         collectFishingBaits = lastUsedMap.getOrDefault("collectFishingBaits", collectFishingBaits ? "1" : "0").equals("1");
 
         openSkeleton = Integer.parseInt(lastUsedMap.getOrDefault("openSkeletonChest", "" + openSkeleton));
-
-        dungeonsRun = "dungeonsrun " + lastUsedMap.getOrDefault("dungeonsrun", dungeonsRun);
-        worldBossRun = "worldbossrun " + lastUsedMap.getOrDefault("worldbossrun", worldBossRun);
 
         setAutoShrineFromString(lastUsedMap.getOrDefault("autoShrine", getAutoShrineAsString()));
         battleDelay = Integer.parseInt(lastUsedMap.getOrDefault("battleDelay", "" + battleDelay));
