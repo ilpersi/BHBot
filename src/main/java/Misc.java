@@ -102,11 +102,11 @@ public class Misc {
 
         StringBuilder humanStringBuilder = new StringBuilder();
         if (days > 0) humanStringBuilder.append(String.format("%dd ", days));
-        if (hours > 0) humanStringBuilder.append(String.format("%02dh ", hours));
-        if (minutes > 0) humanStringBuilder.append(String.format("%02dm ", minutes));
-        if (seconds > 0) humanStringBuilder.append(String.format("%02ds", seconds));
+        if (hours > 0) humanStringBuilder.append(String.format("%01dh ", hours));
+        if (minutes > 0) humanStringBuilder.append(String.format("%01dm ", minutes));
+        if (seconds > 0) humanStringBuilder.append(String.format(" %01ds", seconds));
 
-        return humanStringBuilder.toString();
+        return humanStringBuilder.toString().trim();
     }
 
     static int max(int... values) {
