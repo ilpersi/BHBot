@@ -111,7 +111,8 @@ public class MainThread implements Runnable {
     private long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
     private long timeLastFishingBaitsCheck = 0; // when did we check for fishing baits the last time?
     private long timeLastFishingCheck = 0; // when did we check for fishing last time?
-    private long timeLastPOAlive = 0; // when did we send the last PO Notification?
+    private long timeLastPOAlive = 0; // when did we check for fishing last time?
+    private final long botStartTime = Misc.getTime();
     /**
      * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale.
      */
@@ -1193,7 +1194,9 @@ public class MainThread implements Runnable {
                             File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
 
                             StringBuilder aliveMsg = new StringBuilder();
-                            aliveMsg.append("I am alive and doing fine!\n\n");
+                            aliveMsg.append("I am alive and doing fine since ")
+                                    .append(Misc.millisToHumanForm(Misc.getTime() - botStartTime))
+                                    .append("!\n\n");
 
                             for (State state : State.values()) {
                                 if (counters.get(state).getTotal() > 0) {
