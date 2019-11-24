@@ -98,6 +98,7 @@ public class MainThread implements Runnable {
     private long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
     private long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
     private long BADGES_CHECK_INTERVAL = 10 * MINUTE;
+    @SuppressWarnings("FieldCanBeLocal")
     private long BONUS_CHECK_INTERVAL = 10 * MINUTE;
 
     private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
@@ -4771,7 +4772,7 @@ public class MainThread implements Runnable {
             return;
         }
 
-        seg = detectCue(cues.get("Potions"), SECOND * 1);
+        seg = detectCue(cues.get("Potions"), SECOND);
         if (seg != null) {
             clickOnSeg(seg);
             readScreen(SECOND);
