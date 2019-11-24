@@ -4844,7 +4844,7 @@ public class MainThread implements Runnable {
                     //check if there is a gravestone to see if we need to revive
                     //we MouseOver to make sure the grave is in the foreground and not covered
                     moveMouseToPos(slotPos.x, slotPos.y);
-                    if (detectCue(cues.get("GravestoneHighlighted"), 1 * SECOND) == null) continue;
+                    if (detectCue(cues.get("GravestoneHighlighted"), 3 * SECOND) == null) continue;
 
                     // If we revive a team member we need to reopen the potion menu again
                     seg = detectCue(cues.get("UnitSelect"), SECOND);
