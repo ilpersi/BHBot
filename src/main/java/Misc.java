@@ -100,9 +100,9 @@ public class Misc {
             return "0s";
 
         StringBuilder humanStringBuilder = new StringBuilder();
-        if (days > 0) humanStringBuilder.append(String.format("%dd ", days));
-        if (hours > 0) humanStringBuilder.append(String.format("%dh ", hours));
-        if (minutes > 0) humanStringBuilder.append(String.format("%dm ", minutes));
+        if (days > 0) humanStringBuilder.append(String.format("%dd", days));
+        if (hours > 0) humanStringBuilder.append(String.format(" %dh", hours));
+        if (minutes > 0) humanStringBuilder.append(String.format(" %dm", minutes));
         if (seconds > 0) humanStringBuilder.append(String.format(" %ds", seconds));
 
         return humanStringBuilder.toString().trim();
