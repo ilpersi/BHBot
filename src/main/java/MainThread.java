@@ -1000,8 +1000,9 @@ public class MainThread implements Runnable {
                 }
 
                 // check for "You have been disconnected" dialog:
-                seg = detectCue(cues.get("Disconnected"));
-                if (seg != null) {
+                MarvinSegment uhoh = detectCue(cues.get("UhOh"));
+                MarvinSegment dc = detectCue(cues.get("Disconnected"));
+                if (uhoh != null && dc != null) {
                     if (BHBot.scheduler.isUserInteracting || BHBot.scheduler.dismissReconnectOnNextIteration) {
                         BHBot.scheduler.isUserInteracting = false;
                         BHBot.scheduler.dismissReconnectOnNextIteration = false;
