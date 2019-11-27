@@ -568,9 +568,21 @@ public class MainThread implements Runnable {
         addCue("GravestoneHighlighted", loadImage("cues/autorevive/highlighted_gravestone.png"), new Bounds(50, 230, 340, 400));
 
         //Items related cues
+        addCue("ItemHer", loadImage("cues/items/cueItemHer.png"), null); // Heroic Item border
         addCue("ItemLeg", loadImage("cues/items/cueItemLeg.png"), null); // Legendary Item border
         addCue("ItemSet", loadImage("cues/items/cueItemSet.png"), null); // Set Item border
         addCue("ItemMyt", loadImage("cues/items/cueItemMyt.png"), null); // Mythical Item border
+        //legendary
+        addCue("Material_R8", loadImage("cues/items/material_r8.png"), null);
+        addCue("Material_R7", loadImage("cues/items/material_r7.png"), null);
+        addCue("Material_R6", loadImage("cues/items/material_r6.png"), null);
+        addCue("Material_R5", loadImage("cues/items/material_r5.png"), null);
+        addCue("Material_R4", loadImage("cues/items/material_r4.png"), null);
+        addCue("Material_R3", loadImage("cues/items/material_r3.png"), null);
+        addCue("Material_R2", loadImage("cues/items/material_r2.png"), null);
+        //heroic
+        addCue("GoldCoin", loadImage("cues/items/goldcoin.png"), null);
+        addCue("NeuralNetRom", loadImage("cues/items/neural_net_rom.png"), null);
 
         //weekly reward cues
         //these include the top of the loot window so they aren't triggered by the text in the activity panel
