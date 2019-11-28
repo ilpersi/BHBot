@@ -3768,7 +3768,7 @@ public class MainThread implements Runnable {
          *  Check for the 'Victory' screen and handle post-activity tasks
          */
         if (state == State.WorldBoss || state == State.Gauntlet || state == State.Invasion || state == State.PVP || state == State.GVG) {
-            if (state != State.WorldBoss) {
+            if (state == State.Gauntlet) {
                 seg = detectCue(cues.get("VictorySmall"));
             } else {
                 seg = detectCue(cues.get("VictoryLarge"));
