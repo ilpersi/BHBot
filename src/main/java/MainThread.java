@@ -3677,7 +3677,7 @@ public class MainThread implements Runnable {
         *   Merchant offer check
         *   Not super common so we check every 5 seconds
         */
-        if (activityDuration % 5 == 0 && !encounterStatus) {
+        if (activityDuration % 5 == 0 && encounterStatus) {
             seg = detectCue(cues.get("Merchant"));
             if (seg != null) {
                 seg = detectCue(cues.get("Decline"), 5 * SECOND);
