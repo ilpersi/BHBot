@@ -591,7 +591,9 @@ public class MainThread implements Runnable {
         //these include the top of the loot window so they aren't triggered by the text in the activity panel
         addCue("PVP_Rewards", loadImage("cues/weeklyrewards/pvp.png"), new Bounds(290, 130, 510, 160));
         addCue("Trials_Rewards", loadImage("cues/weeklyrewards/trials.png"), new Bounds(290, 130, 510, 160));
+        addCue("Trials_Rewards_Large", loadImage("cues/weeklyrewards/trials_large.png"), new Bounds(290, 50, 510, 130));
         addCue("Gauntlet_Rewards", loadImage("cues/weeklyrewards/gauntlet.png"), new Bounds(290, 130, 510, 160));
+        addCue("Gauntlet_Rewards_Large", loadImage("cues/weeklyrewards/gauntlet_large.png"), new Bounds(290, 50, 510, 130));
         addCue("GVG_Rewards", loadImage("cues/weeklyrewards/gvg.png"), new Bounds(290, 130, 510, 160));
         addCue("Invasion_Rewards", loadImage("cues/weeklyrewards/invasion.png"), new Bounds(290, 130, 510, 160));
         addCue("Expedition_Rewards", loadImage("cues/weeklyrewards/expedition.png"), new Bounds(290, 130, 510, 160));
@@ -7810,7 +7812,9 @@ public class MainThread implements Runnable {
             HashMap<String, Cue> weeklyRewards = new HashMap<>();
             weeklyRewards.put("PVP", cues.get("PVP_Rewards"));
             weeklyRewards.put("Trials", cues.get("Trials_Rewards"));
+            weeklyRewards.put("Trials", cues.get("Trials_Rewards_Large"));
             weeklyRewards.put("Gauntlet", cues.get("Gauntlet_Rewards"));
+            weeklyRewards.put("Gauntlet", cues.get("Gauntlet_Rewards_Large"));
             weeklyRewards.put("Fishing", cues.get("Fishing_Rewards"));
             weeklyRewards.put("Invasion", cues.get("Invasion_Rewards"));
             weeklyRewards.put("Expedition", cues.get("Expedition_Rewards"));
