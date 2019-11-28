@@ -3852,8 +3852,8 @@ public class MainThread implements Runnable {
                 BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Level reached: " + num);
             }
 
-            //in Gauntlet the close button is green, everywhere else its blue
-            if (state == State.Gauntlet) {
+            //in Gauntlet/Invasion the close button is green, everywhere else its blue
+            if (state == State.Gauntlet || state == State.Invasion) {
                 seg = detectCue(cues.get("CloseGreen"), 2 * SECOND);
             } else {
                 seg = detectCue(cues.get("Close"), 2 * SECOND);
