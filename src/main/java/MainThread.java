@@ -510,9 +510,7 @@ public class MainThread implements Runnable {
         addCue("BlueSummon", loadImage("cues/cueBlueSummon.png"), null);
         addCue("LargeGreenSummon", loadImage("cues/cueLargeGreenSummon.png"), null);
         addCue("SmallGreenSummon", loadImage("cues/cueSmallGreenSummon.png"), null);
-        addCue("Invite3rd", loadImage("cues/cueInviteAny.png"), new Bounds(334, 275, 456, 323)); //bounds defined 3rd invite button for Nether
-        addCue("Invite4th", loadImage("cues/cueInviteAny.png"), new Bounds(330, 330, 460, 380)); //bounds defined 4th invite button for Melvin
-        addCue("Invite", loadImage("cues/cueInvite.png"), new Bounds(336, 387, 452, 422)); //bounds defined 5th invite button for Orlag
+        addCue("Invite", loadImage("cues/cueInvite.png"), null);
         addCue("Start", loadImage("cues/cueStart.png"), null);
         addCue("WorldBossVictory", loadImage("cues/cueWorldBossVictory.png"), null);
         addCue("OrlagSelected", loadImage("cues/cueOrlagSelected.png"), new Bounds(360, 430, 440, 460));
@@ -2561,24 +2559,10 @@ public class MainThread implements Runnable {
 
                             //wait for lobby to fill with a timer
                             if (!BHBot.settings.worldBossSolo) {
+                                Bounds inviteButton = inviteBounds(wbType.getLetter());
                                 for (int i = 0; i < worldBossTimer; i++) {
-                                    sleep(SECOND);
-                                    readScreen();
-
-                                    switch (wbType.getLetter()) {
-                                        case "o":  //shouldn't have this inside the loop but it doesn't work if its outside
-                                            seg = detectCue(cues.get("Invite")); // 5th Invite button for Orlag
-                                            break;
-                                        case "n":
-                                        case "3":
-                                        case "b":
-                                            seg = detectCue(cues.get("Invite3rd")); // 3rd Invite button for Nether, 3xt3rmin4tion & Brimstone
-                                            break;
-                                        case "m":
-                                            seg = detectCue(cues.get("Invite4th")); // 4th Invite button for Melvin
-                                            break;
-                                    }
-
+                                    readScreen(SECOND);
+                                    seg = detectCue(cues.get("Invite"), 0, inviteButton);
                                     if (seg != null) { //while the relevant invite button exists
                                         if (i != 0 && (i % 15) == 0) { //every 15 seconds
                                             int timeLeft = worldBossTimer - i;
@@ -2825,6 +2809,27 @@ public class MainThread implements Runnable {
         driver.close();
         driver.quit();
         BHBot.logger.info("Main thread stopped.");
+    }
+
+    private Bounds inviteBounds(String wb) {
+        Bounds inviteButton;
+        switch (wb) {
+            case "n":
+            case "3":
+            case "b":
+                inviteButton = new Bounds(334, 275, 456, 323); // 3rd Invite button for Nether, 3xt3rmin4tion & Brimstone
+                break;
+            case "m":
+                inviteButton = new Bounds(330, 330, 460, 380); // 4th Invite button for Melvin
+                break;
+            case "o":
+                inviteButton = new Bounds(336, 387, 452, 422); // 5th Invite button for Orlag
+                break;
+            default:
+                inviteButton = new Bounds(334, 275, 456, 323); // on error return 3rd invite
+                break;
+        }
+        return inviteButton;
     }
 
     private String activitySelector() {
