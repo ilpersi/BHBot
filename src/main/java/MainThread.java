@@ -1172,6 +1172,19 @@ public class MainThread implements Runnable {
                     continue;
                 }
 
+                //Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
+                if (state == State.Loading) {
+                    MarvinSegment autoOn = detectCue(cues.get("AutoOn"));
+                    MarvinSegment autoOff = detectCue(cues.get("AutoOff"));
+                    if (autoOn != null || autoOff != null) { //if we're in Loading state, with auto button visible, then we need to change state
+                        state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
+                        BHBot.logger.warn("Possible dungeon crash, activating failsafe");
+                        saveGameScreen("dungeon-crash-failsafe", "errors");
+                        checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
+                        continue;
+                    }
+                }
+
                 // process dungeons of any kind (if we are in any):
                 if (state == State.Raid || state == State.Trials || state == State.Gauntlet || state == State.Dungeon || state == State.PVP || state == State.GVG || state == State.Invasion || state == State.UnidentifiedDungeon || state == State.Expedition || state == State.WorldBoss) {
                     processDungeon();
@@ -1182,16 +1195,6 @@ public class MainThread implements Runnable {
                 seg = detectCue(cues.get("Main"));
                 if (seg != null) {
                     state = State.Main;
-
-                    //Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
-                    seg = detectCue(cues.get("AutoOn")); //if we're in Main state, with auto button visible, then we need to change state
-                    if (seg != null) {
-                        state = State.UnidentifiedDungeon; // we are not sure what type of dungeon we are doing
-                        BHBot.logger.warn("Possible dungeon crash, activating failsafe");
-                        saveGameScreen("dungeon-crash-failsafe", "errors");
-                        checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
-                        continue;
-                    }
 
                     // check for pushover alive notifications!
                     if (BHBot.settings.enablePushover && BHBot.settings.poNotifyAlive > 0) {
