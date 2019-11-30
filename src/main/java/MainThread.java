@@ -77,7 +77,6 @@ public class MainThread implements Runnable {
     private boolean oneTimeshrineCheck = false;
     private boolean autoShrined = false;
     private long activityStartTime;
-    private long activityDuration;
     private boolean encounterStatus = true;
     private long outOfEncounterTimestamp = 0;
     private long inEncounterTimestamp = 0;
@@ -3190,8 +3189,8 @@ public class MainThread implements Runnable {
      * This will handle dialog that open up when you encounter a boss for the first time, for example, or open a raid window or trials window for the first time, etc.
      */
     private void detectCharacterDialogAndHandleIt() {
-        final Color cuec1 = new Color(238, 241, 249); // white
-        final Color cuec2 = new Color(82, 90, 98); // gray
+        /*final Color cuec1 = new Color(238, 241, 249); // white
+        final Color cuec2 = new Color(82, 90, 98); // gray*/
 
         MarvinSegment right;
         MarvinSegment left;
@@ -3346,8 +3345,7 @@ public class MainThread implements Runnable {
      */
 
     private Bounds getSegBounds(MarvinSegment seg) {
-        Bounds area = new Bounds(seg.x1, seg.y1, seg.x2, seg.y2);
-        return area;
+        return new Bounds(seg.x1, seg.y1, seg.x2, seg.y2);
     }
 
     /**
@@ -3581,7 +3579,7 @@ public class MainThread implements Runnable {
             speedChecked = false;
         }
 
-        activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
+        long activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
 
         /*
          * Encounter detection code
@@ -3747,17 +3745,17 @@ public class MainThread implements Runnable {
                 if (state == State.Expedition) {
 
                     // first screen
-                    readScreen(1 * SECOND);
+                    readScreen(SECOND);
                     seg = detectCue(cues.get("X"), 3 * SECOND);
                     clickOnSeg(seg);
 
                     // Close Portal Map after expedition
-                    readScreen(1 * SECOND);
+                    readScreen(SECOND);
                     seg = detectCue(cues.get("X"), 3 * SECOND);
                     clickOnSeg(seg);
 
                     // close Expedition window after Expedition
-                    readScreen(1 * SECOND);
+                    readScreen(SECOND);
                     seg = detectCue(cues.get("X"), 3 * SECOND);
                     clickOnSeg(seg);
                 }
@@ -3883,17 +3881,17 @@ public class MainThread implements Runnable {
             //Next Expedition this'll be replaced with closePopupSecurely
             if (state == State.Expedition) {
                 // first screen
-                readScreen(1 * SECOND);
+                readScreen(SECOND);
                 seg = detectCue(cues.get("X"), 3 * SECOND);
                 clickOnSeg(seg);
 
                 // Close Portal Map after expedition
-                readScreen(1 * SECOND);
+                readScreen(SECOND);
                 seg = detectCue(cues.get("X"), 3 * SECOND);
                 clickOnSeg(seg);
 
                 // close Expedition window after Expedition
-                readScreen(1 * SECOND);
+                readScreen(SECOND);
                 seg = detectCue(cues.get("X"), 3 * SECOND);
                 clickOnSeg(seg);
 
@@ -7122,7 +7120,7 @@ public class MainThread implements Runnable {
                                 .setMessage(msg)
                                 .setPriority(priority)
                                 .setSound(sound)
-                                .setAttachment(attachment)
+                                .setImage(attachment)
                                 .build());
             } catch (PushoverException e) {
                 BHBot.logger.error("Error while sending Pushover message", e);
@@ -7813,9 +7811,9 @@ public class MainThread implements Runnable {
             HashMap<String, Cue> weeklyRewards = new HashMap<>();
             weeklyRewards.put("PVP", cues.get("PVP_Rewards"));
             weeklyRewards.put("Trials", cues.get("Trials_Rewards"));
-            weeklyRewards.put("Trials", cues.get("Trials_Rewards_Large"));
+            weeklyRewards.put("Trials-XL", cues.get("Trials_Rewards_Large"));
             weeklyRewards.put("Gauntlet", cues.get("Gauntlet_Rewards"));
-            weeklyRewards.put("Gauntlet", cues.get("Gauntlet_Rewards_Large"));
+            weeklyRewards.put("Gauntlet-XL", cues.get("Gauntlet_Rewards_Large"));
             weeklyRewards.put("Fishing", cues.get("Fishing_Rewards"));
             weeklyRewards.put("Invasion", cues.get("Invasion_Rewards"));
             weeklyRewards.put("Expedition", cues.get("Expedition_Rewards"));
