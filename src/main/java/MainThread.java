@@ -3836,23 +3836,21 @@ public class MainThread implements Runnable {
             String runtime = Misc.millisToHumanForm(activityRuntime);
             counters.get(state).increaseDefeatsDuration(activityRuntime);
             String runtimeAvg = Misc.millisToHumanForm(counters.get(state).getDefeatAverageDuration());
-            //return stats
-            BHBot.logger.warn(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Defeat.");
-            BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
-            BHBot.logger.stats("Defeat run time: " + runtime + ". Average: " + runtimeAvg + ".");
 
-            if (state == State.Raid && counters.get(state).defeatsInARow() >= 3) {
-                sendPushOverMessage(BHBot.settings.username + " >3 raid defeats in a row", "Check team composition", "siren");
-            }
-
-            //return the level reached for invasion
-            if (state == State.Invasion) {
+            //return stats for non-invasion
+            if (state != State.Invasion) {
+                BHBot.logger.warn(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Defeat.");
+                BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
+                BHBot.logger.stats("Defeat run time: " + runtime + ". Average: " + runtimeAvg + ".");
+            } else {
+                //return the stats for invasion (no victory possible so we skip the warning)
                 readScreen();
                 MarvinImage subm = new MarvinImage(img.getSubimage(375, 20, 55, 20));
                 makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255), 64);
                 BufferedImage subimagetestbw = subm.getBufferedImage();
                 int num = readNumFromImg(subimagetestbw, "small", new HashSet<>());
                 BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Level reached: " + num);
+                BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
             }
 
             //in Gauntlet/Invasion the close button is green, everywhere else its blue
