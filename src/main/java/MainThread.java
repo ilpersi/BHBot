@@ -3714,8 +3714,6 @@ public class MainThread implements Runnable {
             seg = detectCue(cues.get("Cleared"));
             if (seg != null) {
 
-                handleVictory();
-
                 //Calculate activity stats
                 counters.get(state).increaseVictories();
                 long activityRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
@@ -3726,6 +3724,8 @@ public class MainThread implements Runnable {
                 BHBot.logger.info(state.getName() + " #" + counters.get(state).getTotal() + " completed. Result: Victory");
                 BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
                 BHBot.logger.stats("Victory run time: " + runtime + ". Average: " + runtimeAvg + ".");
+
+                handleLoot();
 
                 //handle SuccessThreshold
                 handleSuccessThreshold(state);
