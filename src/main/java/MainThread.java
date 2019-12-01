@@ -1027,16 +1027,14 @@ public class MainThread implements Runnable {
                         clickOnSeg(seg);
                         BHBot.logger.info("Disconnected dialog dismissed (reconnecting).");
                         sleep(5 * SECOND);
-                        state = State.Loading;
-                        continue;
                     } else {
                         BHBot.scheduler.isUserInteracting = true;
                         // probably user has logged in, that's why we got disconnected. Lets leave him alone for some time and then resume!
                         BHBot.logger.info("Disconnect has been detected. Probably due to user interaction. Sleeping for " + Misc.millisToHumanForm((long) BHBot.settings.reconnectTimer * MINUTE) + "...");
                         BHBot.scheduler.pause(BHBot.settings.reconnectTimer * MINUTE);
-                        state = State.Loading;
-                        continue;
                     }
+                    state = State.Loading;
+                    continue;
                 }
 
                 BHBot.scheduler.dismissReconnectOnNextIteration = false; // must be done after checking for "Disconnected" dialog!
@@ -1489,8 +1487,8 @@ public class MainThread implements Runnable {
                             }
 
                             // One time check for Autoshrine
+                            //wait for window animation
                             if (trials) {
-
                                 //if we need to configure runes/settings we close the window first
                                 if (BHBot.settings.autoShrine.contains("t") || BHBot.settings.autoRune.containsKey("t") || BHBot.settings.autoBossRune.containsKey("t")) {
                                     readScreen();
@@ -1518,10 +1516,6 @@ public class MainThread implements Runnable {
                                 //activity runes
                                 handleMinorRunes("t");
 
-                                readScreen(SECOND);
-                                clickOnSeg(trialBTNSeg);
-                                readScreen(SECOND); //wait for window animation
-
                             } else {
 
                                 if (BHBot.settings.autoRune.containsKey("g")) {
@@ -1529,10 +1523,10 @@ public class MainThread implements Runnable {
                                     readScreen(SECOND);
                                 }
 
-                                readScreen(SECOND);
-                                clickOnSeg(trialBTNSeg);
-                                readScreen(SECOND); //wait for window animation
                             }
+                            readScreen(SECOND);
+                            clickOnSeg(trialBTNSeg);
+                            readScreen(SECOND); //wait for window animation
 
                             // apply the correct difficulty
                             int targetDifficulty = trials ? BHBot.settings.difficultyTrials : BHBot.settings.difficultyGauntlet;
@@ -1748,11 +1742,10 @@ public class MainThread implements Runnable {
                             if ((goalDungeon == 4) || (goalZone == 7 && goalDungeon == 3) || (goalZone == 8 && goalDungeon == 3)) { // D4, or Z7D3/Z8D3
                                 specialDungeon = true;
                                 seg = detectCue(cues.get("Enter"), 5 * SECOND);
-                                clickOnSeg(seg);
                             } else { //else select appropriate difficulty
                                 seg = detectCue(cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), 5 * SECOND);
-                                clickOnSeg(seg);
                             }
+                            clickOnSeg(seg);
 
                             //team selection screen
                             /* Solo-for-bounty code */
@@ -2643,13 +2636,13 @@ public class MainThread implements Runnable {
                                     clickOnSeg(segStart); //start World Boss
                                     sleep(2 * SECOND); //wait for dropdown animation to finish
                                     seg = detectCue(cues.get("YesGreen"), 2 * SECOND); //clear empty team prompt
+                                    //click anyway this cue has issues
                                     if (seg == null) {
                                         sleep(500);
-                                        clickInGame(330, 360); //yesgreen cue has issues so we use pos to click on Yes as a backup
                                     } else {
                                         clickOnSeg(seg);
-                                        clickInGame(330, 360); //click anyway this cue has issues
                                     }
+                                    clickInGame(330, 360); //yesgreen cue has issues so we use pos to click on Yes as a backup
                                     BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " Solo started!");
                                     state = State.WorldBoss;
                                     continue;
@@ -6435,6 +6428,8 @@ public class MainThread implements Runnable {
         }
 
         // scroll the drop-down until we reach our position:
+        // recursively select new difficulty
+        //*** should we increase this time?
         if (move > 0) {
             // move up
             seg = detectCue(cues.get("DropDownUp"));
@@ -6448,8 +6443,6 @@ public class MainThread implements Runnable {
                 clickOnSeg(seg);
             }
             // OK, we should have a target value on screen now, in the first spot. Let's click it!
-            readScreen(5 * SECOND); //*** should we increase this time?
-            return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1, step); // recursively select new difficulty
         } else {
             // move down
             seg = detectCue(cues.get("DropDownDown"));
@@ -6465,9 +6458,9 @@ public class MainThread implements Runnable {
                 clickOnSeg(seg);
             }
             // OK, we should have a target value on screen now, in the first spot. Let's click it!
-            readScreen(5 * SECOND); //*** should we increase this time?
-            return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1, step); // recursively select new difficulty
         }
+        readScreen(5 * SECOND); //*** should we increase this time?
+        return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1, step); // recursively select new difficulty
     }
 
     /**
@@ -6725,12 +6718,9 @@ public class MainThread implements Runnable {
         // position of top-left item (which is the strongest) is (490, 210)
         if (dir == StripDirection.StripDown) {
             clickInGame(490, 210);
-            if (!equipped) // in case item was not equipped, we must click on it twice, first time to equip it, second to unequip it. This could happen for example when we had some weaker item equipped (or no item equipped).
-                clickInGame(490, 210);
-        } else {
-            if (!equipped)
-                clickInGame(490, 210);
         }
+        if (!equipped) // in case item was not equipped, we must click on it twice, first time to equip it, second to unequip it. This could happen for example when we had some weaker item equipped (or no item equipped).
+            clickInGame(490, 210);
 
         // OK, we're done, lets close the character menu window:
         closePopupSecurely(cues.get("StripSelectorButton"), cues.get("X"));
