@@ -23,6 +23,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -2788,6 +2789,12 @@ public class MainThread implements Runnable {
                     //will trigger the restart in the if statement below after 30 seconds
                     sleep(SECOND);
                     // we must not call 'continue' here, because this error could be a loop error, this is why we need to increase numConsecutiveException bellow in the code!
+                } else if (e instanceof org.openqa.selenium.TimeoutException) {
+                    /* When we get time out errors it may be possible that the browser has crashed so it is impossible to take screenshots
+                     * For this reason we do a standard restart.
+                     */
+                    restart(false);
+                    continue;
                 } else {
                     // unknown error!
                     BHBot.logger.error("Unmanaged exception in main run loop", e);
@@ -3225,7 +3232,20 @@ public class MainThread implements Runnable {
                 return Shutterbug.shootPage(driver).getImage();
         } catch (org.openqa.selenium.StaleElementReferenceException e) {
             // sometimes the game element is not available, if this happen we just return an empty image
+            BHBot.logger.debug("Stale image detected while taking a screenshott", e);
+
             return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+        } catch (org.openqa.selenium.TimeoutException e) {
+            // sometimes Chrome/Chromium crashes and it is impossible to take screenshots from it
+            BHBot.logger.debug("Selenium Timeout detected while taking a screenshot", e);
+
+            Rectangle screenRect = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+            try {
+                return new Robot().createScreenCapture(screenRect);
+            } catch (AWTException ex) {
+                BHBot.logger.error("Impossible to perform a monitor screenshot", e);
+                return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+            }
         }
     }
 
