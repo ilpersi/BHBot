@@ -6818,6 +6818,53 @@ public class MainThread implements Runnable {
         readScreen(SECOND * 2);
     }
 
+    private boolean consumableReplaceCheck() {
+        int coloursFound = 0;
+
+        boolean foundGreen = false;
+        boolean foundBlue = false;
+        boolean foundRedFaded = false;
+        boolean foundYellow = false;
+        boolean foundRed = false;
+
+        readScreen();
+        BufferedImage consumableTest = img.getSubimage(258, 218, 311, 107);
+
+        Color green = new Color(150, 254, 124);
+        Color blue = new Color(146, 157, 243);
+        Color redFaded = new Color(254, 127, 124); //faded red on 75% boosts
+        Color yellow = new Color(254, 254, 0);
+        Color red = new Color(254, 0, 71);
+
+        for (int y = 0; y < consumableTest.getHeight(); y++) {
+            for (int x = 0; x < consumableTest.getWidth(); x++) {
+                if (!foundGreen && new Color(consumableTest.getRGB(x, y)).equals(green)) {
+                    foundGreen = true;
+                    coloursFound++;
+                } else if (!foundBlue && new Color(consumableTest.getRGB(x, y)).equals(blue)) {
+                    foundBlue = true;
+                    coloursFound++;
+                } else if (!foundRedFaded && new Color(consumableTest.getRGB(x, y)).equals(redFaded)) {
+                    foundRedFaded = true;
+                    coloursFound++;
+                } else if (!foundYellow && new Color(consumableTest.getRGB(x, y)).equals(yellow)) {
+                    foundYellow = true;
+                    coloursFound++;
+                } else if (!foundRed && new Color(consumableTest.getRGB(x, y)).equals(red)) {
+                    foundRed = true;
+                    coloursFound++;
+                }
+
+                if (coloursFound > 1) {
+                    BHBot.logger.info("Replace Consumables text found, skipping");
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     /**
      * We must be in main menu for this to work!
      */
@@ -6960,14 +7007,8 @@ public class MainThread implements Runnable {
                      *  is not possible to detect cue like "replace" wording, or any other (I've tried that
                      *  and failed).
                      */
-                    int dist;
-                    seg = detectCue(cues.get("ConsumableTitle"));
-                    dist = seg.y1;
-                    seg = detectCue(cues.get("YesGreen"));
-                    dist = seg.y1 - dist;
-                    // distance for the big window should be 262 pixels, for the small one it should be 212.
 
-                    if (dist > 250) {
+                    if (!consumableReplaceCheck()) {
                         // don't consume the consumable... it's already in use!
                         BHBot.logger.warn("\"Replace consumable\" dialog detected for (" + c.getName() + "). Skipping...");
                         duplicateConsumables.add(c);
