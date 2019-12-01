@@ -867,13 +867,12 @@ public class MainThread implements Runnable {
             if (QUIT_AFTER_MAX_FAILED_RESTARTS && numFailedRestarts > MAX_NUM_FAILED_RESTARTS) {
                 BHBot.logger.fatal("Something went wrong with driver restart. Number of restarts exceeded " + MAX_NUM_FAILED_RESTARTS + ", this is why I'm aborting...");
                 finished = true;
-                return;
             } else {
                 BHBot.logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)", e);
                 sleep(5 * MINUTE);
                 restart();
-                return;
             }
+            return;
         }
 
         detectSignInFormAndHandleIt(); // just in case (happens seldom though)
@@ -2823,17 +2822,16 @@ public class MainThread implements Runnable {
     private Bounds inviteBounds(String wb) {
         Bounds inviteButton;
         switch (wb) {
-            case "n":
-            case "3":
-            case "b":
-                inviteButton = new Bounds(334, 275, 456, 323); // 3rd Invite button for Nether, 3xt3rmin4tion & Brimstone
-                break;
+            // 3rd Invite button for Nether, 3xt3rmin4tion & Brimstone
             case "m":
                 inviteButton = new Bounds(330, 330, 460, 380); // 4th Invite button for Melvin
                 break;
             case "o":
                 inviteButton = new Bounds(336, 387, 452, 422); // 5th Invite button for Orlag
                 break;
+            case "n":
+            case "3":
+            case "b":
             default:
                 inviteButton = new Bounds(334, 275, 456, 323); // on error return 3rd invite
                 break;
@@ -2869,9 +2867,8 @@ public class MainThread implements Runnable {
             return "f";
         }
 
-        if (BHBot.settings.activitiesEnabled.isEmpty()) {
-            return null;
-        } else {
+        //return null if no matches
+        if (!BHBot.settings.activitiesEnabled.isEmpty()) {
 
             String activity;
 
@@ -2884,7 +2881,7 @@ public class MainThread implements Runnable {
 
                 try {
                     activity = activitysIterator.next(); //set iterator to string for .equals()
-                } catch (java.util.ConcurrentModificationException e) {
+                } catch (ConcurrentModificationException e) {
                     activitysIterator = BHBot.settings.activitiesEnabled.iterator();
                     activity = activitysIterator.next();
                 }
@@ -2921,8 +2918,8 @@ public class MainThread implements Runnable {
                 activitysIterator = BHBot.settings.activitiesEnabled.iterator();
             }
 
-            return null; //return null if no matches
         }
+        return null;
     }
 
     private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {
