@@ -3227,15 +3227,21 @@ public class MainThread implements Runnable {
             return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
         } catch (org.openqa.selenium.TimeoutException e) {
             // sometimes Chrome/Chromium crashes and it is impossible to take screenshots from it
-            BHBot.logger.debug("Selenium Timeout detected while taking a screenshot", e);
+            BHBot.logger.warn("Selenium timeout detected while taking a screenshot. A monitor screenshot will be taken", e);
+
+            if (BHBot.settings.hideWindowOnRestart) showBrowser();
 
             Rectangle screenRect = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+            BufferedImage screen;
             try {
-                return new Robot().createScreenCapture(screenRect);
+                screen = new Robot().createScreenCapture(screenRect);
             } catch (AWTException ex) {
                 BHBot.logger.error("Impossible to perform a monitor screenshot", ex);
-                return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+                screen = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
             }
+
+            if (BHBot.settings.hideWindowOnRestart) showBrowser();
+            return screen;
         }
     }
 
