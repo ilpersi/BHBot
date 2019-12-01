@@ -3243,7 +3243,7 @@ public class MainThread implements Runnable {
             try {
                 return new Robot().createScreenCapture(screenRect);
             } catch (AWTException ex) {
-                BHBot.logger.error("Impossible to perform a monitor screenshot", e);
+                BHBot.logger.error("Impossible to perform a monitor screenshot", ex);
                 return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
             }
         }
