@@ -1204,7 +1204,7 @@ public class MainThread implements Runnable {
                             String aliveScreenName = saveGameScreen("alive-screen");
                             File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
 
-                            sendPushOverMessage("Startup notification", "BHBot has been succesfully started!", MessagePriority.QUIET, aliveScreenFile);
+                            sendPushOverMessage("Startup notification", "BHBot has been successfully started!", MessagePriority.QUIET, aliveScreenFile);
                             if (aliveScreenFile != null && !aliveScreenFile.delete())
                                 BHBot.logger.warn("Impossible to delete tmp img for startup notification.");
                         }
@@ -2696,7 +2696,6 @@ public class MainThread implements Runnable {
                             seg = detectCue(cues.get("X"), 5 * SECOND);
                             if (seg != null) {
                                 clickOnSeg(seg);
-                                readScreen();
                             } else {
                                 BHBot.logger.error("Impossible to close the bounties dialog, restarting...");
                                 saveGameScreen("bounties-error-closing");
@@ -2741,9 +2740,9 @@ public class MainThread implements Runnable {
                             BHBot.logger.warn("For information on configuring fishing check the wiki page on github");
                             BHBot.settings.activitiesEnabled.remove("f");
                             return;
+                        } else {
+                            handleFishing();
                         }
-
-                        handleFishing();
                         continue;
                     }
 
@@ -2805,6 +2804,7 @@ public class MainThread implements Runnable {
 
                 continue;
             }
+
 
             // well, we got through all the checks. Means that nothing much has happened. So lets sleep for a second in order to not make processing too heavy...
             numConsecutiveException = 0; // reset exception counter
@@ -3186,9 +3186,6 @@ public class MainThread implements Runnable {
      * This will handle dialog that open up when you encounter a boss for the first time, for example, or open a raid window or trials window for the first time, etc.
      */
     private void detectCharacterDialogAndHandleIt() {
-        /*final Color cuec1 = new Color(238, 241, 249); // white
-        final Color cuec2 = new Color(82, 90, 98); // gray*/
-
         MarvinSegment right;
         MarvinSegment left;
         int steps = 0;
@@ -3274,7 +3271,7 @@ public class MainThread implements Runnable {
     }
 
     /**
-     * This method is ment to be used for development purpose. In some situations you want to "fake" the readScreen result
+     * This method is meant to be used for development purpose. In some situations you want to "fake" the readScreen result
      * with an hand-crafted image. If this is the case, this method is here to help with it.
      *
      * @param screenFilePath the path to the image to be used to load the screen
