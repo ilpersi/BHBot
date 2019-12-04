@@ -3737,8 +3737,6 @@ public class MainThread implements Runnable {
                 BHBot.logger.stats(state.getName() + " " + counters.get(state).successRateDesc());
                 BHBot.logger.stats("Victory run time: " + runtime + ". Average: " + runtimeAvg + ".");
 
-                handleLoot();
-
                 //handle SuccessThreshold
                 handleSuccessThreshold(state);
 
@@ -7329,18 +7327,16 @@ public class MainThread implements Runnable {
                 seg = detectCue(item.getValue(), 0, victoryDropArea);
                     if (seg != null && !itemFound) {
                         //so we don't get legendary crafting materials in raids triggering handleLoot
-                        if (item.getKey().equals("l")) {
-                            if (restrictedCues(getSegBounds(seg))) return;
-                            } else {
-                            // we update the seg for hover over as we may have caught it as the window slides in
-                            if ((seg = detectCue(item.getValue(), 0, victoryDropArea)) == null) return;
-                            }
+                        if ((item.getKey().equals("l")) && (restrictedCues(getSegBounds(seg)))) return;
                         //this is so we only get Coins, Crafting Materials and Schematics for heroic items
                         if (item.getKey().equals("h") && (!allowedCues(getSegBounds(seg)))) return;
-                        moveMouseToPos(getSegCenterX(seg), getSegCenterY(seg));
-                        readScreen();
-                        victoryPopUpImg = img;
-                        moveMouseAway();
+                        if ((state != State.Raid || state != State.Dungeon || state != State.Expedition || state != State.Trials)) {
+                            //the window moves too fast in these events to mouseOver
+                            moveMouseToPos(getSegCenterX(seg), getSegCenterY(seg));
+                            readScreen();
+                            victoryPopUpImg = img;
+                            moveMouseAway();
+                        }
                         itemFound = true; //so we only screenshot the highest tier found, and not equipped items on the hover popup
                         tierName = getItemTier(item.getKey());
                     }
