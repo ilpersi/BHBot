@@ -3652,18 +3652,18 @@ public class MainThread implements Runnable {
         /*
          * autoBribe/Persuasion code
          */
-        if ( (state == State.Raid || state == State.Dungeon) && (activityDuration % 5 == 0) && encounterStatus ) {
-                seg = detectCue(cues.get("Persuade"));
-                if (seg != null) {
-                    handleFamiliarEncounter();
-                }
+        if ((state == State.Raid || state == State.Dungeon  || state == State.UnidentifiedDungeon) && (activityDuration % 5 == 0) && encounterStatus) {
+            seg = detectCue(cues.get("Persuade"));
+            if (seg != null) {
+                handleFamiliarEncounter();
+            }
         }
 
         /*
          *  Skeleton key code
          *  encounterStatus is set to true as the window obscures the guild icon
          */
-        if (activityDuration % 5 == 0 && encounterStatus){
+        if (activityDuration % 5 == 0 && encounterStatus) {
             seg = detectCue(cues.get("SkeletonTreasure"));
             if (seg != null) {
                 if (handleSkeletonKey()) {
@@ -3704,6 +3704,7 @@ public class MainThread implements Runnable {
                     clickOnSeg(seg);
                 } else BHBot.logger.error("Merchant 'decline' cue not found");
 
+                readScreen(SECOND);
                 seg = detectCue(cues.get("YesGreen"), 5 * SECOND);
                 if (seg != null) {
                     clickOnSeg(seg);
@@ -3819,7 +3820,7 @@ public class MainThread implements Runnable {
 
                 // close the activity window to return us to the main screen
                 readScreen(3 * SECOND); //wait for slide-in animation to finish
-                seg = detectCue(cues.get("X"), 5 *SECOND);
+                seg = detectCue(cues.get("X"), 5 * SECOND);
                 if (seg != null) {
                     clickOnSeg(seg);
                 } else BHBot.logger.warn("Unable to find X button for " + state.getName() + " window..");
