@@ -6,7 +6,7 @@
 
     <groupId>com.github.betalord</groupId>
     <artifactId>BHBot</artifactId>
-    <version>42.9</version>
+    <version>43</version>
     <developers>
         <developer>
             <id>betalord</id>
@@ -86,7 +86,7 @@
             <plugin>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>4.0.0</version>
 
                 <executions>
                     <execution>
@@ -116,7 +116,6 @@
         </plugins>
     </build>
 
-
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
         <dependency>
@@ -134,7 +133,7 @@
         <dependency>
             <groupId>com.github.ilpersi</groupId>
             <artifactId>pushover-client</artifactId>
-            <version>1.0.2</version>
+            <version>1.1.1</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
         <dependency>
@@ -150,5 +149,12 @@
         </dependency>
     </dependencies>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>BHBot</name>
+            <url>https://maven.pkg.github.com/ilpersi/BHBot</url>
+        </repository>
+    </distributionManagement>
 
 </project>

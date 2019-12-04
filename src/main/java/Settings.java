@@ -32,7 +32,6 @@ public class Settings {
     private boolean collectBounties = false;
     private boolean collectFishingBaits = false;
     boolean dungeonOnTimeout = true;
-    boolean countActivities = false;
     LinkedHashSet<String> screenshots;
 
     //activity settings
@@ -95,7 +94,7 @@ public class Settings {
      * The HashMap key is the activity lecter: t for trial, g for gauntlet, e for expedition
      * The Map.Entry is composed by two Integers: the key is the number of levels to increase, the value is the maximum level
      */
-    HashMap<String, Map.Entry<Integer, Integer>> successTreshold = new HashMap<>();
+    HashMap<String, Map.Entry<Integer, Integer>> successThreshold = new HashMap<>();
 
     /**
      * PvP/GvG Opponent
@@ -192,8 +191,7 @@ public class Settings {
      **/
     int familiarScreenshot = 2;
     int minSolo = 2;
-    String dungeonsRun = "dungeonsrun 0";
-    String worldBossRun = "worldbossrun 0";
+
     /**
      * Fishing Settings
      **/
@@ -277,6 +275,7 @@ public class Settings {
         autoConsume = false;
         setAutoRuneDefaultFromString("");
         setactivitiesEnabledFromString("");
+        setScreenshotsFromString("w d f b dg wg fe"); //so we dont miss any if we are in idle
         collectBounties = false;
         collectFishingBaits = false;
         idleMode = true;
@@ -491,8 +490,8 @@ public class Settings {
         }
     }
 
-    private void setSuccessTreshold (String... tresholds) {
-        this.successTreshold.clear();
+    private void setSuccessThreshold (String... tresholds) {
+        this.successThreshold.clear();
         // We only support Trial and Gauntlets, so we do sanity checks here only settings the right letters t and g
         String tresholdPatternStr = "([tg]):([\\d]+):([\\d]+)";
         Pattern tresholdPattern = Pattern.compile(tresholdPatternStr);
@@ -501,7 +500,7 @@ public class Settings {
 
             if (m.find()) {
                 Map.Entry<Integer, Integer> entry = Maps.immutableEntry(Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
-                successTreshold.put(m.group(1), entry);
+                successThreshold.put(m.group(1), entry);
             }
         }
     }
@@ -712,9 +711,9 @@ public class Settings {
         return dfsBuilder.toString();
     }
 
-    private String getSuccessTresholdAsString() {
+    private String getSuccessThresholdAsString() {
         StringBuilder sfsBuilder = new StringBuilder();
-        for (Map.Entry<String, Map.Entry<Integer, Integer>> entry : successTreshold.entrySet()) {
+        for (Map.Entry<String, Map.Entry<Integer, Integer>> entry : successThreshold.entrySet()) {
             if (sfsBuilder.length() > 0) sfsBuilder.append(" ");
             sfsBuilder.append(entry.getKey())
                     .append(":")
@@ -861,8 +860,8 @@ public class Settings {
         setDifficultyFailsafe(s.trim().split(" "));
     }
 
-    private void setSuccessTresholdFromString(String s) {
-        setSuccessTreshold(s.trim().split(" "));
+    private void setSuccessThresholdFromString(String s) {
+        setSuccessThreshold(s.trim().split(" "));
     }
 
     private void setGVGStripsFromString(String s) {
@@ -1004,9 +1003,6 @@ public class Settings {
 
         openSkeleton = Integer.parseInt(lastUsedMap.getOrDefault("openSkeletonChest", "" + openSkeleton));
 
-        dungeonsRun = "dungeonsrun " + lastUsedMap.getOrDefault("dungeonsrun", dungeonsRun);
-        worldBossRun = "worldbossrun " + lastUsedMap.getOrDefault("worldbossrun", worldBossRun);
-
         setAutoShrineFromString(lastUsedMap.getOrDefault("autoShrine", getAutoShrineAsString()));
         battleDelay = Integer.parseInt(lastUsedMap.getOrDefault("battleDelay", "" + battleDelay));
         shrineDelay = Integer.parseInt(lastUsedMap.getOrDefault("shrineDelay", "" + shrineDelay));
@@ -1016,7 +1012,7 @@ public class Settings {
         setAutoBossRuneFromString(lastUsedMap.getOrDefault("autoBossRune", getAutoBossRuneAsString()));
 
         setDifficultyFailsafeFromString(lastUsedMap.getOrDefault("difficultyFailsafe", getDifficultyFailsafeAsString()));
-        setSuccessTresholdFromString(lastUsedMap.getOrDefault("successTreshold", getSuccessTresholdAsString()));
+        setSuccessThresholdFromString(lastUsedMap.getOrDefault("successThreshold", getSuccessThresholdAsString()));
 
         persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", "" + persuasionLevel));
         bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", "" + bribeLevel));
