@@ -1239,7 +1239,7 @@ public class MainThread implements Runnable {
                         for (LogEntry le : les) {
                             Matcher regexMatcher = regex.matcher(le.getMessage());
                             if (regexMatcher.find()) {
-                                BHBot.logger.debug("DO NOT SHARE URL = " + regexMatcher.group(1));
+                                BHBot.logger.debug("DO NOT SHARE URL found!");
                                 doNotShareUrl = regexMatcher.group(1);
                                 break;
                             }
