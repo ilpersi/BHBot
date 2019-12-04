@@ -11,6 +11,7 @@ class DungeonCounter {
     private IntegerProperty defeats;
     private IntegerProperty total;
     private IntegerProperty victoriesInARow;
+    private IntegerProperty defeatsInARow;
 
     private LongProperty totalVictoryDuration;
     private LongProperty victoryAverageDuration;
@@ -27,6 +28,7 @@ class DungeonCounter {
         this.defeats = new SimpleIntegerProperty(defeatCnt);
         this.total = new SimpleIntegerProperty(victoryCnt + defeatCnt);
         this.victoriesInARow = new SimpleIntegerProperty(0);
+        this.defeatsInARow = new SimpleIntegerProperty(0);
         DoubleProperty succesRate = new SimpleDoubleProperty(0);
 
         this.totalVictoryDuration = new SimpleLongProperty(0);
@@ -91,9 +93,9 @@ class DungeonCounter {
         return this.total.get();
     }
 
-//    int getVictories() { return this.victories.get();}
-
     int getVictoriesInARow() { return this.victoriesInARow.get();}
+
+    int getDefeatsInARow() { return this.defeatsInARow.get();}
 
     String successRateDesc() {
         return successRateDesc.getValue();
@@ -104,11 +106,13 @@ class DungeonCounter {
     long getDefeatAverageDuration() {return  defeatAverageDuration.get();}
 
     private void onVictoriesChange(ObservableValue<? extends Number> prop, Number oldValue, Number newValue) {
+        this.defeatsInARow.setValue(0);
         this.victoriesInARow.setValue(victoriesInARow.get() + 1);
     }
 
     private void onDefeatsChange(ObservableValue<? extends Number> prop, Number oldValue, Number newValue) {
         this.victoriesInARow.setValue(0);
+        this.defeatsInARow.setValue(defeatsInARow.get() + 1);
     }
 
 }
