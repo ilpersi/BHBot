@@ -640,7 +640,11 @@ public class MainThread implements Runnable {
 
         DesiredCapabilities capabilities = DesiredCapabilities.chrome();
 
-        if ("".equals(doNotShareUrl)) {
+        /* When we connect the driver, if we don't know the do_not_share_url and if the configs require it,
+         * the bot will enable the logging of network events so that when it is fully loaded, it will be possible
+         * to analyze them searching for the magic URL
+         */
+        if ("".equals(doNotShareUrl) && BHBot.settings.useDoNotShereURL) {
             LoggingPreferences logPrefs = new LoggingPreferences();
             logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
             options.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
@@ -665,6 +669,7 @@ public class MainThread implements Runnable {
         // Offset for do_not_share url missplacement of cues
         int x1, x2, y1, y2;
 
+        // If the do_not_share url is available, cue detection is considering the correct offset
         if (!"".equals(doNotShareUrl)) {
             x1 = cue.bounds != null && cue.bounds.x1 > 0 ? cue.bounds.x1 - 1 : 0;
             x2 = cue.bounds != null && cue.bounds.x2 > 0 ? cue.bounds.x2 - 1 : 0;
@@ -677,14 +682,7 @@ public class MainThread implements Runnable {
             y2 = cue.bounds != null ? cue.bounds.y2: 0;
         }
 
-        seg = FindSubimage.findImage(
-                src,
-                cue.im,
-                x1,
-                y1,
-                x2,
-                y2
-        );
+        seg = FindSubimage.findImage(src, cue.im, x1, y1, x2, y2);
 
         //source.drawRect(seg.x1, seg.y1, seg.x2-seg.x1, seg.y2-seg.y1, Color.blue);
         //MarvinImageIO.saveImage(source, "window_out.png");
@@ -1233,7 +1231,10 @@ public class MainThread implements Runnable {
 
                 if (seg != null) {
 
-                    if ("".equals(doNotShareUrl)) {
+                    /* The bot is now fully started, so based on the options we search the logs looking for the
+                     * do_not_share url and if we find it, we save it for later usage
+                     */
+                    if ("".equals(doNotShareUrl) && BHBot.settings.useDoNotShereURL) {
                         Pattern regex = Pattern.compile("\"(https://.+?\\?DO_NOT_SHARE_THIS_LINK[^\"]+?)\"");
                         LogEntries les = driver.manage().logs().get(LogType.PERFORMANCE);
                         for (LogEntry le : les) {
