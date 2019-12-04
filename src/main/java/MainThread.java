@@ -7388,13 +7388,11 @@ public class MainThread implements Runnable {
                         if ((item.getKey().equals("l")) && (restrictedCues(getSegBounds(seg)))) return;
                         //this is so we only get Coins, Crafting Materials and Schematics for heroic items
                         if (item.getKey().equals("h") && (!allowedCues(getSegBounds(seg)))) return;
-                        if ((state != State.Raid || state != State.Dungeon || state != State.Expedition || state != State.Trials)) {
-                            //the window moves too fast in these events to mouseOver
-                            moveMouseToPos(getSegCenterX(seg), getSegCenterY(seg));
-                            readScreen();
-                            victoryPopUpImg = img;
-                            moveMouseAway();
-                        }
+                        //the window moves too fast in these events to mouseOver
+                        moveMouseToPos(getSegCenterX(seg), getSegCenterY(seg));
+                        readScreen();
+                        victoryPopUpImg = img;
+                        moveMouseAway();
                         itemFound = true; //so we only screenshot the highest tier found, and not equipped items on the hover popup
                         tierName = getItemTier(item.getKey());
                     }
