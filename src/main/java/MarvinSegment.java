@@ -54,4 +54,12 @@ public class MarvinSegment {
     int getX1(){
         return x1;
     }
+
+    int getCenterX() {
+        return (this.x1 + this.x2) / 2;
+    }
+
+    int getCenterY() {
+        return (this.y1 + this.y2) / 2;
+    }
 }

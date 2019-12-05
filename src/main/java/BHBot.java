@@ -290,7 +290,7 @@ public class BHBot {
                 finished = true;
                 break;
             case "hide":
-                main.hideBrowser();
+                main.browser.hideBrowser();
                 settings.hideWindowOnRestart = true;
                 break;
             case "loadsettings":
@@ -454,7 +454,7 @@ public class BHBot {
                 break;
             }
             case "show":
-                main.showBrowser();
+                main.browser.showBrowser();
                 settings.hideWindowOnRestart = false;
                 break;
             case "test":
