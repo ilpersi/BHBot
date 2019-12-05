@@ -644,7 +644,7 @@ public class MainThread implements Runnable {
          * the bot will enable the logging of network events so that when it is fully loaded, it will be possible
          * to analyze them searching for the magic URL
          */
-        if ("".equals(doNotShareUrl) && BHBot.settings.useDoNotShereURL) {
+        if ("".equals(doNotShareUrl) && BHBot.settings.useDoNotShareURL) {
             LoggingPreferences logPrefs = new LoggingPreferences();
             logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
             options.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
@@ -1234,7 +1234,7 @@ public class MainThread implements Runnable {
                     /* The bot is now fully started, so based on the options we search the logs looking for the
                      * do_not_share url and if we find it, we save it for later usage
                      */
-                    if ("".equals(doNotShareUrl) && BHBot.settings.useDoNotShereURL) {
+                    if ("".equals(doNotShareUrl) && BHBot.settings.useDoNotShareURL) {
                         Pattern regex = Pattern.compile("\"(https://.+?\\?DO_NOT_SHARE_THIS_LINK[^\"]+?)\"");
                         LogEntries les = driver.manage().logs().get(LogType.PERFORMANCE);
                         for (LogEntry le : les) {

@@ -21,7 +21,7 @@ public class Settings {
     String poAppToken = "";
     String poUserToken = "";
     boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
-    boolean useDoNotShereURL = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
+    boolean useDoNotShareURL = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
     boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
     int reconnectTimer = 60;
     boolean idleMode = false;
@@ -930,7 +930,7 @@ public class Settings {
         useHeadlessMode = lastUsedMap.getOrDefault("headlessmode", useHeadlessMode ? "1" : "0").equals("1");
         restartAfterAdOfferTimeout = lastUsedMap.getOrDefault("restartAfterAdOfferTimeout", restartAfterAdOfferTimeout ? "1" : "0").equals("1");
         debugDetectionTimes = lastUsedMap.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("1");
-        useDoNotShereURL = lastUsedMap.getOrDefault("useDoNotShereURL", useDoNotShereURL ? "1" : "0").equals("1");
+        useDoNotShareURL = lastUsedMap.getOrDefault("useDoNotShareURL", useDoNotShareURL ? "1" : "0").equals("1");
         hideWindowOnRestart = lastUsedMap.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("1");
         resetTimersOnBattleEnd = lastUsedMap.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("1");
         autoStartChromeDriver = lastUsedMap.getOrDefault("autoStartChromeDriver", autoStartChromeDriver ? "1" : "0").equals("1");
