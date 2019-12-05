@@ -1322,7 +1322,9 @@ public class MainThread implements Runnable {
                             readScreen(2 * SECOND);
                             seg = detectCue(cues.get("RaidSummon"), 2 * SECOND);
                             if (seg == null) {
-                                BHBot.logger.error("Summon button not found");
+                                BHBot.logger.error("Raid Summon button not found");
+                                browser.restart();
+                                continue;
                             }
                             browser.clickOnSeg(seg);
                             readScreen(2 * SECOND);
@@ -2470,7 +2472,10 @@ public class MainThread implements Runnable {
                             if (currentTier != worldBossTier) {
                                 BHBot.logger.info("T" + currentTier + " detected, changing to T" + worldBossTier);
                                 sleep(500);
-                                changeWorldBossTier(worldBossTier);
+                                if (!changeWorldBossTier(worldBossTier)) {
+                                    restart();
+                                    continue;
+                                }
                             }
 
                             //world boss difficulty selection
@@ -6013,7 +6018,7 @@ public class MainThread implements Runnable {
         return readNumFromImg(imb);
     }
 
-    private void changeWorldBossTier(int target) {
+    private boolean changeWorldBossTier(int target) {
         MarvinSegment seg;
         readScreen(SECOND); //wait for screen to stabilize
         seg = detectCue(cues.get("WorldBossTierDropDown"), 2 * SECOND);
@@ -6021,7 +6026,7 @@ public class MainThread implements Runnable {
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in changeWorldBossTier!");
             saveGameScreen("early_error");
-            restart();
+            return false;
         }
 
         browser.clickOnSeg(seg);
@@ -6049,6 +6054,7 @@ public class MainThread implements Runnable {
             //noinspection SuspiciousNameCombination
             browser.clickInGame(diff.y, diff.x);
         }
+        return true;
     }
 
     private Point getDifficultyButtonXY(int target) {
