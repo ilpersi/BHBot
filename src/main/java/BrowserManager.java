@@ -86,12 +86,6 @@ public class BrowserManager {
             driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
         }
         jsExecutor = (JavascriptExecutor) driver;
-
-        int vw = Math.toIntExact((Long) jsExecutor.executeScript("return window.outerWidth - window.innerWidth + arguments[0];", game.getSize().width));
-        int vh = Math.toIntExact((Long) jsExecutor.executeScript("return window.outerHeight - window.innerHeight + arguments[0];", game.getSize().height));
-        vw += 50; // compensate for scrollbars 70
-        vh += 30; // compensate for scrollbars 50
-        driver.manage().window().setSize(new Dimension(vw, vh));
     }
 
     void restart() throws MalformedURLException {
@@ -123,6 +117,12 @@ public class BrowserManager {
         //driver.navigate().to("chrome://settings/content");
         //BHBot.processCommand("shot");
         game = driver.findElement(byElement);
+
+        int vw = Math.toIntExact((Long) jsExecutor.executeScript("return window.outerWidth - window.innerWidth + arguments[0];", game.getSize().width));
+        int vh = Math.toIntExact((Long) jsExecutor.executeScript("return window.outerHeight - window.innerHeight + arguments[0];", game.getSize().height));
+        vw += 50; // compensate for scrollbars 70
+        vh += 30; // compensate for scrollbars 50
+        driver.manage().window().setSize(new Dimension(vw, vh));
     }
 
     void close () {
@@ -147,7 +147,7 @@ public class BrowserManager {
                 + "var elementTop = arguments[0].getBoundingClientRect().top;"
                 + "window.scrollBy(0, elementTop-(viewPortHeight/2));";
 
-        ((JavascriptExecutor) driver).executeScript(scrollElementIntoMiddle, element);
+        jsExecutor.executeScript(scrollElementIntoMiddle, element);
         try {
             sleep(1000);
         } catch (InterruptedException e) {
