@@ -132,8 +132,6 @@ public class BHBot {
             logger.info("Character: " + settings.username);
         }
 
-        MainThread.loadCues();
-
         if (!checkPaths()) return;
 
         processCommand("start");
