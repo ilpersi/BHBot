@@ -5,7 +5,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.remote.CapabilityType;
@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.lang.Thread.sleep;
 
@@ -30,19 +32,9 @@ public class BrowserManager {
     private static WebElement game;
     private static String doNotShareUrl = "";
 
-    String getDoNotShareUrl() {
-        return doNotShareUrl;
-    }
+    boolean isDoNotShareUrl() {return !"".equals(doNotShareUrl);}
 
-    void setDoNotShareUrl(String URL) {
-        doNotShareUrl = URL;
-    }
-
-    LogEntries getLogEntries() {
-        return driver.manage().logs().get(LogType.PERFORMANCE);
-    }
-
-    void connect() throws MalformedURLException {
+    private void connect() throws MalformedURLException {
         ChromeOptions options = new ChromeOptions();
 
         options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
@@ -72,7 +64,7 @@ public class BrowserManager {
          * the bot will enable the logging of network events so that when it is fully loaded, it will be possible
          * to analyze them searching for the magic URL
          */
-        if ("".equals(doNotShareUrl) && BHBot.settings.useDoNotShareURL) {
+        if (!isDoNotShareUrl() && BHBot.settings.useDoNotShareURL) {
             LoggingPreferences logPrefs = new LoggingPreferences();
             logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
             options.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
@@ -88,7 +80,19 @@ public class BrowserManager {
         jsExecutor = (JavascriptExecutor) driver;
     }
 
-    void restart() throws MalformedURLException {
+    void restart(boolean useDoNotShareUrl) throws MalformedURLException {
+
+        if (useDoNotShareUrl) {
+            Pattern regex = Pattern.compile("\"(https://.+?\\?DO_NOT_SHARE_THIS_LINK[^\"]+?)\"");
+            for (LogEntry le : driver.manage().logs().get(LogType.PERFORMANCE)) {
+                Matcher regexMatcher = regex.matcher(le.getMessage());
+                if (regexMatcher.find()) {
+                    BHBot.logger.debug("DO NOT SHARE URL found!");
+                    doNotShareUrl = regexMatcher.group(1);
+                    break;
+                }
+            }
+        }
 
         try {
             if (driver != null) {

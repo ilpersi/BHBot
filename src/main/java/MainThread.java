@@ -10,7 +10,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.openqa.selenium.Point;
-import org.openqa.selenium.logging.LogEntry;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
@@ -603,7 +602,7 @@ public class MainThread implements Runnable {
         int x1, x2, y1, y2;
 
         // If the do_not_share url is available, cue detection is considering the correct offset
-        if (!"".equals(browser.getDoNotShareUrl())) {
+        if (browser.isDoNotShareUrl()) {
             x1 = cue.bounds != null && cue.bounds.x1 > 0 ? cue.bounds.x1 - 1 : 0;
             x2 = cue.bounds != null && cue.bounds.x2 > 0 ? cue.bounds.x2 - 1 : 0;
             y1 = cue.bounds != null && cue.bounds.y1 > 0 ? cue.bounds.y1 - 3 : 0;
@@ -770,22 +769,26 @@ public class MainThread implements Runnable {
 
     private void restart() {
         restart(true); // assume emergency restart
-        oneTimeshrineCheck = false; //reset first run shrine check in case its enabled after restarting
+    }
+
+    void restart(boolean emergency) {
+        restart(emergency, false); // assume emergency restart
     }
 
     /**
      * @param emergency true in case something bad happened (some kind of an error for which we had to do a restart)
      */
-    void restart(boolean emergency) {
+    void restart(boolean emergency, boolean useDoNotShareLink) {
+        oneTimeshrineCheck = false; //reset first run shrine check in case its enabled after restarting
+
         // take emergency screenshot (which will have the developer to debug the problem):
         if (emergency) {
             BHBot.logger.warn("Doing driver emergency restart...");
             dumpCrashLog();
         }
-        
 
         try {
-            browser.restart();
+            browser.restart(useDoNotShareLink);
         } catch (Exception e) {
 
             if (e instanceof org.openqa.selenium.NoSuchElementException)
@@ -1119,17 +1122,8 @@ public class MainThread implements Runnable {
                     /* The bot is now fully started, so based on the options we search the logs looking for the
                      * do_not_share url and if we find it, we save it for later usage
                      */
-                    if ("".equals(browser.getDoNotShareUrl()) && BHBot.settings.useDoNotShareURL) {
-                        Pattern regex = Pattern.compile("\"(https://.+?\\?DO_NOT_SHARE_THIS_LINK[^\"]+?)\"");
-                        for (LogEntry le : browser.getLogEntries()) {
-                            Matcher regexMatcher = regex.matcher(le.getMessage());
-                            if (regexMatcher.find()) {
-                                BHBot.logger.debug("DO NOT SHARE URL found!");
-                                browser.setDoNotShareUrl(regexMatcher.group(1));
-                                break;
-                            }
-                        }
-                        restart(false);
+                    if (!browser.isDoNotShareUrl() && BHBot.settings.useDoNotShareURL) {
+                        restart(false, true);
                         continue;
                     }
 
@@ -1323,7 +1317,7 @@ public class MainThread implements Runnable {
                             seg = detectCue(cues.get("RaidSummon"), 2 * SECOND);
                             if (seg == null) {
                                 BHBot.logger.error("Raid Summon button not found");
-                                browser.restart();
+                                restart();
                                 continue;
                             }
                             browser.clickOnSeg(seg);
