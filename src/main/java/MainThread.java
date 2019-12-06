@@ -5656,13 +5656,9 @@ public class MainThread implements Runnable {
                 String pmFileName = saveGameScreen("pm", "pm");
                 if (BHBot.settings.enablePushover && BHBot.settings.poNotifyPM) {
                     if (pmFileName != null) {
-                        if (!BHBot.settings.username.equals("") && !BHBot.settings.username.equals("yourusername")) {
-                            sendPushOverMessage("New PM", BHBot.settings.username + " just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
-                        } else sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
+                        sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
                     } else {
-                        if (!BHBot.settings.username.equals("") && !BHBot.settings.username.equals("yourusername")) {
-                            sendPushOverMessage("New PM", BHBot.settings.username + " just received a new PM, check it out!", MessagePriority.NORMAL, null);
-                        } else sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, null);
+                        sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, null);
                     }
                 }
                 browser.clickOnSeg(seg);
@@ -6932,6 +6928,11 @@ public class MainThread implements Runnable {
 
     private void sendPushOverMessage(String title, String msg, String sound, MessagePriority priority, File attachment) {
         if (BHBot.settings.enablePushover) {
+
+            if (!"".equals(BHBot.settings.username) && !"yourusername".equals(BHBot.settings.username) ) {
+                title = "[" + BHBot.settings.username + "] " + title;
+            }
+
             try {
                 BHBot.poClient.pushMessage(
                         PushoverMessage.builderWithApiToken(BHBot.settings.poAppToken)
@@ -7121,9 +7122,7 @@ public class MainThread implements Runnable {
                 }
                 String victoryScreenName = saveGameScreen("victory-screen", victoryPopUpImg);
                 File victoryScreenFile = victoryScreenName != null ? new File(victoryScreenName) : null;
-                if (!BHBot.settings.username.equals("") && !BHBot.settings.username.equals("yourusername")) {
-                    sendPushOverMessage(BHBot.settings.username + " " + tierName + " item drop in " + state, droppedItemMessage, "magic", MessagePriority.NORMAL, victoryScreenFile);
-                } else sendPushOverMessage(tierName + " item drop in " + state, droppedItemMessage, "magic", MessagePriority.NORMAL, victoryScreenFile);
+                sendPushOverMessage(tierName + " item drop in " + state, droppedItemMessage, "magic", MessagePriority.NORMAL, victoryScreenFile);
                 if (victoryScreenFile != null && !victoryScreenFile.delete())
                     BHBot.logger.warn("Impossible to delete tmp img file for victory drop.");
             }
