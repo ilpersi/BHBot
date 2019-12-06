@@ -20,7 +20,7 @@ import java.util.*;
 public class BHBot {
 
     private static final String PROGRAM_NAME = "BHBot";
-    private static MainThread main;
+    static MainThread main;
     static Settings settings = new Settings().setDebug();
     static Scheduler scheduler = new Scheduler();
     static PushoverClient poClient = new PushoverRestClient();
@@ -37,7 +37,7 @@ public class BHBot {
     /**
      * Set it to true to end main loop and end program gracefully
      */
-    private static boolean finished = false;
+    static boolean finished = false;
     @SuppressWarnings("FieldCanBeLocal")
     private static String cuesPath = "./cues/";
     private static Properties gitPropertis;
@@ -187,7 +187,7 @@ public class BHBot {
         String[] params = c.split(" ");
         switch (params[0]) {
             case "c": { // detect cost from screen
-                main.readScreen();
+                main.browser.readScreen();
                 int current = main.detectCost();
                 logger.info("Detected cost: " + current);
 
@@ -203,7 +203,7 @@ public class BHBot {
                 throw new RuntimeException("CRASH!");
             }
             case "d": { // detect difficulty from screen
-                main.readScreen();
+                main.browser.readScreen();
                 int current = main.detectDifficulty();
                 logger.info("Detected difficulty: " + current);
 
@@ -284,7 +284,6 @@ public class BHBot {
             case "exit":
             case "quit":
             case "stop":
-                main.finished = true;
                 finished = true;
                 break;
             case "hide":

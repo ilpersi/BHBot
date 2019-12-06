@@ -206,4 +206,12 @@ public class Misc {
         }
         return properties;
     }
+
+    static void sleep(int milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            BHBot.logger.error("Error while attempting to sleep", e);
+        }
+    }
 }

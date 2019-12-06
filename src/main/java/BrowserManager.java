@@ -12,8 +12,11 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -25,14 +28,14 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.lang.Thread.sleep;
-
 public class BrowserManager {
     private static WebDriver driver;
     private static By byElement;
     private static JavascriptExecutor jsExecutor;
     private static WebElement game;
     private static String doNotShareUrl = "";
+
+    private BufferedImage img; // latest screen capture
 
     boolean isDoNotShareUrl() {
         return !"".equals(doNotShareUrl);
@@ -128,10 +131,7 @@ public class BrowserManager {
                 driver.navigate().to(doNotShareUrl);
                 byElement = By.xpath("//div[1]");
             }
-            //sleep(5000);
-            //driver.navigate().to("chrome://flags/#run-all-flash-in-allow-mode");
-            //driver.navigate().to("chrome://settings/content");
-            //BHBot.processCommand("shot");
+
             game = driver.findElement(byElement);
 
             int vw = Math.toIntExact((Long) jsExecutor.executeScript("return window.outerWidth - window.innerWidth + arguments[0];", game.getSize().width));
@@ -184,11 +184,7 @@ public class BrowserManager {
                     + "window.scrollBy(0, elementTop-(viewPortHeight/2));";
 
             jsExecutor.executeScript(scrollElementIntoMiddle, element);
-            try {
-                sleep(1000);
-            } catch (InterruptedException e) {
-                BHBot.logger.debug("Error while sleeping in scrollGameIntoView", e);
-            }
+            Misc.sleep(1000);
         } finally {
             lock.writeLock().unlock();
         }
@@ -255,11 +251,7 @@ public class BrowserManager {
             // open login popup window:
             jsExecutor.executeScript("active_user.activateInlineLogin(); return false;"); // I found this code within page source itself (it gets triggered upon clicking on some button)
 
-            try {
-                sleep(5000); // if we don't sleep enough, login form may still be loading and code bellow will not get executed!
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            Misc.sleep(5000); // if we don't sleep enough, login form may still be loading and code bellow will not get executed!
 
             // fill in username:
             WebElement weUsername;
@@ -394,6 +386,87 @@ public class BrowserManager {
             act.perform();
         } finally {
             lock.writeLock().unlock();
+        }
+    }
+
+    void readScreen() {
+        lock.writeLock().lock();
+        try {
+            readScreen(true);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * @param game if true, then screenshot of a WebElement will be taken that contains the flash game. If false, then simply a screenshot of a browser will be taken.
+     */
+    void readScreen(boolean game) {
+        lock.writeLock().lock();
+        try {
+            readScreen(0, game);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * First sleeps 'wait' milliseconds and then reads the screen. It's a handy utility method that does two things in one command.
+     */
+    void readScreen(int wait) {
+        lock.writeLock().lock();
+        try {
+            readScreen(wait, true);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * @param wait first sleeps 'wait' milliseconds and then reads the screen. It's a handy utility method that does two things in one command.
+     * @param game if true, then screenshot of a WebElement will be taken that contains the flash game. If false, then simply a screenshot of a browser will be taken.
+     */
+    void readScreen(int wait, boolean game) {
+        lock.writeLock().lock();
+        try {
+            if (wait != 0)
+                Misc.sleep(wait);
+            img = takeScreenshot(game);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * This method is meant to be used for development purpose. In some situations you want to "fake" the readScreen result
+     * with an hand-crafted image. If this is the case, this method is here to help with it.
+     *
+     * @param screenFilePath the path to the image to be used to load the screen
+     */
+    @SuppressWarnings("unused")
+    void loadScreen(String screenFilePath) {
+        File screenImgFile = new File(screenFilePath);
+
+        if (screenImgFile.exists()) {
+            BufferedImage screenImg = null;
+            try {
+                screenImg = ImageIO.read(screenImgFile);
+            } catch (IOException e) {
+                BHBot.logger.error("Error when loading game screen ", e);
+            }
+
+            img = screenImg;
+        } else {
+            BHBot.logger.error("Impossible to load screen file: " + screenImgFile.getAbsolutePath());
+        }
+    }
+
+    public BufferedImage getImg() {
+        lock.readLock().lock();
+        try {
+            return img;
+        } finally {
+            lock.readLock().unlock();
         }
     }
 }
