@@ -40,8 +40,11 @@ public class BrowserManager {
     private String doNotShareUrl = "";
 
     private BufferedImage img; // latest screen capture
+    private BHBot bot;
 
-    BrowserManager() {
+    BrowserManager(BHBot bot) {
+        this.bot = bot;
+
         BrowserManager.addCue("Main", BrowserManager.loadImage("cues/cueMainScreen.png"), new Bounds(90, 5, 100, 10));
         BrowserManager.addCue("Login", BrowserManager.loadImage("cues/cueLogin.png"), new Bounds(270, 260, 330, 300)); // login window (happens seldom)
         BrowserManager.addCue("AreYouThere", BrowserManager.loadImage("cues/cueAreYouThere.png"), new Bounds(240, 245, 265, 260));
@@ -505,10 +508,10 @@ public class BrowserManager {
         ChromeOptions options = new ChromeOptions();
 
         options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
-        options.setBinary(BHBot.chromiumExePath); //set Chromium v69 binary location
+        options.setBinary(bot.chromiumExePath); //set Chromium v69 binary location
 
-        if (BHBot.settings.autoStartChromeDriver) {
-            System.setProperty("webdriver.chrome.driver", BHBot.chromeDriverExePath);
+        if (bot.settings.autoStartChromeDriver) {
+            System.setProperty("webdriver.chrome.driver", bot.chromeDriverExePath);
         } else {
             BHBot.logger.info("chromedriver auto start is off, make sure it is started before running BHBot");
             if (System.getProperty("webdriver.chrome.driver", null) != null) {
@@ -531,7 +534,7 @@ public class BrowserManager {
          * the bot will enable the logging of network events so that when it is fully loaded, it will be possible
          * to analyze them searching for the magic URL
          */
-        if (!isDoNotShareUrl() && BHBot.settings.useDoNotShareURL) {
+        if (!isDoNotShareUrl() && bot.settings.useDoNotShareURL) {
             LoggingPreferences logPrefs = new LoggingPreferences();
             logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
             options.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
@@ -539,10 +542,10 @@ public class BrowserManager {
 
         capabilities.setCapability("chrome.verbose", false);
         capabilities.setCapability(ChromeOptions.CAPABILITY, options);
-        if (BHBot.settings.autoStartChromeDriver) {
+        if (bot.settings.autoStartChromeDriver) {
             driver = new ChromeDriver(options);
         } else {
-            driver = new RemoteWebDriver(new URL("http://" + BHBot.chromeDriverAddress), capabilities);
+            driver = new RemoteWebDriver(new URL("http://" + bot.chromeDriverAddress), capabilities);
         }
         jsExecutor = (JavascriptExecutor) driver;
     }
@@ -573,7 +576,7 @@ public class BrowserManager {
         Logger.getLogger("").setLevel(Level.WARNING);
 
         connect();
-        if (BHBot.settings.hideWindowOnRestart)
+        if (bot.settings.hideWindowOnRestart)
             hideBrowser();
         if ("".equals(doNotShareUrl)) {
             driver.navigate().to("http://www.kongregate.com/games/Juppiomenz/bit-heroes");
@@ -639,7 +642,7 @@ public class BrowserManager {
             return;
         }
         weUsername.clear();
-        weUsername.sendKeys(BHBot.settings.username);
+        weUsername.sendKeys(bot.settings.username);
 
         WebElement wePassword;
         try {
@@ -648,7 +651,7 @@ public class BrowserManager {
             return;
         }
         wePassword.clear();
-        wePassword.sendKeys(BHBot.settings.password);
+        wePassword.sendKeys(bot.settings.password);
 
         // press the "sign-in" button:
         WebElement btnSignIn;
@@ -683,7 +686,7 @@ public class BrowserManager {
             return;
         }
         weUsername.clear();
-        weUsername.sendKeys(BHBot.settings.username);
+        weUsername.sendKeys(bot.settings.username);
         BHBot.logger.info("Username entered into the login form.");
 
         WebElement wePassword;
@@ -694,7 +697,7 @@ public class BrowserManager {
             return;
         }
         wePassword.clear();
-        wePassword.sendKeys(BHBot.settings.password);
+        wePassword.sendKeys(bot.settings.password);
         BHBot.logger.info("Password entered into the login form.");
 
         // press the "sign-in" button:
@@ -726,7 +729,7 @@ public class BrowserManager {
             // sometimes Chrome/Chromium crashes and it is impossible to take screenshots from it
             BHBot.logger.warn("Selenium timeout detected while taking a screenshot. A monitor screenshot will be taken", e);
 
-            if (BHBot.settings.hideWindowOnRestart) showBrowser();
+            if (bot.settings.hideWindowOnRestart) showBrowser();
 
             java.awt.Rectangle screenRect = new java.awt.Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
             BufferedImage screen;
@@ -737,7 +740,7 @@ public class BrowserManager {
                 screen = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
             }
 
-            if (BHBot.settings.hideWindowOnRestart) showBrowser();
+            if (bot.settings.hideWindowOnRestart) showBrowser();
             return screen;
         }
     }

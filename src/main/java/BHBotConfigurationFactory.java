@@ -23,7 +23,7 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
         builder.setStatusLevel(Level.ERROR);
 
         // baseDir for logs
-        builder.addProperty("baseDir", BHBot.settings.logBaseDir);
+        builder.addProperty("baseDir", BHBot.logBaseDir);
 
         // STD OUT
         AppenderComponentBuilder stdOutBuilder = builder.newAppender("StdOut", "CONSOLE")
@@ -57,11 +57,11 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
                 .addAttribute("maxDepth", "2")
                 //.addAttribute("testMode", true)
                 .addComponent(builder.newComponent("IfLastModified")
-                        .addAttribute("age", "" + BHBot.settings.logMaxDays + "d"));
+                        .addAttribute("age", "" + BHBot.logMaxDays + "d"));
 
         // DefaultRolloverStrategy Component
         ComponentBuilder defaulRolloverStrategy = builder.newComponent("DefaultRolloverStrategy")
-                .addAttribute("max", BHBot.settings.logMaxDays)
+                .addAttribute("max", BHBot.logMaxDays)
                 .addAttribute("compressionLevel", 9)
                 .addComponent(delete);
 
@@ -77,7 +77,7 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
 
 
         builder.add(
-                builder.newRootLogger(BHBot.settings.logLevel)
+                builder.newRootLogger(BHBot.logLevel)
                         .add(builder.newAppenderRef("StdOut"))
                         .add(builder.newAppenderRef("StdErr"))
                         .add(builder.newAppenderRef("Rolling"))

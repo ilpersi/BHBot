@@ -53,7 +53,7 @@ public class MarvinSegment {
 
         //source.drawRect(seg.x1, seg.y1, seg.x2-seg.x1, seg.y2-seg.y1, Color.blue);
         //MarvinImageIO.saveImage(source, "window_out.png");
-        if (BHBot.settings.debugDetectionTimes) {
+        if (BHBot.debugDetectionTimes) {
             BHBot.logger.info("cue detection time: " + (Misc.getTime() - timer) + "ms (" + cue.name + ") [" + (seg != null ? "true" : "false") + "]");
         }
 

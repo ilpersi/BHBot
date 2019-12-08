@@ -7,6 +7,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
@@ -20,36 +21,41 @@ import java.util.*;
 public class BHBot {
 
     private static final String PROGRAM_NAME = "BHBot";
-    static DungeonThread main;
-    static Settings settings = new Settings().setDebug();
-    static Scheduler scheduler = new Scheduler();
-    static PushoverClient poClient = new PushoverRestClient();
-    static String chromeDriverAddress = "127.0.0.1:9515";
-    static String chromiumExePath = "C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Local\\Chromium\\Application\\chrome.exe";
-    static String chromeDriverExePath = "./chromedriver.exe";
-    static String screenshotPath = "./screenshots/";
-    /**
-     * log4j logger
-     */
-    static BHBotLogger logger;
     private static String BHBotVersion;
-    private static Thread dungeonThread;
+    private static Properties gitPropertis;
+    static String screenshotPath = "./screenshots/";
+    static BHBotLogger logger;
+
+    // static settings
+    static boolean debugDetectionTimes = false;
+    // TODO understand if it is possible to differentiate log settings without making them static
+    static String logBaseDir;
+    static long logMaxDays;
+    static Level logLevel;
+
+    private DungeonThread main;
+
+    Settings settings = new Settings().setDebug();
+    Scheduler scheduler = new Scheduler();
+    PushoverClient poClient = new PushoverRestClient();
+    String chromeDriverAddress = "127.0.0.1:9515";
+    String chromiumExePath = "C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Local\\Chromium\\Application\\chrome.exe";
+    String chromeDriverExePath = "./chromedriver.exe";
+    private Thread dungeonThread;
     /**
      * Set it to true to end main loop and end program gracefully
      */
-    static boolean finished = false;
-    @SuppressWarnings("FieldCanBeLocal")
-    private static String cuesPath = "./cues/";
-    private static Properties gitPropertis;
-
-    static BrowserManager browser = new BrowserManager();
+    boolean finished = false;
+    BrowserManager browser;
 
     public static void main(String[] args) {
+        BHBot bot = new BHBot();
+        bot.browser = new BrowserManager(bot);
 
         // We make sure that our configurationFactory is added to the list of configuration factories.
         System.setProperty("log4j.configurationFactory", "BHBotConfigurationFactory");
         // We enable the log4j2 debug output if we need to
-        if (settings.logPringStatusMessages) System.setProperty("log4j2.debug", "true");
+        if (bot.settings.logPringStatusMessages) System.setProperty("log4j2.debug", "true");
 
         for (int i = 0; i < args.length; i++) { //select settings file to load
             switch (args[i]) {
@@ -64,33 +70,33 @@ public class BHBot {
                     continue;
                 case "chromium":
                 case "chromiumpath":
-                    chromiumExePath = args[i + 1];
+                    bot.chromiumExePath = args[i + 1];
                     continue;
                 case "chromedriver":
                 case "chromedriverpath":
-                    chromeDriverExePath = args[i + 1];
+                    bot.chromeDriverExePath = args[i + 1];
                     continue;
                 case "chromedriveraddress":  //change chrome driver port
-                    chromeDriverAddress = args[i + 1];
+                    bot.chromeDriverAddress = args[i + 1];
                     i++;
             }
         }
 
         if ("LOAD_IDLE_SETTINGS".equals(Settings.configurationFile)) {
-            settings.setIdle();
+            bot.settings.setIdle();
         } else {
             try {
-                settings.load(Settings.configurationFile);
+                bot.settings.load(Settings.configurationFile);
             } catch (FileNotFoundException e) {
                 System.out.println("It was impossible to find file " + Settings.configurationFile + ".");
 
                 // We handle the default configuration file and we generate an empty one
-                if ("settings.ini".equals(Settings.configurationFile)) {
+                if ("bot.settings.ini".equals(Settings.configurationFile)) {
 
                     try {
                         Settings.resetIniFile();
                     } catch (IOException ex) {
-                        System.out.println("Error while creating settings.ini in main folder");
+                        System.out.println("Error while creating bot.settings.ini in main folder");
                         ex.printStackTrace();
                         return;
                     }
@@ -98,6 +104,12 @@ public class BHBot {
                 return;
             }
         }
+
+        // settings are now loaded
+        debugDetectionTimes = bot.settings.debugDetectionTimes;
+        logBaseDir = bot.settings.logBaseDir;
+        logMaxDays = bot.settings.logMaxDays;
+        logLevel = bot.settings.logLevel;
 
         logger = BHBotLogger.create();
 
@@ -127,19 +139,19 @@ public class BHBot {
 
         logger.info("Settings loaded from file");
 
-        settings.checkDeprecatedSettings();
-        settings.sanitizeSetting();
+        bot.settings.checkDeprecatedSettings();
+        bot.settings.sanitizeSetting();
 
-        if (!settings.username.equals("") && !settings.username.equals("yourusername")) {
-            logger.info("Character: " + settings.username);
+        if (!bot.settings.username.equals("") && !bot.settings.username.equals("yourusername")) {
+            logger.info("Character: " + bot.settings.username);
         }
 
-        if (!checkPaths()) return;
+        if (!bot.checkPaths()) return;
 
-        processCommand("start");
+        bot.processCommand("start");
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        while (!finished) {
+        while (!bot.finished) {
             String s;
             try {
                 s = br.readLine();
@@ -151,7 +163,7 @@ public class BHBot {
             if (s != null) {
                 try {
                     logger.info("User command: <" + s + ">");
-                    processCommand(s);
+                    bot.processCommand(s);
                 } catch (Exception e) {
                     logger.error("Impossible to process user command: " + s, e);
                 }
@@ -164,28 +176,28 @@ public class BHBot {
             }
         }
 
-        if (dungeonThread.isAlive()) {
+        if (bot.dungeonThread.isAlive()) {
             try {
                 // wait for 10 seconds for the main thread to terminate
                 logger.info("Waiting for main thread to finish... (timeout=10s)");
-                dungeonThread.join(10 * DungeonThread.SECOND);
+                bot.dungeonThread.join(10 * DungeonThread.SECOND);
             } catch (InterruptedException e) {
                 logger.error("Error when joining Main Thread", e);
             }
-            if (dungeonThread.isAlive()) {
+            if (bot.dungeonThread.isAlive()) {
                 logger.warn("Main thread is still alive. Force stopping it now...");
-                dungeonThread.interrupt();
+                bot.dungeonThread.interrupt();
                 try {
-                    dungeonThread.join(); // until thread stops
+                    bot.dungeonThread.join(); // until thread stops
                 } catch (InterruptedException e) {
                     logger.error("Error while force stopping", e);
                 }
             }
         }
-        logger.info(PROGRAM_NAME + " has finished.");
+        logger.info(PROGRAM_NAME + " has bot.finished.");
     }
 
-    private static void processCommand(String c) {
+    private void processCommand(String c) {
         String[] params = c.split(" ");
         switch (params[0]) {
             case "c": { // detect cost from screen
@@ -346,7 +358,8 @@ public class BHBot {
                     File poScreenFile = poScreenName != null ? new File(poScreenName) : null;
 
                     main.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
-                    if (poScreenFile != null && !poScreenFile.delete()) logger.warn("Impossible to delete tmp img for pomessage command.");
+                    if (poScreenFile != null && !poScreenFile.delete())
+                        logger.warn("Impossible to delete tmp img for pomessage command.");
 
                 } else {
                     logger.warn("Pushover integration is disabled in the settings!");
@@ -416,7 +429,7 @@ public class BHBot {
                 logger.info("Screenshot '" + fileName + "' saved.");
                 break;
             case "start":
-                main = new DungeonThread();
+                main = new DungeonThread(this);
                 dungeonThread = new Thread(main, "DungeonThread");
                 dungeonThread.start();
                 break;
@@ -523,7 +536,9 @@ public class BHBot {
         }
     }
 
-    private static boolean checkPaths() {
+    private boolean checkPaths() {
+        String cuesPath = "./cues/";
+
         File chromiumExe = new File(chromiumExePath);
         File chromeDriverExe = new File(chromeDriverExePath);
         File cuePath = new File(cuesPath);
