@@ -45,6 +45,7 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
 
         // Rolling File
         // Composite Triggering Policies
+        @SuppressWarnings("rawtypes")
         ComponentBuilder triggeringPolicy = builder.newComponent("Policies")
                 .addComponent(builder.newComponent("SizeBasedTriggeringPolicy")
                         .addAttribute("size", "32M"))
@@ -52,6 +53,7 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
 
 
         // Delete Component to manage old log deletion
+        @SuppressWarnings("rawtypes")
         ComponentBuilder delete = builder.newComponent("Delete")
                 .addAttribute("basePath", "${baseDir}")
                 .addAttribute("maxDepth", "2")
@@ -60,6 +62,7 @@ public class BHBotConfigurationFactory extends ConfigurationFactory {
                         .addAttribute("age", "" + BHBot.logMaxDays + "d"));
 
         // DefaultRolloverStrategy Component
+        @SuppressWarnings("rawtypes")
         ComponentBuilder defaulRolloverStrategy = builder.newComponent("DefaultRolloverStrategy")
                 .addAttribute("max", BHBot.logMaxDays)
                 .addAttribute("compressionLevel", 9)
