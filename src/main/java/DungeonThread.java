@@ -44,8 +44,6 @@ public class DungeonThread implements Runnable {
     private static int globalTickets;
     private static int globalTokens;
 
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-
     /*
           Match the character “z” literally (case sensitive) «z»
           Match the regex below and capture its match into a backreference named “zone” (also backreference number 1) «(?<zone>\d{1,2})»
