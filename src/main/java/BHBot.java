@@ -33,7 +33,8 @@ public class BHBot {
     static long logMaxDays;
     static Level logLevel;
 
-    private DungeonThread main;
+    private DungeonThread dungeon;
+    private BlockerThread blocker;
 
     Settings settings = new Settings().setDebug();
     Scheduler scheduler = new Scheduler();
@@ -42,6 +43,9 @@ public class BHBot {
     String chromiumExePath = "C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Local\\Chromium\\Application\\chrome.exe";
     String chromeDriverExePath = "./chromedriver.exe";
     private Thread dungeonThread;
+    private Thread blockerThread;
+
+    private BHBot.State state; // at which stage of the game/menu are we currently?
     /**
      * Set it to true to end main loop and end program gracefully
      */
@@ -180,16 +184,34 @@ public class BHBot {
         if (bot.dungeonThread.isAlive()) {
             try {
                 // wait for 10 seconds for the main thread to terminate
-                logger.info("Waiting for main thread to finish... (timeout=10s)");
+                logger.info("Waiting for dungeon thread to finish... (timeout=10s)");
                 bot.dungeonThread.join(10 * DungeonThread.SECOND);
             } catch (InterruptedException e) {
                 logger.error("Error when joining Main Thread", e);
             }
+
+            try {
+                // wait for 10 seconds for the main thread to terminate
+                logger.info("Waiting for blocker thread to finish... (timeout=10s)");
+                bot.blockerThread.join(10 * DungeonThread.SECOND);
+            } catch (InterruptedException e) {
+                logger.error("Error when joining Blocker Thread", e);
+            }
+
             if (bot.dungeonThread.isAlive()) {
-                logger.warn("Main thread is still alive. Force stopping it now...");
+                logger.warn("Dungeon thread is still alive. Force stopping it now...");
                 bot.dungeonThread.interrupt();
                 try {
                     bot.dungeonThread.join(); // until thread stops
+                } catch (InterruptedException e) {
+                    logger.error("Error while force stopping", e);
+                }
+            }
+            if (bot.blockerThread.isAlive()) {
+                logger.warn("Blocker thread is still alive. Force stopping it now...");
+                bot.blockerThread.interrupt();
+                try {
+                    bot.blockerThread.join(); // until thread stops
                 } catch (InterruptedException e) {
                     logger.error("Error while force stopping", e);
                 }
@@ -203,13 +225,13 @@ public class BHBot {
         switch (params[0]) {
             case "c": { // detect cost from screen
                 browser.readScreen();
-                int current = main.detectCost();
+                int current = dungeon.detectCost();
                 logger.info("Detected cost: " + current);
 
                 if (params.length > 1) {
                     int goal = Integer.parseInt(params[1]);
                     logger.info("Goal cost: " + goal);
-                    boolean result = main.selectCost(current, goal);
+                    boolean result = dungeon.selectCost(current, goal);
                     logger.info("Cost change result: " + result);
                 }
                 break;
@@ -219,13 +241,13 @@ public class BHBot {
             }
             case "d": { // detect difficulty from screen
                 browser.readScreen();
-                int current = main.detectDifficulty();
+                int current = dungeon.detectDifficulty();
                 logger.info("Detected difficulty: " + current);
 
                 if (params.length > 1) {
                     int goal = Integer.parseInt(params[1]);
                     logger.info("Goal difficulty: " + goal);
-                    boolean result = main.selectDifficulty(current, goal);
+                    boolean result = dungeon.selectDifficulty(current, goal);
                     logger.info("Difficulty change result: " + result);
                 }
                 break;
@@ -355,10 +377,10 @@ public class BHBot {
                     poLogMessage += "\n poAppToken is: " + settings.poAppToken;
                     logger.info(poLogMessage);
 
-                    String poScreenName = main.saveGameScreen("pomessage");
+                    String poScreenName = dungeon.saveGameScreen("pomessage");
                     File poScreenFile = poScreenName != null ? new File(poScreenName) : null;
 
-                    main.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
+                    dungeon.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
                     if (poScreenFile != null && !poScreenFile.delete())
                         logger.warn("Impossible to delete tmp img for pomessage command.");
 
@@ -385,10 +407,10 @@ public class BHBot {
                         StringBuilder aliveMsg = new StringBuilder();
                         aliveMsg.append("Current session statistics:\n\n");
 
-                        for (DungeonThread.State state : DungeonThread.State.values()) {
-                            if (main.counters.get(state).getTotal() > 0) {
+                        for (State state : State.values()) {
+                            if (dungeon.counters.get(state).getTotal() > 0) {
                                 aliveMsg.append(state.getName()).append(" ")
-                                        .append(main.counters.get(state).successRateDesc())
+                                        .append(dungeon.counters.get(state).successRateDesc())
                                         .append("\n");
                             }
                         }
@@ -418,32 +440,36 @@ public class BHBot {
                 }
                 break;
             case "restart":
-                main.restart(false);
+                dungeon.restart(false);
                 break;
             case "shot":
                 String fileName = "shot";
                 if (params.length > 1)
                     fileName = params[1];
 
-                main.saveGameScreen(fileName);
+                dungeon.saveGameScreen(fileName);
 
                 logger.info("Screenshot '" + fileName + "' saved.");
                 break;
             case "start":
-                main = new DungeonThread(this);
-                dungeonThread = new Thread(main, "DungeonThread");
+                dungeon = new DungeonThread(this);
+                dungeonThread = new Thread(dungeon, "DungeonThread");
                 dungeonThread.start();
+
+                blocker = new BlockerThread(this);
+                blockerThread = new Thread(blocker, "BlockerThread");
+                blockerThread.start();
                 break;
             case "readouts":
             case "resettimers":
-                main.resetTimers();
+                dungeon.resetTimers();
                 logger.info("Readout timers reset.");
                 break;
             case "compare":
-                main.cueDifference();
+                dungeon.cueDifference();
                 break;
             case "softreset":
-                main.softReset();
+                dungeon.softReset();
                 break;
             case "reload":
                 settings.load();
@@ -516,16 +542,16 @@ public class BHBot {
                                     break;
                             }
                         }
-                        if (!main.checkShrineSettings(ignoreBoss, ignoreShrines)) {
+                        if (!dungeon.checkShrineSettings(ignoreBoss, ignoreShrines)) {
                             logger.error("Something went wrong when checking auto ignore settings!");
                         }
                         break;
                     case "e":
                     case "expeditionread":
-                        main.expeditionReadTest();
+                        dungeon.expeditionReadTest();
                         break;
                     case "runes":
-                        main.detectEquippedMinorRunes(true, true);
+                        dungeon.detectEquippedMinorRunes(true, true);
                         break;
                     default:
                         break;
@@ -683,4 +709,54 @@ public class BHBot {
 
     }
 
+    synchronized State getState() {
+        return state;
+    }
+
+    synchronized void setState(State state) {
+        this.state = state;
+    }
+
+    enum State {
+        Dungeon("Dungeon", "d"),
+        Expedition("Expedition", "e"),
+        Gauntlet("Gauntlet", "g"),
+        GVG("GVG", "v"),
+        Invasion("Invasion", "i"),
+        Loading("Loading..."),
+        Main("Main screen"),
+        PVP("PVP", "p"),
+        Raid("Raid", "r"),
+        Trials("Trials", "t"),
+        UnidentifiedDungeon("Unidentified dungeon", "ud"), // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
+        WorldBoss("World Boss", "w");
+
+        private String name;
+        private String shortcut;
+
+        State(String name) {
+            this.name = name;
+            this.shortcut = null;
+        }
+
+        State(String name, String shortcut) {
+            this.name = name;
+            this.shortcut = shortcut;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getShortcut() {
+            return shortcut;
+        }
+
+        public String getNameFromShortcut(String shortcut) {
+            for (State state : State.values())
+                if (state.shortcut != null && state.shortcut.equals(shortcut))
+                    return state.name;
+            return null;
+        }
+    }
 }
