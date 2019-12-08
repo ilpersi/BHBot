@@ -1,7 +1,5 @@
 import com.google.gson.Gson;
 import net.pushover.client.MessagePriority;
-import net.pushover.client.PushoverClient;
-import net.pushover.client.PushoverRestClient;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -38,7 +36,7 @@ public class BHBot {
 
     Settings settings = new Settings().setDebug();
     Scheduler scheduler = new Scheduler();
-    PushoverClient poClient = new PushoverRestClient();
+    PushOverManager poManager;
     String chromeDriverAddress = "127.0.0.1:9515";
     String chromiumExePath = "C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Local\\Chromium\\Application\\chrome.exe";
     String chromeDriverExePath = "./chromedriver.exe";
@@ -55,6 +53,7 @@ public class BHBot {
     public static void main(String[] args) {
         BHBot bot = new BHBot();
         bot.browser = new BrowserManager(bot);
+        bot.poManager = new PushOverManager(bot);
 
         // We make sure that our configurationFactory is added to the list of configuration factories.
         System.setProperty("log4j.configurationFactory", "BHBotConfigurationFactory");
@@ -380,7 +379,7 @@ public class BHBot {
                     String poScreenName = dungeon.saveGameScreen("pomessage");
                     File poScreenFile = poScreenName != null ? new File(poScreenName) : null;
 
-                    dungeon.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
+                    poManager.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
                     if (poScreenFile != null && !poScreenFile.delete())
                         logger.warn("Impossible to delete tmp img for pomessage command.");
 

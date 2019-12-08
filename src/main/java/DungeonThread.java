@@ -1,7 +1,5 @@
 import com.google.common.collect.Maps;
 import net.pushover.client.MessagePriority;
-import net.pushover.client.PushoverException;
-import net.pushover.client.PushoverMessage;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -276,7 +274,7 @@ public class DungeonThread implements Runnable {
 
         if (bot.settings.enablePushover && bot.settings.poNotifyCrash) {
             File poCrashScreen = new File(file);
-            sendPushOverMessage("BHBot CRASH!",
+            bot.poManager.sendPushOverMessage("BHBot CRASH!",
                     "BHBot has crashed and a driver emergency restart has been performed!\n\n" + Misc.getStackTrace(), "falling",
                     MessagePriority.HIGH, poCrashScreen.exists() ? poCrashScreen : null);
         }
@@ -417,7 +415,7 @@ public class DungeonThread implements Runnable {
                         String idleTimerScreenName = saveGameScreen("idle-timer", bot.browser.getImg());
                         File idleTimerScreenFile = idleTimerScreenName != null ? new File(idleTimerScreenName) : null;
                         if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
-                            sendPushOverMessage("Idle timer exceeded", "Idle time exceeded while state = " + bot.getState(), "siren", MessagePriority.NORMAL, idleTimerScreenFile);
+                            bot.poManager.sendPushOverMessage("Idle timer exceeded", "Idle time exceeded while state = " + bot.getState(), "siren", MessagePriority.NORMAL, idleTimerScreenFile);
 
                             if (idleTimerScreenFile != null && !idleTimerScreenFile.delete()) {
                                 BHBot.logger.error("Impossible to delete idle timer screenshot.");
@@ -575,7 +573,7 @@ public class DungeonThread implements Runnable {
                             String aliveScreenName = saveGameScreen("alive-screen");
                             File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
 
-                            sendPushOverMessage("Startup notification", "BHBot has been successfully started!", MessagePriority.QUIET, aliveScreenFile);
+                            bot.poManager.sendPushOverMessage("Startup notification", "BHBot has been successfully started!", MessagePriority.QUIET, aliveScreenFile);
                             if (aliveScreenFile != null && !aliveScreenFile.delete())
                                 BHBot.logger.warn("Impossible to delete tmp img for startup notification.");
                         }
@@ -599,7 +597,7 @@ public class DungeonThread implements Runnable {
                                 }
                             }
 
-                            sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
+                            bot.poManager.sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
                             if (aliveScreenFile != null && !aliveScreenFile.delete())
                                 BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
                         }
@@ -736,7 +734,7 @@ public class DungeonThread implements Runnable {
                                 bot.settings.activitiesEnabled.remove("r");
                                 BHBot.logger.error("It was impossible to choose a raid randomly, raids are disabled!");
                                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors)
-                                    sendPushOverMessage("Raid Error", "It was impossible to choose a raid randomly, raids are disabled!", "siren");
+                                    bot.poManager.sendPushOverMessage("Raid Error", "It was impossible to choose a raid randomly, raids are disabled!", "siren");
                                 continue;
                             }
 
@@ -920,7 +918,7 @@ public class DungeonThread implements Runnable {
                                     tryClosingWindow(BrowserManager.cues.get("DifficultyDropDown"));
                                     bot.browser.readScreen(5 * SECOND);
                                     BHBot.logger.warn("Unable to change difficulty, usually because desired level is not unlocked. Running " + (trials ? "trials" : "gauntlet") + " at " + difficulty + ".");
-                                    sendPushOverMessage("T/G Error", "Unable to change difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.", "siren");
+                                    bot.poManager.sendPushOverMessage("T/G Error", "Unable to change difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.", "siren");
                                 }
                             }
 
@@ -1052,7 +1050,7 @@ public class DungeonThread implements Runnable {
                                 bot.settings.activitiesEnabled.remove("d");
                                 BHBot.logger.error("It was impossible to choose a dungeon randomly, dungeons are disabled!");
                                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors)
-                                    sendPushOverMessage("Dungeon error", "It was impossible to choose a dungeon randomly, dungeons are disabled!", "siren");
+                                    bot.poManager.sendPushOverMessage("Dungeon error", "It was impossible to choose a dungeon randomly, dungeons are disabled!", "siren");
                                 continue;
                             }
 
@@ -1060,7 +1058,7 @@ public class DungeonThread implements Runnable {
                             if (!dungeonMatcher.find()) {
                                 BHBot.logger.error("Wrong format in dungeon detected: " + dungeon + "! It will be skipped...");
                                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors)
-                                    sendPushOverMessage("Dungeon error", "Wrong dungeon format detected: " + dungeon, "siren");
+                                    bot.poManager.sendPushOverMessage("Dungeon error", "Wrong dungeon format detected: " + dungeon, "siren");
                                 continue;
                             }
 
@@ -1103,7 +1101,7 @@ public class DungeonThread implements Runnable {
                                 bot.settings.activitiesEnabled.remove("d");
                                 BHBot.logger.error("It was impossible to get icon position of dungeon z" + goalZone + "d" + goalDungeon + ". Dungeons are now disabled!");
                                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors)
-                                    sendPushOverMessage("Dungeon error", "It was impossible to get icon position of dungeon z" + goalZone + "d" + goalDungeon + ". Dungeons are now disabled!", "siren");
+                                    bot.poManager.sendPushOverMessage("Dungeon error", "It was impossible to get icon position of dungeon z" + goalZone + "d" + goalDungeon + ". Dungeons are now disabled!", "siren");
                                 continue;
                             }
 
@@ -1634,7 +1632,7 @@ public class DungeonThread implements Runnable {
                                     bot.settings.activitiesEnabled.remove("e");
                                     BHBot.logger.error("It was impossible to randomly choose an expedition. Expeditions are disabled.");
                                     if (bot.settings.enablePushover && bot.settings.poNotifyErrors)
-                                        sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedition. Expeditions are disabled.", "siren");
+                                        bot.poManager.sendPushOverMessage("Expedition error", "It was impossible to randomly choose an expedition. Expeditions are disabled.", "siren");
                                     continue;
                                 }
 
@@ -1670,7 +1668,7 @@ public class DungeonThread implements Runnable {
                                     bot.settings.activitiesEnabled.remove("e");
                                     BHBot.logger.error("It was impossible to get the current expedition type!");
                                     if (bot.settings.enablePushover && bot.settings.poNotifyErrors)
-                                        sendPushOverMessage("Expedition error", "It was impossible to get the current expedition type. Expeditions are now disabled!", "siren");
+                                        bot.poManager.sendPushOverMessage("Expedition error", "It was impossible to get the current expedition type. Expeditions are now disabled!", "siren");
 
                                     bot.browser.readScreen();
                                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND, bot.browser);
@@ -1692,7 +1690,7 @@ public class DungeonThread implements Runnable {
                                     bot.settings.activitiesEnabled.remove("e");
                                     BHBot.logger.error("It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!");
                                     if (bot.settings.enablePushover && bot.settings.poNotifyErrors)
-                                        sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!", "siren");
+                                        bot.poManager.sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!", "siren");
 
                                     bot.browser.readScreen();
                                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND, bot.browser);
@@ -1855,9 +1853,9 @@ public class DungeonThread implements Runnable {
                                 String WBErrorScreen = saveGameScreen("wb-no-blue-summon", "errors");
                                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
                                     if (WBErrorScreen != null) {
-                                        sendPushOverMessage("World Boss error", "Impossible to find blue summon.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
+                                        bot.poManager.sendPushOverMessage("World Boss error", "Impossible to find blue summon.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
                                     } else {
-                                        sendPushOverMessage("World Boss error", "Impossible to find blue summon.", "siren", MessagePriority.NORMAL, null);
+                                        bot.poManager.sendPushOverMessage("World Boss error", "Impossible to find blue summon.", "siren", MessagePriority.NORMAL, null);
                                     }
                                 }
 
@@ -2834,7 +2832,8 @@ public class DungeonThread implements Runnable {
                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
                     if (seg != null) {
                         bot.browser.clickOnSeg(seg);
-                    } else BHBot.logger.warn("Unable to find close button for " + bot.getState().getName() + " window..");
+                    } else
+                        BHBot.logger.warn("Unable to find close button for " + bot.getState().getName() + " window..");
                 }
 
                 //For Expedition we need to close 3 windows (Exped/Portal/Team) to return to main screen
@@ -2896,7 +2895,8 @@ public class DungeonThread implements Runnable {
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("CloseGreen"), 2 * SECOND, bot.browser);
                 if (seg != null) {
                     bot.browser.clickOnSeg(seg);
-                } else BHBot.logger.warn("Unable to find close button for " + bot.getState().getName() + " victory screen..");
+                } else
+                    BHBot.logger.warn("Unable to find close button for " + bot.getState().getName() + " victory screen..");
 
                 // close the activity window to return us to the main screen
                 bot.browser.readScreen(3 * SECOND); //wait for slide-in animation to finish
@@ -3468,9 +3468,9 @@ public class DungeonThread implements Runnable {
                 String STScreen = saveGameScreen("skeleton-treasure-no-open");
                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
                     if (STScreen != null) {
-                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                        bot.poManager.sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
                     } else {
-                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, null);
+                        bot.poManager.sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, null);
                     }
                 }
                 return true;
@@ -3483,9 +3483,9 @@ public class DungeonThread implements Runnable {
                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
                     String STScreen = saveGameScreen("skeleton-treasure-no-yes");
                     if (STScreen != null) {
-                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                        bot.poManager.sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
                     } else {
-                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, null);
+                        bot.poManager.sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, null);
                     }
                 }
                 return true;
@@ -3501,9 +3501,9 @@ public class DungeonThread implements Runnable {
                 String STScreen = saveGameScreen("skeleton-treasure-no-open");
                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
                     if (STScreen != null) {
-                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                        bot.poManager.sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
                     } else {
-                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, null);
+                        bot.poManager.sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, null);
                     }
                 }
                 return true;
@@ -3516,9 +3516,9 @@ public class DungeonThread implements Runnable {
                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
                     String STScreen = saveGameScreen("skeleton-treasure-no-yes");
                     if (STScreen != null) {
-                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
+                        bot.poManager.sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
                     } else {
-                        sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, null);
+                        bot.poManager.sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, null);
                     }
                 }
                 return true;
@@ -3774,7 +3774,7 @@ public class DungeonThread implements Runnable {
             if (bot.settings.enablePushover && bot.settings.poNotifyBribe) {
                 String bribeScreenName = saveGameScreen("bribe-screen", tmpScreen);
                 File bribeScreenFile = bribeScreenName != null ? new File(bribeScreenName) : null;
-                sendPushOverMessage("Creature Bribe", "A familiar has been bribed!", "bugle", MessagePriority.NORMAL, bribeScreenFile);
+                bot.poManager.sendPushOverMessage("Creature Bribe", "A familiar has been bribed!", "bugle", MessagePriority.NORMAL, bribeScreenFile);
                 if (bribeScreenFile != null && !bribeScreenFile.delete())
                     BHBot.logger.warn("Impossible to delete tmp img file for bribe.");
             }
@@ -4946,9 +4946,9 @@ public class DungeonThread implements Runnable {
                 String pmFileName = saveGameScreen("pm", "pm");
                 if (bot.settings.enablePushover && bot.settings.poNotifyPM) {
                     if (pmFileName != null) {
-                        sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
+                        bot.poManager.sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
                     } else {
-                        sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, null);
+                        bot.poManager.sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, null);
                     }
                 }
                 bot.browser.clickOnSeg(seg);
@@ -5003,7 +5003,7 @@ public class DungeonThread implements Runnable {
             if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
                 String teamScreen = saveGameScreen("auto-team");
                 File teamFile = teamScreen != null ? new File(teamScreen) : null;
-                sendPushOverMessage("Team auto assigned", message, "siren", MessagePriority.NORMAL, teamFile);
+                bot.poManager.sendPushOverMessage("Team auto assigned", message, "siren", MessagePriority.NORMAL, teamFile);
                 if (teamFile != null && !teamFile.delete())
                     BHBot.logger.warn("Impossible to delete tmp error img file for team auto assign");
             }
@@ -6205,37 +6205,6 @@ public class DungeonThread implements Runnable {
         revived[4] = false;
     }
 
-    void sendPushOverMessage(String title, String msg, MessagePriority priority, File attachment) {
-        sendPushOverMessage(title, msg, "pushover", priority, attachment);
-    }
-
-    private void sendPushOverMessage(String title, String msg, @SuppressWarnings("SameParameterValue") String sound) {
-        sendPushOverMessage(title, msg, sound, MessagePriority.NORMAL, null);
-    }
-
-    private void sendPushOverMessage(String title, String msg, String sound, MessagePriority priority, File attachment) {
-        if (bot.settings.enablePushover) {
-
-            if (!"".equals(bot.settings.username) && !"yourusername".equals(bot.settings.username)) {
-                title = "[" + bot.settings.username + "] " + title;
-            }
-
-            try {
-                bot.poClient.pushMessage(
-                        PushoverMessage.builderWithApiToken(bot.settings.poAppToken)
-                                .setUserId(bot.settings.poUserToken)
-                                .setTitle(title)
-                                .setMessage(msg)
-                                .setPriority(priority)
-                                .setSound(sound)
-                                .setImage(attachment)
-                                .build());
-            } catch (PushoverException e) {
-                BHBot.logger.error("Error while sending Pushover message", e);
-            }
-        }
-    }
-
     private Bounds opponentSelector(int opponent) {
 
         if (bot.settings.pvpOpponent < 1 || bot.settings.pvpOpponent > 4) {
@@ -6409,7 +6378,7 @@ public class DungeonThread implements Runnable {
                 }
                 String victoryScreenName = saveGameScreen("victory-screen", victoryPopUpImg);
                 File victoryScreenFile = victoryScreenName != null ? new File(victoryScreenName) : null;
-                sendPushOverMessage(tierName + " item drop in " + bot.getState(), droppedItemMessage, "magic", MessagePriority.NORMAL, victoryScreenFile);
+                bot.poManager.sendPushOverMessage(tierName + " item drop in " + bot.getState(), droppedItemMessage, "magic", MessagePriority.NORMAL, victoryScreenFile);
                 if (victoryScreenFile != null && !victoryScreenFile.delete())
                     BHBot.logger.warn("Impossible to delete tmp img file for victory drop.");
             }
@@ -6783,9 +6752,13 @@ public class DungeonThread implements Runnable {
             return number;
         }
 
-        int getMinTier() { return minTier; }
+        int getMinTier() {
+            return minTier;
+        }
 
-        int getMaxTier() { return maxTier; }
+        int getMaxTier() {
+            return maxTier;
+        }
 
         static WorldBoss fromLetter(String Letter) {
             for (WorldBoss wb : WorldBoss.values()) {
