@@ -4613,39 +4613,28 @@ public class DungeonThread implements Runnable {
      * Check world boss inputs are valid
      **/
     private boolean checkWorldBossInput() {
-        boolean failed = false;
-        int passed = 0;
-
         String worldBossType = bot.settings.worldBossSettings.get(0);
         int worldBossTier = Integer.parseInt(bot.settings.worldBossSettings.get(2));
         WorldBoss wb = WorldBoss.fromLetter(worldBossType);
 
         //check name
         if (wb == null) {
-            passed++;
-        } else {
             BHBot.logger.error("Invalid world boss name, check settings file");
-            failed = true;
+            return false;
         }
 
         //check tier
-        if (worldBossTier >= wb.minTier && worldBossTier <= wb.maxTier) {
-            passed++;
-        } else {
+        if (worldBossTier < wb.minTier && worldBossTier > wb.maxTier) {
             BHBot.logger.error("Invalid world boss tier for " + wb.getName() + ", must be between " + wb.getMinTier() + " and " + wb.getMaxTier());
-            failed = true;
+            return false;
         }
 
         //warn user if timer is over 5 minutes
-        if (bot.settings.worldBossTimer <= 300) {
-            passed++;
-        } else {
+        if (bot.settings.worldBossTimer > 300) {
             BHBot.logger.warn("Warning: Timer longer than 5 minutes");
+            return false;
         }
-
-        return !failed && passed == 3;
-
-
+        return true;
     }
 
     /**
