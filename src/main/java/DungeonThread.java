@@ -61,8 +61,6 @@ public class DungeonThread implements Runnable {
     @SuppressWarnings("FieldCanBeLocal")
     private final int MAX_NUM_FAILED_RESTARTS = 5;
     @SuppressWarnings("FieldCanBeLocal")
-    private final boolean QUIT_AFTER_MAX_FAILED_RESTARTS = false;
-    @SuppressWarnings("FieldCanBeLocal")
     private final long MAX_IDLE_TIME = 15 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
     private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
@@ -291,7 +289,7 @@ public class DungeonThread implements Runnable {
             }
 
             numFailedRestarts++;
-            if (QUIT_AFTER_MAX_FAILED_RESTARTS && numFailedRestarts > MAX_NUM_FAILED_RESTARTS) {
+            if (numFailedRestarts > MAX_NUM_FAILED_RESTARTS) {
                 BHBot.logger.fatal("Something went wrong with driver restart. Number of restarts exceeded " + MAX_NUM_FAILED_RESTARTS + ", this is why I'm aborting...");
                 bot.finished = true;
             } else {
