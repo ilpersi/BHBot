@@ -7,16 +7,13 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.Point;
-import org.openqa.selenium.remote.UnreachableBrowserException;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -59,8 +56,6 @@ public class DungeonThread implements Runnable {
          */
     private Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])\\s+(?<difficulty>[123])");
     @SuppressWarnings("FieldCanBeLocal")
-    private final int MAX_NUM_FAILED_RESTARTS = 5;
-    @SuppressWarnings("FieldCanBeLocal")
     private final long MAX_IDLE_TIME = 15 * MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
     private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
@@ -82,7 +77,6 @@ public class DungeonThread implements Runnable {
     // Generic counters HashMap
     HashMap<BHBot.State, DungeonCounter> counters = new HashMap<>();
 
-    private int numFailedRestarts = 0; // in a row
     // When we do not have anymore gems to use this is true
     private boolean noGemsToBribe = false;
 
@@ -259,93 +253,12 @@ public class DungeonThread implements Runnable {
 
     void restart(boolean emergency) {
         oneTimeshrineCheck = false; //reset first run shrine check in case its enabled after restarting
-        restart(emergency, false); // assume emergency restart
-    }
 
-    /**
-     * @param emergency true in case something bad happened (some kind of an error for which we had to do a restart)
-     */
-    void restart(boolean emergency, boolean useDoNotShareLink) {
-
-        // take emergency screenshot (which will have the developer to debug the problem):
-        if (emergency) {
-            BHBot.logger.warn("Doing driver emergency restart...");
-            bot.dumpCrashLog();
-        }
-
-        try {
-            bot.browser.restart(useDoNotShareLink);
-        } catch (Exception e) {
-
-            if (e instanceof NoSuchElementException)
-                BHBot.logger.warn("Problem: web element with id 'game' not found!");
-            if (e instanceof MalformedURLException)
-                BHBot.logger.warn("Problem: malformed url detected!");
-            if (e instanceof UnreachableBrowserException) {
-                BHBot.logger.error("Impossible to connect to the bot.browser. Make sure chromedirver is started. Will retry in a few minutes... (sleeping)");
-                Misc.sleep(5 * MINUTE);
-                restart();
-                return;
-            }
-
-            numFailedRestarts++;
-            if (numFailedRestarts > MAX_NUM_FAILED_RESTARTS) {
-                BHBot.logger.fatal("Something went wrong with driver restart. Number of restarts exceeded " + MAX_NUM_FAILED_RESTARTS + ", this is why I'm aborting...");
-                bot.finished = true;
-            } else {
-                BHBot.logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)", e);
-                Misc.sleep(5 * MINUTE);
-                restart();
-            }
-            return;
-        }
-
-        bot.browser.detectSignInFormAndHandleIt(); // just in case (happens seldom though)
-
-        bot.browser.scrollGameIntoView();
-
-        int counter = 0;
-        boolean restart = false;
-        while (true) {
-            try {
-                bot.browser.readScreen();
-
-                MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Login"), bot.browser);
-                bot.browser.detectLoginFormAndHandleIt(seg);
-            } catch (Exception e) {
-                counter++;
-                if (counter > 20) {
-                    BHBot.logger.error("Error: <" + e.getMessage() + "> while trying to detect and handle login form. Restarting...", e);
-                    restart = true;
-                    break;
-                }
-
-                Misc.sleep(10 * SECOND);
-                continue;
-            }
-            break;
-        }
-        if (restart) {
-            restart();
-            return;
-        }
-
-        BHBot.logger.info("Game element found. Starting to run bot..");
-
-        if (bot.settings.idleMode) { //skip startup checks if we are in idle mode
-            oneTimeshrineCheck = true;
+        if (bot.settings.idleMode) {
+            oneTimeRuneCheck = true;
             oneTimeRuneCheck = true;
         }
-
-        if ((bot.settings.activitiesEnabled.contains("d")) && (bot.settings.activitiesEnabled.contains("w"))) {
-            BHBot.logger.info("Both Dungeons and World Boss selected, disabling World Boss.");
-            BHBot.logger.info("To run a mixture of both use a low lobby timer and enable dungeonOnTimeout");
-            bot.settings.activitiesEnabled.remove("w");
-        }
-        bot.setState(BHBot.State.Loading);
-        bot.scheduler.resetIdleTime();
-        bot.scheduler.resume(); // in case it was paused
-        numFailedRestarts = 0; // must be last line in this method!
+        bot.restart(emergency, false); // assume emergency restart
     }
 
     public void run() {
@@ -529,7 +442,7 @@ public class DungeonThread implements Runnable {
                      * do_not_share url and if we find it, we save it for later usage
                      */
                     if (!bot.browser.isDoNotShareUrl() && bot.settings.useDoNotShareURL) {
-                        restart(false, true);
+                        bot.restart(false, true);
                         continue;
                     }
 

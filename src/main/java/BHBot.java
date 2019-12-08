@@ -10,10 +10,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.remote.UnreachableBrowserException;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -35,6 +38,7 @@ public class BHBot {
     static Level logLevel;
 
     private DungeonThread dungeon;
+    private int numFailedRestarts = 0; // in a row
 
     Settings settings = new Settings().setDebug();
     Scheduler scheduler = new Scheduler();
@@ -802,6 +806,89 @@ public class BHBot {
                     "BHBot has crashed and a driver emergency restart has been performed!\n\n" + stackTrace, "falling",
                     MessagePriority.HIGH, poCrashScreen.exists() ? poCrashScreen : null);
         }
+    }
+
+    /**
+     * @param emergency true in case something bad happened (some kind of an error for which we had to do a restart)
+     * @param useDoNotShareLink is the bot running with do_not_share link enabled?
+     */
+    void restart(boolean emergency, boolean useDoNotShareLink) {
+        final int MAX_NUM_FAILED_RESTARTS = 5;
+
+        // take emergency screenshot (which will have the developer to debug the problem):
+        if (emergency) {
+            logger.warn("Doing driver emergency restart...");
+            dumpCrashLog();
+        }
+
+        try {
+            browser.restart(useDoNotShareLink);
+        } catch (Exception e) {
+
+            if (e instanceof NoSuchElementException)
+                logger.warn("Problem: web element with id 'game' not found!");
+            if (e instanceof MalformedURLException)
+                logger.warn("Problem: malformed url detected!");
+            if (e instanceof UnreachableBrowserException) {
+                logger.error("Impossible to connect to the bot.browser. Make sure chromedirver is started. Will retry in a few minutes... (sleeping)");
+                Misc.sleep(5 * DungeonThread.MINUTE);
+                restart(true, useDoNotShareLink);
+                return;
+            }
+
+            numFailedRestarts++;
+            if (numFailedRestarts > MAX_NUM_FAILED_RESTARTS) {
+                logger.fatal("Something went wrong with driver restart. Number of restarts exceeded " + MAX_NUM_FAILED_RESTARTS + ", this is why I'm aborting...");
+                finished = true;
+            } else {
+                logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)", e);
+                Misc.sleep(5 * DungeonThread.MINUTE);
+                restart(true, useDoNotShareLink);
+            }
+            return;
+        }
+
+        browser.detectSignInFormAndHandleIt(); // just in case (happens seldom though)
+
+        browser.scrollGameIntoView();
+
+        int counter = 0;
+        boolean restart = false;
+        while (true) {
+            try {
+                browser.readScreen();
+
+                MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Login"), browser);
+                browser.detectLoginFormAndHandleIt(seg);
+            } catch (Exception e) {
+                counter++;
+                if (counter > 20) {
+                    logger.error("Error: <" + e.getMessage() + "> while trying to detect and handle login form. Restarting...", e);
+                    restart = true;
+                    break;
+                }
+
+                Misc.sleep(10 * DungeonThread.SECOND);
+                continue;
+            }
+            break;
+        }
+        if (restart) {
+            restart(true, useDoNotShareLink);
+            return;
+        }
+
+        logger.info("Game element found. Starting to run bot..");
+
+        if ((settings.activitiesEnabled.contains("d")) && (settings.activitiesEnabled.contains("w"))) {
+            logger.info("Both Dungeons and World Boss selected, disabling World Boss.");
+            logger.info("To run a mixture of both use a low lobby timer and enable dungeonOnTimeout");
+            settings.activitiesEnabled.remove("w");
+        }
+        setState(State.Loading);
+        scheduler.resetIdleTime();
+        scheduler.resume(); // in case it was paused
+        numFailedRestarts = 0; // must be last line in this method!
     }
 
     enum State {
