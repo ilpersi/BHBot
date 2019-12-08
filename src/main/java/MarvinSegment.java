@@ -1,5 +1,4 @@
 import java.awt.image.BufferedImage;
-import java.util.Map;
 
 /**
  * This class has been copied from <br>
@@ -92,16 +91,16 @@ public class MarvinSegment {
     }
 
     // Cue detection based on String
-    static synchronized MarvinSegment fromCue(String cueName, Map<String, Cue> cuesMap, BrowserManager browserManager) {
-        return fromCue(cuesMap.get(cueName), 0, true, browserManager);
+    static synchronized MarvinSegment fromCue(String cueName, BrowserManager browserManager) {
+        return fromCue(BrowserManager.cues.get(cueName), 0, true, browserManager);
     }
 
-    static synchronized MarvinSegment fromCue(Map<String, Cue> cuesMap, String cueName, int timeout, Bounds bounds, BrowserManager browserManager) {
-        return fromCue(new Cue(cuesMap.get(cueName), bounds), timeout, true, browserManager);
+    static synchronized MarvinSegment fromCue(String cueName, int timeout, Bounds bounds, BrowserManager browserManager) {
+        return fromCue(new Cue(BrowserManager.cues.get(cueName), bounds), timeout, true, browserManager);
     }
 
-    static synchronized MarvinSegment fromCue(String cueName, Map<String, Cue> cuesMap, int timeout, BrowserManager browserManager) {
-        return fromCue(cuesMap.get(cueName), timeout, true, browserManager);
+    static synchronized MarvinSegment fromCue(String cueName, int timeout, BrowserManager browserManager) {
+        return fromCue(BrowserManager.cues.get(cueName), timeout, true, browserManager);
     }
 
     public String toString() {

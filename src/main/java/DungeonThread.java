@@ -739,7 +739,7 @@ public class DungeonThread implements Runnable {
                         }
                         BHBot.browser.clickOnSeg(raidBTNSeg);
 
-                        seg = MarvinSegment.fromCue("RaidPopup", BrowserManager.cues, 5 * SECOND, BHBot.browser); // wait until the raid window opens
+                        seg = MarvinSegment.fromCue("RaidPopup", 5 * SECOND, BHBot.browser); // wait until the raid window opens
                         if (seg == null) {
                             BHBot.logger.warn("Error: attempt at opening raid window failed. No window cue detected. Ignoring...");
                             BHBot.scheduler.restoreIdleTime();
@@ -1019,7 +1019,7 @@ public class DungeonThread implements Runnable {
                                 }
 
                                 // We wait for the cost selector window to close
-                                MarvinSegment.fromCue("TrialsOrGauntletWindow", BrowserManager.cues, SECOND * 2, BHBot.browser);
+                                MarvinSegment.fromCue("TrialsOrGauntletWindow", SECOND * 2, BHBot.browser);
                                 BHBot.browser.readScreen();
                             }
 
@@ -1322,7 +1322,7 @@ public class DungeonThread implements Runnable {
                             Bounds pvpOpponentBounds = opponentSelector(BHBot.settings.pvpOpponent);
                             String opponentName = (BHBot.settings.pvpOpponent == 1 ? "1st" : BHBot.settings.pvpOpponent == 2 ? "2nd" : BHBot.settings.pvpOpponent == 3 ? "3rd" : "4th");
                             BHBot.logger.info("Selecting " + opponentName + " opponent");
-                            seg = MarvinSegment.fromCue(BrowserManager.cues, "Fight", 5 * SECOND, pvpOpponentBounds, BHBot.browser);
+                            seg = MarvinSegment.fromCue("Fight", 5 * SECOND, pvpOpponentBounds, BHBot.browser);
                             if (seg == null) {
                                 BHBot.logger.error("Imppossible to find the Fight button in the PVP screen, restarting!");
                                 restart();
@@ -1331,7 +1331,7 @@ public class DungeonThread implements Runnable {
                             BHBot.browser.clickOnSeg(seg);
 
                             BHBot.browser.readScreen();
-                            seg = MarvinSegment.fromCue(BrowserManager.cues, "Accept", 5 * SECOND, new Bounds(430, 430, 630, 500), BHBot.browser);
+                            seg = MarvinSegment.fromCue("Accept", 5 * SECOND, new Bounds(430, 430, 630, 500), BHBot.browser);
                             if (seg == null) {
                                 BHBot.logger.error("Impossible to find the Accept button in the PVP screen, restarting");
                                 restart();
@@ -1737,7 +1737,7 @@ public class DungeonThread implements Runnable {
                                     currentExpedition = 3;
                                 } else if (MarvinSegment.fromCue(BrowserManager.cues.get("Expedition4"), BHBot.browser) != null) {
                                     currentExpedition = 4;
-                                } else if (MarvinSegment.fromCue("Expedition5", BrowserManager.cues, BHBot.browser) != null) {
+                                } else if (MarvinSegment.fromCue("Expedition5", BHBot.browser) != null) {
                                     currentExpedition = 5;
                                 } else {
                                     BHBot.settings.activitiesEnabled.remove("e");
@@ -2832,11 +2832,11 @@ public class DungeonThread implements Runnable {
          *  We check once per activity, when we're in combat
          */
         if (!speedChecked && encounterStatus) { //we check once per activity when we are in encounter
-            MarvinSegment speedFull = MarvinSegment.fromCue("Speed_Full", BrowserManager.cues, BHBot.browser);
-            MarvinSegment speedLabel = MarvinSegment.fromCue("Speed", BrowserManager.cues, BHBot.browser);
+            MarvinSegment speedFull = MarvinSegment.fromCue("Speed_Full", BHBot.browser);
+            MarvinSegment speedLabel = MarvinSegment.fromCue("Speed", BHBot.browser);
             if (speedLabel != null && speedFull == null) { //if we see speed label but not 3/3 speed
                 BHBot.logger.warn("1x speed detected, fixing..");
-                seg = MarvinSegment.fromCue("Speed", BrowserManager.cues, BHBot.browser);
+                seg = MarvinSegment.fromCue("Speed", BHBot.browser);
                 if (seg != null) {
                     BHBot.browser.clickOnSeg(seg);
                     return;
@@ -3935,7 +3935,7 @@ public class DungeonThread implements Runnable {
             // If no potions are needed, we re-enable the Auto function
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("NoPotions"), SECOND, BHBot.browser); // Everyone is Full HP
             if (seg != null) {
-                seg = MarvinSegment.fromCue(BrowserManager.cues, "Close", SECOND, new Bounds(300, 330, 500, 400), BHBot.browser);
+                seg = MarvinSegment.fromCue("Close", SECOND, new Bounds(300, 330, 500, 400), BHBot.browser);
                 if (seg != null) {
                     BHBot.logger.autorevive("None of the team members need a consumable, exiting from autoRevive");
                     BHBot.browser.clickOnSeg(seg);
@@ -4685,25 +4685,25 @@ public class DungeonThread implements Runnable {
      * Returns 0 in case zone could not be read (in case we are not in the quest window, for example).
      */
     private int readCurrentZone() {
-        if (MarvinSegment.fromCue("Zone1", BrowserManager.cues, BHBot.browser) != null)
+        if (MarvinSegment.fromCue("Zone1", BHBot.browser) != null)
             return 1;
-        else if (MarvinSegment.fromCue("Zone2", BrowserManager.cues, BHBot.browser) != null)
+        else if (MarvinSegment.fromCue("Zone2", BHBot.browser) != null)
             return 2;
-        else if (MarvinSegment.fromCue("Zone3", BrowserManager.cues, BHBot.browser) != null)
+        else if (MarvinSegment.fromCue("Zone3", BHBot.browser) != null)
             return 3;
-        else if (MarvinSegment.fromCue("Zone4", BrowserManager.cues, BHBot.browser) != null)
+        else if (MarvinSegment.fromCue("Zone4", BHBot.browser) != null)
             return 4;
-        else if (MarvinSegment.fromCue("Zone5", BrowserManager.cues, BHBot.browser) != null)
+        else if (MarvinSegment.fromCue("Zone5", BHBot.browser) != null)
             return 5;
-        else if (MarvinSegment.fromCue("Zone6", BrowserManager.cues, BHBot.browser) != null)
+        else if (MarvinSegment.fromCue("Zone6", BHBot.browser) != null)
             return 6;
-        else if (MarvinSegment.fromCue("Zone7", BrowserManager.cues, BHBot.browser) != null)
+        else if (MarvinSegment.fromCue("Zone7", BHBot.browser) != null)
             return 7;
-        else if (MarvinSegment.fromCue("Zone8", BrowserManager.cues, BHBot.browser) != null)
+        else if (MarvinSegment.fromCue("Zone8", BHBot.browser) != null)
             return 8;
-        else if (MarvinSegment.fromCue("Zone9", BrowserManager.cues, BHBot.browser) != null)
+        else if (MarvinSegment.fromCue("Zone9", BHBot.browser) != null)
             return 9;
-        else if (MarvinSegment.fromCue("Zone10", BrowserManager.cues, BHBot.browser) != null)
+        else if (MarvinSegment.fromCue("Zone10", BHBot.browser) != null)
             return 10;
         else
             return 0;
@@ -5204,7 +5204,7 @@ public class DungeonThread implements Runnable {
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean handleNotEnoughTokensPopup(boolean closeTeamWindow) {
-        MarvinSegment seg = MarvinSegment.fromCue("NotEnoughTokens", BrowserManager.cues, BHBot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue("NotEnoughTokens", BHBot.browser);
 
         if (seg != null) {
             BHBot.logger.warn("Not enough token popup detected! Closing trial window.");
@@ -5383,7 +5383,7 @@ public class DungeonThread implements Runnable {
         MarvinSegment tierDropDown;
         int xOffset = 401, yOffset = 210, w = 21, h = 19;
 
-        tierDropDown = MarvinSegment.fromCue("WorldBossTierDropDown", BrowserManager.cues, SECOND, BHBot.browser); // For tier drop down menu
+        tierDropDown = MarvinSegment.fromCue("WorldBossTierDropDown", SECOND, BHBot.browser); // For tier drop down menu
 
         if (tierDropDown == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
@@ -5679,7 +5679,7 @@ public class DungeonThread implements Runnable {
 
         BHBot.browser.clickOnSeg(seg);
 
-        MarvinSegment.fromCue("CostDropDown", BrowserManager.cues, 5 * SECOND, BHBot.browser); // wait for the cost selection popup window to open
+        MarvinSegment.fromCue("CostDropDown", 5 * SECOND, BHBot.browser); // wait for the cost selection popup window to open
 
         // horizontal position of the 5 buttons:
         final int posx = 390;
@@ -7027,7 +7027,7 @@ public class DungeonThread implements Runnable {
                 seg = MarvinSegment.fromCue(weeklyRewardEntry.getValue(), BHBot.browser);
                 if (seg != null) {
                     BufferedImage reward = BHBot.browser.getImg();
-                    seg = MarvinSegment.fromCue("X", BrowserManager.cues, 5 * SECOND, BHBot.browser);
+                    seg = MarvinSegment.fromCue("X", 5 * SECOND, BHBot.browser);
                     if (seg != null) BHBot.browser.clickOnSeg(seg);
                     else {
                         BHBot.logger.error(weeklyRewardEntry.getKey() + " reward popup detected, however could not detect the X button. Restarting...");
