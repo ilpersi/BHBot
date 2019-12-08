@@ -11,8 +11,11 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -32,7 +35,6 @@ public class BHBot {
     static Level logLevel;
 
     private DungeonThread dungeon;
-    private BlockerThread blocker;
 
     Settings settings = new Settings().setDebug();
     Scheduler scheduler = new Scheduler();
@@ -376,7 +378,7 @@ public class BHBot {
                     poLogMessage += "\n poAppToken is: " + settings.poAppToken;
                     logger.info(poLogMessage);
 
-                    String poScreenName = dungeon.saveGameScreen("pomessage");
+                    String poScreenName = dungeon.bot.saveGameScreen("pomessage");
                     File poScreenFile = poScreenName != null ? new File(poScreenName) : null;
 
                     poManager.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
@@ -446,7 +448,7 @@ public class BHBot {
                 if (params.length > 1)
                     fileName = params[1];
 
-                dungeon.saveGameScreen(fileName);
+                dungeon.bot.saveGameScreen(fileName);
 
                 logger.info("Screenshot '" + fileName + "' saved.");
                 break;
@@ -455,7 +457,7 @@ public class BHBot {
                 dungeonThread = new Thread(dungeon, "DungeonThread");
                 dungeonThread.start();
 
-                blocker = new BlockerThread(this);
+                BlockerThread blocker = new BlockerThread(this);
                 blockerThread = new Thread(blocker, "BlockerThread");
                 blockerThread.start();
                 break;
@@ -714,6 +716,67 @@ public class BHBot {
 
     synchronized void setState(State state) {
         this.state = state;
+    }
+
+    /**
+     * Takes screenshot of current game and saves it to disk to a file with a given prefix (date will be added, and optionally a number at the end of file name).
+     * In case of failure, it will just ignore the error.
+     *
+     * @param prefix The string used to prefix the screenshot name
+     * @return name of the path in which the screenshot has been saved (successfully or not)
+     */
+    synchronized String saveGameScreen(String prefix) {
+        return saveGameScreen(prefix, null, browser.takeScreenshot(true));
+    }
+
+    synchronized String saveGameScreen(String prefix, BufferedImage img) {
+        return saveGameScreen(prefix, null, img);
+    }
+
+    synchronized String saveGameScreen(String prefix, String subFolder) {
+        return saveGameScreen(prefix, subFolder, browser.takeScreenshot(true));
+    }
+
+    synchronized String saveGameScreen(String prefix, String subFolder, BufferedImage img) {
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        // sub-folder logic management
+        String screenshotPath = BHBot.screenshotPath;
+        if (subFolder != null) {
+            File subFolderPath = new File(BHBot.screenshotPath + subFolder + "/");
+            if (!subFolderPath.exists()) {
+                if (!subFolderPath.mkdir()) {
+                    logger.error("Impossible to create screenshot sub folder in " + subFolder);
+                    return null;
+                } else {
+                    try {
+                        logger.info("Created screenshot sub-folder " + subFolderPath.getCanonicalPath());
+                    } catch (IOException e) {
+                        logger.error("Error while getting Canonical Path for newly created screenshots sub-folder", e);
+                    }
+                }
+            }
+            screenshotPath += subFolder + "/";
+        }
+
+        Date date = new Date();
+        String name = prefix + "_" + dateFormat.format(date) + ".png";
+        int num = 0;
+        File f = new File(screenshotPath + name);
+        while (f.exists()) {
+            num++;
+            name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
+            f = new File(screenshotPath + name);
+        }
+
+        // save screen shot:
+        try {
+            ImageIO.write(img, "png", f);
+        } catch (Exception e) {
+            logger.error("Impossible to take a screenshot!");
+        }
+
+        return f.getPath();
     }
 
     enum State {

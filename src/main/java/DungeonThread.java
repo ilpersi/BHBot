@@ -259,7 +259,7 @@ public class DungeonThread implements Runnable {
 
     private void dumpCrashLog() {
         // save screen shot:
-        String file = saveGameScreen("crash", "errors");
+        String file = bot.saveGameScreen("crash", "errors");
 
         if (file == null) {
             BHBot.logger.error("Impossible to create crash screenshot");
@@ -280,11 +280,12 @@ public class DungeonThread implements Runnable {
         }
     }
 
-    private void restart() {
+    void restart() {
         restart(true); // assume emergency restart
     }
 
     void restart(boolean emergency) {
+        oneTimeshrineCheck = false; //reset first run shrine check in case its enabled after restarting
         restart(emergency, false); // assume emergency restart
     }
 
@@ -292,7 +293,6 @@ public class DungeonThread implements Runnable {
      * @param emergency true in case something bad happened (some kind of an error for which we had to do a restart)
      */
     void restart(boolean emergency, boolean useDoNotShareLink) {
-        oneTimeshrineCheck = false; //reset first run shrine check in case its enabled after restarting
 
         // take emergency screenshot (which will have the developer to debug the problem):
         if (emergency) {
@@ -393,7 +393,7 @@ public class DungeonThread implements Runnable {
 
                 if (Misc.getTime() - bot.scheduler.getIdleTime() > MAX_IDLE_TIME) {
                     BHBot.logger.warn("Idle time exceeded... perhaps caught in a loop? Restarting... (state=" + bot.getState() + ")");
-                    saveGameScreen("idle-timeout-error", "errors");
+                    bot.saveGameScreen("idle-timeout-error", "errors");
 
                     // Safety measure to avoid being stuck forever in dungeons
                     if (bot.getState() != BHBot.State.Main && bot.getState() != BHBot.State.Loading) {
@@ -412,7 +412,7 @@ public class DungeonThread implements Runnable {
                     }
 
                     if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
-                        String idleTimerScreenName = saveGameScreen("idle-timer", bot.browser.getImg());
+                        String idleTimerScreenName = bot.saveGameScreen("idle-timer", bot.browser.getImg());
                         File idleTimerScreenFile = idleTimerScreenName != null ? new File(idleTimerScreenName) : null;
                         if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
                             bot.poManager.sendPushOverMessage("Idle timer exceeded", "Idle time exceeded while state = " + bot.getState(), "siren", MessagePriority.NORMAL, idleTimerScreenFile);
@@ -445,7 +445,7 @@ public class DungeonThread implements Runnable {
                     if (seg != null) {
                         if ((bot.settings.screenshots.contains("d"))) {
                             BufferedImage reward = bot.browser.getImg().getSubimage(131, 136, 513, 283);
-                            saveGameScreen("daily_reward", "rewards", reward);
+                            bot.saveGameScreen("daily_reward", "rewards", reward);
                         }
                         bot.browser.clickOnSeg(seg);
                     } else {
@@ -484,7 +484,7 @@ public class DungeonThread implements Runnable {
                                 int num = readNumFromImg(gemsbw, "micro", new HashSet<>());
                                 */
                                 BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
-                                saveGameScreen("weekly-gems", "gems", gems);
+                                bot.saveGameScreen("weekly-gems", "gems", gems);
                             }
                         } else {
                             if ((bot.settings.screenshots.contains("dg"))) {
@@ -495,7 +495,7 @@ public class DungeonThread implements Runnable {
                                 int num = readNumFromImg(gemsbw, "micro", new HashSet<>());
                                 */
                                 BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
-                                saveGameScreen("daily-gems", "gems", gems); //else screenshot daily count
+                                bot.saveGameScreen("daily-gems", "gems", gems); //else screenshot daily count
                             }
                         }
 
@@ -535,7 +535,7 @@ public class DungeonThread implements Runnable {
                     if (autoOn != null || autoOff != null) { //if we're in Loading state, with auto button visible, then we need to change state
                         bot.setState(BHBot.State.UnidentifiedDungeon); // we are not sure what type of dungeon we are doing
                         BHBot.logger.warn("Possible dungeon crash, activating failsafe");
-                        saveGameScreen("dungeon-crash-failsafe", "errors");
+                        bot.saveGameScreen("dungeon-crash-failsafe", "errors");
                         checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
                         continue;
                     }
@@ -570,7 +570,7 @@ public class DungeonThread implements Runnable {
                             timeLastPOAlive = Misc.getTime();
 
                             timeLastPOAlive = Misc.getTime();
-                            String aliveScreenName = saveGameScreen("alive-screen");
+                            String aliveScreenName = bot.saveGameScreen("alive-screen");
                             File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
 
                             bot.poManager.sendPushOverMessage("Startup notification", "BHBot has been successfully started!", MessagePriority.QUIET, aliveScreenFile);
@@ -581,7 +581,7 @@ public class DungeonThread implements Runnable {
                         // periodic notification
                         if ((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * HOUR)) {
                             timeLastPOAlive = Misc.getTime();
-                            String aliveScreenName = saveGameScreen("alive-screen");
+                            String aliveScreenName = bot.saveGameScreen("alive-screen");
                             File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
 
                             StringBuilder aliveMsg = new StringBuilder();
@@ -1741,7 +1741,7 @@ public class DungeonThread implements Runnable {
                                     bot.browser.clickOnSeg(seg);
                                 } else {
                                     BHBot.logger.error("No accept button for expedition team!");
-                                    saveGameScreen("expedtion-no-accept", "errors");
+                                    bot.saveGameScreen("expedtion-no-accept", "errors");
                                     restart();
                                 }
 
@@ -1850,7 +1850,7 @@ public class DungeonThread implements Runnable {
                             } else {
                                 BHBot.logger.error("Impossible to find blue summon in world boss.");
 
-                                String WBErrorScreen = saveGameScreen("wb-no-blue-summon", "errors");
+                                String WBErrorScreen = bot.saveGameScreen("wb-no-blue-summon", "errors");
                                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
                                     if (WBErrorScreen != null) {
                                         bot.poManager.sendPushOverMessage("World Boss error", "Impossible to find blue summon.", "siren", MessagePriority.NORMAL, new File(WBErrorScreen));
@@ -1996,7 +1996,7 @@ public class DungeonThread implements Runnable {
                                             bot.setState(BHBot.State.WorldBoss);
                                         } else { //generic error / unknown action restart
                                             BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
-                                            saveGameScreen("wb-no-start-button", "errors");
+                                            bot.saveGameScreen("wb-no-start-button", "errors");
                                             restart();
                                         }
 
@@ -2048,19 +2048,19 @@ public class DungeonThread implements Runnable {
                                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
                                     if (seg != null) {
                                         if ((bot.settings.screenshots.contains("b"))) {
-                                            saveGameScreen("bounty-loot", "rewards");
+                                            bot.saveGameScreen("bounty-loot", "rewards");
                                         }
                                         bot.browser.clickOnSeg(seg);
                                         BHBot.logger.info("Collected bounties");
                                         Misc.sleep(SECOND * 2);
                                     } else {
                                         BHBot.logger.error("Error when collecting bounty items, restarting...");
-                                        saveGameScreen("bounties-error-collect", "errors");
+                                        bot.saveGameScreen("bounties-error-collect", "errors");
                                         restart();
                                     }
                                 } else {
                                     BHBot.logger.error("Error finding bounty item dialog, restarting...");
-                                    saveGameScreen("bounties-error-item");
+                                    bot.saveGameScreen("bounties-error-item");
                                     restart();
                                 }
 
@@ -2072,12 +2072,12 @@ public class DungeonThread implements Runnable {
                                 bot.browser.clickOnSeg(seg);
                             } else {
                                 BHBot.logger.error("Impossible to close the bounties dialog, restarting...");
-                                saveGameScreen("bounties-error-closing");
+                                bot.saveGameScreen("bounties-error-closing");
                                 restart();
                             }
                         } else {
                             BHBot.logger.error("Impossible to detect the Bounties dialog, restarting...");
-                            saveGameScreen("bounties-error-dialog");
+                            bot.saveGameScreen("bounties-error-dialog");
                             restart();
                         }
                         bot.browser.readScreen(SECOND * 2);
@@ -2306,7 +2306,7 @@ public class DungeonThread implements Runnable {
             return seg != null;
         } else {
             BHBot.logger.error("Impossible to find the settings button!");
-            saveGameScreen("open-settings-no-btn", "errors");
+            bot.saveGameScreen("open-settings-no-btn", "errors");
             return false;
         }
     }
@@ -3465,7 +3465,7 @@ public class DungeonThread implements Runnable {
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("Open"), 5 * SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Open button not found, restarting");
-                String STScreen = saveGameScreen("skeleton-treasure-no-open");
+                String STScreen = bot.saveGameScreen("skeleton-treasure-no-open");
                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
                     if (STScreen != null) {
                         bot.poManager.sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
@@ -3481,7 +3481,7 @@ public class DungeonThread implements Runnable {
             if (seg == null) {
                 BHBot.logger.error("Yes button not found, restarting");
                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
-                    String STScreen = saveGameScreen("skeleton-treasure-no-yes");
+                    String STScreen = bot.saveGameScreen("skeleton-treasure-no-yes");
                     if (STScreen != null) {
                         bot.poManager.sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
                     } else {
@@ -3498,7 +3498,7 @@ public class DungeonThread implements Runnable {
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("Open"), 5 * SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Open button not found, restarting");
-                String STScreen = saveGameScreen("skeleton-treasure-no-open");
+                String STScreen = bot.saveGameScreen("skeleton-treasure-no-open");
                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
                     if (STScreen != null) {
                         bot.poManager.sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without OPEN button", "siren", MessagePriority.NORMAL, new File(STScreen));
@@ -3514,7 +3514,7 @@ public class DungeonThread implements Runnable {
             if (seg == null) {
                 BHBot.logger.error("Yes button not found, restarting");
                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
-                    String STScreen = saveGameScreen("skeleton-treasure-no-yes");
+                    String STScreen = bot.saveGameScreen("skeleton-treasure-no-yes");
                     if (STScreen != null) {
                         bot.poManager.sendPushOverMessage("Treasure chest error", "Skeleton Chest gump without YES button", "siren", MessagePriority.NORMAL, new File(STScreen));
                     } else {
@@ -3526,7 +3526,7 @@ public class DungeonThread implements Runnable {
             bot.browser.clickOnSeg(seg);
             Misc.sleep(500);
             if ((bot.settings.screenshots.contains("s"))) {
-                saveGameScreen("skeleton-contents", "rewards");
+                bot.saveGameScreen("skeleton-contents", "rewards");
             }
             return false;
 
@@ -3595,7 +3595,7 @@ public class DungeonThread implements Runnable {
 
         // We save all the errors and persuasions based on settings
         if ((familiarLevel.getValue() >= bot.settings.familiarScreenshot) || familiarLevel == FamiliarType.ERROR) {
-            saveGameScreen(persuasionLog.toString(), "familiars");
+            bot.saveGameScreen(persuasionLog.toString(), "familiars");
 
             if (bot.settings.contributeFamiliars) {
                 contributeFamiliarShoot(persuasionLog.toString(), familiarLevel);
@@ -3772,7 +3772,7 @@ public class DungeonThread implements Runnable {
                 return false;
             }
             if (bot.settings.enablePushover && bot.settings.poNotifyBribe) {
-                String bribeScreenName = saveGameScreen("bribe-screen", tmpScreen);
+                String bribeScreenName = bot.saveGameScreen("bribe-screen", tmpScreen);
                 File bribeScreenFile = bribeScreenName != null ? new File(bribeScreenName) : null;
                 bot.poManager.sendPushOverMessage("Creature Bribe", "A familiar has been bribed!", "bugle", MessagePriority.NORMAL, bribeScreenFile);
                 if (bribeScreenFile != null && !bribeScreenFile.delete())
@@ -3870,7 +3870,7 @@ public class DungeonThread implements Runnable {
                     bot.browser.clickOnSeg(seg);
                 } else {
                     BHBot.logger.error("No potions cue detected, without close button, restarting!");
-                    saveGameScreen("autorevive-no-potions-no-close", bot.browser.getImg());
+                    bot.saveGameScreen("autorevive-no-potions-no-close", bot.browser.getImg());
                     restart();
                 }
                 bot.scheduler.resetIdleTime(true);
@@ -3949,7 +3949,7 @@ public class DungeonThread implements Runnable {
                                     bot.browser.clickOnSeg(seg);
                                 } else {
                                     BHBot.logger.error("Error while reopening the potions menu: no close button found!");
-                                    saveGameScreen("autorevive-no-potions-for-error", bot.browser.getImg());
+                                    bot.saveGameScreen("autorevive-no-potions-for-error", bot.browser.getImg());
                                     restart();
                                 }
                                 return;
@@ -4031,7 +4031,7 @@ public class DungeonThread implements Runnable {
                 }
             }
         } else { // Impossible to find the potions button
-            saveGameScreen("auto-revive-no-potions");
+            bot.saveGameScreen("auto-revive-no-potions");
             BHBot.logger.autorevive("Impossible to find the potions button!");
         }
 
@@ -4776,65 +4776,6 @@ public class DungeonThread implements Runnable {
         return true;
     }
 
-    /**
-     * Takes screenshot of current game and saves it to disk to a file with a given prefix (date will be added, and optionally a number at the end of file name).
-     * In case of failure, it will just ignore the error.
-     *
-     * @return name of the path in which the screenshot has been saved (successfully or not)
-     */
-    String saveGameScreen(String prefix) {
-        return saveGameScreen(prefix, null, bot.browser.takeScreenshot(true));
-    }
-
-    private String saveGameScreen(String prefix, BufferedImage img) {
-        return saveGameScreen(prefix, null, img);
-    }
-
-    private String saveGameScreen(String prefix, String subFolder) {
-        return saveGameScreen(prefix, subFolder, bot.browser.takeScreenshot(true));
-    }
-
-    private String saveGameScreen(String prefix, String subFolder, BufferedImage img) {
-
-        // sub-folder logic management
-        String screenshotPath = BHBot.screenshotPath;
-        if (subFolder != null) {
-            File subFolderPath = new File(BHBot.screenshotPath + subFolder + "/");
-            if (!subFolderPath.exists()) {
-                if (!subFolderPath.mkdir()) {
-                    BHBot.logger.error("Impossible to create screenshot sub folder in " + subFolder);
-                    return null;
-                } else {
-                    try {
-                        BHBot.logger.info("Created screenshot sub-folder " + subFolderPath.getCanonicalPath());
-                    } catch (IOException e) {
-                        BHBot.logger.error("Error while getting Canonical Path for newly created screenshots sub-folder", e);
-                    }
-                }
-            }
-            screenshotPath += subFolder + "/";
-        }
-
-        Date date = new Date();
-        String name = prefix + "_" + dateFormat.format(date) + ".png";
-        int num = 0;
-        File f = new File(screenshotPath + name);
-        while (f.exists()) {
-            num++;
-            name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
-            f = new File(screenshotPath + name);
-        }
-
-        // save screen shot:
-        try {
-            ImageIO.write(img, "png", f);
-        } catch (Exception e) {
-            BHBot.logger.error("Impossible to take a screenshot!");
-        }
-
-        return f.getPath();
-    }
-
     private void contributeFamiliarShoot(String shootName, FamiliarType familiarType) {
 
         HttpClient httpClient = HttpClients.custom().useSystemProperties().build();
@@ -4943,7 +4884,7 @@ public class DungeonThread implements Runnable {
             }
 
             try {
-                String pmFileName = saveGameScreen("pm", "pm");
+                String pmFileName = bot.saveGameScreen("pm", "pm");
                 if (bot.settings.enablePushover && bot.settings.poNotifyPM) {
                     if (pmFileName != null) {
                         bot.poManager.sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
@@ -5001,7 +4942,7 @@ public class DungeonThread implements Runnable {
             String message = "'Team not full/ordered' dialog detected and handled - team has been auto assigned!";
 
             if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
-                String teamScreen = saveGameScreen("auto-team");
+                String teamScreen = bot.saveGameScreen("auto-team");
                 File teamFile = teamScreen != null ? new File(teamScreen) : null;
                 bot.poManager.sendPushOverMessage("Team auto assigned", message, "siren", MessagePriority.NORMAL, teamFile);
                 if (teamFile != null && !teamFile.delete())
@@ -5263,7 +5204,7 @@ public class DungeonThread implements Runnable {
         }
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect difficulty selection box!");
-            saveGameScreen("early_error");
+            bot.saveGameScreen("early_error");
             return 0; // error
         }
 
@@ -5308,7 +5249,7 @@ public class DungeonThread implements Runnable {
 
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in changeWorldBossTier!");
-            saveGameScreen("early_error");
+            bot.saveGameScreen("early_error");
             return false;
         }
 
@@ -5451,7 +5392,7 @@ public class DungeonThread implements Runnable {
 
         if (recursionDepth > 3) {
             BHBot.logger.error("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
-            saveGameScreen("early_error");
+            bot.saveGameScreen("early_error");
             tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
             return false;
         }
@@ -5465,7 +5406,7 @@ public class DungeonThread implements Runnable {
 //		BHBot.logger.info("num = " + Integer.toString(num));
         if (num == 0) {
             BHBot.logger.error("Error: unable to read difficulty level from a drop-down menu!");
-            saveGameScreen("early_error");
+            bot.saveGameScreen("early_error");
             tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
             return false;
         }
@@ -5487,7 +5428,7 @@ public class DungeonThread implements Runnable {
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownUp"), bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
-                saveGameScreen("early_error");
+                bot.saveGameScreen("early_error");
                 bot.browser.clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
                 return false;
             }
@@ -5500,7 +5441,7 @@ public class DungeonThread implements Runnable {
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownDown"), bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty drop-down menu!");
-                saveGameScreen("early_error");
+                bot.saveGameScreen("early_error");
                 bot.browser.clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
                 return false;
             }
@@ -5527,7 +5468,7 @@ public class DungeonThread implements Runnable {
         MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Cost"), 15 * SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect cost selection box!");
-            saveGameScreen("early_error");
+            bot.saveGameScreen("early_error");
             return 0; // error
         }
 
@@ -5555,7 +5496,7 @@ public class DungeonThread implements Runnable {
 
         if (!success) {
             BHBot.logger.error("Error: unable to detect cost selection box value!");
-            saveGameScreen("early_error");
+            bot.saveGameScreen("early_error");
             return 0;
         }
 
@@ -5831,14 +5772,14 @@ public class DungeonThread implements Runnable {
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
                 if (seg != null) {
                     if ((bot.settings.screenshots.contains("a"))) {
-                        saveGameScreen("fishing-baits");
+                        bot.saveGameScreen("fishing-baits");
                     }
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("Correctly collected fishing baits");
                     bot.browser.readScreen(SECOND * 2);
                 } else {
                     BHBot.logger.error("Something weng wrong while collecting fishing baits, restarting...");
-                    saveGameScreen("fishing-error-baits");
+                    bot.saveGameScreen("fishing-error-baits");
                     restart();
                 }
             }
@@ -5850,7 +5791,7 @@ public class DungeonThread implements Runnable {
                 bot.browser.readScreen();
             } else {
                 BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
-                saveGameScreen("fishing-error-closing");
+                bot.saveGameScreen("fishing-error-closing");
                 restart();
             }
 
@@ -6374,9 +6315,9 @@ public class DungeonThread implements Runnable {
                 droppedItemMessage = tierName + " item dropped!";
                 BHBot.logger.debug(droppedItemMessage);
                 if (bot.settings.victoryScreenshot) {
-                    saveGameScreen(bot.getState() + "-" + tierName.toLowerCase(), "loot", victoryPopUpImg);
+                    bot.saveGameScreen(bot.getState() + "-" + tierName.toLowerCase(), "loot", victoryPopUpImg);
                 }
-                String victoryScreenName = saveGameScreen("victory-screen", victoryPopUpImg);
+                String victoryScreenName = bot.saveGameScreen("victory-screen", victoryPopUpImg);
                 File victoryScreenFile = victoryScreenName != null ? new File(victoryScreenName) : null;
                 bot.poManager.sendPushOverMessage(tierName + " item drop in " + bot.getState(), droppedItemMessage, "magic", MessagePriority.NORMAL, victoryScreenFile);
                 if (victoryScreenFile != null && !victoryScreenFile.delete())
@@ -6875,7 +6816,7 @@ public class DungeonThread implements Runnable {
 
                     BHBot.logger.info(weeklyRewardEntry.getKey() + " reward claimed successfully.");
                     if ((bot.settings.screenshots.contains("w"))) {
-                        saveGameScreen(weeklyRewardEntry.getKey().toLowerCase() + "_reward", "rewards", reward);
+                        bot.saveGameScreen(weeklyRewardEntry.getKey().toLowerCase() + "_reward", "rewards", reward);
                     }
                 }
             }
