@@ -318,9 +318,6 @@ public class DungeonThread implements Runnable {
                 MarvinSegment seg;
                 bot.browser.readScreen();
 
-                // close any PMs:
-                handlePM();
-
                 //Handle weekly rewards from events
                 handleWeeklyRewards();
 
@@ -4755,34 +4752,6 @@ public class DungeonThread implements Runnable {
             BHBot.logger.warn("Impossible to delete " + nameImgFile.getAbsolutePath());
         }
 
-    }
-
-    /**
-     * Will detect and handle (close) in-game private message (from the current screen capture). Returns true in case PM has been handled.
-     */
-    private void handlePM() {
-        if (MarvinSegment.fromCue(BrowserManager.cues.get("InGamePM"), bot.browser) != null) {
-            MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
-            if (seg == null) {
-                BHBot.logger.error("Error: in-game PM window detected, but no close button found. Restarting...");
-                restart(); //*** problem: after a call to this, it will return to the main loop. It should call "continue" inside the main loop or else there could be other exceptions!
-                return;
-            }
-
-            try {
-                String pmFileName = bot.saveGameScreen("pm", "pm");
-                if (bot.settings.enablePushover && bot.settings.poNotifyPM) {
-                    if (pmFileName != null) {
-                        bot.poManager.sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
-                    } else {
-                        bot.poManager.sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, null);
-                    }
-                }
-                bot.browser.clickOnSeg(seg);
-            } catch (Exception e) {
-                // ignore it
-            }
-        }
     }
 
     /**

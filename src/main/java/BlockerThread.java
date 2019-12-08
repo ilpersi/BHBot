@@ -1,3 +1,7 @@
+import net.pushover.client.MessagePriority;
+
+import java.io.File;
+
 public class BlockerThread implements Runnable {
     BHBot bot;
     MarvinSegment seg;
@@ -86,6 +90,11 @@ public class BlockerThread implements Runnable {
                 continue; // skip other stuff, we must first get rid of this popup!
             }
 
+            if (!handlePM()) {
+                bot.restart(true, bot.browser.isDoNotShareUrl()); //*** problem: after a call to this, it will return to the main loop. It should call "continue" inside the main loop or else there could be other exceptions!
+                continue;
+            }
+
             // check for "News" popup:
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("News"), bot.browser);
             if (seg != null) {
@@ -97,5 +106,33 @@ public class BlockerThread implements Runnable {
 
             Misc.sleep(500);
         }
+    }
+
+    /**
+     * Will detect and handle (close) in-game private message (from the current screen capture). Returns true in case PM has been handled.
+     */
+    private boolean handlePM() {
+        if (MarvinSegment.fromCue(BrowserManager.cues.get("InGamePM"), bot.browser) != null) {
+            MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * DungeonThread.SECOND, bot.browser);
+            if (seg == null) {
+                BHBot.logger.error("Error: in-game PM window detected, but no close button found. Restarting...");
+                return false;
+            }
+
+            try {
+                String pmFileName = bot.saveGameScreen("pm", "pm");
+                if (bot.settings.enablePushover && bot.settings.poNotifyPM) {
+                    if (pmFileName != null) {
+                        bot.poManager.sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
+                    } else {
+                        bot.poManager.sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, null);
+                    }
+                }
+                bot.browser.clickOnSeg(seg);
+            } catch (Exception e) {
+                // ignore it
+            }
+        }
+        return true;
     }
 }
