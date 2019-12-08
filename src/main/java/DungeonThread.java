@@ -256,7 +256,7 @@ public class DungeonThread implements Runnable {
 
         if (bot.settings.idleMode) {
             oneTimeRuneCheck = true;
-            oneTimeRuneCheck = true;
+            oneTimeshrineCheck = true;
         }
         bot.restart(emergency, false); // assume emergency restart
     }
