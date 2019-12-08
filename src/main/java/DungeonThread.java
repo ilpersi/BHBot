@@ -4618,10 +4618,10 @@ public class DungeonThread implements Runnable {
 
         String worldBossType = bot.settings.worldBossSettings.get(0);
         int worldBossTier = Integer.parseInt(bot.settings.worldBossSettings.get(2));
+        WorldBoss wb = WorldBoss.fromLetter(worldBossType);
 
         //check name
-        if ("o".equals(worldBossType) || "n".equals(worldBossType) || "m".equals(worldBossType)
-                || "3".equals(worldBossType) || "b".equals(worldBossType)) {
+        if (wb == null) {
             passed++;
         } else {
             BHBot.logger.error("Invalid world boss name, check settings file");
@@ -4629,27 +4629,11 @@ public class DungeonThread implements Runnable {
         }
 
         //check tier
-        if ("o".equals(worldBossType) || "n".equals(worldBossType)) {
-            if (worldBossTier >= 3 && worldBossTier <= 9) {
-                passed++;
-            } else {
-                BHBot.logger.error("Invalid world boss tier for Orlang or Nether, must be between 3 and 9");
-                failed = true;
-            }
-        } else if ("m".equals(worldBossType) || "3".equals(worldBossType)) {
-            if (worldBossTier >= 10 && worldBossTier <= 11) {
-                passed++;
-            } else {
-                BHBot.logger.error("Invalid world boss tier for Melvin, 3xt3rmin4tion or Brimstone, must be T10 or higher.");
-                failed = true;
-            }
-        } else if ("b".equals(worldBossType)) {
-            if (worldBossTier == 11) {
-                passed++;
-            } else {
-                BHBot.logger.error("Invalid world boss tier for Brimstone, must be T11.");
-                failed = true;
-            }
+        if (worldBossTier >= wb.minTier && worldBossTier <= wb.maxTier) {
+            passed++;
+        } else {
+            BHBot.logger.error("Invalid world boss tier for " + wb.getName() + ", must be between " + wb.getMinTier() + " and " + wb.getMaxTier());
+            failed = true;
         }
 
         //warn user if timer is over 5 minutes
@@ -6900,22 +6884,26 @@ public class DungeonThread implements Runnable {
     @SuppressWarnings("unused")
     private enum WorldBoss {
 
-        Orlag("o", "Orlag Clan", 1),
-        Netherworld("n", "Netherworld", 2),
-        Melvin("m", "Melvin", 3),
-        Ext3rmin4tion("3", "3xt3rmin4tion", 4),
-        BrimstoneSyndicate("b", "Brimstone Syndicate", 5),
-        WaterTitans("w", "Water Titans", 6),
-        Unknown("?", "Unknown", 7);
+        Orlag("o", "Orlag Clan", 1, 3, 9),
+        Netherworld("n", "Netherworld", 2, 3, 9),
+        Melvin("m", "Melvin", 3, 10, 11),
+        Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11),
+        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 11),
+        WaterTitans("w", "Water Titans", 6, 11, 11),
+        Unknown("?", "Unknown", 7, 11, 100);
 
         private String letter;
         private String Name;
         private int number;
+        private int minTier;
+        private int maxTier;
 
-        WorldBoss(String letter, String Name, int number) {
+        WorldBoss(String letter, String Name, int number, int minTier, int maxTier) {
             this.letter = letter;
             this.Name = Name;
             this.number = number;
+            this.minTier = minTier;
+            this.maxTier = maxTier;
         }
 
         String getLetter() {
@@ -6929,6 +6917,10 @@ public class DungeonThread implements Runnable {
         int getNumber() {
             return number;
         }
+
+        int getMinTier() { return minTier; }
+
+        int getMaxTier() { return maxTier; }
 
         static WorldBoss fromLetter(String Letter) {
             for (WorldBoss wb : WorldBoss.values()) {
