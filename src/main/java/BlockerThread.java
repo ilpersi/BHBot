@@ -94,8 +94,8 @@ public class BlockerThread implements Runnable {
                 BHBot.logger.info("News popup dismissed.");
                 bot.browser.readScreen(2 * DungeonThread.SECOND);
             }
+
+            Misc.sleep(500);
         }
     }
-    
-    
 }
