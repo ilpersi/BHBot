@@ -255,29 +255,6 @@ public class DungeonThread implements Runnable {
         BHBot.logger.info(familiarString.toString());
     }
 
-    private void dumpCrashLog() {
-        // save screen shot:
-        String file = bot.saveGameScreen("crash", "errors");
-
-        if (file == null) {
-            BHBot.logger.error("Impossible to create crash screenshot");
-            return;
-        }
-
-        // save stack trace:
-        boolean savedST = Misc.saveTextFile(file.substring(0, file.length() - 4) + ".txt", Misc.getStackTrace());
-        if (!savedST) {
-            BHBot.logger.info("Impossible to save the stack trace in dumpCrashLog!");
-        }
-
-        if (bot.settings.enablePushover && bot.settings.poNotifyCrash) {
-            File poCrashScreen = new File(file);
-            bot.poManager.sendPushOverMessage("BHBot CRASH!",
-                    "BHBot has crashed and a driver emergency restart has been performed!\n\n" + Misc.getStackTrace(), "falling",
-                    MessagePriority.HIGH, poCrashScreen.exists() ? poCrashScreen : null);
-        }
-    }
-
     void restart() {
         restart(true); // assume emergency restart
     }
@@ -295,7 +272,7 @@ public class DungeonThread implements Runnable {
         // take emergency screenshot (which will have the developer to debug the problem):
         if (emergency) {
             BHBot.logger.warn("Doing driver emergency restart...");
-            dumpCrashLog();
+            bot.dumpCrashLog(this);
         }
 
         try {

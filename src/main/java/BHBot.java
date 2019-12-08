@@ -779,6 +779,29 @@ public class BHBot {
         return f.getPath();
     }
 
+    void dumpCrashLog(DungeonThread dungeonThread) {
+        // save screen shot:
+        String file = saveGameScreen("crash", "errors");
+
+        if (file == null) {
+            logger.error("Impossible to create crash screenshot");
+            return;
+        }
+
+        // save stack trace:
+        boolean savedST = Misc.saveTextFile(file.substring(0, file.length() - 4) + ".txt", Misc.getStackTrace());
+        if (!savedST) {
+            logger.info("Impossible to save the stack trace in dumpCrashLog!");
+        }
+
+        if (settings.enablePushover && settings.poNotifyCrash) {
+            File poCrashScreen = new File(file);
+            poManager.sendPushOverMessage("BHBot CRASH!",
+                    "BHBot has crashed and a driver emergency restart has been performed!\n\n" + Misc.getStackTrace(), "falling",
+                    MessagePriority.HIGH, poCrashScreen.exists() ? poCrashScreen : null);
+        }
+    }
+
     enum State {
         Dungeon("Dungeon", "d"),
         Expedition("Expedition", "e"),
