@@ -366,8 +366,6 @@ public class BrowserManager {
 
 
         int newFamCnt = BrowserManager.loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
-
-        BHBot.logger.debug("Found " + newFamCnt + " familiar cue(s) with new format.");
     }
 
     static void addCue(String name, BufferedImage im, Bounds bounds) {
