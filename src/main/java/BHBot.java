@@ -112,6 +112,7 @@ public class BHBot {
         logLevel = bot.settings.logLevel;
 
         logger = BHBotLogger.create();
+        BrowserManager.buildCues();
 
         Properties properties = new Properties();
         try {
