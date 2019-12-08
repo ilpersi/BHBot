@@ -43,6 +43,7 @@ public class BHBot {
     Settings settings = new Settings().setDebug();
     Scheduler scheduler = new Scheduler();
     PushOverManager poManager;
+    ExceptionManager excManager;
     String chromeDriverAddress = "127.0.0.1:9515";
     String chromiumExePath = "C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Local\\Chromium\\Application\\chrome.exe";
     String chromeDriverExePath = "./chromedriver.exe";
@@ -60,6 +61,7 @@ public class BHBot {
         BHBot bot = new BHBot();
         bot.browser = new BrowserManager(bot);
         bot.poManager = new PushOverManager(bot);
+        bot.excManager = new ExceptionManager(bot);
 
         // We make sure that our configurationFactory is added to the list of configuration factories.
         System.setProperty("log4j.configurationFactory", "BHBotConfigurationFactory");
