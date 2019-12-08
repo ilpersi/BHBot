@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 
 import static java.util.Comparator.comparing;
 
-public class MainThread implements Runnable {
+public class DungeonThread implements Runnable {
     static final int SECOND = 1000;
     static final int MINUTE = 60 * SECOND;
     private static final int HOUR = 60 * MINUTE;
@@ -134,7 +134,7 @@ public class MainThread implements Runnable {
     private MinorRune rightMinorRune;
     private Iterator<String> activitysIterator = BHBot.settings.activitiesEnabled.iterator();
 
-    MainThread() {
+    DungeonThread() {
         addCue("Main", loadImage("cues/cueMainScreen.png"), new Bounds(90, 5, 100, 10));
         addCue("Login", loadImage("cues/cueLogin.png"), new Bounds(270, 260, 330, 300)); // login window (happens seldom)
         addCue("AreYouThere", loadImage("cues/cueAreYouThere.png"), new Bounds(240, 245, 265, 260));
@@ -462,7 +462,7 @@ public class MainThread implements Runnable {
 
     private static BufferedImage loadImage(String f) {
         BufferedImage img = null;
-        ClassLoader classLoader = MainThread.class.getClassLoader();
+        ClassLoader classLoader = DungeonThread.class.getClassLoader();
         InputStream resourceURL = classLoader.getResourceAsStream(f);
 
         if (resourceURL != null) {

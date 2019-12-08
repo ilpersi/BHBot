@@ -20,7 +20,7 @@ import java.util.*;
 public class BHBot {
 
     private static final String PROGRAM_NAME = "BHBot";
-    static MainThread main;
+    static DungeonThread main;
     static Settings settings = new Settings().setDebug();
     static Scheduler scheduler = new Scheduler();
     static PushoverClient poClient = new PushoverRestClient();
@@ -33,7 +33,7 @@ public class BHBot {
      */
     static BHBotLogger logger;
     private static String BHBotVersion;
-    private static Thread mainThread;
+    private static Thread dungeonThread;
     /**
      * Set it to true to end main loop and end program gracefully
      */
@@ -164,19 +164,19 @@ public class BHBot {
             }
         }
 
-        if (mainThread.isAlive()) {
+        if (dungeonThread.isAlive()) {
             try {
                 // wait for 10 seconds for the main thread to terminate
                 logger.info("Waiting for main thread to finish... (timeout=10s)");
-                mainThread.join(10 * MainThread.SECOND);
+                dungeonThread.join(10 * DungeonThread.SECOND);
             } catch (InterruptedException e) {
                 logger.error("Error when joining Main Thread", e);
             }
-            if (mainThread.isAlive()) {
+            if (dungeonThread.isAlive()) {
                 logger.warn("Main thread is still alive. Force stopping it now...");
-                mainThread.interrupt();
+                dungeonThread.interrupt();
                 try {
-                    mainThread.join(); // until thread stops
+                    dungeonThread.join(); // until thread stops
                 } catch (InterruptedException e) {
                     logger.error("Error while force stopping", e);
                 }
@@ -310,7 +310,7 @@ public class BHBot {
                 break;
             case "pause":
                 if (params.length > 1) {
-                    int pauseDuration = Integer.parseInt(params[1]) * MainThread.MINUTE;
+                    int pauseDuration = Integer.parseInt(params[1]) * DungeonThread.MINUTE;
                     scheduler.pause(pauseDuration);
                 } else {
                     scheduler.pause();
@@ -362,7 +362,7 @@ public class BHBot {
                     case "familiars":
                     case "familiar":
                     case "fam":
-                        MainThread.printFamiliars();
+                        DungeonThread.printFamiliars();
                         break;
                     case "stats":
                     case "stat":
@@ -371,7 +371,7 @@ public class BHBot {
                         StringBuilder aliveMsg = new StringBuilder();
                         aliveMsg.append("Current session statistics:\n\n");
 
-                        for (MainThread.State state : MainThread.State.values()) {
+                        for (DungeonThread.State state : DungeonThread.State.values()) {
                             if (main.counters.get(state).getTotal() > 0) {
                                 aliveMsg.append(state.getName()).append(" ")
                                         .append(main.counters.get(state).successRateDesc())
@@ -416,9 +416,9 @@ public class BHBot {
                 logger.info("Screenshot '" + fileName + "' saved.");
                 break;
             case "start":
-                main = new MainThread();
-                mainThread = new Thread(main, "MainThread");
-                mainThread.start();
+                main = new DungeonThread();
+                dungeonThread = new Thread(main, "DungeonThread");
+                dungeonThread.start();
                 break;
             case "readouts":
             case "resettimers":

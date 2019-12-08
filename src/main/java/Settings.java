@@ -1215,7 +1215,7 @@ public class Settings {
     }
 
     static void resetIniFile() throws IOException {
-        ClassLoader classLoader = MainThread.class.getClassLoader();
+        ClassLoader classLoader = DungeonThread.class.getClassLoader();
         InputStream resourceURL = classLoader.getResourceAsStream(Settings.configurationFile);
 
         File iniFile = new File(Settings.configurationFile);

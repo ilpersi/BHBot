@@ -173,10 +173,10 @@ public class Misc {
     }
 
     static long classBuildTimeMillis() throws URISyntaxException, IllegalStateException, IllegalArgumentException {
-        URL resource = MainThread.class.getResource(MainThread.class.getSimpleName() + ".class");
+        URL resource = DungeonThread.class.getResource(DungeonThread.class.getSimpleName() + ".class");
         if (resource == null) {
             throw new IllegalStateException("Failed to find class file for class: " +
-                    MainThread.class.getName());
+                    DungeonThread.class.getName());
         }
 
         if (resource.getProtocol().equals("file")) {
@@ -192,7 +192,7 @@ public class Misc {
 
             throw new IllegalArgumentException("Unhandled url protocol: " +
                     resource.getProtocol() + " for class: " +
-                    MainThread.class.getName() + " resource: " + resource.toString());
+                    DungeonThread.class.getName() + " resource: " + resource.toString());
         }
     }
 
