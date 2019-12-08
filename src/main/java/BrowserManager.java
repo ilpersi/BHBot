@@ -34,10 +34,10 @@ public class BrowserManager {
     static Map<String, Cue> cues = new HashMap<>();
     private static By byElement;
 
-    private static WebDriver driver;
-    private static JavascriptExecutor jsExecutor;
-    private static WebElement game;
-    private static String doNotShareUrl = "";
+    private WebDriver driver;
+    private JavascriptExecutor jsExecutor;
+    private WebElement game;
+    private String doNotShareUrl = "";
 
     private BufferedImage img; // latest screen capture
 
