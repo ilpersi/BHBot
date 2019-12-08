@@ -7353,7 +7353,8 @@ public class MainThread implements Runnable {
         Melvin("m", "Melvin", 3),
         Ext3rmin4tion("3", "3xt3rmin4tion", 4),
         BrimstoneSyndicate("b", "Brimstone Syndicate", 5),
-        Unknown("?", "Unknown", 6);
+        WaterTitans("w", "Water Titans", 6),
+        Unknown("?", "Unknown", 7);
 
         private String letter;
         private String Name;
