@@ -270,7 +270,7 @@ public class DungeonThread implements Runnable {
         // take emergency screenshot (which will have the developer to debug the problem):
         if (emergency) {
             BHBot.logger.warn("Doing driver emergency restart...");
-            bot.dumpCrashLog(this);
+            bot.dumpCrashLog();
         }
 
         try {

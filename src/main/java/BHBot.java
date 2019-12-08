@@ -625,7 +625,7 @@ public class BHBot {
         return true;
     }
 
-    private static void reloadLogger() {
+    private void reloadLogger() {
         ConfigurationFactory configFactory = new BHBotConfigurationFactory();
         ConfigurationFactory.setConfigurationFactory(configFactory);
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
@@ -779,7 +779,7 @@ public class BHBot {
         return f.getPath();
     }
 
-    void dumpCrashLog(DungeonThread dungeonThread) {
+    void dumpCrashLog() {
         // save screen shot:
         String file = saveGameScreen("crash", "errors");
 
@@ -788,8 +788,10 @@ public class BHBot {
             return;
         }
 
+        String stackTrace = Misc.getStackTrace();
+
         // save stack trace:
-        boolean savedST = Misc.saveTextFile(file.substring(0, file.length() - 4) + ".txt", Misc.getStackTrace());
+        boolean savedST = Misc.saveTextFile(file.substring(0, file.length() - 4) + ".txt", stackTrace);
         if (!savedST) {
             logger.info("Impossible to save the stack trace in dumpCrashLog!");
         }
@@ -797,7 +799,7 @@ public class BHBot {
         if (settings.enablePushover && settings.poNotifyCrash) {
             File poCrashScreen = new File(file);
             poManager.sendPushOverMessage("BHBot CRASH!",
-                    "BHBot has crashed and a driver emergency restart has been performed!\n\n" + Misc.getStackTrace(), "falling",
+                    "BHBot has crashed and a driver emergency restart has been performed!\n\n" + stackTrace, "falling",
                     MessagePriority.HIGH, poCrashScreen.exists() ? poCrashScreen : null);
         }
     }
