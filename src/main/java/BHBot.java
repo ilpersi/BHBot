@@ -42,6 +42,8 @@ public class BHBot {
     private static String cuesPath = "./cues/";
     private static Properties gitPropertis;
 
+    static BrowserManager browser = new BrowserManager();
+
     public static void main(String[] args) {
 
         // We make sure that our configurationFactory is added to the list of configuration factories.
@@ -187,7 +189,7 @@ public class BHBot {
         String[] params = c.split(" ");
         switch (params[0]) {
             case "c": { // detect cost from screen
-                main.browser.readScreen();
+                browser.readScreen();
                 int current = main.detectCost();
                 logger.info("Detected cost: " + current);
 
@@ -203,7 +205,7 @@ public class BHBot {
                 throw new RuntimeException("CRASH!");
             }
             case "d": { // detect difficulty from screen
-                main.browser.readScreen();
+                browser.readScreen();
                 int current = main.detectDifficulty();
                 logger.info("Detected difficulty: " + current);
 
@@ -287,7 +289,7 @@ public class BHBot {
                 finished = true;
                 break;
             case "hide":
-                main.browser.hideBrowser();
+                browser.hideBrowser();
                 settings.hideWindowOnRestart = true;
                 break;
             case "loadsettings":
@@ -451,7 +453,7 @@ public class BHBot {
                 break;
             }
             case "show":
-                main.browser.showBrowser();
+                browser.showBrowser();
                 settings.hideWindowOnRestart = false;
                 break;
             case "test":
