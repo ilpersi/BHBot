@@ -5489,13 +5489,13 @@ public class MainThread implements Runnable {
     /**
      * Will detect and handle (close) in-game private message (from the current screen capture). Returns true in case PM has been handled.
      */
-    private boolean handlePM() {
+    private void handlePM() {
         if (MarvinSegment.fromCue(cues.get("InGamePM"), BHBot.browser) != null) {
             MarvinSegment seg = MarvinSegment.fromCue(cues.get("X"), 5 * SECOND, BHBot.browser);
             if (seg == null) {
                 BHBot.logger.error("Error: in-game PM window detected, but no close button found. Restarting...");
                 restart(); //*** problem: after a call to this, it will return to the main loop. It should call "continue" inside the main loop or else there could be other exceptions!
-                return true;
+                return;
             }
 
             try {
@@ -5511,9 +5511,6 @@ public class MainThread implements Runnable {
             } catch (Exception e) {
                 // ignore it
             }
-            return true;
-        } else {
-            return false; // no PM detected
         }
     }
 
