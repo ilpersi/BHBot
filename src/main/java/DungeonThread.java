@@ -474,8 +474,8 @@ public class DungeonThread implements Runnable {
 
                             for (BHBot.State state : BHBot.State.values()) {
                                 if (counters.get(state).getTotal() > 0) {
-                                    aliveMsg.append(bot.getState().getName()).append(" ")
-                                            .append(counters.get(bot.getState()).successRateDesc())
+                                    aliveMsg.append(state.getName()).append(" ")
+                                            .append(counters.get(state).successRateDesc())
                                             .append("\n");
                                 }
                             }
