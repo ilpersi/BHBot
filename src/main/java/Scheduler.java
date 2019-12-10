@@ -59,14 +59,14 @@ class Scheduler {
     /**
      * Must be called often enough in order to update internals of the scheduler.
      */
-    void process() {
+    synchronized void process() {
         // check if pause has expired:
         if (paused && pauseDuration != PAUSED_INDEFINITELY && (Misc.getTime() - pauseStart > pauseDuration)) {
             resume();
         }
     }
 
-    boolean isPaused() {
+    synchronized boolean isPaused() {
         if (!paused)
             return false;
 
@@ -88,14 +88,14 @@ class Scheduler {
         BHBot.logger.info("Paused.");
     }
 
-    void pause(int duration) {
+    synchronized void pause(int duration) {
         paused = true;
         pauseDuration = duration;
         pauseStart = Misc.getTime();
         BHBot.logger.info("Paused for " + Misc.millisToHumanForm((long) duration) + ".");
     }
 
-    void resume() {
+    synchronized void resume() {
         if (!paused)
             return;
         paused = false;
@@ -118,11 +118,11 @@ class Scheduler {
         return idleTime;
     }
 
-    void resetIdleTime() {
+    synchronized void resetIdleTime() {
         resetIdleTime(false);
     }
 
-    void resetIdleTime(boolean resetBackup) {
+    synchronized void resetIdleTime(boolean resetBackup) {
         BHBot.logger.trace("resetIdleTime(" + resetBackup + ")");
         idleTime = Misc.getTime();
 
@@ -134,7 +134,7 @@ class Scheduler {
         idleTimeBackup = idleTime;
     }
 
-    void restoreIdleTime() {
+    synchronized void restoreIdleTime() {
         BHBot.logger.trace("restoreIdleTime()");
         idleTime = idleTimeBackup;
     }

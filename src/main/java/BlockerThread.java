@@ -20,6 +20,8 @@ public class BlockerThread implements Runnable {
                     continue;
                 }
 
+                bot.browser.readScreen();
+
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("UnableToConnect"), bot.browser);
                 if (seg != null) {
                     BHBot.logger.info("'Unable to connect' dialog detected. Reconnecting...");
