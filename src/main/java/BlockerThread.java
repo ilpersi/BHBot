@@ -14,6 +14,9 @@ public class BlockerThread implements Runnable {
     public void run() {
         while (!bot.finished) {
             try {
+                bot.scheduler.process();
+                if (bot.scheduler.isPaused()) continue;
+
                 // We wait for the cues to be loaded and for the browser to be working!
                 if (BrowserManager.cues.size() == 0 || bot.browser.getImg() == null) {
                     Misc.sleep(1000);
