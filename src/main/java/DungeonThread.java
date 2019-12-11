@@ -318,76 +318,6 @@ public class DungeonThread implements Runnable {
                 MarvinSegment seg;
                 bot.browser.readScreen();
 
-                //Handle weekly rewards from events
-                handleWeeklyRewards();
-
-                // check for daily rewards popup:
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("DailyRewards"), bot.browser);
-                if (seg != null) {
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Claim"), 5 * SECOND, bot.browser);
-                    if (seg != null) {
-                        if ((bot.settings.screenshots.contains("d"))) {
-                            BufferedImage reward = bot.browser.getImg().getSubimage(131, 136, 513, 283);
-                            bot.saveGameScreen("daily_reward", "rewards", reward);
-                        }
-                        bot.browser.clickOnSeg(seg);
-                    } else {
-                        BHBot.logger.error("Problem: 'Daily reward' popup detected, however could not detect the 'claim' button. Restarting...");
-                        restart();
-                        continue; // may happen every while, rarely though
-                    }
-
-                    bot.browser.readScreen(5 * SECOND);
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Items"), SECOND, bot.browser);
-                    if (seg == null) {
-                        // we must terminate this thread... something happened that should not (unexpected). We must restart the thread!
-                        BHBot.logger.error("Error: there is no 'Items' dialog open upon clicking on the 'Claim' button. Restarting...");
-                        restart();
-                        continue;
-                    }
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
-                    bot.browser.clickOnSeg(seg);
-                    BHBot.logger.info("Daily reward claimed successfully.");
-                    Misc.sleep(2 * SECOND);
-
-                    //We check for news and close so we don't take a gem count every time the bot starts
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("News"), SECOND, bot.browser);
-                    if (seg != null) {
-                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * SECOND, bot.browser);
-                        bot.browser.clickOnSeg(seg);
-                        BHBot.logger.info("News popup dismissed.");
-                        bot.browser.readScreen(2 * SECOND);
-
-                        if ("7".equals(new SimpleDateFormat("u").format(new Date()))) { //if it's Sunday
-                            if ((bot.settings.screenshots.contains("wg"))) {
-                                /* internal code for collecting number cues for the micro font
-                                MarvinImage gems = new MarvinImage(img.getSubimage(133, 16, 80, 14));
-                                makeImageBlackWhite(gems, new Color(25, 25, 25), new Color(255, 255, 255), 64);
-                                BufferedImage gemsbw = gems.getBufferedImage();
-                                int num = readNumFromImg(gemsbw, "micro", new HashSet<>());
-                                */
-                                BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
-                                bot.saveGameScreen("weekly-gems", "gems", gems);
-                            }
-                        } else {
-                            if ((bot.settings.screenshots.contains("dg"))) {
-                                /* internal code for collecting number cues for the micro font
-                                MarvinImage gems = new MarvinImage(img.getSubimage(133, 16, 80, 14));
-                                makeImageBlackWhite(gems, new Color(25, 25, 25), new Color(255, 255, 255), 64);
-                                BufferedImage gemsbw = gems.getBufferedImage();
-                                int num = readNumFromImg(gemsbw, "micro", new HashSet<>());
-                                */
-                                BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
-                                bot.saveGameScreen("daily-gems", "gems", gems); //else screenshot daily count
-                            }
-                        }
-
-                        continue;
-                    }
-
-                    continue;
-                }
-
                 // check for "recently disconnected" popup:
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("RecentlyDisconnected"), bot.browser);
                 if (seg != null) {
@@ -6595,44 +6525,6 @@ public class DungeonThread implements Runnable {
             }
         }
         return false;
-    }
-
-    private void handleWeeklyRewards() {
-        // check for weekly rewards popup
-        // (note that several, 2 or even 3 such popups may open one after another)
-        MarvinSegment seg;
-        if (bot.getState() == BHBot.State.Loading || bot.getState() == BHBot.State.Main) {
-            bot.browser.readScreen();
-
-            HashMap<String, Cue> weeklyRewards = new HashMap<>();
-            weeklyRewards.put("PVP", BrowserManager.cues.get("PVP_Rewards"));
-            weeklyRewards.put("Trials", BrowserManager.cues.get("Trials_Rewards"));
-            weeklyRewards.put("Trials-XL", BrowserManager.cues.get("Trials_Rewards_Large"));
-            weeklyRewards.put("Gauntlet", BrowserManager.cues.get("Gauntlet_Rewards"));
-            weeklyRewards.put("Gauntlet-XL", BrowserManager.cues.get("Gauntlet_Rewards_Large"));
-            weeklyRewards.put("Fishing", BrowserManager.cues.get("Fishing_Rewards"));
-            weeklyRewards.put("Invasion", BrowserManager.cues.get("Invasion_Rewards"));
-            weeklyRewards.put("Expedition", BrowserManager.cues.get("Expedition_Rewards"));
-            weeklyRewards.put("GVG", BrowserManager.cues.get("GVG_Rewards"));
-
-            for (Map.Entry<String, Cue> weeklyRewardEntry : weeklyRewards.entrySet()) {
-                seg = MarvinSegment.fromCue(weeklyRewardEntry.getValue(), bot.browser);
-                if (seg != null) {
-                    BufferedImage reward = bot.browser.getImg();
-                    seg = MarvinSegment.fromCue("X", 5 * SECOND, bot.browser);
-                    if (seg != null) bot.browser.clickOnSeg(seg);
-                    else {
-                        BHBot.logger.error(weeklyRewardEntry.getKey() + " reward popup detected, however could not detect the X button. Restarting...");
-                        restart();
-                    }
-
-                    BHBot.logger.info(weeklyRewardEntry.getKey() + " reward claimed successfully.");
-                    if ((bot.settings.screenshots.contains("w"))) {
-                        bot.saveGameScreen(weeklyRewardEntry.getKey().toLowerCase() + "_reward", "rewards", reward);
-                    }
-                }
-            }
-        }
     }
 
 }

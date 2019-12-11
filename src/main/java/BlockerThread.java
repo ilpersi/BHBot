@@ -1,10 +1,14 @@
 import net.pushover.client.MessagePriority;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BlockerThread implements Runnable {
     BHBot bot;
-    MarvinSegment seg;
 
     BlockerThread(BHBot bot) {
         this.bot = bot;
@@ -12,6 +16,8 @@ public class BlockerThread implements Runnable {
 
     @Override
     public void run() {
+        MarvinSegment seg;
+
         while (!bot.finished) {
             try {
                 bot.scheduler.process();
@@ -100,6 +106,79 @@ public class BlockerThread implements Runnable {
                     continue;
                 }
 
+                if (!handleWeeklyRewards()) {
+                    bot.restart(true, false);
+                    continue;
+                }
+
+                // check for daily rewards popup:
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("DailyRewards"), bot.browser);
+                if (seg != null) {
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Claim"), 5 * DungeonThread.SECOND, bot.browser);
+                    if (seg != null) {
+                        if ((bot.settings.screenshots.contains("d"))) {
+                            BufferedImage reward = bot.browser.getImg().getSubimage(131, 136, 513, 283);
+                            bot.saveGameScreen("daily_reward", "rewards", reward);
+                        }
+                        bot.browser.clickOnSeg(seg);
+                    } else {
+                        BHBot.logger.error("Problem: 'Daily reward' popup detected, however could not detect the 'claim' button. Restarting...");
+                        bot.restart(true, false);
+                        continue; // may happen every while, rarely though
+                    }
+
+                    bot.browser.readScreen(5 * DungeonThread.SECOND);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Items"), DungeonThread.SECOND, bot.browser);
+                    if (seg == null) {
+                        // we must terminate this thread... something happened that should not (unexpected). We must restart the thread!
+                        BHBot.logger.error("Error: there is no 'Items' dialog open upon clicking on the 'Claim' button. Restarting...");
+                        bot.restart(true, false);
+                        continue;
+                    }
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
+                    bot.browser.clickOnSeg(seg);
+                    BHBot.logger.info("Daily reward claimed successfully.");
+                    Misc.sleep(2 * DungeonThread.SECOND);
+
+                    //We check for news and close so we don't take a gem count every time the bot starts
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("News"), DungeonThread.SECOND, bot.browser);
+                    if (seg != null) {
+                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * DungeonThread.SECOND, bot.browser);
+                        bot.browser.clickOnSeg(seg);
+                        BHBot.logger.info("News popup dismissed.");
+                        bot.browser.readScreen(2 * DungeonThread.SECOND);
+
+                        if ("7".equals(new SimpleDateFormat("u").format(new Date()))) { //if it's Sunday
+                            if ((bot.settings.screenshots.contains("wg"))) {
+                                /* internal code for collecting number cues for the micro font
+                                MarvinImage gems = new MarvinImage(img.getSubimage(133, 16, 80, 14));
+                                makeImageBlackWhite(gems, new Color(25, 25, 25), new Color(255, 255, 255), 64);
+                                BufferedImage gemsbw = gems.getBufferedImage();
+                                int num = readNumFromImg(gemsbw, "micro", new HashSet<>());
+                                */
+                                BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
+                                bot.saveGameScreen("weekly-gems", "gems", gems);
+                            }
+                        } else {
+                            if ((bot.settings.screenshots.contains("dg"))) {
+                                /* internal code for collecting number cues for the micro font
+                                MarvinImage gems = new MarvinImage(img.getSubimage(133, 16, 80, 14));
+                                makeImageBlackWhite(gems, new Color(25, 25, 25), new Color(255, 255, 255), 64);
+                                BufferedImage gemsbw = gems.getBufferedImage();
+                                int num = readNumFromImg(gemsbw, "micro", new HashSet<>());
+                                */
+                                BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
+                                bot.saveGameScreen("daily-gems", "gems", gems); //else screenshot daily count
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    continue;
+                }
+
+
                 // check for "News" popup:
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("News"), bot.browser);
                 if (seg != null) {
@@ -147,6 +226,46 @@ public class BlockerThread implements Runnable {
                 // ignore it
             }
         }
+        return true;
+    }
+
+    private boolean handleWeeklyRewards() {
+        // check for weekly rewards popup
+        // (note that several, 2 or even 3 such popups may open one after another)
+        MarvinSegment seg;
+        if (bot.getState() == BHBot.State.Loading || bot.getState() == BHBot.State.Main) {
+            bot.browser.readScreen();
+
+            HashMap<String, Cue> weeklyRewards = new HashMap<>();
+            weeklyRewards.put("PVP", BrowserManager.cues.get("PVP_Rewards"));
+            weeklyRewards.put("Trials", BrowserManager.cues.get("Trials_Rewards"));
+            weeklyRewards.put("Trials-XL", BrowserManager.cues.get("Trials_Rewards_Large"));
+            weeklyRewards.put("Gauntlet", BrowserManager.cues.get("Gauntlet_Rewards"));
+            weeklyRewards.put("Gauntlet-XL", BrowserManager.cues.get("Gauntlet_Rewards_Large"));
+            weeklyRewards.put("Fishing", BrowserManager.cues.get("Fishing_Rewards"));
+            weeklyRewards.put("Invasion", BrowserManager.cues.get("Invasion_Rewards"));
+            weeklyRewards.put("Expedition", BrowserManager.cues.get("Expedition_Rewards"));
+            weeklyRewards.put("GVG", BrowserManager.cues.get("GVG_Rewards"));
+
+            for (Map.Entry<String, Cue> weeklyRewardEntry : weeklyRewards.entrySet()) {
+                seg = MarvinSegment.fromCue(weeklyRewardEntry.getValue(), bot.browser);
+                if (seg != null) {
+                    BufferedImage reward = bot.browser.getImg();
+                    seg = MarvinSegment.fromCue("X", 5 * DungeonThread.SECOND, bot.browser);
+                    if (seg != null) bot.browser.clickOnSeg(seg);
+                    else {
+                        BHBot.logger.error(weeklyRewardEntry.getKey() + " reward popup detected, however could not detect the X button. Restarting...");
+                        return false;
+                    }
+
+                    BHBot.logger.info(weeklyRewardEntry.getKey() + " reward claimed successfully.");
+                    if ((bot.settings.screenshots.contains("w"))) {
+                        bot.saveGameScreen(weeklyRewardEntry.getKey().toLowerCase() + "_reward", "rewards", reward);
+                    }
+                }
+            }
+        }
+
         return true;
     }
 }
