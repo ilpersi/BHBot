@@ -162,12 +162,12 @@ public class BHBot {
 
         bot.processCommand("start");
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        Scanner scanner = new Scanner(System.in);
         while (!bot.finished) {
             String s;
             try {
-                s = br.readLine();
-            } catch (IOException e) {
+                s = scanner.nextLine();
+            } catch (IllegalStateException | NoSuchElementException e) {
                 logger.error("Impossible to read user input", e);
                 return;
             }
@@ -181,11 +181,7 @@ public class BHBot {
                 }
             }
 
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                logger.error("Error while reading console input: ", e);
-            }
+            Misc.sleep(500);
         }
 
         if (bot.dungeonThread.isAlive()) {
