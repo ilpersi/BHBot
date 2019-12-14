@@ -37,7 +37,7 @@ public class BrowserManager {
     private WebDriver driver;
     private JavascriptExecutor jsExecutor;
     private WebElement game;
-    private String doNotShareUrl = "";
+    public String doNotShareUrl = "";
 
     private BufferedImage img; // latest screen capture
     private BHBot bot;
