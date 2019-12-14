@@ -2718,6 +2718,11 @@ public class DungeonThread implements Runnable {
                 BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
             }
 
+            //check for invasion loot drops and send via Pushover/Screenshot
+            if (bot.getState() == BHBot.State.Invasion) {
+                handleLoot();
+            }
+
             //in Gauntlet/Invasion the close button is green, everywhere else its blue
             if (bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.Invasion) {
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("CloseGreen"), 2 * SECOND, bot.browser);
