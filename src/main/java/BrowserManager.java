@@ -591,9 +591,11 @@ public class BrowserManager {
 
         int vw = Math.toIntExact((Long) jsExecutor.executeScript("return window.outerWidth - window.innerWidth + arguments[0];", game.getSize().width));
         int vh = Math.toIntExact((Long) jsExecutor.executeScript("return window.outerHeight - window.innerHeight + arguments[0];", game.getSize().height));
-        vw += 50; // compensate for scrollbars 70
-        vh += 30; // compensate for scrollbars 50
-        driver.manage().window().setSize(new Dimension(vw, vh));
+        if ("".equals(doNotShareUrl)) {
+            driver.manage().window().setSize(new Dimension(vw + 50, vh + 30));
+        } else {
+            driver.manage().window().setSize(new Dimension(vw, vh));
+        }
     }
 
     synchronized void close() {
