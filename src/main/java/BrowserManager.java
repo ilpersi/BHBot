@@ -187,7 +187,7 @@ public class BrowserManager {
         BrowserManager.addCue("Reload", BrowserManager.loadImage("cues/cueReload.png"), new Bounds(320, 330, 360, 360)); // used in "There is a new update required to play" dialog (happens on Friday night)
         BrowserManager.addCue("Maintenance", BrowserManager.loadImage("cues/cueMaintenance.png"), new Bounds(230, 200, 320, 250)); // cue for "Bit Heroes is currently down for maintenance. Please check back shortly!"
         BrowserManager.addCue("Loading", BrowserManager.loadImage("cues/cueLoading.png"), new Bounds(315, 210, 330, 225)); // cue for "Loading" superimposed screen
-        BrowserManager.addCue("RecentlyDisconnected", BrowserManager.loadImage("cues/cueRecentlyDisconnected.png"), new Bounds(220, 195, 255, 230)); // cue for "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
+        BrowserManager.addCue("RecentlyDisconnected", BrowserManager.loadImage("cues/cueRecentlyDisconnected.png"), new Bounds(250, 195, 535, 320));; // cue for "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
         BrowserManager.addCue("UnableToConnect", BrowserManager.loadImage("cues/cueUnableToConnect.png"), new Bounds(245, 235, 270, 250)); // happens when some error occurs for which the flash app is unable to connect to the server. We must simply click on the "Reconnect" button in this case!
 
         BrowserManager.addCue("DailyRewards", BrowserManager.loadImage("cues/cueDailyRewards.png"), new Bounds(260, 45, 285, 75));
