@@ -28,7 +28,7 @@ public class MarvinSegment {
     }
 
     // https://stackoverflow.com/questions/297762/find-known-sub-image-in-larger-image
-    static synchronized MarvinSegment findSubimage(BufferedImage src, Cue cue, BrowserManager browserManager) {
+    static MarvinSegment findSubimage(BufferedImage src, Cue cue, BrowserManager browserManager) {
         long timer = Misc.getTime();
 
         MarvinSegment seg;
@@ -64,7 +64,7 @@ public class MarvinSegment {
      * Will try (and retry) to detect cue from image until timeout is reached. May return null if cue has not been detected within given 'timeout' time. If 'timeout' is 0,
      * then it will attempt at cue detection only once and return the result immediately.
      */
-    static synchronized MarvinSegment fromCue(Cue cue, int timeout, @SuppressWarnings("SameParameterValue") boolean game, BrowserManager browserManager) {
+    static MarvinSegment fromCue(Cue cue, int timeout, @SuppressWarnings("SameParameterValue") boolean game, BrowserManager browserManager) {
         long timer = Misc.getTime();
         MarvinSegment seg = findSubimage(browserManager.getImg(), cue, browserManager);
 
@@ -78,28 +78,28 @@ public class MarvinSegment {
         return seg;
     }
 
-    static synchronized MarvinSegment fromCue(Cue cue, BrowserManager browserManager) {
+    static MarvinSegment fromCue(Cue cue, BrowserManager browserManager) {
         return fromCue(cue, 0, true, browserManager);
     }
 
-    static synchronized MarvinSegment fromCue(Cue cue, int timeout, Bounds bounds, BrowserManager browserManager) {
+    static MarvinSegment fromCue(Cue cue, int timeout, Bounds bounds, BrowserManager browserManager) {
         return fromCue(new Cue(cue, bounds), timeout, true, browserManager);
     }
 
-    static synchronized MarvinSegment fromCue(Cue cue, int timeout, BrowserManager browserManager) {
+    static MarvinSegment fromCue(Cue cue, int timeout, BrowserManager browserManager) {
         return fromCue(cue, timeout, true, browserManager);
     }
 
     // Cue detection based on String
-    static synchronized MarvinSegment fromCue(String cueName, BrowserManager browserManager) {
+    static MarvinSegment fromCue(String cueName, BrowserManager browserManager) {
         return fromCue(BrowserManager.cues.get(cueName), 0, true, browserManager);
     }
 
-    static synchronized MarvinSegment fromCue(String cueName, int timeout, Bounds bounds, BrowserManager browserManager) {
+    static MarvinSegment fromCue(String cueName, int timeout, Bounds bounds, BrowserManager browserManager) {
         return fromCue(new Cue(BrowserManager.cues.get(cueName), bounds), timeout, true, browserManager);
     }
 
-    static synchronized MarvinSegment fromCue(String cueName, int timeout, BrowserManager browserManager) {
+    static MarvinSegment fromCue(String cueName, int timeout, BrowserManager browserManager) {
         return fromCue(BrowserManager.cues.get(cueName), timeout, true, browserManager);
     }
 
