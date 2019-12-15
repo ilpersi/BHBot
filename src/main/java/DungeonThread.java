@@ -2718,6 +2718,11 @@ public class DungeonThread implements Runnable {
                 BHBot.logger.stats("Run time: " + runtime + ". Average: " + runtimeAvg + ".");
             }
 
+            //check for invasion loot drops and send via Pushover/Screenshot
+            if (bot.getState() == BHBot.State.Invasion) {
+                handleLoot();
+            }
+
             //in Gauntlet/Invasion the close button is green, everywhere else its blue
             if (bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.Invasion) {
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("CloseGreen"), 2 * SECOND, bot.browser);
@@ -4962,10 +4967,20 @@ public class DungeonThread implements Runnable {
 
     /* World boss reading and changing section */
     private int detectWorldBossTier() {
-
+        int xOffset, yOffset, w, h;
         bot.browser.readScreen(SECOND);
         MarvinSegment tierDropDown;
-        int xOffset = 401, yOffset = 210, w = 21, h = 19;
+        if ("".equals(bot.browser.doNotShareUrl)) {
+            xOffset = 401;
+            yOffset = 210;
+            w = 21;
+            h = 19;
+        } else {
+            xOffset = 400;
+            yOffset = 207;
+            w = 21;
+            h = 19;
+        }
 
         tierDropDown = MarvinSegment.fromCue("WorldBossTierDropDown", SECOND, bot.browser); // For tier drop down menu
 
