@@ -36,7 +36,7 @@ public class BlockerThread implements Runnable {
                     BHBot.logger.info("'Unable to connect' dialog detected. Reconnecting...");
                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("Reconnect"), 5 * DungeonThread.SECOND, bot.browser);
                     bot.browser.clickOnSeg(seg);
-                    Misc.sleep(5 * DungeonThread.SECOND);
+                    bot.browser.readScreen(DungeonThread.SECOND);
                     bot.setState(BHBot.State.Loading);
                     continue;
                 }
@@ -47,7 +47,7 @@ public class BlockerThread implements Runnable {
                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("Reconnect"), 5 * DungeonThread.SECOND, bot.browser);
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("Maintenance dialog dismissed.");
-                    Misc.sleep(5 * DungeonThread.SECOND);
+                    bot.browser.readScreen(DungeonThread.SECOND);
                     bot.setState(BHBot.State.Loading);
                     continue;
                 }
@@ -62,7 +62,7 @@ public class BlockerThread implements Runnable {
                         seg = MarvinSegment.fromCue(BrowserManager.cues.get("Reconnect"), 5 * DungeonThread.SECOND, bot.browser);
                         bot.browser.clickOnSeg(seg);
                         BHBot.logger.info("Disconnected dialog dismissed (reconnecting).");
-                        Misc.sleep(5 * DungeonThread.SECOND);
+                        bot.browser.readScreen(DungeonThread.SECOND);
                     } else {
                         bot.scheduler.isUserInteracting = true;
                         // probably user has logged in, that's why we got disconnected. Lets leave him alone for some time and then resume!
@@ -81,7 +81,7 @@ public class BlockerThread implements Runnable {
                 if (seg != null) {
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("Update dialog dismissed.");
-                    Misc.sleep(5 * DungeonThread.SECOND);
+                    bot.browser.readScreen(DungeonThread.SECOND);
                     bot.setState(BHBot.State.Loading);
                     continue;
                 }
@@ -98,15 +98,15 @@ public class BlockerThread implements Runnable {
                         BHBot.logger.info("Problem: 'Are you still there?' popup detected, but 'Yes' button not detected. Ignoring...");
                         continue;
                     }
-                    Misc.sleep(2 * DungeonThread.SECOND);
-                    continue; // skip other stuff, we must first get rid of this popup!
+                    bot.browser.readScreen(DungeonThread.SECOND);
+                    continue;
                 }
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("GearCheck"), bot.browser);
                 if (seg != null) {
                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * DungeonThread.SECOND, bot.browser);
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("Gear check dismissed.");
-                    bot.browser.readScreen(2 * DungeonThread.SECOND);
+                    bot.browser.readScreen(500);
                     continue;
                 }
 
@@ -147,7 +147,7 @@ public class BlockerThread implements Runnable {
                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("Daily reward claimed successfully.");
-                    Misc.sleep(2 * DungeonThread.SECOND);
+                    bot.browser.readScreen(2 * DungeonThread.SECOND);
 
                     //We check for news and close so we don't take a gem count every time the bot starts
                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("News"), DungeonThread.SECOND, bot.browser);
@@ -206,7 +206,7 @@ public class BlockerThread implements Runnable {
 
             bot.scheduler.restoreIdleTime(); // revert changes to idle time
             if (bot.finished) break; // skip sleeping if finished flag has been set!
-            Misc.sleep(500);
+            Misc.sleep(250);
         }
     }
 
