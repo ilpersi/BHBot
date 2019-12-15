@@ -91,14 +91,23 @@ public class BlockerThread implements Runnable {
                 if (seg != null) {
                     bot.scheduler.restoreIdleTime();
                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("Yes"), 2 * DungeonThread.SECOND, bot.browser);
-                    if (seg != null)
+                    if (seg != null) {
                         bot.browser.clickOnSeg(seg);
+                    }
                     else {
                         BHBot.logger.info("Problem: 'Are you still there?' popup detected, but 'Yes' button not detected. Ignoring...");
                         continue;
                     }
                     Misc.sleep(2 * DungeonThread.SECOND);
                     continue; // skip other stuff, we must first get rid of this popup!
+                }
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("GearCheck"), bot.browser);
+                if (seg != null) {
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * DungeonThread.SECOND, bot.browser);
+                    bot.browser.clickOnSeg(seg);
+                    BHBot.logger.info("Gear check dismissed.");
+                    bot.browser.readScreen(2 * DungeonThread.SECOND);
+                    continue;
                 }
 
                 if (!handlePM()) {

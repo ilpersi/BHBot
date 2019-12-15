@@ -189,6 +189,7 @@ public class BrowserManager {
         BrowserManager.addCue("Loading", BrowserManager.loadImage("cues/cueLoading.png"), new Bounds(315, 210, 330, 225)); // cue for "Loading" superimposed screen
         BrowserManager.addCue("RecentlyDisconnected", BrowserManager.loadImage("cues/cueRecentlyDisconnected.png"), new Bounds(250, 195, 535, 320)); // cue for "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
         BrowserManager.addCue("UnableToConnect", BrowserManager.loadImage("cues/cueUnableToConnect.png"), new Bounds(245, 235, 270, 250)); // happens when some error occurs for which the flash app is unable to connect to the server. We must simply click on the "Reconnect" button in this case!
+        BrowserManager.addCue("GearCheck", BrowserManager.loadImage("/cues/cueGearCheck.png"), Bounds.fromWidthHeight(244, 208, 314, 120));
 
         BrowserManager.addCue("DailyRewards", BrowserManager.loadImage("cues/cueDailyRewards.png"), new Bounds(260, 45, 285, 75));
         BrowserManager.addCue("Claim", BrowserManager.loadImage("cues/cueClaim.png"), null); // claim button, when daily rewards popup is open
