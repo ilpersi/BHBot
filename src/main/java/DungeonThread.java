@@ -4970,7 +4970,7 @@ public class DungeonThread implements Runnable {
         int xOffset, yOffset, w, h;
         bot.browser.readScreen(SECOND);
         MarvinSegment tierDropDown;
-        if ("".equals(bot.browser.doNotShareUrl)) {
+        if (!bot.browser.isDoNotShareUrl()) {
             xOffset = 401;
             yOffset = 210;
             w = 21;
