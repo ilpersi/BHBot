@@ -4970,17 +4970,16 @@ public class DungeonThread implements Runnable {
         int xOffset, yOffset, w, h;
         bot.browser.readScreen(SECOND);
         MarvinSegment tierDropDown;
+
         if (!bot.browser.isDoNotShareUrl()) {
             xOffset = 401;
             yOffset = 210;
-            w = 21;
-            h = 19;
         } else {
             xOffset = 400;
             yOffset = 207;
-            w = 21;
-            h = 19;
         }
+        w = 21;
+        h = 19;
 
         tierDropDown = MarvinSegment.fromCue("WorldBossTierDropDown", SECOND, bot.browser); // For tier drop down menu
 
