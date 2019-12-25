@@ -1869,7 +1869,7 @@ public class DungeonThread implements Runnable {
                                     }
                                 } else {
                                     BHBot.logger.error("Error finding bounty item dialog, restarting...");
-                                    bot.saveGameScreen("bounties-error-item");
+                                    bot.saveGameScreen("bounties-error-item", "errors");
                                     restart();
                                 }
 
@@ -1881,12 +1881,12 @@ public class DungeonThread implements Runnable {
                                 bot.browser.clickOnSeg(seg);
                             } else {
                                 BHBot.logger.error("Impossible to close the bounties dialog, restarting...");
-                                bot.saveGameScreen("bounties-error-closing");
+                                bot.saveGameScreen("bounties-error-closing", "errors");
                                 restart();
                             }
                         } else {
                             BHBot.logger.error("Impossible to detect the Bounties dialog, restarting...");
-                            bot.saveGameScreen("bounties-error-dialog");
+                            bot.saveGameScreen("bounties-error-dialog", "errors");
                             restart();
                         }
                         bot.browser.readScreen(Misc.Durations.SECOND * 2);
@@ -4947,7 +4947,7 @@ public class DungeonThread implements Runnable {
         }
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect difficulty selection box!");
-            bot.saveGameScreen("early_error");
+            bot.saveGameScreen("difficulty_error", "errors");
             return 0; // error
         }
 
@@ -5001,7 +5001,7 @@ public class DungeonThread implements Runnable {
 
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in changeWorldBossTier!");
-            bot.saveGameScreen("early_error");
+            bot.saveGameScreen("change_wb_error", "errors");
             return false;
         }
 
@@ -5144,7 +5144,7 @@ public class DungeonThread implements Runnable {
 
         if (recursionDepth > 3) {
             BHBot.logger.error("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
-            bot.saveGameScreen("early_error");
+            bot.saveGameScreen("select_difficulty_recursion", "errors");
             tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
             return false;
         }
@@ -5158,7 +5158,7 @@ public class DungeonThread implements Runnable {
 //		BHBot.logger.info("num = " + Integer.toString(num));
         if (num == 0) {
             BHBot.logger.error("Error: unable to read difficulty level from a drop-down menu!");
-            bot.saveGameScreen("early_error");
+            bot.saveGameScreen("select_difficulty_read", "errors");
             tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
             return false;
         }
@@ -5180,7 +5180,7 @@ public class DungeonThread implements Runnable {
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownUp"), bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
-                bot.saveGameScreen("early_error");
+                bot.saveGameScreen("select_difficulty_arrow_up", "errors");
                 bot.browser.clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
                 return false;
             }
@@ -5193,7 +5193,7 @@ public class DungeonThread implements Runnable {
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownDown"), bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty drop-down menu!");
-                bot.saveGameScreen("early_error");
+                bot.saveGameScreen("select_difficulty_arrow_down", "errors");
                 bot.browser.clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
                 return false;
             }
@@ -5220,7 +5220,7 @@ public class DungeonThread implements Runnable {
         MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Cost"), 15 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect cost selection box!");
-            bot.saveGameScreen("early_error");
+            bot.saveGameScreen("cost_selection", "errors");
             return 0; // error
         }
 
@@ -5248,7 +5248,7 @@ public class DungeonThread implements Runnable {
 
         if (!success) {
             BHBot.logger.error("Error: unable to detect cost selection box value!");
-            bot.saveGameScreen("early_error");
+            bot.saveGameScreen("cost_value", "errors");
             return 0;
         }
 
@@ -5524,14 +5524,14 @@ public class DungeonThread implements Runnable {
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
                 if (seg != null) {
                     if ((bot.settings.screenshots.contains("a"))) {
-                        bot.saveGameScreen("fishing-baits");
+                        bot.saveGameScreen("fishing-baits", "fishing");
                     }
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("Correctly collected fishing baits");
                     bot.browser.readScreen(Misc.Durations.SECOND * 2);
                 } else {
                     BHBot.logger.error("Something weng wrong while collecting fishing baits, restarting...");
-                    bot.saveGameScreen("fishing-error-baits");
+                    bot.saveGameScreen("fishing-error-baits", "errors");
                     restart();
                 }
             }
@@ -5543,7 +5543,7 @@ public class DungeonThread implements Runnable {
                 bot.browser.readScreen();
             } else {
                 BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
-                bot.saveGameScreen("fishing-error-closing");
+                bot.saveGameScreen("fishing-error-closing", "errors");
                 restart();
             }
 
