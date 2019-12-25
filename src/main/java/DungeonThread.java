@@ -6412,29 +6412,31 @@ public class DungeonThread implements Runnable {
         }
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private enum WorldBoss {
 
-        Orlag("o", "Orlag Clan", 1, 3, 9),
-        Netherworld("n", "Netherworld", 2, 3, 9),
-        Melvin("m", "Melvin", 3, 10, 11),
-        Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11),
-        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 11),
-        WaterTitans("w", "Water Titans", 6, 11, 11),
-        Unknown("?", "Unknown", 7, 11, 100);
+        Orlag("o", "Orlag Clan", 1, 3, 9, 5),
+        Netherworld("n", "Netherworld", 2, 3, 9, 3),
+        Melvin("m", "Melvin", 3, 10, 11, 4),
+        Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11, 3),
+        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 11, 3),
+        TitansAttack("t", "Titans Attack", 6, 11, 11, 3),
+        Unknown("?", "Unknown", 7, 11, 100, 1);
 
         private String letter;
         private String Name;
         private int number;
         private int minTier;
         private int maxTier;
+        private int partySize;
 
-        WorldBoss(String letter, String Name, int number, int minTier, int maxTier) {
+        WorldBoss(String letter, String Name, int number, int minTier, int maxTier, int partySize) {
             this.letter = letter;
             this.Name = Name;
             this.number = number;
             this.minTier = minTier;
             this.maxTier = maxTier;
+            this.partySize = partySize;
         }
 
         String getLetter() {
