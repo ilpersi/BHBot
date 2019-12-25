@@ -30,10 +30,6 @@ import java.util.regex.Pattern;
 import static java.util.Comparator.comparing;
 
 public class DungeonThread implements Runnable {
-    static final int SECOND = 1000;
-    static final int MINUTE = 60 * SECOND;
-    private static final int HOUR = 60 * MINUTE;
-    private static final int DAY = 24 * HOUR;
 
     private static int globalShards;
     private static int globalBadges;
@@ -56,7 +52,7 @@ public class DungeonThread implements Runnable {
          */
     private Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])\\s+(?<difficulty>[123])");
     @SuppressWarnings("FieldCanBeLocal")
-    private final long MAX_IDLE_TIME = 15 * MINUTE;
+    private final long MAX_IDLE_TIME = 15 * Misc.Durations.MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
     private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
@@ -80,12 +76,12 @@ public class DungeonThread implements Runnable {
     // When we do not have anymore gems to use this is true
     private boolean noGemsToBribe = false;
 
-    private long ENERGY_CHECK_INTERVAL = 10 * MINUTE;
-    private long TICKETS_CHECK_INTERVAL = 10 * MINUTE;
-    private long TOKENS_CHECK_INTERVAL = 10 * MINUTE;
-    private long BADGES_CHECK_INTERVAL = 10 * MINUTE;
+    private long ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
+    private long TICKETS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
+    private long TOKENS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
+    private long BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
-    private long BONUS_CHECK_INTERVAL = 10 * MINUTE;
+    private long BONUS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
 
     private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
     private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
@@ -321,7 +317,7 @@ public class DungeonThread implements Runnable {
                 // check for "recently disconnected" popup:
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("RecentlyDisconnected"), bot.browser);
                 if (seg != null) {
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 2 * SECOND, bot.browser);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser);
                     if (seg == null) {
                         BHBot.logger.error("Error: detected 'recently disconnected' popup but could not find 'Yes' button. Restarting...");
                         restart();
@@ -336,7 +332,7 @@ public class DungeonThread implements Runnable {
                         BHBot.logger.debug("RecentlyDisconnected status is: " + bot.getState());
                     }
                     BHBot.logger.info("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
-                    Misc.sleep(60 * SECOND); //long sleep as if the checkShrine didn't find the potion button we'd enter a restart loop
+                    Misc.sleep(60 * Misc.Durations.SECOND); //long sleep as if the checkShrine didn't find the potion button we'd enter a restart loop
                     checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
                     continue;
                 }
@@ -392,7 +388,7 @@ public class DungeonThread implements Runnable {
                         }
 
                         // periodic notification
-                        if ((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * HOUR)) {
+                        if ((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * Misc.Durations.HOUR)) {
                             timeLastPOAlive = Misc.getTime();
                             String aliveScreenName = bot.saveGameScreen("alive-screen");
                             File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
@@ -434,7 +430,7 @@ public class DungeonThread implements Runnable {
                             BHBot.logger.error("It was not possible to perform the autoShrine start-up check!");
                         }
                         oneTimeshrineCheck = true;
-                        bot.browser.readScreen(2 * SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
+                        bot.browser.readScreen(2 * Misc.Durations.SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
                     }
 
                     // One time check for equipped minor runes
@@ -452,7 +448,7 @@ public class DungeonThread implements Runnable {
                         BHBot.logger.info(getRuneName(leftMinorRune.getRuneCueName()) + " equipped in left slot.");
                         BHBot.logger.info(getRuneName(rightMinorRune.getRuneCueName()) + " equipped in right slot.");
                         oneTimeRuneCheck = true;
-                        bot.browser.readScreen(2 * SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
+                        bot.browser.readScreen(2 * Misc.Durations.SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
                     }
 
                     String currentActivity = activitySelector(); //else select the activity to attempt
@@ -477,7 +473,7 @@ public class DungeonThread implements Runnable {
                         }
                         bot.browser.clickOnSeg(raidBTNSeg);
 
-                        seg = MarvinSegment.fromCue("RaidPopup", 5 * SECOND, bot.browser); // wait until the raid window opens
+                        seg = MarvinSegment.fromCue("RaidPopup", 5 * Misc.Durations.SECOND, bot.browser); // wait until the raid window opens
                         if (seg == null) {
                             BHBot.logger.warn("Error: attempt at opening raid window failed. No window cue detected. Ignoring...");
                             bot.scheduler.restoreIdleTime();
@@ -501,9 +497,9 @@ public class DungeonThread implements Runnable {
                                 bot.scheduler.doRaidImmediately = false; // reset it
 
                             bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND, bot.browser);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                             bot.browser.clickOnSeg(seg);
-                            Misc.sleep(SECOND);
+                            Misc.sleep(Misc.Durations.SECOND);
 
                             continue;
 
@@ -515,9 +511,9 @@ public class DungeonThread implements Runnable {
                             //if we need to configure runes/settings we close the window first
                             if (bot.settings.autoShrine.contains("r") || bot.settings.autoRune.containsKey("r") || bot.settings.autoBossRune.containsKey("r")) {
                                 bot.browser.readScreen();
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                                 bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(SECOND);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
                             }
 
                             //autoshrine
@@ -539,7 +535,7 @@ public class DungeonThread implements Runnable {
                             //activity runes
                             handleMinorRunes("r");
 
-                            bot.browser.readScreen(SECOND);
+                            bot.browser.readScreen(Misc.Durations.SECOND);
                             bot.browser.clickOnSeg(raidBTNSeg);
 
                             String raid = decideRaidRandomly();
@@ -559,15 +555,15 @@ public class DungeonThread implements Runnable {
                                 continue;
                             }
 
-                            bot.browser.readScreen(2 * SECOND);
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("RaidSummon"), 2 * SECOND, bot.browser);
+                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("RaidSummon"), 2 * Misc.Durations.SECOND, bot.browser);
                             if (seg == null) {
                                 BHBot.logger.error("Raid Summon button not found");
                                 restart();
                                 continue;
                             }
                             bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(2 * SECOND);
+                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                             // dismiss character dialog if it pops up:
                             bot.browser.readScreen();
@@ -575,10 +571,10 @@ public class DungeonThread implements Runnable {
 
                             seg = MarvinSegment.fromCue(BrowserManager.cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), bot.browser);
                             bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(2 * SECOND);
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 5 * SECOND, bot.browser);
+                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
                             bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(2 * SECOND);
+                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                             if (handleTeamMalformedWarning()) {
                                 BHBot.logger.error("Team incomplete, doing emergency restart..");
@@ -626,7 +622,7 @@ public class DungeonThread implements Runnable {
                         MarvinSegment trialBTNSeg = seg;
 
                         // dismiss character dialog if it pops up:
-                        bot.browser.readScreen(2 * SECOND);
+                        bot.browser.readScreen(2 * Misc.Durations.SECOND);
                         detectCharacterDialogAndHandleIt();
 
                         bot.browser.readScreen();
@@ -642,16 +638,16 @@ public class DungeonThread implements Runnable {
 
                         if (((!bot.scheduler.doTrialsImmediately && !bot.scheduler.doGauntletImmediately) && (tokens <= bot.settings.minTokens)) || (tokens < (trials ? bot.settings.costTrials : bot.settings.costGauntlet))) {
                             bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND, bot.browser);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                             bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(SECOND);
+                            bot.browser.readScreen(Misc.Durations.SECOND);
 
                             //if we have 1 token and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one token short
                             int tokenDifference = (trials ? bot.settings.costTrials : bot.settings.costGauntlet) - tokens; //difference between needed and current resource
                             if (tokenDifference > 1) {
                                 int increase = (tokenDifference - 1) * 45;
-                                TOKENS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
-                            } else TOKENS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 token check every 10 minutes
+                                TOKENS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
+                            } else TOKENS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 token check every 10 minutes
 
                             if (bot.scheduler.doTrialsImmediately) {
                                 bot.scheduler.doTrialsImmediately = false; // if we don't have resources to run we need to disable force it
@@ -675,9 +671,9 @@ public class DungeonThread implements Runnable {
                                 //if we need to configure runes/settings we close the window first
                                 if (bot.settings.autoShrine.contains("t") || bot.settings.autoRune.containsKey("t") || bot.settings.autoBossRune.containsKey("t")) {
                                     bot.browser.readScreen();
-                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND, bot.browser);
+                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                                     bot.browser.clickOnSeg(seg);
-                                    bot.browser.readScreen(SECOND);
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
                                 }
 
                                 //autoshrine
@@ -703,13 +699,13 @@ public class DungeonThread implements Runnable {
 
                                 if (bot.settings.autoRune.containsKey("g")) {
                                     handleMinorRunes("g");
-                                    bot.browser.readScreen(SECOND);
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
                                 }
 
                             }
-                            bot.browser.readScreen(SECOND);
+                            bot.browser.readScreen(Misc.Durations.SECOND);
                             bot.browser.clickOnSeg(trialBTNSeg);
-                            bot.browser.readScreen(SECOND); //wait for window animation
+                            bot.browser.readScreen(Misc.Durations.SECOND); //wait for window animation
 
                             // apply the correct difficulty
                             int targetDifficulty = trials ? bot.settings.difficultyTrials : bot.settings.difficultyGauntlet;
@@ -727,16 +723,16 @@ public class DungeonThread implements Runnable {
                                 boolean result = selectDifficulty(difficulty, targetDifficulty);
                                 if (!result) { // error!
                                     // see if drop down menu is still open and close it:
-                                    bot.browser.readScreen(SECOND);
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
                                     tryClosingWindow(BrowserManager.cues.get("DifficultyDropDown"));
-                                    bot.browser.readScreen(5 * SECOND);
+                                    bot.browser.readScreen(5 * Misc.Durations.SECOND);
                                     BHBot.logger.warn("Unable to change difficulty, usually because desired level is not unlocked. Running " + (trials ? "trials" : "gauntlet") + " at " + difficulty + ".");
                                     bot.poManager.sendPushOverMessage("T/G Error", "Unable to change difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.", "siren");
                                 }
                             }
 
                             // select cost if needed:
-                            bot.browser.readScreen(2 * SECOND); // wait for the popup to stabilize a bit
+                            bot.browser.readScreen(2 * Misc.Durations.SECOND); // wait for the popup to stabilize a bit
                             int cost = detectCost();
                             if (cost == 0) { // error!
                                 BHBot.logger.error("Due to an error#1 in cost detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
@@ -748,27 +744,27 @@ public class DungeonThread implements Runnable {
                                 boolean result = selectCost(cost, (trials ? bot.settings.costTrials : bot.settings.costGauntlet));
                                 if (!result) { // error!
                                     // see if drop down menu is still open and close it:
-                                    bot.browser.readScreen(SECOND);
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
                                     tryClosingWindow(BrowserManager.cues.get("CostDropDown"));
-                                    bot.browser.readScreen(5 * SECOND);
+                                    bot.browser.readScreen(5 * Misc.Durations.SECOND);
                                     tryClosingWindow(BrowserManager.cues.get("TrialsOrGauntletWindow"));
                                     BHBot.logger.error("Due to an error#2 in cost selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
                                     continue;
                                 }
 
                                 // We wait for the cost selector window to close
-                                MarvinSegment.fromCue("TrialsOrGauntletWindow", SECOND * 2, bot.browser);
+                                MarvinSegment.fromCue("TrialsOrGauntletWindow", Misc.Durations.SECOND * 2, bot.browser);
                                 bot.browser.readScreen();
                             }
 
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), 2 * SECOND, bot.browser);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), 2 * Misc.Durations.SECOND, bot.browser);
                             if (seg == null) {
                                 BHBot.logger.error("Error: Play button not found while trying to do " + (trials ? "trials" : "gauntlet") + ". Ignoring...");
                                 tryClosingWindow(BrowserManager.cues.get("TrialsOrGauntletWindow"));
                                 continue;
                             }
                             bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(2 * SECOND);
+                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                             if (!handleNotEnoughTokensPopup(false)) {
                                 restart();
@@ -778,9 +774,9 @@ public class DungeonThread implements Runnable {
                             // dismiss character dialog if it pops up:
                             detectCharacterDialogAndHandleIt();
 
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 5 * SECOND, bot.browser);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
                             bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(2 * SECOND);
+                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                             // This is a Bit Heroes bug!
                             // On t/g main screen the token bar is wrongly full so it goes trough the "Play" button and
@@ -790,7 +786,7 @@ public class DungeonThread implements Runnable {
                                 continue;
                             }
 
-                            Misc.sleep(3 * SECOND);
+                            Misc.sleep(3 * Misc.Durations.SECOND);
 
                             if (handleTeamMalformedWarning()) {
                                 BHBot.logger.error("Team incomplete, doing emergency restart..");
@@ -824,14 +820,14 @@ public class DungeonThread implements Runnable {
                         }
 
                         if (!bot.scheduler.doDungeonImmediately && (energy <= bot.settings.minEnergyPercentage || bot.settings.dungeons.size() == 0)) {
-                            Misc.sleep(SECOND);
+                            Misc.sleep(Misc.Durations.SECOND);
 
                             //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
                             int energyDifference = bot.settings.minEnergyPercentage - energy; //difference between needed and current resource
                             if (energyDifference > 1) {
                                 int increase = (energyDifference - 1) * 8;
-                                ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 8 minutes to the check interval for each energy % needed above 1
-                            } else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+                                ENERGY_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 8 minutes to the check interval for each energy % needed above 1
+                            } else ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
                             continue;
                         } else {
@@ -850,13 +846,13 @@ public class DungeonThread implements Runnable {
                                     BHBot.logger.error("Impossible to configure autoBossRune for Dungeons!");
                                 }
 
-                                bot.browser.readScreen(SECOND);
-                                Misc.sleep(2 * SECOND);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
+                                Misc.sleep(2 * Misc.Durations.SECOND);
                             }
 
                             seg = MarvinSegment.fromCue(BrowserManager.cues.get("Quest"), bot.browser);
                             bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(5 * SECOND);
+                            bot.browser.readScreen(5 * Misc.Durations.SECOND);
 
                             String dungeon = decideDungeonRandomly();
                             if (dungeon == null) {
@@ -889,7 +885,7 @@ public class DungeonThread implements Runnable {
                             while (vec != 0) { // move to the correct zone
                                 if (vec > 0) {
                                     // note that moving to the right will fail in case player has not unlocked the zone yet!
-                                    bot.browser.readScreen(SECOND); // wait for screen to stabilise
+                                    bot.browser.readScreen(Misc.Durations.SECOND); // wait for screen to stabilise
                                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("RightArrow"), bot.browser);
                                     if (seg == null) {
                                         BHBot.logger.error("Right button not found, zone unlocked?");
@@ -906,7 +902,7 @@ public class DungeonThread implements Runnable {
                                 }
                             }
 
-                            bot.browser.readScreen(2 * SECOND);
+                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                             // click on the dungeon:
                             Point p = getDungeonIconPos(goalZone, goalDungeon);
@@ -920,21 +916,21 @@ public class DungeonThread implements Runnable {
 
                             bot.browser.clickInGame(p.x, p.y);
 
-                            bot.browser.readScreen(3 * SECOND);
+                            bot.browser.readScreen(3 * Misc.Durations.SECOND);
                             // select difficulty (If D4 just hit enter):
                             if ((goalDungeon == 4) || (goalZone == 7 && goalDungeon == 3) || (goalZone == 8 && goalDungeon == 3)) { // D4, or Z7D3/Z8D3
                                 specialDungeon = true;
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Enter"), 5 * SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Enter"), 5 * Misc.Durations.SECOND, bot.browser);
                             } else { //else select appropriate difficulty
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), 5 * SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), 5 * Misc.Durations.SECOND, bot.browser);
                             }
                             bot.browser.clickOnSeg(seg);
 
                             //team selection screen
                             /* Solo-for-bounty code */
                             if (goalZone <= bot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
-                                bot.browser.readScreen(SECOND);
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Clear"), SECOND * 2, bot.browser);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Clear"), Misc.Durations.SECOND * 2, bot.browser);
                                 if (seg != null) {
                                     BHBot.logger.info("Selected zone under dungeon solo threshold, attempting solo");
                                     bot.browser.clickOnSeg(seg);
@@ -946,12 +942,12 @@ public class DungeonThread implements Runnable {
                             }
 
                             bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), SECOND * 2, bot.browser);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), Misc.Durations.SECOND * 2, bot.browser);
                             bot.browser.clickOnSeg(seg);
 
                             if (goalZone <= bot.settings.minSolo) {
-                                bot.browser.readScreen(3 * SECOND); //wait for dropdown animation to finish
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 2 * SECOND, bot.browser);
+                                bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for dropdown animation to finish
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser);
                                 if (seg != null) {
                                     bot.browser.clickOnSeg(seg);
                                 } else {
@@ -965,7 +961,7 @@ public class DungeonThread implements Runnable {
                                 }
                             }
 
-                            if (handleNotEnoughEnergyPopup(3 * SECOND, BHBot.State.Dungeon)) {
+                            if (handleNotEnoughEnergyPopup(3 * Misc.Durations.SECOND, BHBot.State.Dungeon)) {
                                 continue;
                             }
 
@@ -994,14 +990,14 @@ public class DungeonThread implements Runnable {
                         }
 
                         if ((!bot.scheduler.doPVPImmediately && (tickets <= bot.settings.minTickets)) || (tickets < bot.settings.costPVP)) {
-                            Misc.sleep(SECOND);
+                            Misc.sleep(Misc.Durations.SECOND);
 
                             //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
                             int ticketDifference = bot.settings.costPVP - tickets; //difference between needed and current resource
                             if (ticketDifference > 1) {
                                 int increase = (ticketDifference - 1) * 45;
-                                TICKETS_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-                            } else TICKETS_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+                                TICKETS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                            } else TICKETS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
                             continue;
                         } else {
@@ -1025,7 +1021,7 @@ public class DungeonThread implements Runnable {
                             bot.browser.clickOnSeg(seg);
 
                             // select cost if needed:
-                            bot.browser.readScreen(2 * SECOND); // wait for the popup to stabilize a bit
+                            bot.browser.readScreen(2 * Misc.Durations.SECOND); // wait for the popup to stabilize a bit
                             int cost = detectCost();
                             if (cost == 0) { // error!
                                 BHBot.logger.error("Due to an error#1 in cost detection, PVP will be skipped.");
@@ -1038,10 +1034,10 @@ public class DungeonThread implements Runnable {
                                 boolean result = selectCost(cost, bot.settings.costPVP);
                                 if (!result) { // error!
                                     // see if drop down menu is still open and close it:
-                                    bot.browser.readScreen(SECOND);
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
                                     tryClosingWindow(BrowserManager.cues.get("CostDropDown"));
-                                    bot.browser.readScreen(5 * SECOND);
-                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("PVPWindow"), 15 * SECOND, bot.browser);
+                                    bot.browser.readScreen(5 * Misc.Durations.SECOND);
+                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("PVPWindow"), 15 * Misc.Durations.SECOND, bot.browser);
                                     if (seg != null)
                                         closePopupSecurely(BrowserManager.cues.get("PVPWindow"), BrowserManager.cues.get("X"));
                                     BHBot.logger.error("Due to an error#2 in cost selection, PVP will be skipped.");
@@ -1050,9 +1046,9 @@ public class DungeonThread implements Runnable {
                                 }
                             }
 
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), 5 * SECOND, bot.browser);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), 5 * Misc.Durations.SECOND, bot.browser);
                             bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(2 * SECOND);
+                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                             // dismiss character dialog if it pops up:
                             detectCharacterDialogAndHandleIt();
@@ -1060,7 +1056,7 @@ public class DungeonThread implements Runnable {
                             Bounds pvpOpponentBounds = opponentSelector(bot.settings.pvpOpponent);
                             String opponentName = (bot.settings.pvpOpponent == 1 ? "1st" : bot.settings.pvpOpponent == 2 ? "2nd" : bot.settings.pvpOpponent == 3 ? "3rd" : "4th");
                             BHBot.logger.info("Selecting " + opponentName + " opponent");
-                            seg = MarvinSegment.fromCue("Fight", 5 * SECOND, pvpOpponentBounds, bot.browser);
+                            seg = MarvinSegment.fromCue("Fight", 5 * Misc.Durations.SECOND, pvpOpponentBounds, bot.browser);
                             if (seg == null) {
                                 BHBot.logger.error("Imppossible to find the Fight button in the PVP screen, restarting!");
                                 restart();
@@ -1069,7 +1065,7 @@ public class DungeonThread implements Runnable {
                             bot.browser.clickOnSeg(seg);
 
                             bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue("Accept", 5 * SECOND, new Bounds(430, 430, 630, 500), bot.browser);
+                            seg = MarvinSegment.fromCue("Accept", 5 * Misc.Durations.SECOND, new Bounds(430, 430, 630, 500), bot.browser);
                             if (seg == null) {
                                 BHBot.logger.error("Impossible to find the Accept button in the PVP screen, restarting");
                                 restart();
@@ -1133,7 +1129,7 @@ public class DungeonThread implements Runnable {
                         }
 
                         bot.browser.clickOnSeg(seg);
-                        Misc.sleep(2 * SECOND);
+                        Misc.sleep(2 * Misc.Durations.SECOND);
 
                         detectCharacterDialogAndHandleIt(); // needed for invasion
 
@@ -1156,13 +1152,13 @@ public class DungeonThread implements Runnable {
                                 int badgeDifference = bot.settings.costGVG - badges; //difference between needed and current resource
                                 if (badgeDifference > 1) {
                                     int increase = (badgeDifference - 1) * 45;
-                                    BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-                                } else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+                                    BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                } else BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
                                 bot.browser.readScreen();
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                                 bot.browser.clickOnSeg(seg);
-                                Misc.sleep(SECOND);
+                                Misc.sleep(Misc.Durations.SECOND);
                                 continue;
                             } else {
                                 // do the GVG!
@@ -1173,23 +1169,23 @@ public class DungeonThread implements Runnable {
 
                                 //configure activity runes
                                 handleMinorRunes("v");
-                                bot.browser.readScreen(SECOND);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(badgeBtn);
 
                                 BHBot.logger.info("Attempting GVG...");
 
                                 if (bot.settings.gvgstrip.size() > 0) {
                                     // If we need to strip down for GVG, we need to close the GVG gump and open it again
-                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND * 2, bot.browser);
+                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND * 2, bot.browser);
                                     bot.browser.clickOnSeg(seg);
-                                    bot.browser.readScreen(2 * SECOND);
+                                    bot.browser.readScreen(2 * Misc.Durations.SECOND);
                                     stripDown(bot.settings.gvgstrip);
-                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("GVG"), SECOND * 3, bot.browser);
+                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("GVG"), Misc.Durations.SECOND * 3, bot.browser);
                                     bot.browser.clickOnSeg(seg);
                                 }
 
                                 // select cost if needed:
-                                bot.browser.readScreen(2 * SECOND); // wait for the popup to stabilize a bit
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND); // wait for the popup to stabilize a bit
                                 int cost = detectCost();
                                 if (cost == 0) { // error!
                                     BHBot.logger.error("Due to an error#1 in cost detection, GVG will be skipped.");
@@ -1201,10 +1197,10 @@ public class DungeonThread implements Runnable {
                                     boolean result = selectCost(cost, bot.settings.costGVG);
                                     if (!result) { // error!
                                         // see if drop down menu is still open and close it:
-                                        bot.browser.readScreen(SECOND);
+                                        bot.browser.readScreen(Misc.Durations.SECOND);
                                         tryClosingWindow(BrowserManager.cues.get("CostDropDown"));
-                                        bot.browser.readScreen(5 * SECOND);
-                                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("GVGWindow"), 15 * SECOND, bot.browser);
+                                        bot.browser.readScreen(5 * Misc.Durations.SECOND);
+                                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("GVGWindow"), 15 * Misc.Durations.SECOND, bot.browser);
                                         if (seg != null)
                                             closePopupSecurely(BrowserManager.cues.get("GVGWindow"), BrowserManager.cues.get("X"));
                                         BHBot.logger.error("Due to an error#2 in cost selection, GVG will be skipped.");
@@ -1214,9 +1210,9 @@ public class DungeonThread implements Runnable {
                                 }
 
 
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), 5 * SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), 5 * Misc.Durations.SECOND, bot.browser);
                                 bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(2 * SECOND);
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                                 // Sometimes, before the reset, battles are disabled
                                 Boolean disabledBattles = handleDisabledBattles();
@@ -1238,7 +1234,7 @@ public class DungeonThread implements Runnable {
                                 Bounds gvgOpponentBounds = opponentSelector(bot.settings.gvgOpponent);
                                 String opponentName = (bot.settings.gvgOpponent == 1 ? "1st" : bot.settings.gvgOpponent == 2 ? "2nd" : bot.settings.gvgOpponent == 3 ? "3rd" : "4th");
                                 BHBot.logger.info("Selecting " + opponentName + " opponent");
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Fight"), 5 * SECOND, gvgOpponentBounds, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Fight"), 5 * Misc.Durations.SECOND, gvgOpponentBounds, bot.browser);
                                 if (seg == null) {
                                     BHBot.logger.error("Imppossible to find the Fight button in the GvG screen, restarting!");
                                     restart();
@@ -1246,16 +1242,16 @@ public class DungeonThread implements Runnable {
                                 }
                                 bot.browser.clickOnSeg(seg);
                                 bot.browser.readScreen();
-                                Misc.sleep(SECOND);
+                                Misc.sleep(Misc.Durations.SECOND);
 
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 2 * SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 2 * Misc.Durations.SECOND, bot.browser);
                                 if (seg == null) {
                                     BHBot.logger.error("Imppossible to find the Accept button in the GvG screen, restarting!");
                                     restart();
                                     continue;
                                 }
                                 bot.browser.clickOnSeg(seg);
-                                Misc.sleep(SECOND);
+                                Misc.sleep(Misc.Durations.SECOND);
 
                                 if (handleTeamMalformedWarning()) {
                                     BHBot.logger.error("Team incomplete, doing emergency restart..");
@@ -1276,13 +1272,13 @@ public class DungeonThread implements Runnable {
                                 int badgeDifference = bot.settings.costGVG - badges; //difference between needed and current resource
                                 if (badgeDifference > 1) {
                                     int increase = (badgeDifference - 1) * 45;
-                                    BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-                                } else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+                                    BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                } else BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
                                 bot.browser.readScreen();
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                                 bot.browser.clickOnSeg(seg);
-                                Misc.sleep(SECOND);
+                                Misc.sleep(Misc.Durations.SECOND);
                                 continue;
                             } else {
                                 // do the invasion!
@@ -1292,13 +1288,13 @@ public class DungeonThread implements Runnable {
 
                                 //configure activity runes
                                 handleMinorRunes("i");
-                                bot.browser.readScreen(SECOND);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(badgeBtn);
 
                                 BHBot.logger.info("Attempting invasion...");
 
                                 // select cost if needed:
-                                bot.browser.readScreen(2 * SECOND); // wait for the popup to stabilize a bit
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND); // wait for the popup to stabilize a bit
                                 int cost = detectCost();
                                 if (cost == 0) { // error!
                                     BHBot.logger.error("Due to an error#1 in cost detection, invasion will be skipped.");
@@ -1310,10 +1306,10 @@ public class DungeonThread implements Runnable {
                                     boolean result = selectCost(cost, bot.settings.costInvasion);
                                     if (!result) { // error!
                                         // see if drop down menu is still open and close it:
-                                        bot.browser.readScreen(SECOND);
+                                        bot.browser.readScreen(Misc.Durations.SECOND);
                                         tryClosingWindow(BrowserManager.cues.get("CostDropDown"));
-                                        bot.browser.readScreen(5 * SECOND);
-                                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("InvasionWindow"), 15 * SECOND, bot.browser);
+                                        bot.browser.readScreen(5 * Misc.Durations.SECOND);
+                                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("InvasionWindow"), 15 * Misc.Durations.SECOND, bot.browser);
                                         if (seg != null)
                                             closePopupSecurely(BrowserManager.cues.get("InvasionWindow"), BrowserManager.cues.get("X"));
                                         BHBot.logger.error("Due to an error#2 in cost selection, invasion will be skipped.");
@@ -1321,7 +1317,7 @@ public class DungeonThread implements Runnable {
                                     }
                                 }
 
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), 5 * SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), 5 * Misc.Durations.SECOND, bot.browser);
                                 bot.browser.clickOnSeg(seg);
 
                                 bot.browser.readScreen(3000);
@@ -1332,7 +1328,7 @@ public class DungeonThread implements Runnable {
                                     continue;
                                 }
                                 bot.browser.clickOnSeg(seg);
-                                Misc.sleep(2 * SECOND);
+                                Misc.sleep(2 * Misc.Durations.SECOND);
 
                                 if (handleTeamMalformedWarning()) {
                                     BHBot.logger.error("Team incomplete, doing emergency restart..");
@@ -1356,12 +1352,12 @@ public class DungeonThread implements Runnable {
                                 int badgeDifference = bot.settings.costGVG - badges; //difference between needed and current resource
                                 if (badgeDifference > 1) {
                                     int increase = (badgeDifference - 1) * 45;
-                                    BADGES_CHECK_INTERVAL = increase * MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-                                } else BADGES_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+                                    BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                } else BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
                                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
                                 bot.browser.clickOnSeg(seg);
-                                Misc.sleep(2 * SECOND);
+                                Misc.sleep(2 * Misc.Durations.SECOND);
                                 continue;
                             } else {
                                 // do the expedition!
@@ -1373,16 +1369,16 @@ public class DungeonThread implements Runnable {
                                     BHBot.logger.info("Target cost " + bot.settings.costExpedition + " is higher than available badges " + badges + ". Expedition will be skipped.");
                                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
                                     bot.browser.clickOnSeg(seg);
-                                    Misc.sleep(2 * SECOND);
+                                    Misc.sleep(2 * Misc.Durations.SECOND);
                                     continue;
                                 }
 
                                 //if we need to configure runes/settings we close the window first
                                 if (bot.settings.autoShrine.contains("e") || bot.settings.autoRune.containsKey("e") || bot.settings.autoBossRune.containsKey("e")) {
                                     bot.browser.readScreen();
-                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND, bot.browser);
+                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                                     bot.browser.clickOnSeg(seg);
-                                    bot.browser.readScreen(SECOND);
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
                                 }
 
                                 //autoshrine
@@ -1404,13 +1400,13 @@ public class DungeonThread implements Runnable {
                                 //activity runes
                                 handleMinorRunes("e");
 
-                                bot.browser.readScreen(SECOND);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(badgeBtn);
-                                bot.browser.readScreen(SECOND * 2);
+                                bot.browser.readScreen(Misc.Durations.SECOND * 2);
 
                                 BHBot.logger.info("Attempting expedition...");
 
-                                bot.browser.readScreen(SECOND * 2);
+                                bot.browser.readScreen(Misc.Durations.SECOND * 2);
                                 int cost = detectCost();
                                 if (cost == 0) { // error!
                                     BHBot.logger.error("Due to an error#1 in cost detection, Expedition cost will be skipped.");
@@ -1423,21 +1419,21 @@ public class DungeonThread implements Runnable {
                                     boolean result = selectCost(cost, bot.settings.costExpedition);
                                     if (!result) { // error!
                                         // see if drop down menu is still open and close it:
-                                        bot.browser.readScreen(SECOND);
+                                        bot.browser.readScreen(Misc.Durations.SECOND);
                                         tryClosingWindow(BrowserManager.cues.get("CostDropDown"));
-                                        bot.browser.readScreen(5 * SECOND);
+                                        bot.browser.readScreen(5 * Misc.Durations.SECOND);
                                         seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
                                         bot.browser.clickOnSeg(seg);
-                                        Misc.sleep(2 * SECOND);
+                                        Misc.sleep(2 * Misc.Durations.SECOND);
                                         BHBot.logger.error("Due to an error in cost selection, Expedition will be skipped.");
                                         continue;
                                     }
-                                    bot.browser.readScreen(SECOND * 2);
+                                    bot.browser.readScreen(Misc.Durations.SECOND * 2);
                                 }
 
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), 2 * SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), 2 * Misc.Durations.SECOND, bot.browser);
                                 bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(2 * SECOND);
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                                 //Select Expedition and write portal to a variable
                                 String randomExpedition = bot.settings.expeditions.next();
@@ -1484,9 +1480,9 @@ public class DungeonThread implements Runnable {
                                         bot.poManager.sendPushOverMessage("Expedition error", "It was impossible to get the current expedition type. Expeditions are now disabled!", "siren");
 
                                     bot.browser.readScreen();
-                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND, bot.browser);
+                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                                     if (seg != null) bot.browser.clickOnSeg(seg);
-                                    bot.browser.readScreen(2 * SECOND);
+                                    bot.browser.readScreen(2 * Misc.Durations.SECOND);
                                     continue;
                                 }
 
@@ -1506,9 +1502,9 @@ public class DungeonThread implements Runnable {
                                         bot.poManager.sendPushOverMessage("Expedition error", "It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!", "siren");
 
                                     bot.browser.readScreen();
-                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND, bot.browser);
+                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                                     if (seg != null) bot.browser.clickOnSeg(seg);
-                                    bot.browser.readScreen(2 * SECOND);
+                                    bot.browser.readScreen(2 * Misc.Durations.SECOND);
                                     continue;
                                 }
 
@@ -1521,7 +1517,7 @@ public class DungeonThread implements Runnable {
                                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
                                     while (seg != null) {
                                         bot.browser.clickOnSeg(seg);
-                                        bot.browser.readScreen(2 * SECOND);
+                                        bot.browser.readScreen(2 * Misc.Durations.SECOND);
                                         seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
                                     }
                                     continue;
@@ -1536,7 +1532,7 @@ public class DungeonThread implements Runnable {
                                         seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
                                         while (seg != null) {
                                             bot.browser.clickOnSeg(seg);
-                                            bot.browser.readScreen(2 * SECOND);
+                                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
                                             seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
                                         }
                                         BHBot.logger.error("Due to an error in difficulty selection, Expedition will be skipped.");
@@ -1545,11 +1541,11 @@ public class DungeonThread implements Runnable {
                                 }
 
                                 //click enter
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Enter"), 2 * SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Enter"), 2 * Misc.Durations.SECOND, bot.browser);
                                 bot.browser.clickOnSeg(seg);
 
                                 //click enter
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 3 * SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 3 * Misc.Durations.SECOND, bot.browser);
                                 if (seg != null) {
                                     bot.browser.clickOnSeg(seg);
                                 } else {
@@ -1579,7 +1575,7 @@ public class DungeonThread implements Runnable {
                             // do neither gvg nor invasion
                             seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
                             bot.browser.clickOnSeg(seg);
-                            Misc.sleep(2 * SECOND);
+                            Misc.sleep(2 * Misc.Durations.SECOND);
                             continue;
                         }
                     } // badges
@@ -1606,10 +1602,10 @@ public class DungeonThread implements Runnable {
                             int energyDifference = bot.settings.minEnergyPercentage - energy; //difference between needed and current resource
                             if (energyDifference > 1) {
                                 int increase = (energyDifference - 1) * 4;
-                                ENERGY_CHECK_INTERVAL = increase * MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
-                            } else ENERGY_CHECK_INTERVAL = 10 * MINUTE; //if we only need 1 check every 10 minutes
+                                ENERGY_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
+                            } else ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
-                            Misc.sleep(SECOND);
+                            Misc.sleep(Misc.Durations.SECOND);
                             continue;
                         } else {
                             // do the WorldBoss!
@@ -1657,7 +1653,7 @@ public class DungeonThread implements Runnable {
                             }
 
                             bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("BlueSummon"), SECOND, bot.browser);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("BlueSummon"), Misc.Durations.SECOND, bot.browser);
                             if (seg != null) {
                                 bot.browser.clickOnSeg(seg);
                             } else {
@@ -1675,7 +1671,7 @@ public class DungeonThread implements Runnable {
                                 closePopupSecurely(BrowserManager.cues.get("WorldBossTitle"), BrowserManager.cues.get("X"));
                                 continue;
                             }
-                            bot.browser.readScreen(2 * SECOND); //wait for screen to stablise
+                            bot.browser.readScreen(2 * Misc.Durations.SECOND); //wait for screen to stablise
 
                             //world boss type selection
                             if (!handleWorldBossSelection(wbType)) {
@@ -1685,12 +1681,12 @@ public class DungeonThread implements Runnable {
                             }
 
 //							Misc.sleep(SECOND); //more stabilising if we changed world boss type
-                            bot.browser.readScreen(SECOND);
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("LargeGreenSummon"), 2 * SECOND, bot.browser);
+                            bot.browser.readScreen(Misc.Durations.SECOND);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("LargeGreenSummon"), 2 * Misc.Durations.SECOND, bot.browser);
                             bot.browser.clickOnSeg(seg); //selected world boss
 
-                            bot.browser.readScreen(SECOND);
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Private"), SECOND, bot.browser);
+                            bot.browser.readScreen(Misc.Durations.SECOND);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Private"), Misc.Durations.SECOND, bot.browser);
                             if (!bot.settings.worldBossSolo) {
                                 if (seg != null) {
                                     BHBot.logger.info("Unchecking private lobby");
@@ -1728,11 +1724,11 @@ public class DungeonThread implements Runnable {
                                 changeWorldBossDifficulty(worldBossDifficulty);
                             }
 
-                            bot.browser.readScreen(SECOND);
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("SmallGreenSummon"), SECOND * 2, bot.browser);
+                            bot.browser.readScreen(Misc.Durations.SECOND);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("SmallGreenSummon"), Misc.Durations.SECOND * 2, bot.browser);
                             bot.browser.clickOnSeg(seg); //accept current settings
 
-                            boolean insufficientEnergy = handleNotEnoughEnergyPopup(SECOND * 3, BHBot.State.WorldBoss);
+                            boolean insufficientEnergy = handleNotEnoughEnergyPopup(Misc.Durations.SECOND * 3, BHBot.State.WorldBoss);
                             if (insufficientEnergy) {
                                 continue;
                             }
@@ -1750,7 +1746,7 @@ public class DungeonThread implements Runnable {
                             if (!bot.settings.worldBossSolo) {
                                 Bounds inviteButton = inviteBounds(wbType.getLetter());
                                 for (int i = 0; i < worldBossTimer; i++) {
-                                    bot.browser.readScreen(SECOND);
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
                                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("Invite"), 0, inviteButton, bot.browser);
                                     if (seg != null) { //while the relevant invite button exists
                                         if (i != 0 && (i % 15) == 0) { //every 15 seconds
@@ -1761,12 +1757,12 @@ public class DungeonThread implements Runnable {
                                             if (bot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
                                                 BHBot.logger.info("Lobby timed out, running dungeon instead");
                                                 closeWorldBoss();
-                                                Misc.sleep(4 * SECOND); //make sure we're stable on the main screen
+                                                Misc.sleep(4 * Misc.Durations.SECOND); //make sure we're stable on the main screen
                                                 bot.scheduler.doDungeonImmediately = true;
                                             } else {
                                                 BHBot.logger.info("Lobby timed out, returning to main screen.");
                                                 // we say we checked (interval - 1) minutes ago, so we check again in a minute
-                                                timeLastEnergyCheck = Misc.getTime() - ((ENERGY_CHECK_INTERVAL) - MINUTE);
+                                                timeLastEnergyCheck = Misc.getTime() - ((ENERGY_CHECK_INTERVAL) - Misc.Durations.MINUTE);
                                                 closeWorldBoss();
                                             }
                                         }
@@ -1778,7 +1774,7 @@ public class DungeonThread implements Runnable {
                                         BHBot.logger.info("Making sure everyones ready..");
                                         int j = 1;
                                         while (j != 20) { //ready check for 10 seconds
-                                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Unready"), 2 * SECOND, bot.browser); //this checks all 4 ready statuses
+                                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Unready"), 2 * Misc.Durations.SECOND, bot.browser); //this checks all 4 ready statuses
                                             bot.browser.readScreen();
                                             if (seg == null) {// no red X's found
                                                 break;
@@ -1796,13 +1792,13 @@ public class DungeonThread implements Runnable {
 
                                         Misc.sleep(500);
                                         bot.browser.readScreen();
-                                        MarvinSegment segStart = MarvinSegment.fromCue(BrowserManager.cues.get("Start"), 5 * SECOND, bot.browser);
+                                        MarvinSegment segStart = MarvinSegment.fromCue(BrowserManager.cues.get("Start"), 5 * Misc.Durations.SECOND, bot.browser);
                                         if (segStart != null) {
                                             bot.browser.clickOnSeg(segStart); //start World Boss
                                             bot.browser.readScreen();
-                                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("TeamNotFull"), 2 * SECOND, bot.browser); //check if we have the team not full screen an clear it
+                                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("TeamNotFull"), 2 * Misc.Durations.SECOND, bot.browser); //check if we have the team not full screen an clear it
                                             if (seg != null) {
-                                                Misc.sleep(2 * SECOND); //wait for animation to finish
+                                                Misc.sleep(2 * Misc.Durations.SECOND); //wait for animation to finish
                                                 bot.browser.clickInGame(330, 360); //yesgreen cue has issues so we use XY to click on Yes
                                             }
                                             BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " started!");
@@ -1817,11 +1813,11 @@ public class DungeonThread implements Runnable {
                                 }
                             } else {
                                 bot.browser.readScreen();
-                                MarvinSegment segStart = MarvinSegment.fromCue(BrowserManager.cues.get("Start"), 2 * SECOND, bot.browser);
+                                MarvinSegment segStart = MarvinSegment.fromCue(BrowserManager.cues.get("Start"), 2 * Misc.Durations.SECOND, bot.browser);
                                 if (segStart != null) {
                                     bot.browser.clickOnSeg(segStart); //start World Boss
-                                    Misc.sleep(2 * SECOND); //wait for dropdown animation to finish
-                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 2 * SECOND, bot.browser); //clear empty team prompt
+                                    Misc.sleep(2 * Misc.Durations.SECOND); //wait for dropdown animation to finish
+                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser); //clear empty team prompt
                                     //click anyway this cue has issues
                                     if (seg == null) {
                                         Misc.sleep(500);
@@ -1850,22 +1846,22 @@ public class DungeonThread implements Runnable {
 
                         bot.browser.clickInGame(130, 440);
 
-                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Bounties"), SECOND * 5, bot.browser);
+                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Bounties"), Misc.Durations.SECOND * 5, bot.browser);
                         if (seg != null) {
                             bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Loot"), SECOND * 5, new Bounds(505, 245, 585, 275), bot.browser);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Loot"), Misc.Durations.SECOND * 5, new Bounds(505, 245, 585, 275), bot.browser);
                             while (seg != null) {
                                 bot.browser.clickOnSeg(seg);
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("WeeklyRewards"), SECOND * 5, new Bounds(190, 100, 615, 400), bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("WeeklyRewards"), Misc.Durations.SECOND * 5, new Bounds(190, 100, 615, 400), bot.browser);
                                 if (seg != null) {
-                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
+                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
                                     if (seg != null) {
                                         if ((bot.settings.screenshots.contains("b"))) {
                                             bot.saveGameScreen("bounty-loot", "rewards");
                                         }
                                         bot.browser.clickOnSeg(seg);
                                         BHBot.logger.info("Collected bounties");
-                                        Misc.sleep(SECOND * 2);
+                                        Misc.sleep(Misc.Durations.SECOND * 2);
                                     } else {
                                         BHBot.logger.error("Error when collecting bounty items, restarting...");
                                         bot.saveGameScreen("bounties-error-collect", "errors");
@@ -1877,10 +1873,10 @@ public class DungeonThread implements Runnable {
                                     restart();
                                 }
 
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Loot"), SECOND * 5, new Bounds(505, 245, 585, 275), bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Loot"), Misc.Durations.SECOND * 5, new Bounds(505, 245, 585, 275), bot.browser);
                             }
 
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
                             if (seg != null) {
                                 bot.browser.clickOnSeg(seg);
                             } else {
@@ -1893,7 +1889,7 @@ public class DungeonThread implements Runnable {
                             bot.saveGameScreen("bounties-error-dialog");
                             restart();
                         }
-                        bot.browser.readScreen(SECOND * 2);
+                        bot.browser.readScreen(Misc.Durations.SECOND * 2);
                         continue;
                     }
 
@@ -1917,7 +1913,7 @@ public class DungeonThread implements Runnable {
                             bot.scheduler.doFishingImmediately = false; //disable collectImmediately again if its been activated
                         }
 
-                        if ((Misc.getTime() - timeLastFishingBaitsCheck) > DAY) { //if we haven't collected bait today we need to do that first
+                        if ((Misc.getTime() - timeLastFishingBaitsCheck) > Misc.Durations.DAY) { //if we haven't collected bait today we need to do that first
                             handleFishingBaits();
                         }
 
@@ -1954,7 +1950,7 @@ public class DungeonThread implements Runnable {
             numConsecutiveException = 0; // reset exception counter
             bot.scheduler.restoreIdleTime(); // revert changes to idle time
             if (bot.finished) break; // skip sleeping if finished flag has been set!
-            Misc.sleep(SECOND);
+            Misc.sleep(Misc.Durations.SECOND);
         } // main while loop
 
         BHBot.logger.info("Stopping main thread...");
@@ -2029,7 +2025,7 @@ public class DungeonThread implements Runnable {
                     activity = activitysIterator.next();
                 }
 
-                if (activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > (long) (15 * MINUTE))) {
+                if (activity.equals("r") && ((Misc.getTime() - timeLastShardsCheck) > (long) (15 * Misc.Durations.MINUTE))) {
                     return "r";
                 } else if ("d".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL)) {
                     return "d";
@@ -2047,11 +2043,11 @@ public class DungeonThread implements Runnable {
                     return "v";
                 } else if ("e".equals(activity) && ((Misc.getTime() - timeLastExpBadgesCheck) > BADGES_CHECK_INTERVAL)) {
                     return "e";
-                } else if ("b".equals(activity) && ((Misc.getTime() - timeLastBountyCheck) > (long) HOUR)) {
+                } else if ("b".equals(activity) && ((Misc.getTime() - timeLastBountyCheck) > (long) Misc.Durations.HOUR)) {
                     return "b";
-                } else if ("a".equals(activity) && ((Misc.getTime() - timeLastFishingBaitsCheck) > (long) DAY)) {
+                } else if ("a".equals(activity) && ((Misc.getTime() - timeLastFishingBaitsCheck) > (long) Misc.Durations.DAY)) {
                     return "a";
-                } else if ("f".equals(activity) && ((Misc.getTime() - timeLastFishingCheck) > (long) DAY)) {
+                } else if ("f".equals(activity) && ((Misc.getTime() - timeLastFishingCheck) > (long) Misc.Durations.DAY)) {
                     return "f";
                 }
             }
@@ -2072,7 +2068,7 @@ public class DungeonThread implements Runnable {
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
             bot.browser.readScreen(delay);
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Settings"), SECOND * 3, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Settings"), Misc.Durations.SECOND * 3, bot.browser);
             return seg != null;
         } else {
             BHBot.logger.error("Impossible to find the settings button!");
@@ -2086,9 +2082,9 @@ public class DungeonThread implements Runnable {
         int ignoreBossCnt = 0;
         int ignoreShrineCnt = 0;
 
-        if (openSettings(SECOND)) {
+        if (openSettings(Misc.Durations.SECOND)) {
             if (ignoreBoss) {
-                while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreBoss"), SECOND, bot.browser) != null) {
+                while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreBoss"), Misc.Durations.SECOND, bot.browser) != null) {
                     BHBot.logger.debug("Enabling Ignore Boss");
                     bot.browser.clickInGame(194, 366);
                     bot.browser.readScreen(500);
@@ -2101,7 +2097,7 @@ public class DungeonThread implements Runnable {
                 ignoreBossSetting = true;
                 BHBot.logger.debug("Ignore Boss Enabled");
             } else {
-                while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreBoss"), SECOND, bot.browser) == null) {
+                while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreBoss"), Misc.Durations.SECOND, bot.browser) == null) {
                     BHBot.logger.debug("Disabling Ignore Boss");
                     bot.browser.clickInGame(194, 366);
                     bot.browser.readScreen(500);
@@ -2116,7 +2112,7 @@ public class DungeonThread implements Runnable {
             }
 
             if (ignoreShrines) {
-                while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreShrines"), SECOND, bot.browser) != null) {
+                while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreShrines"), Misc.Durations.SECOND, bot.browser) != null) {
                     BHBot.logger.debug("Enabling Ignore Shrine");
                     bot.browser.clickInGame(194, 402);
                     bot.browser.readScreen(500);
@@ -2129,7 +2125,7 @@ public class DungeonThread implements Runnable {
                 ignoreShrinesSetting = true;
                 BHBot.logger.debug("Ignore Shrine Enabled");
             } else {
-                while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreShrines"), SECOND, bot.browser) == null) {
+                while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreShrines"), Misc.Durations.SECOND, bot.browser) == null) {
                     BHBot.logger.debug("Disabling Ignore Shrine");
                     bot.browser.clickInGame(194, 402);
                     bot.browser.readScreen(500);
@@ -2143,7 +2139,7 @@ public class DungeonThread implements Runnable {
                 BHBot.logger.debug("Ignore Shrine Disabled");
             }
 
-            bot.browser.readScreen(SECOND);
+            bot.browser.readScreen(Misc.Durations.SECOND);
 
             closePopupSecurely(BrowserManager.cues.get("Settings"), new Cue(BrowserManager.cues.get("X"), new Bounds(608, 39, 711, 131)));
 
@@ -2158,7 +2154,7 @@ public class DungeonThread implements Runnable {
         // Open character menu
         bot.browser.clickInGame(55, 465);
 
-        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Runes"), 15 * SECOND, bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Runes"), 15 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.warn("Error: unable to detect runes button! Skipping...");
             return true;
@@ -2167,10 +2163,10 @@ public class DungeonThread implements Runnable {
         bot.browser.clickOnSeg(seg);
         Misc.sleep(500); //sleep for window animation (15s below was crashing the bot, not sure why
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("RunesLayout"), 15 * SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("RunesLayout"), 15 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.warn("Error: unable to detect rune layout! Skipping...");
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg);
             }
@@ -2251,7 +2247,7 @@ public class DungeonThread implements Runnable {
             if (right != null) bot.browser.clickOnSeg(right);
 
             steps++;
-            Misc.sleep(SECOND);
+            Misc.sleep(Misc.Durations.SECOND);
         }
 
         if (steps > 0)
@@ -2549,13 +2545,13 @@ public class DungeonThread implements Runnable {
         if (activityDuration % 5 == 0 && encounterStatus) {
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("Merchant"), bot.browser);
             if (seg != null) {
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Decline"), 5 * SECOND, bot.browser);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Decline"), 5 * Misc.Durations.SECOND, bot.browser);
                 if (seg != null) {
                     bot.browser.clickOnSeg(seg);
                 } else BHBot.logger.error("Merchant 'decline' cue not found");
 
-                bot.browser.readScreen(SECOND);
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 5 * SECOND, bot.browser);
+                bot.browser.readScreen(Misc.Durations.SECOND);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, bot.browser);
                 if (seg != null) {
                     bot.browser.clickOnSeg(seg);
                 } else BHBot.logger.error("Merchant 'yes' cue not found");
@@ -2598,8 +2594,8 @@ public class DungeonThread implements Runnable {
 
                 // close the activity window to return us to the main screen
                 if (bot.getState() != BHBot.State.Expedition) {
-                    bot.browser.readScreen(3 * SECOND); //wait for slide-in animation to finish
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
+                    bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
                     if (seg != null) {
                         bot.browser.clickOnSeg(seg);
                     } else
@@ -2611,18 +2607,18 @@ public class DungeonThread implements Runnable {
                 if (bot.getState() == BHBot.State.Expedition) {
 
                     // first screen
-                    bot.browser.readScreen(SECOND);
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * SECOND, bot.browser);
+                    bot.browser.readScreen(Misc.Durations.SECOND);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * Misc.Durations.SECOND, bot.browser);
                     bot.browser.clickOnSeg(seg);
 
                     // Close Portal Map after expedition
-                    bot.browser.readScreen(SECOND);
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * SECOND, bot.browser);
+                    bot.browser.readScreen(Misc.Durations.SECOND);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * Misc.Durations.SECOND, bot.browser);
                     bot.browser.clickOnSeg(seg);
 
                     // close Expedition window after Expedition
-                    bot.browser.readScreen(SECOND);
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * SECOND, bot.browser);
+                    bot.browser.readScreen(Misc.Durations.SECOND);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * Misc.Durations.SECOND, bot.browser);
                     bot.browser.clickOnSeg(seg);
                 }
 
@@ -2662,15 +2658,15 @@ public class DungeonThread implements Runnable {
                 handleLoot();
 
                 //close the loot window
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("CloseGreen"), 2 * SECOND, bot.browser);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, bot.browser);
                 if (seg != null) {
                     bot.browser.clickOnSeg(seg);
                 } else
                     BHBot.logger.warn("Unable to find close button for " + bot.getState().getName() + " victory screen..");
 
                 // close the activity window to return us to the main screen
-                bot.browser.readScreen(3 * SECOND); //wait for slide-in animation to finish
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
+                bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
                 if (seg != null) {
                     bot.browser.clickOnSeg(seg);
                 } else BHBot.logger.warn("Unable to find X button for " + bot.getState().getName() + " window..");
@@ -2725,9 +2721,9 @@ public class DungeonThread implements Runnable {
 
             //in Gauntlet/Invasion the close button is green, everywhere else its blue
             if (bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.Invasion) {
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("CloseGreen"), 2 * SECOND, bot.browser);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, bot.browser);
             } else {
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * SECOND, bot.browser);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * Misc.Durations.SECOND, bot.browser);
             }
 
             if (seg != null) {
@@ -2742,8 +2738,8 @@ public class DungeonThread implements Runnable {
 
             //Close the activity window to return us to the main screen
             if (bot.getState() != BHBot.State.Expedition) {
-                bot.browser.readScreen(3 * SECOND); //wait for slide-in animation to finish
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
+                bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
                 if (seg != null) {
                     bot.browser.clickOnSeg(seg);
                 } else BHBot.logger.warn("Unable to find X button for " + bot.getState().getName() + " window..");
@@ -2753,18 +2749,18 @@ public class DungeonThread implements Runnable {
             //Next Expedition this'll be replaced with closePopupSecurely
             if (bot.getState() == BHBot.State.Expedition) {
                 // first screen
-                bot.browser.readScreen(SECOND);
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * SECOND, bot.browser);
+                bot.browser.readScreen(Misc.Durations.SECOND);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * Misc.Durations.SECOND, bot.browser);
                 bot.browser.clickOnSeg(seg);
 
                 // Close Portal Map after expedition
-                bot.browser.readScreen(SECOND);
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * SECOND, bot.browser);
+                bot.browser.readScreen(Misc.Durations.SECOND);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * Misc.Durations.SECOND, bot.browser);
                 bot.browser.clickOnSeg(seg);
 
                 // close Expedition window after Expedition
-                bot.browser.readScreen(SECOND);
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * SECOND, bot.browser);
+                bot.browser.readScreen(Misc.Durations.SECOND);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * Misc.Durations.SECOND, bot.browser);
                 bot.browser.clickOnSeg(seg);
 
                 //Handle difficultyFailsafe for Exped
@@ -2848,7 +2844,7 @@ public class DungeonThread implements Runnable {
             // We make sure to disable autoshrine when defeated
             if (bot.getState() == BHBot.State.Trials || bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Expedition) {
                 if (ignoreBossSetting && ignoreShrinesSetting) {
-                    bot.browser.readScreen(SECOND);
+                    bot.browser.readScreen(Misc.Durations.SECOND);
                     if (!checkShrineSettings(false, false)) {
                         BHBot.logger.error("Impossible to disable autoShrine after defeat! Restarting..");
                         restart();
@@ -2856,7 +2852,7 @@ public class DungeonThread implements Runnable {
                 }
                 autoShrined = false;
                 autoBossRuned = false;
-                bot.browser.readScreen(SECOND * 2);
+                bot.browser.readScreen(Misc.Durations.SECOND * 2);
             }
 
             bot.setState(BHBot.State.Main); // reset state
@@ -2937,7 +2933,7 @@ public class DungeonThread implements Runnable {
                         handleMinorBossRunes();
                     } else {
                         BHBot.logger.autoshrine("Waiting " + bot.settings.shrineDelay + "s to use shrines");
-                        Misc.sleep(bot.settings.shrineDelay * SECOND); //if we're not changing runes we sleep while we activate shrines
+                        Misc.sleep(bot.settings.shrineDelay * Misc.Durations.SECOND); //if we're not changing runes we sleep while we activate shrines
                     }
 
                     if (!checkShrineSettings(false, false)) {
@@ -2985,10 +2981,10 @@ public class DungeonThread implements Runnable {
         }
 
         // Back out of any raid/gauntlet/trial/GvG/etc pre-menu
-        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 2 * SECOND, bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 2 * Misc.Durations.SECOND, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(SECOND);
+            bot.browser.readScreen(Misc.Durations.SECOND);
         }
 
         if (!switchMinorRunes(desiredRunes))
@@ -3101,14 +3097,14 @@ public class DungeonThread implements Runnable {
             }
         }
 
-        Misc.sleep(SECOND); //sleep while we wait for window animation
+        Misc.sleep(Misc.Durations.SECOND); //sleep while we wait for window animation
 
         if (!detectEquippedMinorRunes(false, true)) {
             BHBot.logger.error("Unable to detect runes, post-equip.");
             return false;
         }
 
-        Misc.sleep(2 * SECOND);
+        Misc.sleep(2 * Misc.Durations.SECOND);
         boolean success = true;
         if (desiredLeftRune != leftMinorRune.getRuneEffect()) {
             BHBot.logger.error("Left minor rune failed to switch for unknown reason.");
@@ -3124,14 +3120,14 @@ public class DungeonThread implements Runnable {
 
     private Boolean switchSingleMinorRune(MinorRuneEffect desiredRune) {
 
-        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("RunesSwitch"), 5 * SECOND, bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("RunesSwitch"), 5 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.error("Failed to find rune switch button.");
             return false;
         }
         bot.browser.clickOnSeg(seg);
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("RunesPicker"), 5 * SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("RunesPicker"), 5 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.error("Failed to find rune picker.");
             return false;
@@ -3159,13 +3155,13 @@ public class DungeonThread implements Runnable {
             }
             BHBot.logger.autorune("Switched to " + getRuneName(thisRune.getRuneCueName()));
             bot.browser.clickOnSeg(seg);
-            Misc.sleep(SECOND);
+            Misc.sleep(Misc.Durations.SECOND);
             return true;
         }
 
         BHBot.logger.error("Unable to find rune of type " + desiredRune);
         closePopupSecurely(BrowserManager.cues.get("RunesPicker"), BrowserManager.cues.get("X"));
-        Misc.sleep(SECOND);
+        Misc.sleep(Misc.Durations.SECOND);
         return false;
     }
 
@@ -3215,29 +3211,29 @@ public class DungeonThread implements Runnable {
     private boolean handleSkeletonKey() {
         MarvinSegment seg;
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("SkeletonNoKeys"), 2 * SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("SkeletonNoKeys"), 2 * Misc.Durations.SECOND, bot.browser);
         if (seg != null) {
             BHBot.logger.warn("No skeleton keys, skipping..");
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Decline"), 5 * SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Decline"), 5 * Misc.Durations.SECOND, bot.browser);
             bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(SECOND);
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 5 * SECOND, bot.browser);
+            bot.browser.readScreen(Misc.Durations.SECOND);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, bot.browser);
             bot.browser.clickOnSeg(seg);
             return false;
         }
 
         if (bot.settings.openSkeleton == 0) {
             BHBot.logger.info("Skeleton treasure found, declining.");
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Decline"), 5 * SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Decline"), 5 * Misc.Durations.SECOND, bot.browser);
             bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(SECOND);
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 5 * SECOND, bot.browser);
+            bot.browser.readScreen(Misc.Durations.SECOND);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, bot.browser);
             bot.browser.clickOnSeg(seg);
             return false;
 
         } else if (bot.settings.openSkeleton == 1) {
             BHBot.logger.info("Skeleton treasure found, attemping to use key");
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Open"), 5 * SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Open"), 5 * Misc.Durations.SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Open button not found, restarting");
                 String STScreen = bot.saveGameScreen("skeleton-treasure-no-open");
@@ -3251,8 +3247,8 @@ public class DungeonThread implements Runnable {
                 return true;
             }
             bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(SECOND);
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 5 * SECOND, bot.browser);
+            bot.browser.readScreen(Misc.Durations.SECOND);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Yes button not found, restarting");
                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
@@ -3270,7 +3266,7 @@ public class DungeonThread implements Runnable {
 
         } else if (bot.settings.openSkeleton == 2 && bot.getState() == BHBot.State.Raid) {
             BHBot.logger.info("Raid Skeleton treasure found, attemping to use key");
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Open"), 5 * SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Open"), 5 * Misc.Durations.SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Open button not found, restarting");
                 String STScreen = bot.saveGameScreen("skeleton-treasure-no-open");
@@ -3284,8 +3280,8 @@ public class DungeonThread implements Runnable {
                 return true;
             }
             bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(SECOND);
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 5 * SECOND, bot.browser);
+            bot.browser.readScreen(Misc.Durations.SECOND);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Yes button not found, restarting");
                 if (bot.settings.enablePushover && bot.settings.poNotifyErrors) {
@@ -3307,10 +3303,10 @@ public class DungeonThread implements Runnable {
 
         } else
             BHBot.logger.info("Skeleton treasure found, declining.");
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Decline"), 5 * SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Decline"), 5 * Misc.Durations.SECOND, bot.browser);
         bot.browser.clickOnSeg(seg);
-        bot.browser.readScreen(SECOND);
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 5 * SECOND, bot.browser);
+        bot.browser.readScreen(Misc.Durations.SECOND);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, bot.browser);
         bot.browser.clickOnSeg(seg);
         return false;
     }
@@ -3319,7 +3315,7 @@ public class DungeonThread implements Runnable {
         MarvinSegment seg;
 
         BHBot.logger.autobribe("Familiar encountered");
-        bot.browser.readScreen(2 * SECOND);
+        bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
         FamiliarType familiarLevel;
         if (MarvinSegment.fromCue(BrowserManager.cues.get("CommonFamiliar"), bot.browser) != null) {
@@ -3401,8 +3397,8 @@ public class DungeonThread implements Runnable {
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("DeclineRed"), bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
-                bot.browser.readScreen(SECOND * 2);
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), SECOND, bot.browser);
+                bot.browser.readScreen(Misc.Durations.SECOND * 2);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), Misc.Durations.SECOND, bot.browser);
                 bot.browser.clickOnSeg(seg);
                 BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion declined.");
             } else {
@@ -3419,10 +3415,10 @@ public class DungeonThread implements Runnable {
 
         BooleanSupplier openView = () -> {
             MarvinSegment seg;
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("View"), SECOND * 3, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("View"), Misc.Durations.SECOND * 3, bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg);
-                bot.browser.readScreen(SECOND * 2);
+                bot.browser.readScreen(Misc.Durations.SECOND * 2);
                 return true;
             } else {
                 return false;
@@ -3431,10 +3427,10 @@ public class DungeonThread implements Runnable {
 
         BooleanSupplier closeView = () -> {
             MarvinSegment seg;
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 2 * SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 2 * Misc.Durations.SECOND, bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg);
-                bot.browser.readScreen(SECOND);
+                bot.browser.readScreen(Misc.Durations.SECOND);
                 return true;
             } else {
                 return false;
@@ -3448,7 +3444,7 @@ public class DungeonThread implements Runnable {
 
         boolean viewIsOpened = false;
 
-        bot.browser.readScreen(SECOND);
+        bot.browser.readScreen(Misc.Durations.SECOND);
         for (String familiarDetails : bot.settings.familiars) {
             // familiar details from settings
             String[] details = familiarDetails.toLowerCase().split(" ");
@@ -3470,7 +3466,7 @@ public class DungeonThread implements Runnable {
                     if (isOldFormat) { // Old style familiar
                         if (!viewIsOpened) { // we try to open the view menu if closed
                             if (openView.getAsBoolean()) {
-                                bot.browser.readScreen(SECOND * 2);
+                                bot.browser.readScreen(Misc.Durations.SECOND * 2);
                                 viewIsOpened = true;
                             } else {
                                 BHBot.logger.error("Old format familiar with no view button");
@@ -3480,7 +3476,7 @@ public class DungeonThread implements Runnable {
                     } else { // New style familiar
                         if (viewIsOpened) { // we try to close the view menu if opened
                             if (closeView.getAsBoolean()) {
-                                bot.browser.readScreen(SECOND);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
                                 viewIsOpened = false;
                             } else {
                                 BHBot.logger.error("Old style familiar detected with no X button to close the view menu.");
@@ -3489,7 +3485,7 @@ public class DungeonThread implements Runnable {
                         }
                     }
 
-                    if (MarvinSegment.fromCue(familiarCue, SECOND * 3, bot.browser) != null) {
+                    if (MarvinSegment.fromCue(familiarCue, Misc.Durations.SECOND * 3, bot.browser) != null) {
                         BHBot.logger.autobribe("Detected familiar " + familiarDetails + " as valid in familiars");
                         result.toBribeCnt = toBribeCnt;
                         result.familiarName = familiarName;
@@ -3524,20 +3520,20 @@ public class DungeonThread implements Runnable {
 
     private boolean bribeFamiliar() {
         bot.browser.readScreen();
-        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Bribe"), SECOND * 3, bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Bribe"), Misc.Durations.SECOND * 3, bot.browser);
         BufferedImage tmpScreen = bot.browser.getImg();
 
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
-            Misc.sleep(2 * SECOND);
+            Misc.sleep(2 * Misc.Durations.SECOND);
 
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), SECOND * 5, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), Misc.Durations.SECOND * 5, bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg);
-                Misc.sleep(2 * SECOND);
+                Misc.sleep(2 * Misc.Durations.SECOND);
             }
 
-            if (MarvinSegment.fromCue(BrowserManager.cues.get("NotEnoughGems"), SECOND * 5, bot.browser) != null) {
+            if (MarvinSegment.fromCue(BrowserManager.cues.get("NotEnoughGems"), Misc.Durations.SECOND * 5, bot.browser) != null) {
                 BHBot.logger.warn("Not enough gems to attempt a bribe!");
                 noGemsToBribe = true;
                 if (!closePopupSecurely(BrowserManager.cues.get("NotEnoughGems"), BrowserManager.cues.get("No"))) {
@@ -3566,12 +3562,12 @@ public class DungeonThread implements Runnable {
         if (seg != null) {
 
             bot.browser.clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
-            Misc.sleep(2 * SECOND);
+            Misc.sleep(2 * Misc.Durations.SECOND);
 
             bot.browser.readScreen();
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), bot.browser);
             bot.browser.clickOnSeg(seg);
-            Misc.sleep(2 * SECOND);
+            Misc.sleep(2 * Misc.Durations.SECOND);
 
             return true;
         }
@@ -3593,12 +3589,12 @@ public class DungeonThread implements Runnable {
         }
 
         // if everyone dies autoRevive attempts to revive people on the defeat screen, this should prevent that
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Defeat"), SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Defeat"), Misc.Durations.SECOND, bot.browser);
         if (seg != null) {
             BHBot.logger.autorevive("Defeat screen, skipping revive check");
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
             if (seg != null) bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(SECOND);
+            bot.browser.readScreen(Misc.Durations.SECOND);
             bot.scheduler.resetIdleTime(true);
             return;
         }
@@ -3606,10 +3602,10 @@ public class DungeonThread implements Runnable {
         seg = MarvinSegment.fromCue(BrowserManager.cues.get("VictoryLarge"), 500, bot.browser);
         if (seg != null) {
             BHBot.logger.autorevive("Victory popup, skipping revive check");
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
             if (seg != null) bot.browser.clickOnSeg(seg);
 
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("CloseGreen"), 2 * SECOND, bot.browser); // after enabling auto again the bot would get stuck at the victory screen, this should close it
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, bot.browser); // after enabling auto again the bot would get stuck at the victory screen, this should close it
             if (seg != null)
                 bot.browser.clickOnSeg(seg);
             else {
@@ -3623,25 +3619,25 @@ public class DungeonThread implements Runnable {
         // we make sure that we stick with the limits
         if (potionsUsed >= bot.settings.potionLimit) {
             BHBot.logger.autorevive("Potion limit reached, skipping revive check");
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
             if (seg != null) bot.browser.clickOnSeg(seg);
             bot.scheduler.resetIdleTime(true);
             return;
         }
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Potions"), SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Potions"), Misc.Durations.SECOND, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(SECOND);
+            bot.browser.readScreen(Misc.Durations.SECOND);
 
             // If no potions are needed, we re-enable the Auto function
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("NoPotions"), SECOND, bot.browser); // Everyone is Full HP
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("NoPotions"), Misc.Durations.SECOND, bot.browser); // Everyone is Full HP
             if (seg != null) {
-                seg = MarvinSegment.fromCue("Close", SECOND, new Bounds(300, 330, 500, 400), bot.browser);
+                seg = MarvinSegment.fromCue("Close", Misc.Durations.SECOND, new Bounds(300, 330, 500, 400), bot.browser);
                 if (seg != null) {
                     BHBot.logger.autorevive("None of the team members need a consumable, exiting from autoRevive");
                     bot.browser.clickOnSeg(seg);
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), SECOND, bot.browser);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
                     bot.browser.clickOnSeg(seg);
                 } else {
                     BHBot.logger.error("No potions cue detected, without close button, restarting!");
@@ -3692,7 +3688,7 @@ public class DungeonThread implements Runnable {
                     //if we have reached potionLimit we exit autoRevive
                     if (potionsUsed == bot.settings.potionLimit) {
                         BHBot.logger.autorevive("Potion limit reached, exiting from Auto Revive");
-                        bot.browser.readScreen(SECOND);
+                        bot.browser.readScreen(Misc.Durations.SECOND);
                         break;
                     }
 
@@ -3702,25 +3698,25 @@ public class DungeonThread implements Runnable {
                     //check if there is a gravestone to see if we need to revive
                     //we MouseOver to make sure the grave is in the foreground and not covered
                     bot.browser.moveMouseToPos(slotPos.x, slotPos.y);
-                    if (MarvinSegment.fromCue(BrowserManager.cues.get("GravestoneHighlighted"), 3 * SECOND, bot.browser) == null)
+                    if (MarvinSegment.fromCue(BrowserManager.cues.get("GravestoneHighlighted"), 3 * Misc.Durations.SECOND, bot.browser) == null)
                         continue;
 
                     // If we revive a team member we need to reopen the potion menu again
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("UnitSelect"), SECOND, bot.browser);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("UnitSelect"), Misc.Durations.SECOND, bot.browser);
                     if (seg == null) {
-                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Potions"), SECOND * 2, bot.browser);
+                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Potions"), Misc.Durations.SECOND * 2, bot.browser);
                         if (seg != null) {
                             bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(SECOND);
+                            bot.browser.readScreen(Misc.Durations.SECOND);
 
                             // If no potions are needed, we re-enable the Auto function
-                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("NoPotions"), SECOND, bot.browser); // Everyone is Full HP
+                            seg = MarvinSegment.fromCue(BrowserManager.cues.get("NoPotions"), Misc.Durations.SECOND, bot.browser); // Everyone is Full HP
                             if (seg != null) {
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), SECOND, new Bounds(300, 330, 500, 400), bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), Misc.Durations.SECOND, new Bounds(300, 330, 500, 400), bot.browser);
                                 if (seg != null) {
                                     BHBot.logger.autorevive("None of the team members need a consumable, exiting from autoRevive");
                                     bot.browser.clickOnSeg(seg);
-                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), SECOND, bot.browser);
+                                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
                                     bot.browser.clickOnSeg(seg);
                                 } else {
                                     BHBot.logger.error("Error while reopening the potions menu: no close button found!");
@@ -3732,9 +3728,9 @@ public class DungeonThread implements Runnable {
                         }
                     }
 
-                    bot.browser.readScreen(SECOND);
+                    bot.browser.readScreen(Misc.Durations.SECOND);
                     bot.browser.clickInGame(slotPos.x, slotPos.y);
-                    bot.browser.readScreen(SECOND);
+                    bot.browser.readScreen(Misc.Durations.SECOND);
 
                     MarvinSegment superHealSeg = MarvinSegment.fromCue(BrowserManager.cues.get("SuperAvailable"), bot.browser);
 
@@ -3773,12 +3769,12 @@ public class DungeonThread implements Runnable {
                             if (seg != null) {
                                 BHBot.logger.autorevive("Handling tank priority (position: " + bot.settings.tankPosition + ") with " + potionTranslate.get(potion) + " revive.");
                                 bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(SECOND);
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410), bot.browser);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), Misc.Durations.SECOND, new Bounds(230, 320, 550, 410), bot.browser);
                                 bot.browser.clickOnSeg(seg);
                                 revived[bot.settings.tankPosition - 1] = true;
                                 potionsUsed++;
-                                bot.browser.readScreen(SECOND);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.scheduler.resetIdleTime(true);
                                 break;
                             }
@@ -3792,12 +3788,12 @@ public class DungeonThread implements Runnable {
                             if (seg != null) {
                                 BHBot.logger.autorevive("Using " + potionTranslate.get(potion) + " revive on slot " + slotNum + ".");
                                 bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(SECOND);
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), SECOND, new Bounds(230, 320, 550, 410), bot.browser);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), Misc.Durations.SECOND, new Bounds(230, 320, 550, 410), bot.browser);
                                 bot.browser.clickOnSeg(seg);
                                 revived[slotNum - 1] = true;
                                 potionsUsed++;
-                                bot.browser.readScreen(SECOND);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.scheduler.resetIdleTime(true);
                                 break;
                             }
@@ -3811,18 +3807,18 @@ public class DungeonThread implements Runnable {
         }
 
         // If the unit selection screen is still open, we need to close it
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("UnitSelect"), SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("UnitSelect"), Misc.Durations.SECOND, bot.browser);
         if (seg != null) {
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND, bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg);
-                bot.browser.readScreen(SECOND);
+                bot.browser.readScreen(Misc.Durations.SECOND);
             }
         }
 
         inEncounterTimestamp = Misc.getTime() / 1000; //after reviving we update encounter timestamp as it wasn't updating from processDungeon
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
         if (seg != null) bot.browser.clickOnSeg(seg);
         bot.scheduler.resetIdleTime(true);
     }
@@ -3830,24 +3826,24 @@ public class DungeonThread implements Runnable {
     private void closeWorldBoss() {
         MarvinSegment seg;
 
-        Misc.sleep(SECOND);
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 2 * SECOND, bot.browser);
+        Misc.sleep(Misc.Durations.SECOND);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 2 * Misc.Durations.SECOND, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
         } else {
             BHBot.logger.error("first x Error returning to main screen from World Boss, restarting");
         }
 
-        Misc.sleep(SECOND);
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 2 * SECOND, bot.browser);
+        Misc.sleep(Misc.Durations.SECOND);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
         } else {
             BHBot.logger.error("yesgreen Error returning to main screen from World Boss, restarting");
         }
 
-        Misc.sleep(SECOND);
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 2 * SECOND, bot.browser);
+        Misc.sleep(Misc.Durations.SECOND);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 2 * Misc.Durations.SECOND, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
         } else {
@@ -4403,7 +4399,7 @@ public class DungeonThread implements Runnable {
         MarvinSegment seg;
 
         // we refresh the screen
-        bot.browser.readScreen(SECOND);
+        bot.browser.readScreen(Misc.Durations.SECOND);
 
         int wbUnlocked = 0;
         int desiredWB = desiredWorldBoss.getNumber();
@@ -4481,7 +4477,7 @@ public class DungeonThread implements Runnable {
         MarvinSegment seg;
 
         // we refresh the screen
-        bot.browser.readScreen(SECOND);
+        bot.browser.readScreen(Misc.Durations.SECOND);
 
         int raidUnlocked = 0;
         // we get the grey dots on the raid selection popup
@@ -4558,7 +4554,7 @@ public class DungeonThread implements Runnable {
         final HttpPost post = new HttpPost("https://script.google.com/macros/s/AKfycby-tCXZ6MHt_ZSUixCcNbYFjDuri6WvljomLgGy_m5lLZw1y5fZ/exec");
 
         // we generate a sub image with just the name of the familiar
-        bot.browser.readScreen(SECOND);
+        bot.browser.readScreen(Misc.Durations.SECOND);
         int familiarTxtColor;
         switch (familiarType) {
             case COMMON:
@@ -4657,14 +4653,14 @@ public class DungeonThread implements Runnable {
     private boolean handleTeamMalformedWarning() {
 
         // We look for the team text on top of the text pop-up
-        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Team"), SECOND * 3, new Bounds(330, 135, 480, 180), bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Team"), Misc.Durations.SECOND * 3, new Bounds(330, 135, 480, 180), bot.browser);
         if (seg == null) {
             return false;
         }
 
-        if (MarvinSegment.fromCue(BrowserManager.cues.get("TeamNotFull"), SECOND, bot.browser) != null || MarvinSegment.fromCue(BrowserManager.cues.get("TeamNotOrdered"), SECOND, bot.browser) != null) {
-            bot.browser.readScreen(SECOND);
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("No"), 2 * SECOND, bot.browser);
+        if (MarvinSegment.fromCue(BrowserManager.cues.get("TeamNotFull"), Misc.Durations.SECOND, bot.browser) != null || MarvinSegment.fromCue(BrowserManager.cues.get("TeamNotOrdered"), Misc.Durations.SECOND, bot.browser) != null) {
+            bot.browser.readScreen(Misc.Durations.SECOND);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("No"), 2 * Misc.Durations.SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'No' button found. Restarting...");
                 return true;
@@ -4672,7 +4668,7 @@ public class DungeonThread implements Runnable {
             bot.browser.clickOnSeg(seg);
             bot.browser.readScreen();
 
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoTeam"), 2 * SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("AutoTeam"), 2 * Misc.Durations.SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'Auto' button found. Restarting...");
                 return true;
@@ -4680,7 +4676,7 @@ public class DungeonThread implements Runnable {
             bot.browser.clickOnSeg(seg);
 
             bot.browser.readScreen();
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 2 * SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 2 * Misc.Durations.SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Error: 'Team not full/ordered' window detected, but no 'Accept' button found. Restarting...");
                 return true;
@@ -4706,16 +4702,16 @@ public class DungeonThread implements Runnable {
 
     private boolean handleGuildLeaveConfirm() {
         bot.browser.readScreen();
-        if (MarvinSegment.fromCue(BrowserManager.cues.get("GuildLeaveConfirm"), SECOND * 3, bot.browser) != null) {
+        if (MarvinSegment.fromCue(BrowserManager.cues.get("GuildLeaveConfirm"), Misc.Durations.SECOND * 3, bot.browser) != null) {
             Misc.sleep(500); // in case popup is still sliding downward
             bot.browser.readScreen();
-            MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 10 * SECOND, bot.browser);
+            MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 10 * Misc.Durations.SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Error: 'Guild Leave Confirm' window detected, but no 'Yes' green button found. Restarting...");
                 return true;
             }
             bot.browser.clickOnSeg(seg);
-            Misc.sleep(2 * SECOND);
+            Misc.sleep(2 * Misc.Durations.SECOND);
 
             BHBot.logger.info("'Guild Leave' dialog detected and handled!");
         }
@@ -4725,16 +4721,16 @@ public class DungeonThread implements Runnable {
 
     private Boolean handleDisabledBattles() {
         bot.browser.readScreen();
-        if (MarvinSegment.fromCue(BrowserManager.cues.get("DisabledBattles"), SECOND * 3, bot.browser) != null) {
+        if (MarvinSegment.fromCue(BrowserManager.cues.get("DisabledBattles"), Misc.Durations.SECOND * 3, bot.browser) != null) {
             Misc.sleep(500); // in case popup is still sliding downward
             bot.browser.readScreen();
-            MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 10 * SECOND, bot.browser);
+            MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 10 * Misc.Durations.SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Error: 'Disabled battles' popup detected, but no 'Close' blue button found. Restarting...");
                 return null;
             }
             bot.browser.clickOnSeg(seg);
-            Misc.sleep(2 * SECOND);
+            Misc.sleep(2 * Misc.Durations.SECOND);
 
             BHBot.logger.info("'Disabled battles' popup detected and handled!");
             return true;
@@ -4766,7 +4762,7 @@ public class DungeonThread implements Runnable {
 
                 // if D4 close the dungeon info window, else close the char selection screen
                 if (specialDungeon) {
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
                     if (seg != null)
                         bot.browser.clickOnSeg(seg);
                     specialDungeon = false;
@@ -4939,14 +4935,14 @@ public class DungeonThread implements Runnable {
      * @return 0 in case of an error, or the selected difficulty level instead.
      */
     private int detectDifficulty(Cue difficulty) {
-        bot.browser.readScreen(2 * SECOND); // note that sometimes the cue will be gray (disabled) since the game is fetching data from the server - in that case we'll have to wait a bit
+        bot.browser.readScreen(2 * Misc.Durations.SECOND); // note that sometimes the cue will be gray (disabled) since the game is fetching data from the server - in that case we'll have to wait a bit
 
         MarvinSegment seg = MarvinSegment.fromCue(difficulty, bot.browser);
         if (seg == null) {
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("DifficultyDisabled"), bot.browser);
             if (seg != null) { // game is still fetching data from the server... we must wait a bit!
-                Misc.sleep(5 * SECOND);
-                seg = MarvinSegment.fromCue(difficulty, 20 * SECOND, bot.browser);
+                Misc.sleep(5 * Misc.Durations.SECOND);
+                seg = MarvinSegment.fromCue(difficulty, 20 * Misc.Durations.SECOND, bot.browser);
             }
         }
         if (seg == null) {
@@ -4968,7 +4964,7 @@ public class DungeonThread implements Runnable {
     /* World boss reading and changing section */
     private int detectWorldBossTier() {
         int xOffset, yOffset, w, h;
-        bot.browser.readScreen(SECOND);
+        bot.browser.readScreen(Misc.Durations.SECOND);
         MarvinSegment tierDropDown;
 
         if (!bot.browser.isDoNotShareUrl()) {
@@ -4981,7 +4977,7 @@ public class DungeonThread implements Runnable {
         w = 21;
         h = 19;
 
-        tierDropDown = MarvinSegment.fromCue("WorldBossTierDropDown", SECOND, bot.browser); // For tier drop down menu
+        tierDropDown = MarvinSegment.fromCue("WorldBossTierDropDown", Misc.Durations.SECOND, bot.browser); // For tier drop down menu
 
         if (tierDropDown == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
@@ -5000,8 +4996,8 @@ public class DungeonThread implements Runnable {
 
     private boolean changeWorldBossTier(int target) {
         MarvinSegment seg;
-        bot.browser.readScreen(SECOND); //wait for screen to stabilize
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("WorldBossTierDropDown"), 2 * SECOND, bot.browser);
+        bot.browser.readScreen(Misc.Durations.SECOND); //wait for screen to stabilize
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("WorldBossTierDropDown"), 2 * Misc.Durations.SECOND, bot.browser);
 
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in changeWorldBossTier!");
@@ -5010,25 +5006,25 @@ public class DungeonThread implements Runnable {
         }
 
         bot.browser.clickOnSeg(seg);
-        bot.browser.readScreen(2 * SECOND); //wait for screen to stabilize
+        bot.browser.readScreen(2 * Misc.Durations.SECOND); //wait for screen to stabilize
 
         //get known screen position for difficulty screen selection
         if (target >= 5) { //top most
             bot.browser.readScreen();
-            MarvinSegment up = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownUp"), SECOND, bot.browser);
+            MarvinSegment up = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownUp"), Misc.Durations.SECOND, bot.browser);
             if (up != null) {
                 bot.browser.clickOnSeg(up);
                 bot.browser.clickOnSeg(up);
             }
         } else { //bottom most
             bot.browser.readScreen();
-            MarvinSegment down = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownDown"), SECOND, bot.browser);
+            MarvinSegment down = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownDown"), Misc.Durations.SECOND, bot.browser);
             if (down != null) {
                 bot.browser.clickOnSeg(down);
                 bot.browser.clickOnSeg(down);
             }
         }
-        bot.browser.readScreen(SECOND); //wait for screen to stabilize
+        bot.browser.readScreen(Misc.Durations.SECOND); //wait for screen to stabilize
         Point diff = getDifficultyButtonXY(target);
         if (diff != null) {
             //noinspection SuspiciousNameCombination
@@ -5060,20 +5056,20 @@ public class DungeonThread implements Runnable {
     private int detectWorldBossDifficulty() {
         bot.browser.readScreen();
 
-        if (MarvinSegment.fromCue(BrowserManager.cues.get("WorldBossDifficultyNormal"), SECOND, bot.browser) != null) {
+        if (MarvinSegment.fromCue(BrowserManager.cues.get("WorldBossDifficultyNormal"), Misc.Durations.SECOND, bot.browser) != null) {
             return 1;
-        } else if (MarvinSegment.fromCue(BrowserManager.cues.get("WorldBossDifficultyHard"), SECOND, bot.browser) != null) {
+        } else if (MarvinSegment.fromCue(BrowserManager.cues.get("WorldBossDifficultyHard"), Misc.Durations.SECOND, bot.browser) != null) {
             return 2;
-        } else if (MarvinSegment.fromCue(BrowserManager.cues.get("WorldBossDifficultyHeroic"), SECOND, bot.browser) != null) {
+        } else if (MarvinSegment.fromCue(BrowserManager.cues.get("WorldBossDifficultyHeroic"), Misc.Durations.SECOND, bot.browser) != null) {
             return 3;
         } else return 0;
     }
 
     private void changeWorldBossDifficulty(int target) {
 
-        bot.browser.readScreen(SECOND); //screen stabilising
+        bot.browser.readScreen(Misc.Durations.SECOND); //screen stabilising
         bot.browser.clickInGame(480, 300); //difficulty button
-        bot.browser.readScreen(SECOND); //screen stabilising
+        bot.browser.readScreen(Misc.Durations.SECOND); //screen stabilising
 
         Cue difficultySelection;
 
@@ -5088,7 +5084,7 @@ public class DungeonThread implements Runnable {
             difficultySelection = BrowserManager.cues.get("cueWBSelectNormal");
         }
 
-        MarvinSegment seg = MarvinSegment.fromCue(difficultySelection, SECOND * 2, bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(difficultySelection, Misc.Durations.SECOND * 2, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
         } else {
@@ -5111,7 +5107,7 @@ public class DungeonThread implements Runnable {
         if (oldDifficulty == newDifficulty)
             return true; // no change
 
-        MarvinSegment seg = MarvinSegment.fromCue(difficulty, 2 * SECOND, bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(difficulty, 2 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect 'select difficulty' button while trying to change difficulty level!");
             return false; // error
@@ -5119,7 +5115,7 @@ public class DungeonThread implements Runnable {
 
         bot.browser.clickOnSeg(seg);
 
-        bot.browser.readScreen(5 * SECOND);
+        bot.browser.readScreen(5 * Misc.Durations.SECOND);
 
         return selectDifficultyFromDropDown(newDifficulty, step);
     }
@@ -5208,7 +5204,7 @@ public class DungeonThread implements Runnable {
             }
             // OK, we should have a target value on screen now, in the first spot. Let's click it!
         }
-        bot.browser.readScreen(5 * SECOND); //*** should we increase this time?
+        bot.browser.readScreen(5 * Misc.Durations.SECOND); //*** should we increase this time?
         return selectDifficultyFromDropDown(newDifficulty, recursionDepth + 1, step); // recursively select new difficulty
     }
 
@@ -5221,7 +5217,7 @@ public class DungeonThread implements Runnable {
      * @return 0 in case of an error, or cost value in interval [1..5]
      */
     int detectCost() {
-        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Cost"), 15 * SECOND, bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Cost"), 15 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect cost selection box!");
             bot.saveGameScreen("early_error");
@@ -5245,7 +5241,7 @@ public class DungeonThread implements Runnable {
                 success = false;
                 break;
             }
-            Misc.sleep(SECOND); // sleep a bit in order for the popup to slide down
+            Misc.sleep(Misc.Durations.SECOND); // sleep a bit in order for the popup to slide down
             bot.browser.readScreen();
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("Cost"), bot.browser);
         }
@@ -5269,7 +5265,7 @@ public class DungeonThread implements Runnable {
         if (oldCost == newCost)
             return true; // no change
 
-        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("SelectCost"), 5 * SECOND, bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("SelectCost"), 5 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect 'select cost' button while trying to change cost!");
             return false; // error
@@ -5277,7 +5273,7 @@ public class DungeonThread implements Runnable {
 
         bot.browser.clickOnSeg(seg);
 
-        MarvinSegment.fromCue("CostDropDown", 5 * SECOND, bot.browser); // wait for the cost selection popup window to open
+        MarvinSegment.fromCue("CostDropDown", 5 * Misc.Durations.SECOND, bot.browser); // wait for the cost selection popup window to open
 
         // horizontal position of the 5 buttons:
         final int posx = 390;
@@ -5285,7 +5281,7 @@ public class DungeonThread implements Runnable {
         final int[] posy = new int[]{170, 230, 290, 350, 410};
 
         bot.browser.clickInGame(posx, posy[newCost - 1]); // will auto-close the drop down (but it takes a second or so, since it's animated)
-        Misc.sleep(2 * SECOND);
+        Misc.sleep(2 * Misc.Durations.SECOND);
 
         return true;
     }
@@ -5343,7 +5339,7 @@ public class DungeonThread implements Runnable {
                 BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: popup cue not detected!");
                 return false;
             }
-            bot.browser.readScreen(SECOND);
+            bot.browser.readScreen(Misc.Durations.SECOND);
             seg2 = MarvinSegment.fromCue(popup, bot.browser);
         }
 
@@ -5359,7 +5355,7 @@ public class DungeonThread implements Runnable {
                 return false;
             }
 
-            bot.browser.readScreen(SECOND);
+            bot.browser.readScreen(Misc.Durations.SECOND);
             seg1 = MarvinSegment.fromCue(close, bot.browser);
             seg2 = MarvinSegment.fromCue(popup, bot.browser);
         }
@@ -5373,7 +5369,7 @@ public class DungeonThread implements Runnable {
     private int detectEquipmentFilterScrollerPos() {
         final int[] yScrollerPositions = {146, 164, 181, 199, 217, 235, 252, 270, 288, 306, 323, 341}; // top scroller positions
 
-        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("StripScrollerTopPos"), 2 * SECOND, bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("StripScrollerTopPos"), 2 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             return -1;
         }
@@ -5395,7 +5391,7 @@ public class DungeonThread implements Runnable {
         // click on the character menu button (it's a bottom-left button with your character image on it):
         bot.browser.clickInGame(55, 465);
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), 10 * SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), 10 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect equipment filter button! Skipping...");
             return;
@@ -5408,7 +5404,7 @@ public class DungeonThread implements Runnable {
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), bot.browser);
             bot.browser.clickOnSeg(seg);
 
-            MarvinSegment.fromCue(BrowserManager.cues.get("StripItemsTitle"), 10 * SECOND, bot.browser); // waits until "Items" popup is detected
+            MarvinSegment.fromCue(BrowserManager.cues.get("StripItemsTitle"), 10 * Misc.Durations.SECOND, bot.browser); // waits until "Items" popup is detected
             bot.browser.readScreen(500); // to stabilize sliding popup a bit
 
             int scrollerPos = detectEquipmentFilterScrollerPos();
@@ -5424,7 +5420,7 @@ public class DungeonThread implements Runnable {
             if (scrollerPos < type.minPos()) {
                 // we must scroll down!
                 int move = type.minPos() - scrollerPos;
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownDown"), 5 * SECOND, bot.browser);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownDown"), 5 * Misc.Durations.SECOND, bot.browser);
                 for (int i = 0; i < move; i++) {
                     bot.browser.clickOnSeg(seg);
                     scrollerPos++;
@@ -5432,7 +5428,7 @@ public class DungeonThread implements Runnable {
             } else { // bestIndex > type.maxPos
                 // we must scroll up!
                 int move = scrollerPos - type.minPos();
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownUp"), 5 * SECOND, bot.browser);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownUp"), 5 * Misc.Durations.SECOND, bot.browser);
                 for (int i = 0; i < move; i++) {
                     bot.browser.clickOnSeg(seg);
                     scrollerPos--;
@@ -5448,13 +5444,13 @@ public class DungeonThread implements Runnable {
                     BHBot.logger.warn("Problem detected: unable to adjust scroller position in the character window (scroller position: " + newScrollerPos + ", should be: " + scrollerPos + ")! Skipping strip down/up...");
                     return;
                 }
-                bot.browser.readScreen(SECOND);
+                bot.browser.readScreen(Misc.Durations.SECOND);
                 newScrollerPos = detectEquipmentFilterScrollerPos();
                 counter++;
             }
             bot.browser.clickInGame(xButtonPosition, yButtonPositions[type.getButtonPos() - scrollerPos]);
             // clicking on the button will close the window automatically... we just need to wait a bit for it to close
-            MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), 5 * SECOND, bot.browser); // we do this just in order to wait for the previous menu to reappear
+            MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), 5 * Misc.Durations.SECOND, bot.browser); // we do this just in order to wait for the previous menu to reappear
         }
 
         waitForInventoryIconsToLoad(); // first of all, lets make sure that all icons are loaded
@@ -5516,23 +5512,23 @@ public class DungeonThread implements Runnable {
     private void handleFishingBaits() {
         MarvinSegment seg;
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Fishing"), SECOND * 5, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Fishing"), Misc.Durations.SECOND * 5, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
-            Misc.sleep(SECOND); // we allow some seconds as maybe the reward popup is sliding down
+            Misc.sleep(Misc.Durations.SECOND); // we allow some seconds as maybe the reward popup is sliding down
 
             detectCharacterDialogAndHandleIt();
 
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("WeeklyRewards"), SECOND * 5, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("WeeklyRewards"), Misc.Durations.SECOND * 5, bot.browser);
             if (seg != null) {
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
                 if (seg != null) {
                     if ((bot.settings.screenshots.contains("a"))) {
                         bot.saveGameScreen("fishing-baits");
                     }
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("Correctly collected fishing baits");
-                    bot.browser.readScreen(SECOND * 2);
+                    bot.browser.readScreen(Misc.Durations.SECOND * 2);
                 } else {
                     BHBot.logger.error("Something weng wrong while collecting fishing baits, restarting...");
                     bot.saveGameScreen("fishing-error-baits");
@@ -5540,10 +5536,10 @@ public class DungeonThread implements Runnable {
                 }
             }
 
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * SECOND, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg);
-                Misc.sleep(SECOND * 2);
+                Misc.sleep(Misc.Durations.SECOND * 2);
                 bot.browser.readScreen();
             } else {
                 BHBot.logger.error("Something went wrong while closing the fishing dialog, restarting...");
@@ -5554,7 +5550,7 @@ public class DungeonThread implements Runnable {
         } else {
             BHBot.logger.warn("Impossible to find the fishing button");
         }
-        bot.browser.readScreen(SECOND * 2);
+        bot.browser.readScreen(Misc.Durations.SECOND * 2);
     }
 
     private boolean consumableReplaceCheck() {
@@ -5670,7 +5666,7 @@ public class DungeonThread implements Runnable {
         // click on the character menu button (it's a bottom-left button with your character image on it):
         bot.browser.clickInGame(55, 465);
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), 15 * SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), 15 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.warn("Error: unable to detect equipment filter button! Skipping...");
             return;
@@ -5683,7 +5679,7 @@ public class DungeonThread implements Runnable {
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), bot.browser);
             bot.browser.clickOnSeg(seg);
 
-            MarvinSegment.fromCue(BrowserManager.cues.get("StripItemsTitle"), 10 * SECOND, bot.browser); // waits until "Items" popup is detected
+            MarvinSegment.fromCue(BrowserManager.cues.get("StripItemsTitle"), 10 * Misc.Durations.SECOND, bot.browser); // waits until "Items" popup is detected
             bot.browser.readScreen(500); // to stabilize sliding popup a bit
 
             int scrollerPos = detectEquipmentFilterScrollerPos();
@@ -5698,7 +5694,7 @@ public class DungeonThread implements Runnable {
             if (scrollerPos != 0) {
                 // we must scroll up!
                 int move = scrollerPos;
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownUp"), 5 * SECOND, bot.browser);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownUp"), 5 * Misc.Durations.SECOND, bot.browser);
                 for (int i = 0; i < move; i++) {
                     bot.browser.clickOnSeg(seg);
                     scrollerPos--;
@@ -5714,13 +5710,13 @@ public class DungeonThread implements Runnable {
                     BHBot.logger.warn("Problem detected: unable to adjust scroller position in the character window (scroller position: " + newScrollerPos + ", should be: " + scrollerPos + ")! Skipping consumption of consumables...");
                     return;
                 }
-                bot.browser.readScreen(SECOND);
+                bot.browser.readScreen(Misc.Durations.SECOND);
                 newScrollerPos = detectEquipmentFilterScrollerPos();
                 counter++;
             }
             bot.browser.clickInGame(xButtonPosition, yButtonPositions[1]);
             // clicking on the button will close the window automatically... we just need to wait a bit for it to close
-            MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), 5 * SECOND, bot.browser); // we do this just in order to wait for the previous menu to reappear
+            MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), 5 * Misc.Durations.SECOND, bot.browser); // we do this just in order to wait for the previous menu to reappear
         }
 
         // now consume the consumable(s):
@@ -5736,7 +5732,7 @@ public class DungeonThread implements Runnable {
                 if (seg != null) {
                     // OK we found the consumable icon! Lets click it...
                     bot.browser.clickOnSeg(seg);
-                    MarvinSegment.fromCue(BrowserManager.cues.get("ConsumableTitle"), 5 * SECOND, bot.browser); // wait for the consumable popup window to appear
+                    MarvinSegment.fromCue(BrowserManager.cues.get("ConsumableTitle"), 5 * Misc.Durations.SECOND, bot.browser); // wait for the consumable popup window to appear
                     bot.browser.readScreen(500); // wait for sliding popup to stabilize a bit
 
                     /*
@@ -5756,7 +5752,7 @@ public class DungeonThread implements Runnable {
                         // consume the consumable:
                         closePopupSecurely(BrowserManager.cues.get("ConsumableTitle"), BrowserManager.cues.get("YesGreen"));
                     }
-                    MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), 5 * SECOND, bot.browser); // we do this just in order to wait for the previous menu to reappear
+                    MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), 5 * Misc.Durations.SECOND, bot.browser); // we do this just in order to wait for the previous menu to reappear
                     i.remove();
                 }
             }
@@ -5767,12 +5763,12 @@ public class DungeonThread implements Runnable {
                     break; // there is nothing we can do anymore... we've scrolled to the bottom and haven't found the icon(s). We obviously don't have the required consumable(s)!
 
                 // lets scroll down:
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownDown"), 5 * SECOND, bot.browser);
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownDown"), 5 * Misc.Durations.SECOND, bot.browser);
                 for (int i = 0; i < 4; i++) { //the menu has 4 rows so we move to the next four rows and check again
                     bot.browser.clickOnSeg(seg);
                 }
 
-                bot.browser.readScreen(SECOND); // so that the scroller stabilizes a bit
+                bot.browser.readScreen(Misc.Durations.SECOND); // so that the scroller stabilizes a bit
             }
         }
 
@@ -5810,7 +5806,7 @@ public class DungeonThread implements Runnable {
         int counter = 0;
         seg = MarvinSegment.fromCue(cue, bot.browser);
         while (seg != null) {
-            bot.browser.readScreen(SECOND);
+            bot.browser.readScreen(Misc.Durations.SECOND);
 
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), bot.browser);
             if (seg == null) {
@@ -5939,14 +5935,14 @@ public class DungeonThread implements Runnable {
     private void handleFishing() {
         MarvinSegment seg;
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Fishing"), SECOND * 5, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Fishing"), Misc.Durations.SECOND * 5, bot.browser);
         if (seg != null) {
 
             //we make sure that the window is visible
             bot.browser.showBrowser();
 
             bot.browser.clickOnSeg(seg);
-            Misc.sleep(SECOND); // we allow some seconds as maybe the reward popup is sliding down
+            Misc.sleep(Misc.Durations.SECOND); // we allow some seconds as maybe the reward popup is sliding down
 
             detectCharacterDialogAndHandleIt();
 
@@ -5954,12 +5950,12 @@ public class DungeonThread implements Runnable {
 
             bot.browser.readScreen();
 
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), SECOND * 5, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), Misc.Durations.SECOND * 5, bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg);
             }
 
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Start"), SECOND * 20, bot.browser);
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Start"), Misc.Durations.SECOND * 20, bot.browser);
             if (seg != null) {
                 try {
                     BHBot.logger.info("Pausing for " + fishingTime + " seconds to fish");
@@ -5981,7 +5977,7 @@ public class DungeonThread implements Runnable {
                 restart();
             }
 
-            bot.browser.readScreen(SECOND);
+            bot.browser.readScreen(Misc.Durations.SECOND);
             enterGuildHall();
 
             if (bot.settings.hideWindowOnRestart) bot.browser.hideBrowser();
@@ -5993,22 +5989,22 @@ public class DungeonThread implements Runnable {
         MarvinSegment seg;
         bot.browser.readScreen();
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Trade"), SECOND * 3, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Trade"), Misc.Durations.SECOND * 3, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
         }
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), SECOND * 3, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND * 3, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
         }
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("FishingClose"), 3 * SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("FishingClose"), 3 * Misc.Durations.SECOND, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
         }
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("GuildButton"), SECOND * 5, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("GuildButton"), Misc.Durations.SECOND * 5, bot.browser);
         //else not
         return seg != null; //if we can see the guild button we are successful
 
@@ -6017,12 +6013,12 @@ public class DungeonThread implements Runnable {
     private void enterGuildHall() {
         MarvinSegment seg;
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("GuildButton"), SECOND * 5, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("GuildButton"), Misc.Durations.SECOND * 5, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
         }
 
-        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Hall"), SECOND * 5, bot.browser);
+        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Hall"), Misc.Durations.SECOND * 5, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
         }

@@ -34,9 +34,9 @@ public class BlockerThread implements Runnable {
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("UnableToConnect"), bot.browser);
                 if (seg != null) {
                     BHBot.logger.info("'Unable to connect' dialog detected. Reconnecting...");
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Reconnect"), 5 * DungeonThread.SECOND, bot.browser);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Reconnect"), 5 * Misc.Durations.SECOND, bot.browser);
                     bot.browser.clickOnSeg(seg);
-                    bot.browser.readScreen(DungeonThread.SECOND);
+                    bot.browser.readScreen(Misc.Durations.SECOND);
                     bot.setState(BHBot.State.Loading);
                     continue;
                 }
@@ -44,10 +44,10 @@ public class BlockerThread implements Runnable {
                 // check for "Bit Heroes is currently down for maintenance. Please check back shortly!" window:
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("Maintenance"), bot.browser);
                 if (seg != null) {
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Reconnect"), 5 * DungeonThread.SECOND, bot.browser);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Reconnect"), 5 * Misc.Durations.SECOND, bot.browser);
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("Maintenance dialog dismissed.");
-                    bot.browser.readScreen(DungeonThread.SECOND);
+                    bot.browser.readScreen(Misc.Durations.SECOND);
                     bot.setState(BHBot.State.Loading);
                     continue;
                 }
@@ -59,15 +59,15 @@ public class BlockerThread implements Runnable {
                     if (bot.scheduler.isUserInteracting || bot.scheduler.dismissReconnectOnNextIteration) {
                         bot.scheduler.isUserInteracting = false;
                         bot.scheduler.dismissReconnectOnNextIteration = false;
-                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Reconnect"), 5 * DungeonThread.SECOND, bot.browser);
+                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Reconnect"), 5 * Misc.Durations.SECOND, bot.browser);
                         bot.browser.clickOnSeg(seg);
                         BHBot.logger.info("Disconnected dialog dismissed (reconnecting).");
-                        bot.browser.readScreen(DungeonThread.SECOND);
+                        bot.browser.readScreen(Misc.Durations.SECOND);
                     } else {
                         bot.scheduler.isUserInteracting = true;
                         // probably user has logged in, that's why we got disconnected. Lets leave him alone for some time and then resume!
-                        BHBot.logger.info("Disconnect has been detected. Probably due to user interaction. Sleeping for " + Misc.millisToHumanForm((long) bot.settings.reconnectTimer * DungeonThread.MINUTE) + "...");
-                        bot.scheduler.pause(bot.settings.reconnectTimer * DungeonThread.MINUTE);
+                        BHBot.logger.info("Disconnect has been detected. Probably due to user interaction. Sleeping for " + Misc.millisToHumanForm((long) bot.settings.reconnectTimer * Misc.Durations.MINUTE) + "...");
+                        bot.scheduler.pause(bot.settings.reconnectTimer * Misc.Durations.MINUTE);
                     }
                     bot.setState(BHBot.State.Loading);
                     continue;
@@ -81,7 +81,7 @@ public class BlockerThread implements Runnable {
                 if (seg != null) {
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("Update dialog dismissed.");
-                    bot.browser.readScreen(DungeonThread.SECOND);
+                    bot.browser.readScreen(Misc.Durations.SECOND);
                     bot.setState(BHBot.State.Loading);
                     continue;
                 }
@@ -90,7 +90,7 @@ public class BlockerThread implements Runnable {
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("AreYouThere"), bot.browser);
                 if (seg != null) {
                     bot.scheduler.restoreIdleTime();
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Yes"), 2 * DungeonThread.SECOND, bot.browser);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Yes"), 2 * Misc.Durations.SECOND, bot.browser);
                     if (seg != null) {
                         bot.browser.clickOnSeg(seg);
                     }
@@ -98,12 +98,12 @@ public class BlockerThread implements Runnable {
                         BHBot.logger.info("Problem: 'Are you still there?' popup detected, but 'Yes' button not detected. Ignoring...");
                         continue;
                     }
-                    bot.browser.readScreen(DungeonThread.SECOND);
+                    bot.browser.readScreen(Misc.Durations.SECOND);
                     continue;
                 }
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("GearCheck"), bot.browser);
                 if (seg != null) {
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * DungeonThread.SECOND, bot.browser);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * Misc.Durations.SECOND, bot.browser);
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("Gear check dismissed.");
                     bot.browser.readScreen(500);
@@ -123,7 +123,7 @@ public class BlockerThread implements Runnable {
                 // check for daily rewards popup:
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("DailyRewards"), bot.browser);
                 if (seg != null) {
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Claim"), 5 * DungeonThread.SECOND, bot.browser);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Claim"), 5 * Misc.Durations.SECOND, bot.browser);
                     if (seg != null) {
                         if ((bot.settings.screenshots.contains("d"))) {
                             BufferedImage reward = bot.browser.getImg().getSubimage(131, 136, 513, 283);
@@ -136,8 +136,8 @@ public class BlockerThread implements Runnable {
                         continue; // may happen every while, rarely though
                     }
 
-                    bot.browser.readScreen(5 * DungeonThread.SECOND);
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Items"), DungeonThread.SECOND, bot.browser);
+                    bot.browser.readScreen(5 * Misc.Durations.SECOND);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Items"), Misc.Durations.SECOND, bot.browser);
                     if (seg == null) {
                         // we must terminate this thread... something happened that should not (unexpected). We must restart the thread!
                         BHBot.logger.error("Error: there is no 'Items' dialog open upon clicking on the 'Claim' button. Restarting...");
@@ -147,15 +147,15 @@ public class BlockerThread implements Runnable {
                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("Daily reward claimed successfully.");
-                    bot.browser.readScreen(2 * DungeonThread.SECOND);
+                    bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                     //We check for news and close so we don't take a gem count every time the bot starts
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("News"), DungeonThread.SECOND, bot.browser);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("News"), Misc.Durations.SECOND, bot.browser);
                     if (seg != null) {
-                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * DungeonThread.SECOND, bot.browser);
+                        seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * Misc.Durations.SECOND, bot.browser);
                         bot.browser.clickOnSeg(seg);
                         BHBot.logger.info("News popup dismissed.");
-                        bot.browser.readScreen(2 * DungeonThread.SECOND);
+                        bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                         if ("7".equals(new SimpleDateFormat("u").format(new Date()))) { //if it's Sunday
                             if ((bot.settings.screenshots.contains("wg"))) {
@@ -191,10 +191,10 @@ public class BlockerThread implements Runnable {
                 // check for "News" popup:
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("News"), bot.browser);
                 if (seg != null) {
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * DungeonThread.SECOND, bot.browser);
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * Misc.Durations.SECOND, bot.browser);
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("News popup dismissed.");
-                    bot.browser.readScreen(2 * DungeonThread.SECOND);
+                    bot.browser.readScreen(2 * Misc.Durations.SECOND);
                 }
             } catch (Exception e) {
                 if (bot.excManager.manageException(e)) continue;
@@ -215,7 +215,7 @@ public class BlockerThread implements Runnable {
      */
     private boolean handlePM() {
         if (MarvinSegment.fromCue(BrowserManager.cues.get("InGamePM"), bot.browser) != null) {
-            MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * DungeonThread.SECOND, bot.browser);
+            MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Error: in-game PM window detected, but no close button found. Restarting...");
                 return false;
@@ -260,7 +260,7 @@ public class BlockerThread implements Runnable {
                 seg = MarvinSegment.fromCue(weeklyRewardEntry.getValue(), bot.browser);
                 if (seg != null) {
                     BufferedImage reward = bot.browser.getImg();
-                    seg = MarvinSegment.fromCue("X", 5 * DungeonThread.SECOND, bot.browser);
+                    seg = MarvinSegment.fromCue("X", 5 * Misc.Durations.SECOND, bot.browser);
                     if (seg != null) bot.browser.clickOnSeg(seg);
                     else {
                         BHBot.logger.error(weeklyRewardEntry.getKey() + " reward popup detected, however could not detect the X button. Restarting...");

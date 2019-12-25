@@ -36,7 +36,7 @@ public class ExceptionManager {
             BHBot.logger.info("Error: ElementOutsideViewportException. Ignoring...");
             //added this 1 second delay as attempting ads often triggers this
             //will trigger the restart in the if statement below after 30 seconds
-            Misc.sleep(DungeonThread.SECOND);
+            Misc.sleep(Misc.Durations.SECOND);
             // we must not call 'continue' here, because this error could be a loop error, this is why we need to increase numConsecutiveException bellow in the code!
         } else if (e instanceof org.openqa.selenium.TimeoutException) {
             /* When we get time out errors it may be possible that the bot.browser has crashed so it is impossible to take screenshots

@@ -188,7 +188,7 @@ public class BHBot {
             try {
                 // wait for 10 seconds for the main thread to terminate
                 logger.info("Waiting for dungeon thread to finish... (timeout=10s)");
-                bot.dungeonThread.join(10 * DungeonThread.SECOND);
+                bot.dungeonThread.join(10 * Misc.Durations.SECOND);
             } catch (InterruptedException e) {
                 logger.error("Error when joining Main Thread", e);
             }
@@ -196,7 +196,7 @@ public class BHBot {
             try {
                 // wait for 10 seconds for the main thread to terminate
                 logger.info("Waiting for blocker thread to finish... (timeout=10s)");
-                bot.blockerThread.join(10 * DungeonThread.SECOND);
+                bot.blockerThread.join(10 * Misc.Durations.SECOND);
             } catch (InterruptedException e) {
                 logger.error("Error when joining Blocker Thread", e);
             }
@@ -348,7 +348,7 @@ public class BHBot {
                 break;
             case "pause":
                 if (params.length > 1) {
-                    int pauseDuration = Integer.parseInt(params[1]) * DungeonThread.MINUTE;
+                    int pauseDuration = Integer.parseInt(params[1]) * Misc.Durations.MINUTE;
                     scheduler.pause(pauseDuration);
                 } else {
                     scheduler.pause();
@@ -829,7 +829,7 @@ public class BHBot {
                 logger.warn("Problem: malformed url detected!");
             if (e instanceof UnreachableBrowserException) {
                 logger.error("Impossible to connect to the bot.browser. Make sure chromedirver is started. Will retry in a few minutes... (sleeping)");
-                Misc.sleep(5 * DungeonThread.MINUTE);
+                Misc.sleep(5 * Misc.Durations.MINUTE);
                 restart(true, useDoNotShareLink);
                 return;
             }
@@ -840,7 +840,7 @@ public class BHBot {
                 finished = true;
             } else {
                 logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)", e);
-                Misc.sleep(5 * DungeonThread.MINUTE);
+                Misc.sleep(5 * Misc.Durations.MINUTE);
                 restart(true, useDoNotShareLink);
             }
             return;
@@ -866,7 +866,7 @@ public class BHBot {
                     break;
                 }
 
-                Misc.sleep(10 * DungeonThread.SECOND);
+                Misc.sleep(10 * Misc.Durations.SECOND);
                 continue;
             }
             break;

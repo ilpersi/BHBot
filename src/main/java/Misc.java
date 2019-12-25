@@ -16,6 +16,13 @@ import java.util.Properties;
  */
 public class Misc {
 
+    static final class Durations {
+        static final int SECOND = 1000;
+        static final int MINUTE = 60 * SECOND;
+        static final int HOUR = 60 * MINUTE;
+        static final int DAY = 24 * HOUR;
+    }
+
     /**
      * Return time in milliseconds from the start of the system. Can have a negative value.
      */
@@ -214,4 +221,5 @@ public class Misc {
             BHBot.logger.error("Error while attempting to sleep", e);
         }
     }
+
 }
