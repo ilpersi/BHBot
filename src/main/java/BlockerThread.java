@@ -2,8 +2,6 @@ import net.pushover.client.MessagePriority;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -156,31 +154,6 @@ public class BlockerThread implements Runnable {
                         bot.browser.clickOnSeg(seg);
                         BHBot.logger.info("News popup dismissed.");
                         bot.browser.readScreen(2 * Misc.Durations.SECOND);
-
-                        if ("7".equals(new SimpleDateFormat("u").format(new Date()))) { //if it's Sunday
-                            if ((bot.settings.screenshots.contains("wg"))) {
-                                /* internal code for collecting number cues for the micro font
-                                MarvinImage gems = new MarvinImage(img.getSubimage(133, 16, 80, 14));
-                                makeImageBlackWhite(gems, new Color(25, 25, 25), new Color(255, 255, 255), 64);
-                                BufferedImage gemsbw = gems.getBufferedImage();
-                                int num = readNumFromImg(gemsbw, "micro", new HashSet<>());
-                                */
-                                BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
-                                bot.saveGameScreen("weekly-gems", "gems", gems);
-                            }
-                        } else {
-                            if ((bot.settings.screenshots.contains("dg"))) {
-                                /* internal code for collecting number cues for the micro font
-                                MarvinImage gems = new MarvinImage(img.getSubimage(133, 16, 80, 14));
-                                makeImageBlackWhite(gems, new Color(25, 25, 25), new Color(255, 255, 255), 64);
-                                BufferedImage gemsbw = gems.getBufferedImage();
-                                int num = readNumFromImg(gemsbw, "micro", new HashSet<>());
-                                */
-                                BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
-                                bot.saveGameScreen("daily-gems", "gems", gems); //else screenshot daily count
-                            }
-                        }
-
                         continue;
                     }
 

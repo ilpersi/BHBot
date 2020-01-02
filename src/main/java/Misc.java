@@ -21,6 +21,7 @@ public class Misc {
         static final int MINUTE = 60 * SECOND;
         static final int HOUR = 60 * MINUTE;
         static final int DAY = 24 * HOUR;
+        static final int WEEK = 7 * DAY;
     }
 
     /**

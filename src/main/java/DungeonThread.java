@@ -96,6 +96,8 @@ public class DungeonThread implements Runnable {
     private long timeLastFishingBaitsCheck = 0; // when did we check for fishing baits the last time?
     private long timeLastFishingCheck = 0; // when did we check for fishing last time?
     private long timeLastPOAlive = 0; // when did we check for fishing last time?
+    private long timeLastDailyGem = 0; // when did we check for fishing last time?
+    private long timeLastWeeklyGem = 0; // when did we check for fishing last time?
     private final long botStartTime = Misc.getTime();
     /**
      * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale.
@@ -412,6 +414,23 @@ public class DungeonThread implements Runnable {
                         }
                     }
 
+                    // weekly gem screenshot every Sunday and after or after a week the bot is running.
+                    if ( "7".equals(new SimpleDateFormat("u").format(new Date())) ||
+                            ((bot.settings.screenshots.contains("wg")) && (Misc.getTime() - timeLastWeeklyGem) > Misc.Durations.WEEK)) {
+                        timeLastWeeklyGem = Misc.getTime();
+
+                        BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
+                        bot.saveGameScreen("weekly-gems", "gems", gems);
+                    }
+
+                    // daily gem screenshot
+                    if ((bot.settings.screenshots.contains("dg")) && (Misc.getTime() - timeLastDailyGem) > Misc.Durations.DAY) {
+                        timeLastDailyGem = Misc.getTime();
+
+                        BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
+                        bot.saveGameScreen("daily-gems", "gems", gems); //else screenshot daily count
+                    }
+
                     // check for bonuses:
                     if (bot.settings.autoConsume && (Misc.getTime() - timeLastBonusCheck > BONUS_CHECK_INTERVAL)) {
                         timeLastBonusCheck = Misc.getTime();
@@ -647,7 +666,8 @@ public class DungeonThread implements Runnable {
                             if (tokenDifference > 1) {
                                 int increase = (tokenDifference - 1) * 45;
                                 TOKENS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
-                            } else TOKENS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 token check every 10 minutes
+                            } else
+                                TOKENS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 token check every 10 minutes
 
                             if (bot.scheduler.doTrialsImmediately) {
                                 bot.scheduler.doTrialsImmediately = false; // if we don't have resources to run we need to disable force it
@@ -827,7 +847,8 @@ public class DungeonThread implements Runnable {
                             if (energyDifference > 1) {
                                 int increase = (energyDifference - 1) * 8;
                                 ENERGY_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 8 minutes to the check interval for each energy % needed above 1
-                            } else ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+                            } else
+                                ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
                             continue;
                         } else {
@@ -997,7 +1018,8 @@ public class DungeonThread implements Runnable {
                             if (ticketDifference > 1) {
                                 int increase = (ticketDifference - 1) * 45;
                                 TICKETS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-                            } else TICKETS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+                            } else
+                                TICKETS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
                             continue;
                         } else {
@@ -1153,7 +1175,8 @@ public class DungeonThread implements Runnable {
                                 if (badgeDifference > 1) {
                                     int increase = (badgeDifference - 1) * 45;
                                     BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-                                } else BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+                                } else
+                                    BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
                                 bot.browser.readScreen();
                                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND, bot.browser);
@@ -1273,7 +1296,8 @@ public class DungeonThread implements Runnable {
                                 if (badgeDifference > 1) {
                                     int increase = (badgeDifference - 1) * 45;
                                     BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-                                } else BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+                                } else
+                                    BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
                                 bot.browser.readScreen();
                                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), Misc.Durations.SECOND, bot.browser);
@@ -1358,7 +1382,8 @@ public class DungeonThread implements Runnable {
                                 if (badgeDifference > 1) {
                                     int increase = (badgeDifference - 1) * 45;
                                     BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-                                } else BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+                                } else
+                                    BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
                                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), bot.browser);
                                 bot.browser.clickOnSeg(seg);
@@ -1608,7 +1633,8 @@ public class DungeonThread implements Runnable {
                             if (energyDifference > 1) {
                                 int increase = (energyDifference - 1) * 4;
                                 ENERGY_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
-                            } else ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+                            } else
+                                ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
                             Misc.sleep(Misc.Durations.SECOND);
                             continue;
