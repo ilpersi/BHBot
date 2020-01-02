@@ -53,8 +53,6 @@ public class DungeonThread implements Runnable {
     private Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])\\s+(?<difficulty>[123])");
     @SuppressWarnings("FieldCanBeLocal")
     private final long MAX_IDLE_TIME = 15 * Misc.Durations.MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
     private boolean[] revived = {false, false, false, false, false};
     private int potionsUsed = 0;
@@ -99,10 +97,7 @@ public class DungeonThread implements Runnable {
     private long timeLastDailyGem = 0; // when did we check for fishing last time?
     private long timeLastWeeklyGem = 0; // when did we check for fishing last time?
     private final long botStartTime = Misc.getTime();
-    /**
-     * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale.
-     */
-    private int numConsecutiveException = 0;
+
 
     /**
      * autoshrine settings save
@@ -1963,22 +1958,12 @@ public class DungeonThread implements Runnable {
                 } // main screen processing
             } catch (Exception e) {
                 if (bot.excManager.manageException(e)) continue;
-
-                numConsecutiveException++;
-                if (numConsecutiveException > MAX_CONSECUTIVE_EXCEPTIONS) {
-                    numConsecutiveException = 0; // reset it
-                    BHBot.logger.warn("Problem detected: number of consecutive exceptions is higher than " + MAX_CONSECUTIVE_EXCEPTIONS + ". This probably means we're caught in a loop. Restarting...");
-                    restart();
-                    continue;
-                }
-
                 bot.scheduler.restoreIdleTime();
-
                 continue;
             }
 
             // well, we got through all the checks. Means that nothing much has happened. So lets sleep for a second in order to not make processing too heavy...
-            numConsecutiveException = 0; // reset exception counter
+            bot.excManager.numConsecutiveException = 0; // reset exception counter
             bot.scheduler.restoreIdleTime(); // revert changes to idle time
             if (bot.finished) break; // skip sleeping if finished flag has been set!
             Misc.sleep(Misc.Durations.SECOND);

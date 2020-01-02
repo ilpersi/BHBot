@@ -171,12 +171,11 @@ public class BlockerThread implements Runnable {
                 }
             } catch (Exception e) {
                 if (bot.excManager.manageException(e)) continue;
-
                 bot.scheduler.resetIdleTime();
-
                 continue;
             }
 
+            bot.excManager.numConsecutiveException = 0; // reset exception counter
             bot.scheduler.restoreIdleTime(); // revert changes to idle time
             if (bot.finished) break; // skip sleeping if finished flag has been set!
             Misc.sleep(250);
