@@ -1317,7 +1317,12 @@ public class DungeonThread implements Runnable {
                                     }
                                 }
 
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), 5 * Misc.Durations.SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Play"), 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(505, 255, 90, 45), bot.browser);
+                                if (seg == null) {
+                                    BHBot.logger.error("Unable to find the Play button in the Invasion screen, restarting!");
+                                    restart();
+                                    continue;
+                                }
                                 bot.browser.clickOnSeg(seg);
 
                                 bot.browser.readScreen(3000);
