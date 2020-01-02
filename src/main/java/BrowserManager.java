@@ -793,6 +793,56 @@ public class BrowserManager {
         act.perform();
     }
 
+    /**
+     * Will close the popup by clicking on the 'close' cue and checking that 'popup' cue is gone. It will repeat this operation
+     * until either 'popup' cue is gone or timeout is reached. This method ensures that the popup is closed. Sometimes just clicking once
+     * on the close button ('close' cue) doesn't work, since popup is still sliding down and we miss the button, this is why we need to
+     * check if it is actually closed. This is what this method does.
+     * <p>
+     * Note that before entering into this method, caller had probably already detected the 'popup' cue (but not necessarily). <br>
+     * Note: in case of failure, it will print it out.
+     *
+     * @return false in case it failed to close it (timed out).
+     */
+    synchronized boolean closePopupSecurely(Cue popup, Cue close) {
+        BrowserManager browser;
+        MarvinSegment seg1, seg2;
+        int counter;
+        seg1 = MarvinSegment.fromCue(close, bot.browser);
+        seg2 = MarvinSegment.fromCue(popup, bot.browser);
+
+        // make sure popup window is on the screen (or else wait until it appears):
+        counter = 0;
+        while (seg2 == null) {
+            counter++;
+            if (counter > 10) {
+                BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: popup cue not detected!");
+                return false;
+            }
+            bot.browser.readScreen(Misc.Durations.SECOND);
+            seg2 = MarvinSegment.fromCue(popup, bot.browser);
+        }
+
+        counter = 0;
+        // there is no more popup window, so we're finished!
+        while (seg2 != null) {
+            if (seg1 != null)
+                bot.browser.clickOnSeg(seg1);
+
+            counter++;
+            if (counter > 10) {
+                BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: either close button has not been detected or popup would not close!");
+                return false;
+            }
+
+            bot.browser.readScreen(Misc.Durations.SECOND);
+            seg1 = MarvinSegment.fromCue(close, bot.browser);
+            seg2 = MarvinSegment.fromCue(popup, bot.browser);
+        }
+
+        return true;
+    }
+
     synchronized void readScreen() {
         readScreen(true);
     }

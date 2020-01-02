@@ -545,7 +545,7 @@ public class BHBot {
                                     break;
                             }
                         }
-                        if (!dungeon.checkShrineSettings(ignoreBoss, ignoreShrines)) {
+                        if (!dungeon.shrineManager.updateShrineSettings(ignoreBoss, ignoreShrines)) {
                             logger.error("Something went wrong when checking auto ignore settings!");
                         }
                         break;
