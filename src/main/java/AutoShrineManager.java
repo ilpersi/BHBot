@@ -132,7 +132,7 @@ public class AutoShrineManager {
             guildButtonSeg = MarvinSegment.fromCue(BrowserManager.cues.get("GuildButton"), bot.browser);
 
             if (battleDelay >= bot.settings.battleDelay && guildButtonSeg != null) {
-                BHBot.logger.autorune(bot.settings.battleDelay + "s since last encounter, disabling ignore shrines");
+                BHBot.logger.autoshrine(bot.settings.battleDelay + "s since last encounter, disabling ignore shrines");
 
                 if (!updateShrineSettings(true, false)) {
                     BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoShrine!");
