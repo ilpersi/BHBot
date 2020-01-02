@@ -111,7 +111,6 @@ public class DungeonThread implements Runnable {
 
     DungeonThread(BHBot bot) {
         this.bot = bot;
-        this.shrineManager = new AutoShrineManager(this.bot, false);
 
         activitysIterator = bot.settings.activitiesEnabled.iterator();
     }
@@ -420,6 +419,8 @@ public class DungeonThread implements Runnable {
                         timeLastBonusCheck = Misc.getTime();
                         handleConsumables();
                     }
+
+                    shrineManager.initialize();
 
                     // One time check for equipped minor runes
                     if (!bot.settings.autoRuneDefault.isEmpty() && !oneTimeRuneCheck) {

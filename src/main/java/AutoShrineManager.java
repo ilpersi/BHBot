@@ -4,24 +4,30 @@ public class AutoShrineManager {
     // this variables are used to store the current status of the settings
     boolean ignoreBoss;
     boolean ignoreShrines;
-    boolean initialized;
+    private boolean initialized;
 
     AutoShrineManager (BHBot bot, boolean skipInitialization) {
         this.bot = bot;
 
-        BHBot.logger.info("Initializing autoShrine to make sure it is disabled");
-        if (!skipInitialization) {
+        if (skipInitialization) {
+            this.initialized = true;
+        }
+    }
+
+    void initialize() {
+        if (!initialized) {
+            BHBot.logger.info("Initializing autoShrine to make sure it is disabled");
             if (!updateShrineSettings(false, false)) {
                 BHBot.logger.error("It was not possible to perform the autoShrine start-up check!");
             }
+            initialized = true;
         }
-        initialized = true;
     }
 
     boolean updateShrineSettings(boolean ignoreBoss, boolean ignoreShrines) {
 
         // We don't need to change settings as they are already as required
-        if (ignoreBoss == this.ignoreBoss && ignoreShrines == this.ignoreShrines) {
+        if (initialized && ignoreBoss == this.ignoreBoss && ignoreShrines == this.ignoreShrines) {
             return true;
         }
 
