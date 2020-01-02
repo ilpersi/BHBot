@@ -10,6 +10,13 @@ public class ExceptionManager {
         this.bot = bot;
     }
 
+    /**
+     * @param e The exception that has to be managed by the Exception manager
+     * @return true if the class was able to manage the exception. Please note that, whenever true is returned,
+     *         the numConsecutiveException counter is increased by one and never reset to zero. Setting it to
+     *         zero is up to the caller of this method. Once that the exception limit defined in
+     *         MAX_CONSECUTIVE_EXCEPTIONS is reached, the bot will restart itself.
+     */
     synchronized boolean manageException(Exception e) {
 
         numConsecutiveException++;
@@ -18,7 +25,7 @@ public class ExceptionManager {
             numConsecutiveException = 0; // reset it
             BHBot.logger.warn("Problem detected: number of consecutive exceptions is higher than " + MAX_CONSECUTIVE_EXCEPTIONS + ". This probably means we're caught in a loop. Restarting...");
             bot.restart(true, false);
-            return true;
+            return false;
         }
 
         if (e instanceof org.openqa.selenium.WebDriverException && e.getMessage().startsWith("chrome not reachable")) {
