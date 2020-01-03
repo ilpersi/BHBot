@@ -160,6 +160,28 @@ public class BlockerThread implements Runnable {
                     continue;
                 }
 
+                // check for "recently disconnected" popup:
+                seg = MarvinSegment.fromCue(BrowserManager.cues.get("RecentlyDisconnected"), bot.browser);
+                if (seg != null) {
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser);
+                    if (seg == null) {
+                        BHBot.logger.error("Error: detected 'recently disconnected' popup but could not find 'Yes' button. Restarting...");
+                        bot.restart(true, false);
+                        continue;
+                    }
+
+                    bot.browser.clickOnSeg(seg);
+                    if (bot.getState() == BHBot.State.Main || bot.getState() == BHBot.State.Loading) {
+                        // we set this when we are not sure of what type of dungeon we are doing
+                        bot.setState(BHBot.State.UnidentifiedDungeon);
+                    } else {
+                        BHBot.logger.debug("RecentlyDisconnected status is: " + bot.getState());
+                    }
+                    BHBot.logger.info("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
+                    Misc.sleep(60 * Misc.Durations.SECOND); //long sleep as if the checkShrine didn't find the potion button we'd enter a restart loop
+                    bot.dungeon.shrineManager.updateShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
+                    continue;
+                }
 
                 // check for "News" popup:
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("News"), bot.browser);
