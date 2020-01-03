@@ -894,7 +894,7 @@ public class BHBot {
 
         // we make sure that the shrinemanager is resetted at restart time and we
         // skip the initialization if idleMode is true
-        dungeon.shrineManager = new AutoShrineManager(this, !settings.idleMode);
+        dungeon.shrineManager = new AutoShrineManager(this, settings.idleMode);
     }
 
     enum State {
