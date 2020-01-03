@@ -124,6 +124,12 @@ public class AutoShrineManager {
     void processAutoShrine(long battleDelay) {
         MarvinSegment guildButtonSeg;
 
+        /* All the flags are already disabled, this means that the current dungeon has already
+        *  used the autoShrine feature */
+        if (!ignoreBoss && !ignoreShrines) {
+            return;
+        }
+
         if ((bot.getState() == BHBot.State.Raid && bot.settings.autoShrine.contains("r")) ||
                 (bot.getState() == BHBot.State.Trials && bot.settings.autoShrine.contains("t")) ||
                 (bot.getState() == BHBot.State.Expedition && bot.settings.autoShrine.contains("e")) ||
