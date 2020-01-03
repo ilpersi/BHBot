@@ -221,6 +221,8 @@ public class BHBot {
                 }
             }
 
+            bot.browser.close();
+
         }
         logger.info(PROGRAM_NAME + " has bot.finished.");
     }

@@ -1914,8 +1914,6 @@ public class DungeonThread implements Runnable {
             Misc.sleep(Misc.Durations.SECOND);
         } // main while loop
 
-        BHBot.logger.info("Stopping main thread...");
-        bot.browser.close();
         BHBot.logger.info("Dungeon thread stopped.");
     }
 
