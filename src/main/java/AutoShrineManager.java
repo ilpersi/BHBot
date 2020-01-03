@@ -121,7 +121,7 @@ public class AutoShrineManager {
         }
     }
 
-    void processAutoShrine(DungeonThread dungeonThread, long battleDelay) {
+    void processAutoShrine(long battleDelay) {
         MarvinSegment guildButtonSeg;
 
         if ((bot.getState() == BHBot.State.Raid && bot.settings.autoShrine.contains("r")) ||
@@ -157,8 +157,9 @@ public class AutoShrineManager {
 
                 if ((bot.getState() == BHBot.State.Raid && bot.settings.autoBossRune.containsKey("r")) || (bot.getState() == BHBot.State.Trials && bot.settings.autoBossRune.containsKey("t")) ||
                         (bot.getState() == BHBot.State.Expedition && bot.settings.autoBossRune.containsKey("e")) || (bot.getState() == BHBot.State.Dungeon && bot.settings.autoBossRune.containsKey("d"))) {
+
                     // TODO de-spagettify the boss rune feature
-                    dungeonThread.handleMinorBossRunes();
+                     bot.dungeon.handleMinorBossRunes();
                 }
 
                 while (Misc.getTime() < timeToWait) {

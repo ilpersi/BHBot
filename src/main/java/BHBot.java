@@ -37,7 +37,7 @@ public class BHBot {
     static long logMaxDays;
     static Level logLevel;
 
-    private DungeonThread dungeon;
+    DungeonThread dungeon;
     private int numFailedRestarts = 0; // in a row
 
     Settings settings = new Settings().setDebug();

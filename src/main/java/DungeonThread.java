@@ -2380,7 +2380,7 @@ public class DungeonThread implements Runnable {
          * autoShrine Code
          */
         if (bot.settings.autoShrine.contains(bot.getState().getShortcut()) && !encounterStatus) {
-            shrineManager.processAutoShrine(this, (outOfEncounterTimestamp - inEncounterTimestamp));
+            shrineManager.processAutoShrine((outOfEncounterTimestamp - inEncounterTimestamp));
         }
 
         /*
