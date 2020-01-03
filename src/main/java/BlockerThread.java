@@ -94,6 +94,7 @@ public class BlockerThread implements Runnable {
                     }
                     else {
                         BHBot.logger.info("Problem: 'Are you still there?' popup detected, but 'Yes' button not detected. Ignoring...");
+                        bot.browser.readScreen(Misc.Durations.SECOND);
                         continue;
                     }
                     bot.browser.readScreen(Misc.Durations.SECOND);
