@@ -92,8 +92,8 @@ public class DungeonThread implements Runnable {
     private long timeLastFishingBaitsCheck = 0; // when did we check for fishing baits the last time?
     private long timeLastFishingCheck = 0; // when did we check for fishing last time?
     private long timeLastPOAlive = 0; // when did we check for fishing last time?
-    private long timeLastDailyGem = 0; // when did we check for fishing last time?
-    private long timeLastWeeklyGem = 0; // when did we check for fishing last time?
+    private long timeLastDailyGem = 0; // when did we check for daily gem screenshot last time?
+    private long timeLastWeeklyGem = Misc.getTime(); // when did we check for weekly gem screenshot last time?
     private final long botStartTime = Misc.getTime();
 
     /**
