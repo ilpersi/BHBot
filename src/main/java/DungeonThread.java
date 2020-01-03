@@ -4924,22 +4924,13 @@ public class DungeonThread implements Runnable {
 
         bot.browser.readScreen(5 * Misc.Durations.SECOND);
 
-        return selectDifficultyFromDropDown(newDifficulty, step);
+        return selectDifficultyFromDropDown(newDifficulty, 0, step);
     }
 
     /**
      * Internal routine. Difficulty drop down must be open for this to work!
      * Note that it closes the drop-down when it is done (except if an error occurred). However there is a close
      * animation and the caller must wait for it to finish.
-     *
-     * @return false in case of an error.
-     */
-    private boolean selectDifficultyFromDropDown(int newDifficulty, int step) {
-        return selectDifficultyFromDropDown(newDifficulty, 0, step);
-    }
-
-    /**
-     * Internal routine - do not use it manually! <br>
      *
      * @return false on error (caller must do restart() if he gets false as a result from this method)
      */
@@ -5837,6 +5828,7 @@ public class DungeonThread implements Runnable {
 
     }
 
+    // TODO Merge with ItemGrade Enum
     private String getItemTier(String tier) {
         switch (tier) {
             case "m":
