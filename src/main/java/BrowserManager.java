@@ -805,7 +805,6 @@ public class BrowserManager {
      * @return false in case it failed to close it (timed out).
      */
     synchronized boolean closePopupSecurely(Cue popup, Cue close) {
-        BrowserManager browser;
         MarvinSegment seg1, seg2;
         int counter;
         seg1 = MarvinSegment.fromCue(close, bot.browser);

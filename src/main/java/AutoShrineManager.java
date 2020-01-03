@@ -152,7 +152,7 @@ public class AutoShrineManager {
                     bot.browser.readScreen(500);
                 }
 
-                BHBot.logger.autoshrine("Waiting " + bot.settings.shrineDelay + "s to use shrines");
+                BHBot.logger.autoshrine("Waiting " + bot.settings.shrineDelay + "s to disable ignore boss");
                 long timeToWait = Misc.getTime() + (battleDelay * Misc.Durations.SECOND);
 
                 if ((bot.getState() == BHBot.State.Raid && bot.settings.autoBossRune.containsKey("r")) || (bot.getState() == BHBot.State.Trials && bot.settings.autoBossRune.containsKey("t")) ||
