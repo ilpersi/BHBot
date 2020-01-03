@@ -187,18 +187,28 @@ public class BHBot {
         if (bot.dungeonThread.isAlive()) {
             try {
                 // wait for 10 seconds for the main thread to terminate
-                logger.info("Waiting for dungeon thread to finish... (timeout=10s)");
-                bot.dungeonThread.join(10 * Misc.Durations.SECOND);
-            } catch (InterruptedException e) {
-                logger.error("Error when joining Main Thread", e);
-            }
-
-            try {
-                // wait for 10 seconds for the main thread to terminate
                 logger.info("Waiting for blocker thread to finish... (timeout=10s)");
                 bot.blockerThread.join(10 * Misc.Durations.SECOND);
             } catch (InterruptedException e) {
                 logger.error("Error when joining Blocker Thread", e);
+            }
+
+            if (bot.blockerThread.isAlive()) {
+                logger.warn("Blocker thread is still alive. Force stopping it now...");
+                bot.blockerThread.interrupt();
+                try {
+                    bot.blockerThread.join(); // until thread stops
+                } catch (InterruptedException e) {
+                    logger.error("Error while force stopping", e);
+                }
+            }
+
+            try {
+                // wait for 10 seconds for the main thread to terminate
+                logger.info("Waiting for dungeon thread to finish... (timeout=10s)");
+                bot.dungeonThread.join(10 * Misc.Durations.SECOND);
+            } catch (InterruptedException e) {
+                logger.error("Error when joining Main Thread", e);
             }
 
             if (bot.dungeonThread.isAlive()) {
@@ -210,15 +220,7 @@ public class BHBot {
                     logger.error("Error while force stopping", e);
                 }
             }
-            if (bot.blockerThread.isAlive()) {
-                logger.warn("Blocker thread is still alive. Force stopping it now...");
-                bot.blockerThread.interrupt();
-                try {
-                    bot.blockerThread.join(); // until thread stops
-                } catch (InterruptedException e) {
-                    logger.error("Error while force stopping", e);
-                }
-            }
+
         }
         logger.info(PROGRAM_NAME + " has bot.finished.");
     }
