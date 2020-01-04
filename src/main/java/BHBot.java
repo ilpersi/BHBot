@@ -72,6 +72,7 @@ public class BHBot {
         for (int i = 0; i < args.length; i++) { //select settings file to load
             switch (args[i]) {
                 case "settings":
+                case "configurationFile":
                     Settings.configurationFile = args[i + 1];
                     i++;
                     continue;
@@ -82,17 +83,23 @@ public class BHBot {
                     continue;
                 case "chromium":
                 case "chromiumpath":
+                case "chromiumExePath":
                     bot.chromiumExePath = args[i + 1];
+                    i++;
                     continue;
                 case "chromedriver":
                 case "chromedriverpath":
+                case "chromeDriverExePath":
                     bot.chromeDriverExePath = args[i + 1];
+                    i++;
                     continue;
                 case "chromedriveraddress":  //change chrome driver port
+                case "chromeDriverAddress":
                     bot.chromeDriverAddress = args[i + 1];
                     i++;
                     continue;
                 case "userdatadir":
+                case "userDataDir":
                     userDataDir = args[i + 1];
                     i++;
             }
