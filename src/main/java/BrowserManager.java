@@ -35,6 +35,7 @@ public class BrowserManager {
     private static By byElement;
 
     private WebDriver driver;
+    private Capabilities caps;
     private JavascriptExecutor jsExecutor;
     private WebElement game;
     private String doNotShareUrl = "";
@@ -550,12 +551,17 @@ public class BrowserManager {
 
         capabilities.setCapability("chrome.verbose", false);
         capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+
         if (bot.settings.autoStartChromeDriver) {
             driver = new ChromeDriver(options);
+            caps = ((ChromeDriver) driver).getCapabilities();
         } else {
             driver = new RemoteWebDriver(new URL("http://" + bot.chromeDriverAddress), capabilities);
+            caps = ((RemoteWebDriver) driver).getCapabilities();
         }
         jsExecutor = (JavascriptExecutor) driver;
+
+
     }
 
     synchronized void restart(boolean useDoNotShareUrl) throws MalformedURLException {
@@ -785,9 +791,20 @@ public class BrowserManager {
      */
     synchronized void clickOnSeg(MarvinSegment seg) {
         Actions act = new Actions(driver);
-        act.moveToElement(game, seg.getCenterX(), seg.getCenterY());
-        act.click();
-        act.moveToElement(game, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
+
+        // As of Chrome 75, offsets coordinates are relative to the center of elements
+        if (getChromeVersion() < 75) {
+            act.moveToElement(game, seg.getCenterX(), seg.getCenterY());
+            act.click();
+            act.moveToElement(game, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
+        } else {
+            Dimension gameDimension = game.getSize();
+            int gameCenterX = gameDimension.width / 2;
+            int gameCenterY = gameDimension.height / 2;
+            act.moveToElement(game, seg.getCenterX() - gameCenterX, seg.getCenterY() - gameCenterY);
+            act.click();
+            act.moveToElement(game, -gameCenterX, -gameCenterY);
+        }
         act.perform();
     }
 
@@ -903,5 +920,10 @@ public class BrowserManager {
 
     synchronized public BufferedImage getImg() {
         return img;
+    }
+
+    private int getChromeVersion() {
+        String[] versionArray = caps.getVersion().split("\\.");
+        return Integer.parseInt(versionArray[0]);
     }
 }
