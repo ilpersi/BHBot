@@ -59,9 +59,10 @@ public class BHBot {
 
     public static void main(String[] args) {
         BHBot bot = new BHBot();
-        bot.browser = new BrowserManager(bot);
         bot.poManager = new PushOverManager(bot);
         bot.excManager = new ExceptionManager(bot);
+
+        String userDataDir = "./chrome_profile";
 
         // We make sure that our configurationFactory is added to the list of configuration factories.
         System.setProperty("log4j.configurationFactory", "BHBotConfigurationFactory");
@@ -90,8 +91,14 @@ public class BHBot {
                 case "chromedriveraddress":  //change chrome driver port
                     bot.chromeDriverAddress = args[i + 1];
                     i++;
+                    continue;
+                case "userdatadir":
+                    userDataDir = args[i + 1];
+                    i++;
             }
         }
+
+        bot.browser = new BrowserManager(bot, userDataDir);
 
         if ("LOAD_IDLE_SETTINGS".equals(Settings.configurationFile)) {
             bot.settings.setIdle();

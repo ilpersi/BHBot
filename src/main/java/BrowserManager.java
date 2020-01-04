@@ -42,8 +42,11 @@ public class BrowserManager {
     private BufferedImage img; // latest screen capture
     private BHBot bot;
 
-    BrowserManager(BHBot bot) {
+    private String userDataDir;
+
+    BrowserManager(BHBot bot, String UserDataDir) {
         this.bot = bot;
+        this.userDataDir = UserDataDir;
     }
 
     static void addCue(String name, BufferedImage im, Bounds bounds) {
@@ -509,8 +512,11 @@ public class BrowserManager {
     private synchronized void connect() throws MalformedURLException {
         ChromeOptions options = new ChromeOptions();
 
-        options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
-        options.setBinary(bot.chromiumExePath); //set Chromium v69 binary location
+        // will create this profile folder where chromedriver.exe is located!
+        options.addArguments("user-data-dir=" + userDataDir);
+
+        //set Chromium binary location
+        options.setBinary(bot.chromiumExePath);
 
         if (bot.settings.autoStartChromeDriver) {
             System.setProperty("webdriver.chrome.driver", bot.chromeDriverExePath);
