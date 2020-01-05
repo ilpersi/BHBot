@@ -181,7 +181,7 @@ public class BrowserManager {
     }
 
     static void buildCues() {
-        BrowserManager.addCue("Main", BrowserManager.loadImage("cues/cueMainScreen.png"), new Bounds(90, 5, 100, 10));
+        BrowserManager.addCue("Main", BrowserManager.loadImage("cues/cueMainScreen.png"), new Bounds(90, 5, 100, 20));
         BrowserManager.addCue("Login", BrowserManager.loadImage("cues/cueLogin.png"), new Bounds(270, 260, 330, 300)); // login window (happens seldom)
         BrowserManager.addCue("AreYouThere", BrowserManager.loadImage("cues/cueAreYouThere.png"), Bounds.fromWidthHeight(250, 240, 300, 45));
         BrowserManager.addCue("Yes", BrowserManager.loadImage("cues/cueYes.png"), null);
