@@ -546,6 +546,8 @@ public class BrowserManager {
         if (!isDoNotShareUrl() && bot.settings.useDoNotShareURL) {
             LoggingPreferences logPrefs = new LoggingPreferences();
             logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
+            // https://stackoverflow.com/a/56536604/1280443
+            options.setCapability("goog:loggingPrefs", logPrefs);
             options.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
         }
 
