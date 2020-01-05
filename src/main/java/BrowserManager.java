@@ -765,13 +765,7 @@ public class BrowserManager {
      * Moves mouse to position (0,0) in the 'game' element (so that it doesn't trigger any highlight popups or similar
      */
     synchronized void moveMouseAway() {
-        try {
-            Actions act = new Actions(driver);
-            act.moveToElement(game, 0, 0);
-            act.perform();
-        } catch (Exception e) {
-            // do nothing
-        }
+        moveMouseToPos(0, 0);
     }
 
     //moves mouse to XY location (for triggering hover text)
@@ -779,7 +773,9 @@ public class BrowserManager {
     synchronized void moveMouseToPos(int x, int y) {
         try {
             Actions act = new Actions(driver);
-            act.moveToElement(game, x, y);
+            Point movePos = getChromeOffset(x, y);
+
+            act.moveToElement(game, movePos.x, movePos.y);
             act.perform();
         } catch (Exception e) {
             // do nothing
@@ -790,29 +786,18 @@ public class BrowserManager {
      * Performs a mouse click on the center of the given segment
      */
     synchronized void clickOnSeg(MarvinSegment seg) {
-        Actions act = new Actions(driver);
-
-        // As of Chrome 75, offsets coordinates are relative to the center of elements
-        if (getChromeVersion() < 75) {
-            act.moveToElement(game, seg.getCenterX(), seg.getCenterY());
-            act.click();
-            act.moveToElement(game, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
-        } else {
-            Dimension gameDimension = game.getSize();
-            int gameCenterX = gameDimension.width / 2;
-            int gameCenterY = gameDimension.height / 2;
-            act.moveToElement(game, seg.getCenterX() - gameCenterX, seg.getCenterY() - gameCenterY);
-            act.click();
-            act.moveToElement(game, -gameCenterX, -gameCenterY);
-        }
-        act.perform();
+        clickInGame(seg.getCenterX(), seg.getCenterY());
     }
 
     synchronized void clickInGame(int x, int y) {
+        Point clickCoordinates = getChromeOffset(x, y);
+        Point awayCoordinates = getChromeOffset(0, 0);
         Actions act = new Actions(driver);
-        act.moveToElement(game, x, y);
+
+        act.moveToElement(game, clickCoordinates.x, clickCoordinates.y);
         act.click();
-        act.moveToElement(game, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
+        // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
+        act.moveToElement(game, awayCoordinates.x, awayCoordinates.y);
         act.perform();
     }
 
@@ -925,5 +910,17 @@ public class BrowserManager {
     private int getChromeVersion() {
         String[] versionArray = caps.getVersion().split("\\.");
         return Integer.parseInt(versionArray[0]);
+    }
+
+    private Point getChromeOffset(int x, int y) {
+        // As of Chrome 75, offsets are calculated from the center of the elements
+        if (getChromeVersion() >= 75) {
+            Dimension gameDimension = game.getSize();
+            int gameCenterX = gameDimension.width / 2;
+            int gameCenterY = gameDimension.height / 2;
+            return new Point(x -gameCenterX, y - gameCenterY);
+        } else {
+            return new Point(x, y);
+        }
     }
 }
