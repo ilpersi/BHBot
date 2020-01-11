@@ -2473,9 +2473,9 @@ public class DungeonThread implements Runnable {
 
                 //For Expedition we need to close 3 windows (Exped/Portal/Team) to return to main screen
                 if (bot.getState() == BHBot.State.Expedition) {
-                    closePopupSecurely(BrowserManager.cues.get("Enter"), BrowserManager.cues.get("X"));
-                    closePopupSecurely(BrowserManager.cues.get("PortalBorderLeaves"), BrowserManager.cues.get("X"));
-                    closePopupSecurely(BrowserManager.cues.get("BadgeBar"), BrowserManager.cues.get("X"));
+                    bot.browser.closePopupSecurely(BrowserManager.cues.get("Enter"), BrowserManager.cues.get("X"));
+                    bot.browser.closePopupSecurely(BrowserManager.cues.get("PortalBorderLeaves"), BrowserManager.cues.get("X"));
+                    bot.browser.closePopupSecurely(BrowserManager.cues.get("BadgeBar"), BrowserManager.cues.get("X"));
                 }
 
                 resetAppropriateTimers();
@@ -2601,9 +2601,9 @@ public class DungeonThread implements Runnable {
 
             //For Expedition we need to close 3 windows (Exped/Portal/Team) to return to main screen
             if (bot.getState() == BHBot.State.Expedition) {
-                closePopupSecurely(BrowserManager.cues.get("Enter"), BrowserManager.cues.get("X"));
-                closePopupSecurely(BrowserManager.cues.get("PortalBorderLeaves"), BrowserManager.cues.get("X"));
-                closePopupSecurely(BrowserManager.cues.get("BadgeBar"), BrowserManager.cues.get("X"));
+                bot.browser.closePopupSecurely(BrowserManager.cues.get("Enter"), BrowserManager.cues.get("X"));
+                bot.browser.closePopupSecurely(BrowserManager.cues.get("PortalBorderLeaves"), BrowserManager.cues.get("X"));
+                bot.browser.closePopupSecurely(BrowserManager.cues.get("BadgeBar"), BrowserManager.cues.get("X"));
 
                 //Handle difficultyFailsafe for Exped
                 if (bot.settings.difficultyFailsafe.containsKey("e")) {
