@@ -2634,23 +2634,10 @@ public class DungeonThread implements Runnable {
                 }
 
                 //For Expedition we need to close 3 windows (Exped/Portal/Team) to return to main screen
-                //Next Expedition this'll be replaced with closePopupSecurely
                 if (bot.getState() == BHBot.State.Expedition) {
-
-                    // first screen
-                    bot.browser.readScreen(Misc.Durations.SECOND);
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * Misc.Durations.SECOND, bot.browser);
-                    bot.browser.clickOnSeg(seg);
-
-                    // Close Portal Map after expedition
-                    bot.browser.readScreen(Misc.Durations.SECOND);
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * Misc.Durations.SECOND, bot.browser);
-                    bot.browser.clickOnSeg(seg);
-
-                    // close Expedition window after Expedition
-                    bot.browser.readScreen(Misc.Durations.SECOND);
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * Misc.Durations.SECOND, bot.browser);
-                    bot.browser.clickOnSeg(seg);
+                    closePopupSecurely(BrowserManager.cues.get("Enter"), BrowserManager.cues.get("X"));
+                    closePopupSecurely(BrowserManager.cues.get("PortalBorderLeaves"), BrowserManager.cues.get("X"));
+                    closePopupSecurely(BrowserManager.cues.get("BadgeBar"), BrowserManager.cues.get("X"));
                 }
 
                 resetAppropriateTimers();
@@ -2777,22 +2764,10 @@ public class DungeonThread implements Runnable {
             }
 
             //For Expedition we need to close 3 windows (Exped/Portal/Team) to return to main screen
-            //Next Expedition this'll be replaced with closePopupSecurely
             if (bot.getState() == BHBot.State.Expedition) {
-                // first screen
-                bot.browser.readScreen(Misc.Durations.SECOND);
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * Misc.Durations.SECOND, bot.browser);
-                bot.browser.clickOnSeg(seg);
-
-                // Close Portal Map after expedition
-                bot.browser.readScreen(Misc.Durations.SECOND);
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * Misc.Durations.SECOND, bot.browser);
-                bot.browser.clickOnSeg(seg);
-
-                // close Expedition window after Expedition
-                bot.browser.readScreen(Misc.Durations.SECOND);
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 3 * Misc.Durations.SECOND, bot.browser);
-                bot.browser.clickOnSeg(seg);
+                closePopupSecurely(BrowserManager.cues.get("Enter"), BrowserManager.cues.get("X"));
+                closePopupSecurely(BrowserManager.cues.get("PortalBorderLeaves"), BrowserManager.cues.get("X"));
+                closePopupSecurely(BrowserManager.cues.get("BadgeBar"), BrowserManager.cues.get("X"));
 
                 //Handle difficultyFailsafe for Exped
                 if (bot.settings.difficultyFailsafe.containsKey("e")) {

@@ -400,6 +400,7 @@ public class BrowserManager {
         BrowserManager.addCue("Expedition3", BrowserManager.loadImage("cues/expedition/cueExpedition3Jammie.png"), new Bounds(230, 40, 565, 100)); //Jammie Dimension
         BrowserManager.addCue("Expedition4", BrowserManager.loadImage("cues/expedition/cueExpedition4Idol.png"), new Bounds(230, 40, 565, 100)); //Idol Dimension
         BrowserManager.addCue("Expedition5", BrowserManager.loadImage("cues/expedition/cueExpedition5BattleBards.png"), new Bounds(230, 40, 565, 100)); //Battle Bards!
+        BrowserManager.addCue("PortalBorderLeaves", BrowserManager.loadImage("cues/expedition/portalBorderLeaves.png"), new Bounds(48, 447, 107, 503));
 
         //WorldBoss Related
         BrowserManager.addCue("WorldBoss", BrowserManager.loadImage("cues/cueWorldBoss.png"), null);
