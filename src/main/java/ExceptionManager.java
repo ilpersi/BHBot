@@ -1,11 +1,33 @@
 public class ExceptionManager {
     BHBot bot;
 
+    /**
+     * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale.
+     */
+    int numConsecutiveException = 0;
+
     ExceptionManager (BHBot bot) {
         this.bot = bot;
     }
 
+    /**
+     * @param e The exception that has to be managed by the Exception manager
+     * @return true if the class was able to manage the exception. Please note that, whenever true is returned,
+     *         the numConsecutiveException counter is increased by one and never reset to zero. Setting it to
+     *         zero is up to the caller of this method. Once that the exception limit defined in
+     *         MAX_CONSECUTIVE_EXCEPTIONS is reached, the bot will restart itself.
+     */
     synchronized boolean manageException(Exception e) {
+
+        numConsecutiveException++;
+        int MAX_CONSECUTIVE_EXCEPTIONS = 10;
+        if (numConsecutiveException > MAX_CONSECUTIVE_EXCEPTIONS) {
+            numConsecutiveException = 0; // reset it
+            BHBot.logger.warn("Problem detected: number of consecutive exceptions is higher than " + MAX_CONSECUTIVE_EXCEPTIONS + ". This probably means we're caught in a loop. Restarting...");
+            bot.restart(true, false);
+            return false;
+        }
+
         if (e instanceof org.openqa.selenium.WebDriverException && e.getMessage().startsWith("chrome not reachable")) {
             // this happens when user manually closes the Chrome window, for example
             BHBot.logger.error("Error: chrome is not reachable! Restarting...", e);

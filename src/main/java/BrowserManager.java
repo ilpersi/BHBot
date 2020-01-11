@@ -35,6 +35,7 @@ public class BrowserManager {
     private static By byElement;
 
     private WebDriver driver;
+    private Capabilities caps;
     private JavascriptExecutor jsExecutor;
     private WebElement game;
     private String doNotShareUrl = "";
@@ -42,8 +43,11 @@ public class BrowserManager {
     private BufferedImage img; // latest screen capture
     private BHBot bot;
 
-    BrowserManager(BHBot bot) {
+    private String userDataDir;
+
+    BrowserManager(BHBot bot, String UserDataDir) {
         this.bot = bot;
+        this.userDataDir = UserDataDir;
     }
 
     static void addCue(String name, BufferedImage im, Bounds bounds) {
@@ -177,7 +181,7 @@ public class BrowserManager {
     }
 
     static void buildCues() {
-        BrowserManager.addCue("Main", BrowserManager.loadImage("cues/cueMainScreen.png"), new Bounds(90, 5, 100, 10));
+        BrowserManager.addCue("Main", BrowserManager.loadImage("cues/cueMainScreen.png"), new Bounds(90, 5, 100, 20));
         BrowserManager.addCue("Login", BrowserManager.loadImage("cues/cueLogin.png"), new Bounds(270, 260, 330, 300)); // login window (happens seldom)
         BrowserManager.addCue("AreYouThere", BrowserManager.loadImage("cues/cueAreYouThere.png"), Bounds.fromWidthHeight(250, 240, 300, 45));
         BrowserManager.addCue("Yes", BrowserManager.loadImage("cues/cueYes.png"), null);
@@ -510,8 +514,11 @@ public class BrowserManager {
     private synchronized void connect() throws MalformedURLException {
         ChromeOptions options = new ChromeOptions();
 
-        options.addArguments("user-data-dir=./chrome_profile"); // will create this profile folder where chromedriver.exe is located!
-        options.setBinary(bot.chromiumExePath); //set Chromium v69 binary location
+        // will create this profile folder where chromedriver.exe is located!
+        options.addArguments("user-data-dir=" + userDataDir);
+
+        //set Chromium binary location
+        options.setBinary(bot.chromiumExePath);
 
         if (bot.settings.autoStartChromeDriver) {
             System.setProperty("webdriver.chrome.driver", bot.chromeDriverExePath);
@@ -540,17 +547,24 @@ public class BrowserManager {
         if (!isDoNotShareUrl() && bot.settings.useDoNotShareURL) {
             LoggingPreferences logPrefs = new LoggingPreferences();
             logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
+            // https://stackoverflow.com/a/56536604/1280443
+            options.setCapability("goog:loggingPrefs", logPrefs);
             options.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
         }
 
         capabilities.setCapability("chrome.verbose", false);
         capabilities.setCapability(ChromeOptions.CAPABILITY, options);
+
         if (bot.settings.autoStartChromeDriver) {
             driver = new ChromeDriver(options);
+            caps = ((ChromeDriver) driver).getCapabilities();
         } else {
             driver = new RemoteWebDriver(new URL("http://" + bot.chromeDriverAddress), capabilities);
+            caps = ((RemoteWebDriver) driver).getCapabilities();
         }
         jsExecutor = (JavascriptExecutor) driver;
+
+
     }
 
     synchronized void restart(boolean useDoNotShareUrl) throws MalformedURLException {
@@ -754,13 +768,7 @@ public class BrowserManager {
      * Moves mouse to position (0,0) in the 'game' element (so that it doesn't trigger any highlight popups or similar
      */
     synchronized void moveMouseAway() {
-        try {
-            Actions act = new Actions(driver);
-            act.moveToElement(game, 0, 0);
-            act.perform();
-        } catch (Exception e) {
-            // do nothing
-        }
+        moveMouseToPos(0, 0);
     }
 
     //moves mouse to XY location (for triggering hover text)
@@ -768,7 +776,9 @@ public class BrowserManager {
     synchronized void moveMouseToPos(int x, int y) {
         try {
             Actions act = new Actions(driver);
-            act.moveToElement(game, x, y);
+            Point movePos = getChromeOffset(x, y);
+
+            act.moveToElement(game, movePos.x, movePos.y);
             act.perform();
         } catch (Exception e) {
             // do nothing
@@ -779,19 +789,68 @@ public class BrowserManager {
      * Performs a mouse click on the center of the given segment
      */
     synchronized void clickOnSeg(MarvinSegment seg) {
-        Actions act = new Actions(driver);
-        act.moveToElement(game, seg.getCenterX(), seg.getCenterY());
-        act.click();
-        act.moveToElement(game, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
-        act.perform();
+        clickInGame(seg.getCenterX(), seg.getCenterY());
     }
 
     synchronized void clickInGame(int x, int y) {
+        Point clickCoordinates = getChromeOffset(x, y);
+        Point awayCoordinates = getChromeOffset(0, 0);
         Actions act = new Actions(driver);
-        act.moveToElement(game, x, y);
+
+        act.moveToElement(game, clickCoordinates.x, clickCoordinates.y);
         act.click();
-        act.moveToElement(game, 0, 0); // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
+        // so that the mouse doesn't stay on the button, for example. Or else button will be highlighted and cue won't get detected!
+        act.moveToElement(game, awayCoordinates.x, awayCoordinates.y);
         act.perform();
+    }
+
+    /**
+     * Will close the popup by clicking on the 'close' cue and checking that 'popup' cue is gone. It will repeat this operation
+     * until either 'popup' cue is gone or timeout is reached. This method ensures that the popup is closed. Sometimes just clicking once
+     * on the close button ('close' cue) doesn't work, since popup is still sliding down and we miss the button, this is why we need to
+     * check if it is actually closed. This is what this method does.
+     * <p>
+     * Note that before entering into this method, caller had probably already detected the 'popup' cue (but not necessarily). <br>
+     * Note: in case of failure, it will print it out.
+     *
+     * @return false in case it failed to close it (timed out).
+     */
+    synchronized boolean closePopupSecurely(Cue popup, Cue close) {
+        MarvinSegment seg1, seg2;
+        int counter;
+        seg1 = MarvinSegment.fromCue(close, bot.browser);
+        seg2 = MarvinSegment.fromCue(popup, bot.browser);
+
+        // make sure popup window is on the screen (or else wait until it appears):
+        counter = 0;
+        while (seg2 == null) {
+            counter++;
+            if (counter > 10) {
+                BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: popup cue not detected!");
+                return false;
+            }
+            bot.browser.readScreen(Misc.Durations.SECOND);
+            seg2 = MarvinSegment.fromCue(popup, bot.browser);
+        }
+
+        counter = 0;
+        // there is no more popup window, so we're finished!
+        while (seg2 != null) {
+            if (seg1 != null)
+                bot.browser.clickOnSeg(seg1);
+
+            counter++;
+            if (counter > 10) {
+                BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: either close button has not been detected or popup would not close!");
+                return false;
+            }
+
+            bot.browser.readScreen(Misc.Durations.SECOND);
+            seg1 = MarvinSegment.fromCue(close, bot.browser);
+            seg2 = MarvinSegment.fromCue(popup, bot.browser);
+        }
+
+        return true;
     }
 
     synchronized void readScreen() {
@@ -849,5 +908,22 @@ public class BrowserManager {
 
     synchronized public BufferedImage getImg() {
         return img;
+    }
+
+    private int getChromeVersion() {
+        String[] versionArray = caps.getVersion().split("\\.");
+        return Integer.parseInt(versionArray[0]);
+    }
+
+    private Point getChromeOffset(int x, int y) {
+        // As of Chrome 75, offsets are calculated from the center of the elements
+        if (getChromeVersion() >= 75) {
+            Dimension gameDimension = game.getSize();
+            int gameCenterX = gameDimension.width / 2;
+            int gameCenterY = gameDimension.height / 2;
+            return new Point(x -gameCenterX, y - gameCenterY);
+        } else {
+            return new Point(x, y);
+        }
     }
 }

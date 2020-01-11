@@ -53,15 +53,11 @@ public class DungeonThread implements Runnable {
     private Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])\\s+(?<difficulty>[123])");
     @SuppressWarnings("FieldCanBeLocal")
     private final long MAX_IDLE_TIME = 15 * Misc.Durations.MINUTE;
-    @SuppressWarnings("FieldCanBeLocal")
-    private final int MAX_CONSECUTIVE_EXCEPTIONS = 10;
 
     private boolean[] revived = {false, false, false, false, false};
     private int potionsUsed = 0;
     private boolean startTimeCheck = false;
     private boolean speedChecked = false;
-    private boolean oneTimeshrineCheck = false;
-    private boolean autoShrined = false;
     private long activityStartTime;
     private boolean encounterStatus = true;
     private long outOfEncounterTimestamp = 0;
@@ -96,19 +92,10 @@ public class DungeonThread implements Runnable {
     private long timeLastFishingBaitsCheck = 0; // when did we check for fishing baits the last time?
     private long timeLastFishingCheck = 0; // when did we check for fishing last time?
     private long timeLastPOAlive = 0; // when did we check for fishing last time?
-    private long timeLastDailyGem = 0; // when did we check for fishing last time?
-    private long timeLastWeeklyGem = 0; // when did we check for fishing last time?
+    private long timeLastDailyGem = 0; // when did we check for daily gem screenshot last time?
+    private long timeLastWeeklyGem = Misc.getTime(); // when did we check for weekly gem screenshot last time?
     private final long botStartTime = Misc.getTime();
-    /**
-     * Number of consecutive exceptions. We need to track it in order to detect crash loops that we must break by restarting the Chrome driver. Or else it could get into loop and stale.
-     */
-    private int numConsecutiveException = 0;
 
-    /**
-     * autoshrine settings save
-     */
-    private boolean ignoreBossSetting = false;
-    private boolean ignoreShrinesSetting = false;
     /**
      * global autorune vals
      */
@@ -118,11 +105,13 @@ public class DungeonThread implements Runnable {
     private MinorRune rightMinorRune;
 
     BHBot bot;
+    AutoShrineManager shrineManager;
 
     private Iterator<String> activitysIterator;
 
     DungeonThread(BHBot bot) {
         this.bot = bot;
+
         activitysIterator = bot.settings.activitiesEnabled.iterator();
     }
 
@@ -250,11 +239,9 @@ public class DungeonThread implements Runnable {
     }
 
     void restart(boolean emergency) {
-        oneTimeshrineCheck = false; //reset first run shrine check in case its enabled after restarting
 
         if (bot.settings.idleMode) {
             oneTimeRuneCheck = true;
-            oneTimeshrineCheck = true;
         }
         bot.restart(emergency, false); // assume emergency restart
     }
@@ -281,12 +268,6 @@ public class DungeonThread implements Runnable {
 
                     // Safety measure to avoid being stuck forever in dungeons
                     if (bot.getState() != BHBot.State.Main && bot.getState() != BHBot.State.Loading) {
-                        BHBot.logger.info("Ensuring that autoShrine settings are disabled");
-                        if (!checkShrineSettings(false, false)) {
-                            BHBot.logger.error("It was not possible to verify autoShrine settings");
-                        }
-                        autoShrined = false;
-
                         if (!bot.settings.autoRuneDefault.isEmpty()) {
                             BHBot.logger.info("Re-validating autoRunes");
                             if (!detectEquippedMinorRunes(true, true)) {
@@ -316,29 +297,6 @@ public class DungeonThread implements Runnable {
                 MarvinSegment seg;
                 bot.browser.readScreen();
 
-                // check for "recently disconnected" popup:
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("RecentlyDisconnected"), bot.browser);
-                if (seg != null) {
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser);
-                    if (seg == null) {
-                        BHBot.logger.error("Error: detected 'recently disconnected' popup but could not find 'Yes' button. Restarting...");
-                        restart();
-                        continue;
-                    }
-
-                    bot.browser.clickOnSeg(seg);
-                    if (bot.getState() == BHBot.State.Main || bot.getState() == BHBot.State.Loading) {
-                        // we set this when we are not sure of what type of dungeon we are doing
-                        bot.setState(BHBot.State.UnidentifiedDungeon);
-                    } else {
-                        BHBot.logger.debug("RecentlyDisconnected status is: " + bot.getState());
-                    }
-                    BHBot.logger.info("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
-                    Misc.sleep(60 * Misc.Durations.SECOND); //long sleep as if the checkShrine didn't find the potion button we'd enter a restart loop
-                    checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
-                    continue;
-                }
-
                 //Dungeon crash failsafe, this can happen if you crash and reconnect quickly, then get placed back in the dungeon with no reconnect dialogue
                 if (bot.getState() == BHBot.State.Loading) {
                     MarvinSegment autoOn = MarvinSegment.fromCue(BrowserManager.cues.get("AutoOn"), bot.browser);
@@ -347,7 +305,7 @@ public class DungeonThread implements Runnable {
                         bot.setState(BHBot.State.UnidentifiedDungeon); // we are not sure what type of dungeon we are doing
                         BHBot.logger.warn("Possible dungeon crash, activating failsafe");
                         bot.saveGameScreen("dungeon-crash-failsafe", "errors");
-                        checkShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
+                        shrineManager.updateShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
                         continue;
                     }
                 }
@@ -437,20 +395,7 @@ public class DungeonThread implements Runnable {
                         handleConsumables();
                     }
 
-                    //uncommentcomment for faster launching while testing
-//					oneTimeshrineCheck = true;
-//					oneTimeRuneCheck = true;
-
-                    // One time check for Autoshrine
-                    if (!oneTimeshrineCheck) {
-
-                        BHBot.logger.info("Startup check to make sure autoShrine is initially disabled");
-                        if (!checkShrineSettings(false, false)) {
-                            BHBot.logger.error("It was not possible to perform the autoShrine start-up check!");
-                        }
-                        oneTimeshrineCheck = true;
-                        bot.browser.readScreen(2 * Misc.Durations.SECOND); // delay to close the settings window completely before we check for raid button else the settings window is hiding it
-                    }
+                    shrineManager.initialize();
 
                     // One time check for equipped minor runes
                     if (!bot.settings.autoRuneDefault.isEmpty() && !oneTimeRuneCheck) {
@@ -497,7 +442,7 @@ public class DungeonThread implements Runnable {
                             BHBot.logger.warn("Error: attempt at opening raid window failed. No window cue detected. Ignoring...");
                             bot.scheduler.restoreIdleTime();
                             // we make sure that everything that can be closed is actually closed to avoid idle timeout
-                            closePopupSecurely(BrowserManager.cues.get("X"), BrowserManager.cues.get("X"));
+                            bot.browser.closePopupSecurely(BrowserManager.cues.get("X"), BrowserManager.cues.get("X"));
                             continue;
                         }
 
@@ -538,7 +483,7 @@ public class DungeonThread implements Runnable {
                             //autoshrine
                             if (bot.settings.autoShrine.contains("r")) {
                                 BHBot.logger.info("Configuring autoShrine for Raid");
-                                if (!checkShrineSettings(true, true)) {
+                                if (!shrineManager.updateShrineSettings(true, true)) {
                                     BHBot.logger.error("Impossible to configure autoShrine for Raid!");
                                 }
                             }
@@ -546,7 +491,7 @@ public class DungeonThread implements Runnable {
                             //autoBossRune
                             if (bot.settings.autoBossRune.containsKey("r") && !bot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autobossrune enabled
                                 BHBot.logger.info("Configuring autoBossRune for Raid");
-                                if (!checkShrineSettings(true, false)) {
+                                if (!shrineManager.updateShrineSettings(true, false)) {
                                     BHBot.logger.error("Impossible to configure autoBossRune for Raid!");
                                 }
                             }
@@ -602,7 +547,6 @@ public class DungeonThread implements Runnable {
                             } else {
                                 bot.setState(BHBot.State.Raid);
                                 BHBot.logger.info("Raid initiated!");
-                                autoShrined = false;
                                 autoBossRuned = false;
                             }
                         }
@@ -699,7 +643,7 @@ public class DungeonThread implements Runnable {
                                 //autoshrine
                                 if (bot.settings.autoShrine.contains("t")) {
                                     BHBot.logger.info("Configuring autoShrine for Trials");
-                                    if (!checkShrineSettings(true, true)) {
+                                    if (!shrineManager.updateShrineSettings(true, true)) {
                                         BHBot.logger.error("Impossible to configure autoShrine for Trials!");
                                     }
                                 }
@@ -707,7 +651,7 @@ public class DungeonThread implements Runnable {
                                 //autoBossRune
                                 if (bot.settings.autoBossRune.containsKey("t") && !bot.settings.autoShrine.contains("t")) { //if autoshrine disabled but autobossrune enabled
                                     BHBot.logger.info("Configuring autoBossRune for Trials");
-                                    if (!checkShrineSettings(true, false)) {
+                                    if (!shrineManager.updateShrineSettings(true, false)) {
                                         BHBot.logger.error("Impossible to configure autoBossRune for Trials!");
                                     }
                                 }
@@ -735,7 +679,7 @@ public class DungeonThread implements Runnable {
                             int difficulty = detectDifficulty();
                             if (difficulty == 0) { // error!
                                 BHBot.logger.error("Due to an error#1 in difficulty detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
-                                closePopupSecurely(BrowserManager.cues.get("TrialsOrGauntletWindow"), BrowserManager.cues.get("X"));
+                                bot.browser.closePopupSecurely(BrowserManager.cues.get("TrialsOrGauntletWindow"), BrowserManager.cues.get("X"));
                                 continue;
                             }
                             if (difficulty != targetDifficulty) {
@@ -756,7 +700,7 @@ public class DungeonThread implements Runnable {
                             int cost = detectCost();
                             if (cost == 0) { // error!
                                 BHBot.logger.error("Due to an error#1 in cost detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
-                                closePopupSecurely(BrowserManager.cues.get("TrialsOrGauntletWindow"), BrowserManager.cues.get("X"));
+                                bot.browser.closePopupSecurely(BrowserManager.cues.get("TrialsOrGauntletWindow"), BrowserManager.cues.get("X"));
                                 continue;
                             }
                             if (cost != (trials ? bot.settings.costTrials : bot.settings.costGauntlet)) {
@@ -815,7 +759,6 @@ public class DungeonThread implements Runnable {
                             } else {
                                 bot.setState(trials ? BHBot.State.Trials : BHBot.State.Gauntlet);
                                 BHBot.logger.info((trials ? "Trials" : "Gauntlet") + " initiated!");
-                                autoShrined = false;
                                 autoBossRuned = false;
                             }
                         }
@@ -863,7 +806,7 @@ public class DungeonThread implements Runnable {
                             if (bot.settings.autoBossRune.containsKey("d") && !bot.settings.autoShrine.contains("d")) { //if autoshrine disabled but autorune enabled
 
                                 BHBot.logger.info("Configuring autoBossRune for Dungeons");
-                                if (!checkShrineSettings(true, false)) {
+                                if (!shrineManager.updateShrineSettings(true, false)) {
                                     BHBot.logger.error("Impossible to configure autoBossRune for Dungeons!");
                                 }
 
@@ -987,7 +930,6 @@ public class DungeonThread implements Runnable {
                             }
 
                             bot.setState(BHBot.State.Dungeon);
-                            autoShrined = false;
                             autoBossRuned = false;
 
                             BHBot.logger.info("Dungeon <z" + goalZone + "d" + goalDungeon + "> " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic") + " initiated!");
@@ -1047,7 +989,7 @@ public class DungeonThread implements Runnable {
                             int cost = detectCost();
                             if (cost == 0) { // error!
                                 BHBot.logger.error("Due to an error#1 in cost detection, PVP will be skipped.");
-                                closePopupSecurely(BrowserManager.cues.get("PVPWindow"), BrowserManager.cues.get("X"));
+                                bot.browser.closePopupSecurely(BrowserManager.cues.get("PVPWindow"), BrowserManager.cues.get("X"));
                                 dressUp(bot.settings.pvpstrip);
                                 continue;
                             }
@@ -1061,7 +1003,7 @@ public class DungeonThread implements Runnable {
                                     bot.browser.readScreen(5 * Misc.Durations.SECOND);
                                     seg = MarvinSegment.fromCue(BrowserManager.cues.get("PVPWindow"), 15 * Misc.Durations.SECOND, bot.browser);
                                     if (seg != null)
-                                        closePopupSecurely(BrowserManager.cues.get("PVPWindow"), BrowserManager.cues.get("X"));
+                                        bot.browser.closePopupSecurely(BrowserManager.cues.get("PVPWindow"), BrowserManager.cues.get("X"));
                                     BHBot.logger.error("Due to an error#2 in cost selection, PVP will be skipped.");
                                     dressUp(bot.settings.pvpstrip);
                                     continue;
@@ -1212,7 +1154,7 @@ public class DungeonThread implements Runnable {
                                 int cost = detectCost();
                                 if (cost == 0) { // error!
                                     BHBot.logger.error("Due to an error#1 in cost detection, GVG will be skipped.");
-                                    closePopupSecurely(BrowserManager.cues.get("GVGWindow"), BrowserManager.cues.get("X"));
+                                    bot.browser.closePopupSecurely(BrowserManager.cues.get("GVGWindow"), BrowserManager.cues.get("X"));
                                     continue;
                                 }
                                 if (cost != bot.settings.costGVG) {
@@ -1225,7 +1167,7 @@ public class DungeonThread implements Runnable {
                                         bot.browser.readScreen(5 * Misc.Durations.SECOND);
                                         seg = MarvinSegment.fromCue(BrowserManager.cues.get("GVGWindow"), 15 * Misc.Durations.SECOND, bot.browser);
                                         if (seg != null)
-                                            closePopupSecurely(BrowserManager.cues.get("GVGWindow"), BrowserManager.cues.get("X"));
+                                            bot.browser.closePopupSecurely(BrowserManager.cues.get("GVGWindow"), BrowserManager.cues.get("X"));
                                         BHBot.logger.error("Due to an error#2 in cost selection, GVG will be skipped.");
                                         dressUp(bot.settings.gvgstrip);
                                         continue;
@@ -1244,7 +1186,7 @@ public class DungeonThread implements Runnable {
                                     continue;
                                 } else if (disabledBattles) {
                                     bot.browser.readScreen();
-                                    closePopupSecurely(BrowserManager.cues.get("GVGWindow"), BrowserManager.cues.get("X"));
+                                    bot.browser.closePopupSecurely(BrowserManager.cues.get("GVGWindow"), BrowserManager.cues.get("X"));
                                     continue;
                                 }
 
@@ -1322,7 +1264,7 @@ public class DungeonThread implements Runnable {
                                 int cost = detectCost();
                                 if (cost == 0) { // error!
                                     BHBot.logger.error("Due to an error#1 in cost detection, invasion will be skipped.");
-                                    closePopupSecurely(BrowserManager.cues.get("InvasionWindow"), BrowserManager.cues.get("X"));
+                                    bot.browser.closePopupSecurely(BrowserManager.cues.get("InvasionWindow"), BrowserManager.cues.get("X"));
                                     continue;
                                 }
                                 if (cost != bot.settings.costInvasion) {
@@ -1335,7 +1277,7 @@ public class DungeonThread implements Runnable {
                                         bot.browser.readScreen(5 * Misc.Durations.SECOND);
                                         seg = MarvinSegment.fromCue(BrowserManager.cues.get("InvasionWindow"), 15 * Misc.Durations.SECOND, bot.browser);
                                         if (seg != null)
-                                            closePopupSecurely(BrowserManager.cues.get("InvasionWindow"), BrowserManager.cues.get("X"));
+                                            bot.browser.closePopupSecurely(BrowserManager.cues.get("InvasionWindow"), BrowserManager.cues.get("X"));
                                         BHBot.logger.error("Due to an error#2 in cost selection, invasion will be skipped.");
                                         continue;
                                     }
@@ -1349,8 +1291,7 @@ public class DungeonThread implements Runnable {
                                 }
                                 bot.browser.clickOnSeg(seg);
 
-                                bot.browser.readScreen(3000);
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
                                 if (seg == null) {
                                     BHBot.logger.error("Unable to find the Accept button in the Invasion screen, restarting!");
                                     restart();
@@ -1366,7 +1307,6 @@ public class DungeonThread implements Runnable {
                                 } else {
                                     bot.setState(BHBot.State.Invasion);
                                     BHBot.logger.info("Invasion initiated!");
-                                    autoShrined = false;
                                 }
                             }
                             continue;
@@ -1414,7 +1354,7 @@ public class DungeonThread implements Runnable {
                                 //autoshrine
                                 if (bot.settings.autoShrine.contains("e")) {
                                     BHBot.logger.info("Configuring autoShrine for Expedition");
-                                    if (!checkShrineSettings(true, true)) {
+                                    if (!shrineManager.updateShrineSettings(true, true)) {
                                         BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
                                     }
                                 }
@@ -1422,7 +1362,7 @@ public class DungeonThread implements Runnable {
                                 //autoBossRune
                                 if (bot.settings.autoBossRune.containsKey("e") && !bot.settings.autoShrine.contains("e")) { //if autoshrine disabled but autobossrune enabled
                                     BHBot.logger.info("Configuring autoBossRune for Expedition");
-                                    if (!checkShrineSettings(true, false)) {
+                                    if (!shrineManager.updateShrineSettings(true, false)) {
                                         BHBot.logger.error("Impossible to configure autoBossRune for Expedition!");
                                     }
                                 }
@@ -1440,7 +1380,7 @@ public class DungeonThread implements Runnable {
                                 int cost = detectCost();
                                 if (cost == 0) { // error!
                                     BHBot.logger.error("Due to an error#1 in cost detection, Expedition cost will be skipped.");
-                                    closePopupSecurely(BrowserManager.cues.get("ExpeditionWindow"), BrowserManager.cues.get("X"));
+                                    bot.browser.closePopupSecurely(BrowserManager.cues.get("ExpeditionWindow"), BrowserManager.cues.get("X"));
                                     continue;
                                 }
 
@@ -1591,7 +1531,6 @@ public class DungeonThread implements Runnable {
                                 } else {
                                     bot.setState(BHBot.State.Expedition);
                                     BHBot.logger.info(portalName + " portal initiated!");
-                                    autoShrined = false;
                                     autoBossRuned = false;
                                 }
 
@@ -1699,7 +1638,7 @@ public class DungeonThread implements Runnable {
                                     }
                                 }
 
-                                closePopupSecurely(BrowserManager.cues.get("WorldBossTitle"), BrowserManager.cues.get("X"));
+                                bot.browser.closePopupSecurely(BrowserManager.cues.get("WorldBossTitle"), BrowserManager.cues.get("X"));
                                 continue;
                             }
                             bot.browser.readScreen(2 * Misc.Durations.SECOND); //wait for screen to stablise
@@ -1963,29 +1902,17 @@ public class DungeonThread implements Runnable {
                 } // main screen processing
             } catch (Exception e) {
                 if (bot.excManager.manageException(e)) continue;
-
-                numConsecutiveException++;
-                if (numConsecutiveException > MAX_CONSECUTIVE_EXCEPTIONS) {
-                    numConsecutiveException = 0; // reset it
-                    BHBot.logger.warn("Problem detected: number of consecutive exceptions is higher than " + MAX_CONSECUTIVE_EXCEPTIONS + ". This probably means we're caught in a loop. Restarting...");
-                    restart();
-                    continue;
-                }
-
                 bot.scheduler.restoreIdleTime();
-
                 continue;
             }
 
             // well, we got through all the checks. Means that nothing much has happened. So lets sleep for a second in order to not make processing too heavy...
-            numConsecutiveException = 0; // reset exception counter
+            bot.excManager.numConsecutiveException = 0; // reset exception counter
             bot.scheduler.restoreIdleTime(); // revert changes to idle time
             if (bot.finished) break; // skip sleeping if finished flag has been set!
             Misc.sleep(Misc.Durations.SECOND);
         } // main while loop
 
-        BHBot.logger.info("Stopping main thread...");
-        bot.browser.close();
         BHBot.logger.info("Dungeon thread stopped.");
     }
 
@@ -2092,95 +2019,6 @@ public class DungeonThread implements Runnable {
         return null;
     }
 
-    private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {
-        bot.browser.readScreen();
-
-        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("SettingsGear"), bot.browser);
-        if (seg != null) {
-            bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(delay);
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Settings"), Misc.Durations.SECOND * 3, bot.browser);
-            return seg != null;
-        } else {
-            BHBot.logger.error("Impossible to find the settings button!");
-            bot.saveGameScreen("open-settings-no-btn", "errors");
-            return false;
-        }
-    }
-
-    boolean checkShrineSettings(boolean ignoreBoss, boolean ignoreShrines) {
-        //open settings
-        int ignoreBossCnt = 0;
-        int ignoreShrineCnt = 0;
-
-        if (openSettings(Misc.Durations.SECOND)) {
-            if (ignoreBoss) {
-                while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreBoss"), Misc.Durations.SECOND, bot.browser) != null) {
-                    BHBot.logger.debug("Enabling Ignore Boss");
-                    bot.browser.clickInGame(194, 366);
-                    bot.browser.readScreen(500);
-
-                    if (ignoreBossCnt++ > 10) {
-                        BHBot.logger.error("Impossible to enable Ignore Boss");
-                        return false;
-                    }
-                }
-                ignoreBossSetting = true;
-                BHBot.logger.debug("Ignore Boss Enabled");
-            } else {
-                while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreBoss"), Misc.Durations.SECOND, bot.browser) == null) {
-                    BHBot.logger.debug("Disabling Ignore Boss");
-                    bot.browser.clickInGame(194, 366);
-                    bot.browser.readScreen(500);
-
-                    if (ignoreBossCnt++ > 10) {
-                        BHBot.logger.error("Impossible to Disable Ignore Boss");
-                        return false;
-                    }
-                }
-                ignoreBossSetting = false;
-                BHBot.logger.debug("Ignore Boss Disabled");
-            }
-
-            if (ignoreShrines) {
-                while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreShrines"), Misc.Durations.SECOND, bot.browser) != null) {
-                    BHBot.logger.debug("Enabling Ignore Shrine");
-                    bot.browser.clickInGame(194, 402);
-                    bot.browser.readScreen(500);
-
-                    if (ignoreShrineCnt++ > 10) {
-                        BHBot.logger.error("Impossible to enable Ignore Shrines");
-                        return false;
-                    }
-                }
-                ignoreShrinesSetting = true;
-                BHBot.logger.debug("Ignore Shrine Enabled");
-            } else {
-                while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreShrines"), Misc.Durations.SECOND, bot.browser) == null) {
-                    BHBot.logger.debug("Disabling Ignore Shrine");
-                    bot.browser.clickInGame(194, 402);
-                    bot.browser.readScreen(500);
-
-                    if (ignoreShrineCnt++ > 10) {
-                        BHBot.logger.error("Impossible to disable Ignore Shrines");
-                        return false;
-                    }
-                }
-                ignoreShrinesSetting = false;
-                BHBot.logger.debug("Ignore Shrine Disabled");
-            }
-
-            bot.browser.readScreen(Misc.Durations.SECOND);
-
-            closePopupSecurely(BrowserManager.cues.get("Settings"), new Cue(BrowserManager.cues.get("X"), new Bounds(608, 39, 711, 131)));
-
-            return true;
-        } else {
-            BHBot.logger.warn("Impossible to open settings menu!");
-            return false;
-        }
-    }
-
     private boolean openRunesMenu() {
         // Open character menu
         bot.browser.clickInGame(55, 465);
@@ -2233,9 +2071,9 @@ public class DungeonThread implements Runnable {
 
         if (exitRunesMenu) {
             Misc.sleep(500);
-            closePopupSecurely(BrowserManager.cues.get("RunesLayout"), BrowserManager.cues.get("X"));
+            bot.browser.closePopupSecurely(BrowserManager.cues.get("RunesLayout"), BrowserManager.cues.get("X"));
             Misc.sleep(500);
-            closePopupSecurely(BrowserManager.cues.get("StripSelectorButton"), BrowserManager.cues.get("X"));
+            bot.browser.closePopupSecurely(BrowserManager.cues.get("StripSelectorButton"), BrowserManager.cues.get("X"));
         }
 
         boolean success = true;
@@ -2514,7 +2352,7 @@ public class DungeonThread implements Runnable {
          * autoShrine Code
          */
         if (bot.settings.autoShrine.contains(bot.getState().getShortcut()) && !encounterStatus) {
-            handleAutoShrine();
+            shrineManager.processAutoShrine((outOfEncounterTimestamp - inEncounterTimestamp));
         }
 
         /*
@@ -2621,7 +2459,7 @@ public class DungeonThread implements Runnable {
                 handleSuccessThreshold(bot.getState());
 
                 //close 'cleared' popup
-                closePopupSecurely(BrowserManager.cues.get("Cleared"), BrowserManager.cues.get("YesGreen"));
+                bot.browser.closePopupSecurely(BrowserManager.cues.get("Cleared"), BrowserManager.cues.get("YesGreen"));
 
                 // close the activity window to return us to the main screen
                 if (bot.getState() != BHBot.State.Expedition) {
@@ -2708,7 +2546,6 @@ public class DungeonThread implements Runnable {
         seg = MarvinSegment.fromCue(BrowserManager.cues.get("Defeat"), bot.browser);
         if (seg != null) {
 
-
             //Calculate activity stats
             counters.get(bot.getState()).increaseDefeats();
             long activityRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
@@ -2752,7 +2589,6 @@ public class DungeonThread implements Runnable {
                 if (bot.getState() == BHBot.State.GVG) dressUp(bot.settings.gvgstrip);
                 return;
             }
-
 
             //Close the activity window to return us to the main screen
             if (bot.getState() != BHBot.State.Expedition) {
@@ -2847,16 +2683,15 @@ public class DungeonThread implements Runnable {
             if (bot.getState() == BHBot.State.PVP && bot.settings.pvpstrip.size() > 0) dressUp(bot.settings.pvpstrip);
             if (bot.getState() == BHBot.State.GVG && bot.settings.gvgstrip.size() > 0) dressUp(bot.settings.gvgstrip);
 
-            // We make sure to disable autoshrine when defeated
+            // We make sure to disable autoShrine when defeated
             if (bot.getState() == BHBot.State.Trials || bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Expedition) {
-                if (ignoreBossSetting && ignoreShrinesSetting) {
-                    bot.browser.readScreen(Misc.Durations.SECOND);
-                    if (!checkShrineSettings(false, false)) {
-                        BHBot.logger.error("Impossible to disable autoShrine after defeat! Restarting..");
-                        restart();
-                    }
+
+                bot.browser.readScreen(Misc.Durations.SECOND);
+                if (!shrineManager.updateShrineSettings(false, false)) {
+                    BHBot.logger.error("Impossible to disable autoShrine after defeat! Restarting..");
+                    restart();
                 }
-                autoShrined = false;
+
                 autoBossRuned = false;
                 bot.browser.readScreen(Misc.Durations.SECOND * 2);
             }
@@ -2884,7 +2719,7 @@ public class DungeonThread implements Runnable {
 
                     handleMinorBossRunes();
 
-                    if (!checkShrineSettings(false, false)) {
+                    if (!shrineManager.updateShrineSettings(false, false)) {
                         BHBot.logger.error("Impossible to disable Ignore Boss in handleAutoBossRune!");
                         BHBot.logger.warn("Resetting encounter timer to try again in 30 seconds.");
                         inEncounterTimestamp = Misc.getTime() / 1000;
@@ -2906,66 +2741,7 @@ public class DungeonThread implements Runnable {
         }
     }
 
-    private void handleAutoShrine() {
-        MarvinSegment guildButtonSeg;
-        guildButtonSeg = MarvinSegment.fromCue(BrowserManager.cues.get("GuildButton"), bot.browser);
-
-        if ((bot.getState() == BHBot.State.Raid && bot.settings.autoShrine.contains("r")) ||
-                (bot.getState() == BHBot.State.Trials && bot.settings.autoShrine.contains("t")) ||
-                (bot.getState() == BHBot.State.Expedition && bot.settings.autoShrine.contains("e")) ||
-                (bot.getState() == BHBot.State.UnidentifiedDungeon)) {
-            if (!autoShrined) {
-                if ((((outOfEncounterTimestamp - inEncounterTimestamp) >= bot.settings.battleDelay) && guildButtonSeg != null)) {
-                    BHBot.logger.autorune(bot.settings.battleDelay + "s since last encounter, disabling ignore shrines");
-
-                    if (!checkShrineSettings(true, false)) {
-                        BHBot.logger.error("Impossible to disable Ignore Shrines in handleAutoShrine!");
-                        return;
-                    }
-                    bot.browser.readScreen(100);
-
-                    // We disable and re-enable the auto feature
-                    while (MarvinSegment.fromCue(BrowserManager.cues.get("AutoOn"), 500, bot.browser) != null) {
-                        bot.browser.clickInGame(780, 270); //auto off
-                        bot.browser.readScreen(500);
-                    }
-                    while (MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), 500, bot.browser) != null) {
-                        bot.browser.clickInGame(780, 270); //auto on again
-                        bot.browser.readScreen(500);
-                    }
-
-                    if ((bot.getState() == BHBot.State.Raid && bot.settings.autoBossRune.containsKey("r")) || (bot.getState() == BHBot.State.Trials && bot.settings.autoBossRune.containsKey("t")) ||
-                            (bot.getState() == BHBot.State.Expedition && bot.settings.autoBossRune.containsKey("e")) || (bot.getState() == BHBot.State.Dungeon && bot.settings.autoBossRune.containsKey("d"))) {
-                        handleMinorBossRunes();
-                    } else {
-                        BHBot.logger.autoshrine("Waiting " + bot.settings.shrineDelay + "s to use shrines");
-                        Misc.sleep(bot.settings.shrineDelay * Misc.Durations.SECOND); //if we're not changing runes we sleep while we activate shrines
-                    }
-
-                    if (!checkShrineSettings(false, false)) {
-                        BHBot.logger.error("Impossible to disable Ignore Boss in handleAutoShrine!");
-                        return;
-                    }
-                    bot.browser.readScreen(100);
-
-                    // We disable and re-enable the auto feature
-                    while (MarvinSegment.fromCue(BrowserManager.cues.get("AutoOn"), 500, bot.browser) != null) {
-                        bot.browser.clickInGame(780, 270); //auto off
-                        bot.browser.readScreen(500);
-                    }
-                    while (MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), 500, bot.browser) != null) {
-                        bot.browser.clickInGame(780, 270); //auto on again
-                        bot.browser.readScreen(500);
-                    }
-
-                    autoShrined = true;
-                    bot.scheduler.resetIdleTime(true);
-                }
-            }
-        }
-    }
-
-    private void handleMinorRunes(String activity) {
+    void handleMinorRunes(String activity) {
         List<String> desiredRunesAsStrs;
         String activityName = bot.getState().getNameFromShortcut(activity);
         if (bot.settings.autoRuneDefault.isEmpty()) {
@@ -2998,7 +2774,7 @@ public class DungeonThread implements Runnable {
 
     }
 
-    private void handleMinorBossRunes() {
+    void handleMinorBossRunes() {
         if (bot.settings.autoRuneDefault.isEmpty()) {
             BHBot.logger.debug("autoRunesDefault not defined; aborting autoBossRunes");
             return;
@@ -3166,7 +2942,7 @@ public class DungeonThread implements Runnable {
         }
 
         BHBot.logger.error("Unable to find rune of type " + desiredRune);
-        closePopupSecurely(BrowserManager.cues.get("RunesPicker"), BrowserManager.cues.get("X"));
+        bot.browser.closePopupSecurely(BrowserManager.cues.get("RunesPicker"), BrowserManager.cues.get("X"));
         Misc.sleep(Misc.Durations.SECOND);
         return false;
     }
@@ -3542,7 +3318,7 @@ public class DungeonThread implements Runnable {
             if (MarvinSegment.fromCue(BrowserManager.cues.get("NotEnoughGems"), Misc.Durations.SECOND * 5, bot.browser) != null) {
                 BHBot.logger.warn("Not enough gems to attempt a bribe!");
                 noGemsToBribe = true;
-                if (!closePopupSecurely(BrowserManager.cues.get("NotEnoughGems"), BrowserManager.cues.get("No"))) {
+                if (!bot.browser.closePopupSecurely(BrowserManager.cues.get("NotEnoughGems"), BrowserManager.cues.get("No"))) {
                     BHBot.logger.error("Impossible to close the Not Enough gems pop-up. Restarting...");
                     restart();
                 }
@@ -4756,15 +4532,15 @@ public class DungeonThread implements Runnable {
         if (seg != null) {
             // we don't have enough energy!
             BHBot.logger.warn("Problem detected: insufficient energy to attempt " + state + ". Cancelling...");
-            closePopupSecurely(BrowserManager.cues.get("NotEnoughEnergy"), BrowserManager.cues.get("No"));
+            bot.browser.closePopupSecurely(BrowserManager.cues.get("NotEnoughEnergy"), BrowserManager.cues.get("No"));
 
 
             if (bot.getState().equals(BHBot.State.WorldBoss)) {
-                closePopupSecurely(BrowserManager.cues.get("WorldBossSummonTitle"), BrowserManager.cues.get("X"));
+                bot.browser.closePopupSecurely(BrowserManager.cues.get("WorldBossSummonTitle"), BrowserManager.cues.get("X"));
 
-                closePopupSecurely(BrowserManager.cues.get("WorldBossTitle"), BrowserManager.cues.get("X"));
+                bot.browser.closePopupSecurely(BrowserManager.cues.get("WorldBossTitle"), BrowserManager.cues.get("X"));
             } else {
-                closePopupSecurely(BrowserManager.cues.get("AutoTeam"), BrowserManager.cues.get("X"));
+                bot.browser.closePopupSecurely(BrowserManager.cues.get("AutoTeam"), BrowserManager.cues.get("X"));
 
                 // if D4 close the dungeon info window, else close the char selection screen
                 if (specialDungeon) {
@@ -4774,11 +4550,11 @@ public class DungeonThread implements Runnable {
                     specialDungeon = false;
                 } else {
                     // close difficulty selection screen:
-                    closePopupSecurely(BrowserManager.cues.get("Normal"), BrowserManager.cues.get("X"));
+                    bot.browser.closePopupSecurely(BrowserManager.cues.get("Normal"), BrowserManager.cues.get("X"));
                 }
 
                 // close zone view window:
-                closePopupSecurely(BrowserManager.cues.get("ZonesButton"), BrowserManager.cues.get("X"));
+                bot.browser.closePopupSecurely(BrowserManager.cues.get("ZonesButton"), BrowserManager.cues.get("X"));
             }
 
             return true;
@@ -4800,19 +4576,19 @@ public class DungeonThread implements Runnable {
         if (seg != null) {
             BHBot.logger.warn("Not enough token popup detected! Closing trial window.");
 
-            if (!closePopupSecurely(BrowserManager.cues.get("NotEnoughTokens"), BrowserManager.cues.get("No"))) {
+            if (!bot.browser.closePopupSecurely(BrowserManager.cues.get("NotEnoughTokens"), BrowserManager.cues.get("No"))) {
                 BHBot.logger.error("Impossible to close the 'Not Enough Tokens' pop-up window. Restarting");
                 return false;
             }
 
             if (closeTeamWindow) {
-                if (!closePopupSecurely(BrowserManager.cues.get("Accept"), BrowserManager.cues.get("X"))) {
+                if (!bot.browser.closePopupSecurely(BrowserManager.cues.get("Accept"), BrowserManager.cues.get("X"))) {
                     BHBot.logger.error("Impossible to close the team window when no tokens are available. Restarting");
                     return false;
                 }
             }
 
-            if (!closePopupSecurely(BrowserManager.cues.get("TrialsOrGauntletWindow"), BrowserManager.cues.get("X"))) {
+            if (!bot.browser.closePopupSecurely(BrowserManager.cues.get("TrialsOrGauntletWindow"), BrowserManager.cues.get("X"))) {
                 BHBot.logger.error("Impossible to close the 'TrialsOrGauntletWindow' window. Restarting");
                 return false;
             }
@@ -5123,22 +4899,13 @@ public class DungeonThread implements Runnable {
 
         bot.browser.readScreen(5 * Misc.Durations.SECOND);
 
-        return selectDifficultyFromDropDown(newDifficulty, step);
+        return selectDifficultyFromDropDown(newDifficulty, 0, step);
     }
 
     /**
      * Internal routine. Difficulty drop down must be open for this to work!
      * Note that it closes the drop-down when it is done (except if an error occurred). However there is a close
      * animation and the caller must wait for it to finish.
-     *
-     * @return false in case of an error.
-     */
-    private boolean selectDifficultyFromDropDown(int newDifficulty, int step) {
-        return selectDifficultyFromDropDown(newDifficulty, 0, step);
-    }
-
-    /**
-     * Internal routine - do not use it manually! <br>
      *
      * @return false on error (caller must do restart() if he gets false as a result from this method)
      */
@@ -5321,55 +5088,6 @@ public class DungeonThread implements Runnable {
     }
 
     /**
-     * Will close the popup by clicking on the 'close' cue and checking that 'popup' cue is gone. It will repeat this operation
-     * until either 'popup' cue is gone or timeout is reached. This method ensures that the popup is closed. Sometimes just clicking once
-     * on the close button ('close' cue) doesn't work, since popup is still sliding down and we miss the button, this is why we need to
-     * check if it is actually closed. This is what this method does.
-     * <p>
-     * Note that before entering into this method, caller had probably already detected the 'popup' cue (but not necessarily). <br>
-     * Note: in case of failure, it will print it out.
-     *
-     * @return false in case it failed to close it (timed out).
-     */
-    private boolean closePopupSecurely(Cue popup, Cue close) {
-        MarvinSegment seg1, seg2;
-        int counter;
-        seg1 = MarvinSegment.fromCue(close, bot.browser);
-        seg2 = MarvinSegment.fromCue(popup, bot.browser);
-
-        // make sure popup window is on the screen (or else wait until it appears):
-        counter = 0;
-        while (seg2 == null) {
-            counter++;
-            if (counter > 10) {
-                BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: popup cue not detected!");
-                return false;
-            }
-            bot.browser.readScreen(Misc.Durations.SECOND);
-            seg2 = MarvinSegment.fromCue(popup, bot.browser);
-        }
-
-        counter = 0;
-        // there is no more popup window, so we're finished!
-        while (seg2 != null) {
-            if (seg1 != null)
-                bot.browser.clickOnSeg(seg1);
-
-            counter++;
-            if (counter > 10) {
-                BHBot.logger.error("Error: unable to close popup <" + popup.name + "> securely: either close button has not been detected or popup would not close!");
-                return false;
-            }
-
-            bot.browser.readScreen(Misc.Durations.SECOND);
-            seg1 = MarvinSegment.fromCue(close, bot.browser);
-            seg2 = MarvinSegment.fromCue(popup, bot.browser);
-        }
-
-        return true;
-    }
-
-    /**
      * @return -1 on error
      */
     private int detectEquipmentFilterScrollerPos() {
@@ -5474,7 +5192,7 @@ public class DungeonThread implements Runnable {
             bot.browser.clickInGame(490, 210);
 
         // OK, we're done, lets close the character menu window:
-        closePopupSecurely(BrowserManager.cues.get("StripSelectorButton"), BrowserManager.cues.get("X"));
+        bot.browser.closePopupSecurely(BrowserManager.cues.get("StripSelectorButton"), BrowserManager.cues.get("X"));
     }
 
     private void stripDown(List<String> striplist) {
@@ -5753,10 +5471,10 @@ public class DungeonThread implements Runnable {
                         // don't consume the consumable... it's already in use!
                         BHBot.logger.warn("\"Replace consumable\" dialog detected for (" + c.getName() + "). Skipping...");
                         duplicateConsumables.add(c);
-                        closePopupSecurely(BrowserManager.cues.get("ConsumableTitle"), BrowserManager.cues.get("No"));
+                        bot.browser.closePopupSecurely(BrowserManager.cues.get("ConsumableTitle"), BrowserManager.cues.get("No"));
                     } else {
                         // consume the consumable:
-                        closePopupSecurely(BrowserManager.cues.get("ConsumableTitle"), BrowserManager.cues.get("YesGreen"));
+                        bot.browser.closePopupSecurely(BrowserManager.cues.get("ConsumableTitle"), BrowserManager.cues.get("YesGreen"));
                     }
                     MarvinSegment.fromCue(BrowserManager.cues.get("StripSelectorButton"), 5 * Misc.Durations.SECOND, bot.browser); // we do this just in order to wait for the previous menu to reappear
                     i.remove();
@@ -5779,7 +5497,7 @@ public class DungeonThread implements Runnable {
         }
 
         // OK, we're done, lets close the character menu window:
-        boolean result = closePopupSecurely(BrowserManager.cues.get("StripSelectorButton"), BrowserManager.cues.get("X"));
+        boolean result = bot.browser.closePopupSecurely(BrowserManager.cues.get("StripSelectorButton"), BrowserManager.cues.get("X"));
         if (!result) {
             BHBot.logger.warn("Done. Error detected while trying to close character window. Ignoring...");
             return;
@@ -6085,6 +5803,7 @@ public class DungeonThread implements Runnable {
 
     }
 
+    // TODO Merge with ItemGrade Enum
     private String getItemTier(String tier) {
         switch (tier) {
             case "m":

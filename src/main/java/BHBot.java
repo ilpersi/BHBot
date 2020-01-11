@@ -37,7 +37,7 @@ public class BHBot {
     static long logMaxDays;
     static Level logLevel;
 
-    private DungeonThread dungeon;
+    DungeonThread dungeon;
     private int numFailedRestarts = 0; // in a row
 
     Settings settings = new Settings().setDebug();
@@ -59,9 +59,10 @@ public class BHBot {
 
     public static void main(String[] args) {
         BHBot bot = new BHBot();
-        bot.browser = new BrowserManager(bot);
         bot.poManager = new PushOverManager(bot);
         bot.excManager = new ExceptionManager(bot);
+
+        String userDataDir = "./chrome_profile";
 
         // We make sure that our configurationFactory is added to the list of configuration factories.
         System.setProperty("log4j.configurationFactory", "BHBotConfigurationFactory");
@@ -71,6 +72,7 @@ public class BHBot {
         for (int i = 0; i < args.length; i++) { //select settings file to load
             switch (args[i]) {
                 case "settings":
+                case "configurationFile":
                     Settings.configurationFile = args[i + 1];
                     i++;
                     continue;
@@ -81,17 +83,29 @@ public class BHBot {
                     continue;
                 case "chromium":
                 case "chromiumpath":
+                case "chromiumExePath":
                     bot.chromiumExePath = args[i + 1];
+                    i++;
                     continue;
                 case "chromedriver":
                 case "chromedriverpath":
+                case "chromeDriverExePath":
                     bot.chromeDriverExePath = args[i + 1];
+                    i++;
                     continue;
                 case "chromedriveraddress":  //change chrome driver port
+                case "chromeDriverAddress":
                     bot.chromeDriverAddress = args[i + 1];
+                    i++;
+                    continue;
+                case "userdatadir":
+                case "userDataDir":
+                    userDataDir = args[i + 1];
                     i++;
             }
         }
+
+        bot.browser = new BrowserManager(bot, userDataDir);
 
         if ("LOAD_IDLE_SETTINGS".equals(Settings.configurationFile)) {
             bot.settings.setIdle();
@@ -187,18 +201,28 @@ public class BHBot {
         if (bot.dungeonThread.isAlive()) {
             try {
                 // wait for 10 seconds for the main thread to terminate
-                logger.info("Waiting for dungeon thread to finish... (timeout=10s)");
-                bot.dungeonThread.join(10 * Misc.Durations.SECOND);
-            } catch (InterruptedException e) {
-                logger.error("Error when joining Main Thread", e);
-            }
-
-            try {
-                // wait for 10 seconds for the main thread to terminate
                 logger.info("Waiting for blocker thread to finish... (timeout=10s)");
                 bot.blockerThread.join(10 * Misc.Durations.SECOND);
             } catch (InterruptedException e) {
                 logger.error("Error when joining Blocker Thread", e);
+            }
+
+            if (bot.blockerThread.isAlive()) {
+                logger.warn("Blocker thread is still alive. Force stopping it now...");
+                bot.blockerThread.interrupt();
+                try {
+                    bot.blockerThread.join(); // until thread stops
+                } catch (InterruptedException e) {
+                    logger.error("Error while force stopping", e);
+                }
+            }
+
+            try {
+                // wait for 10 seconds for the main thread to terminate
+                logger.info("Waiting for dungeon thread to finish... (timeout=10s)");
+                bot.dungeonThread.join(10 * Misc.Durations.SECOND);
+            } catch (InterruptedException e) {
+                logger.error("Error when joining Main Thread", e);
             }
 
             if (bot.dungeonThread.isAlive()) {
@@ -210,15 +234,9 @@ public class BHBot {
                     logger.error("Error while force stopping", e);
                 }
             }
-            if (bot.blockerThread.isAlive()) {
-                logger.warn("Blocker thread is still alive. Force stopping it now...");
-                bot.blockerThread.interrupt();
-                try {
-                    bot.blockerThread.join(); // until thread stops
-                } catch (InterruptedException e) {
-                    logger.error("Error while force stopping", e);
-                }
-            }
+
+            bot.browser.close();
+
         }
         logger.info(PROGRAM_NAME + " has bot.finished.");
     }
@@ -545,7 +563,7 @@ public class BHBot {
                                     break;
                             }
                         }
-                        if (!dungeon.checkShrineSettings(ignoreBoss, ignoreShrines)) {
+                        if (!dungeon.shrineManager.updateShrineSettings(ignoreBoss, ignoreShrines)) {
                             logger.error("Something went wrong when checking auto ignore settings!");
                         }
                         break;
@@ -887,6 +905,10 @@ public class BHBot {
         scheduler.resetIdleTime();
         scheduler.resume(); // in case it was paused
         numFailedRestarts = 0; // must be last line in this method!
+
+        // we make sure that the shrinemanager is resetted at restart time and we
+        // skip the initialization if idleMode is true
+        dungeon.shrineManager = new AutoShrineManager(this, settings.idleMode);
     }
 
     enum State {
