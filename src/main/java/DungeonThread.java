@@ -109,6 +109,9 @@ public class DungeonThread implements Runnable {
 
     private Iterator<String> activitysIterator;
 
+    // Weekly Sunday screenshots cache
+    HashMap<String, Boolean> sundayScreenshots = new HashMap<>();
+
     DungeonThread(BHBot bot) {
         this.bot = bot;
 
@@ -373,12 +376,29 @@ public class DungeonThread implements Runnable {
                     }
 
                     // weekly gem screenshot every Sunday and after or after a week the bot is running.
-                    if ( "7".equals(new SimpleDateFormat("u").format(new Date())) ||
-                            ((bot.settings.screenshots.contains("wg")) && (Misc.getTime() - timeLastWeeklyGem) > Misc.Durations.WEEK)) {
-                        timeLastWeeklyGem = Misc.getTime();
+                    if (bot.settings.screenshots.contains("wg")) {
+                        // The option is enabled and more than a week has passed
+                        if (  (Misc.getTime() - timeLastWeeklyGem) > Misc.Durations.WEEK) {
+                            timeLastWeeklyGem = Misc.getTime();
 
-                        BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
-                        bot.saveGameScreen("weekly-gems", "gems", gems);
+                            BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
+                            bot.saveGameScreen("weekly-gems", "gems", gems);
+                        } else {
+                            // Less than a week has passed, we check if it is Sunday
+                            if ("7".equals(new SimpleDateFormat("u").format(new Date()))) {
+                                SimpleDateFormat sundayKeyFormat = new SimpleDateFormat("yyyyMMdd");
+                                String sundayKey = sundayKeyFormat.format(new Date());
+
+                                // if the date key is not there, it means that this Sunday we got no screenshot
+                                if (!sundayScreenshots.getOrDefault(sundayKey, false)) {
+                                    timeLastWeeklyGem = Misc.getTime();
+                                    sundayScreenshots.put(sundayKey, true);
+
+                                    BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
+                                    bot.saveGameScreen("weekly-gems", "gems", gems);
+                                }
+                            }
+                        }
                     }
 
                     // daily gem screenshot
