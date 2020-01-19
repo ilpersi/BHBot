@@ -4072,8 +4072,14 @@ public class DungeonThread implements Runnable {
 
         // We check which of the portals are enabled
         for (int i = 0; i <= 3; i++) {
-            Color col = new Color(bot.browser.getImg().getRGB(portalCheck[i].x, portalCheck[i].y));
-            portalEnabled[i] = col.equals(colorCheck[i]);
+            if (!bot.browser.isDoNotShareUrl()) {
+                Color col = new Color(bot.browser.getImg().getRGB(portalCheck[i].x, portalCheck[i].y));
+                portalEnabled[i] = col.equals(colorCheck[i]);
+            } else {
+                Color col = new Color(bot.browser.getImg().getRGB(portalCheck[i].x - 1, portalCheck[i].y - 3));
+                portalEnabled[i] = col.equals(colorCheck[i]);
+            }
+
         }
 
         if (portalEnabled[portalInt - 1]) {
