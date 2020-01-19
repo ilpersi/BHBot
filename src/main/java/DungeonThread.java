@@ -2484,11 +2484,7 @@ public class DungeonThread implements Runnable {
                 // close the activity window to return us to the main screen
                 if (bot.getState() != BHBot.State.Expedition) {
                     bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
-                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
-                    if (seg != null) {
-                        bot.browser.clickOnSeg(seg);
-                    } else
-                        BHBot.logger.warn("Unable to find close button for " + bot.getState().getName() + " window..");
+                    bot.browser.closePopupSecurely(BrowserManager.cues.get("X"), BrowserManager.cues.get("X"));
                 }
 
                 //For Expedition we need to close 3 windows (Exped/Portal/Team) to return to main screen
@@ -2542,10 +2538,7 @@ public class DungeonThread implements Runnable {
 
                 // close the activity window to return us to the main screen
                 bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
-                if (seg != null) {
-                    bot.browser.clickOnSeg(seg);
-                } else BHBot.logger.warn("Unable to find X button for " + bot.getState().getName() + " window..");
+                bot.browser.closePopupSecurely(BrowserManager.cues.get("X"), BrowserManager.cues.get("X"));
 
                 //last few post activity tasks
                 resetAppropriateTimers();
@@ -2613,10 +2606,7 @@ public class DungeonThread implements Runnable {
             //Close the activity window to return us to the main screen
             if (bot.getState() != BHBot.State.Expedition) {
                 bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
-                if (seg != null) {
-                    bot.browser.clickOnSeg(seg);
-                } else BHBot.logger.warn("Unable to find X button for " + bot.getState().getName() + " window..");
+                bot.browser.closePopupSecurely(BrowserManager.cues.get("X"), BrowserManager.cues.get("X"));
             }
 
             //For Expedition we need to close 3 windows (Exped/Portal/Team) to return to main screen
