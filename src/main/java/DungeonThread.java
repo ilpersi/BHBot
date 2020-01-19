@@ -2878,7 +2878,6 @@ public class DungeonThread implements Runnable {
             }
         }
 
-
         if (desiredRightRune != rightMinorRune.getRuneEffect()) {
             BHBot.logger.debug("Switching right minor rune.");
             Misc.sleep(500); //sleep for window animation to finish
@@ -2911,6 +2910,7 @@ public class DungeonThread implements Runnable {
     }
 
     private Boolean switchSingleMinorRune(MinorRuneEffect desiredRune) {
+        bot.browser.readScreen(500); //sleep for window animation to finish
 
         MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("RunesSwitch"), 5 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
@@ -2918,6 +2918,8 @@ public class DungeonThread implements Runnable {
             return false;
         }
         bot.browser.clickOnSeg(seg);
+
+        bot.browser.readScreen(500); //sleep for window animation to finish
 
         seg = MarvinSegment.fromCue(BrowserManager.cues.get("RunesPicker"), 5 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
