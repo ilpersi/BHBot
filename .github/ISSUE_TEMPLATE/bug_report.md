@@ -23,6 +23,9 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
+**Settings**
+Please attach a copy of your settings.ini file. Make sure to remove personal/sensitive information
+
 **Desktop (please complete the following information):**
  - OS: [e.g. Windows]
  - Browser [e.g. Chrome, Chromium]
