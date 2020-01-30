@@ -3731,7 +3731,7 @@ public class DungeonThread implements Runnable {
      * @return null in case dungeon parameter is malformed (can even throw an exception)
      */
     private Point getDungeonIconPos(int z, int d) {
-        if (z < 1 || z > 10) return null;
+        if (z < 1 || z > 11) return null;
         if (d < 1 || d > 4) return null;
 
         switch (z) {
