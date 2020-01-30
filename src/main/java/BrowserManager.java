@@ -283,6 +283,7 @@ public class BrowserManager {
         BrowserManager.addCue("Zone8", BrowserManager.loadImage("cues/cueZone8.png"), null);
         BrowserManager.addCue("Zone9", BrowserManager.loadImage("cues/cueZone9.png"), null);
         BrowserManager.addCue("Zone10", BrowserManager.loadImage("cues/cueZone10.png"), null);
+        BrowserManager.addCue("Zone11", BrowserManager.loadImage("cues/cueZone11.png"), null);
         BrowserManager.addCue("RightArrow", BrowserManager.loadImage("cues/cueRightArrow.png"), null); // arrow used in quest screen to change zone
         BrowserManager.addCue("LeftArrow", BrowserManager.loadImage("cues/cueLeftArrow.png"), null); // arrow used in quest screen to change zone
         BrowserManager.addCue("Enter", BrowserManager.loadImage("cues/cueEnter.png"), null); // "Enter" button found on d4 window

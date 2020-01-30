@@ -3857,8 +3857,20 @@ public class DungeonThread implements Runnable {
                     case 4:
                         return new Point(585, 167);
                 }
+                break;
+            case 11:
+                switch (d) {
+                    case 1:
+                        return new Point(345, 408);
+                    case 2:
+                        return new Point(205, 160);
+                    case 3:
+                        return new Point(670, 205);
+                    case 4:
+                        BHBot.logger.warn("Zone 11 only has 3 dungeons, falling back to z11d2");
+                        return new Point(205, 160);
+                }
         }
-
 
         return null;
     }
@@ -4177,6 +4189,8 @@ public class DungeonThread implements Runnable {
             return 9;
         else if (MarvinSegment.fromCue("Zone10", bot.browser) != null)
             return 10;
+        else if (MarvinSegment.fromCue("Zone11", bot.browser) != null)
+            return 11;
         else
             return 0;
     }
