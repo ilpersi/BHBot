@@ -6158,8 +6158,8 @@ public class DungeonThread implements Runnable {
         Netherworld("n", "Netherworld", 2, 3, 9, 3),
         Melvin("m", "Melvin", 3, 10, 11, 4),
         Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11, 3),
-        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 11, 3),
-        TitansAttack("t", "Titans Attack", 6, 11, 11, 3),
+        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 12, 11, 3),
+        TitansAttack("t", "Titans Attack", 6, 11, 12, 3),
         Unknown("?", "Unknown", 7, 11, 100, 1);
 
         private String letter;
