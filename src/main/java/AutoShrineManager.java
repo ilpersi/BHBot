@@ -41,7 +41,7 @@ public class AutoShrineManager {
                     while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreBoss"), Misc.Durations.SECOND, bot.browser) != null) {
                         BHBot.logger.debug("Enabling Ignore Boss");
                         bot.browser.clickInGame(194, 366);
-                        bot.browser.readScreen(500);
+                        bot.browser.readScreen(1000);
 
                         if (ignoreBossCnt++ > 10) {
                             BHBot.logger.error("Impossible to enable Ignore Boss");
@@ -53,7 +53,7 @@ public class AutoShrineManager {
                     while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreBoss"), Misc.Durations.SECOND, bot.browser) == null) {
                         BHBot.logger.debug("Disabling Ignore Boss");
                         bot.browser.clickInGame(194, 366);
-                        bot.browser.readScreen(500);
+                        bot.browser.readScreen(1000);
 
                         if (ignoreBossCnt++ > 10) {
                             BHBot.logger.error("Impossible to Disable Ignore Boss");
@@ -70,7 +70,7 @@ public class AutoShrineManager {
                     while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreShrines"), Misc.Durations.SECOND, bot.browser) != null) {
                         BHBot.logger.debug("Enabling Ignore Shrine");
                         bot.browser.clickInGame(194, 402);
-                        bot.browser.readScreen(500);
+                        bot.browser.readScreen(1000);
 
                         if (ignoreShrineCnt++ > 10) {
                             BHBot.logger.error("Impossible to enable Ignore Shrines");
@@ -82,7 +82,7 @@ public class AutoShrineManager {
                     while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreShrines"), Misc.Durations.SECOND, bot.browser) == null) {
                         BHBot.logger.debug("Disabling Ignore Shrine");
                         bot.browser.clickInGame(194, 402);
-                        bot.browser.readScreen(500);
+                        bot.browser.readScreen(1000);
 
                         if (ignoreShrineCnt++ > 10) {
                             BHBot.logger.error("Impossible to disable Ignore Shrines");
