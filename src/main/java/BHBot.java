@@ -210,24 +210,6 @@ public class BHBot {
         if (bot.dungeonThread.isAlive()) {
             try {
                 // wait for 10 seconds for the main thread to terminate
-                logger.info("Waiting for blocker thread to finish... (timeout=10s)");
-                bot.blockerThread.join(10 * Misc.Durations.SECOND);
-            } catch (InterruptedException e) {
-                logger.error("Error when joining Blocker Thread", e);
-            }
-
-            if (bot.blockerThread.isAlive()) {
-                logger.warn("Blocker thread is still alive. Force stopping it now...");
-                bot.blockerThread.interrupt();
-                try {
-                    bot.blockerThread.join(); // until thread stops
-                } catch (InterruptedException e) {
-                    logger.error("Error while force stopping", e);
-                }
-            }
-
-            try {
-                // wait for 10 seconds for the main thread to terminate
                 logger.info("Waiting for dungeon thread to finish... (timeout=10s)");
                 bot.dungeonThread.join(10 * Misc.Durations.SECOND);
             } catch (InterruptedException e) {
@@ -243,11 +225,30 @@ public class BHBot {
                     logger.error("Error while force stopping", e);
                 }
             }
-
-            bot.browser.close();
-
         }
-        logger.info(PROGRAM_NAME + " has bot.finished.");
+
+        if (bot.blockerThread.isAlive()) {
+            try {
+                // wait for 10 seconds for the main thread to terminate
+                logger.info("Waiting for blocker thread to finish... (timeout=10s)");
+                bot.blockerThread.join(10 * Misc.Durations.SECOND);
+            } catch (InterruptedException e) {
+                logger.error("Error when joining Blocker Thread", e);
+            }
+
+            if (bot.blockerThread.isAlive()) {
+                logger.warn("Blocker thread is still alive. Force stopping it now...");
+                bot.blockerThread.interrupt();
+                try {
+                    bot.blockerThread.join(); // until thread stops
+                } catch (InterruptedException e) {
+                    logger.error("Error while force stopping", e);
+                }
+            }
+        }
+
+        bot.browser.close();
+        logger.info(PROGRAM_NAME + " has finished.");
     }
 
     private void processCommand(String c) {
