@@ -4827,21 +4827,24 @@ public class DungeonThread implements Runnable {
          * the bot needs to scroll down the bar to the correct position and more checks are required.
          */
         Point tierButton = new Point(388, 167); // Position of the top tier selection button
-        int yOffset = 0;
+        int yOffset;
         if ( (wbType.getMaxTier() - wbType.getMinTier() + 1) > 5) {
-            // we have to make sure that the scroll bar is on top to perform the currect calculations
-            final int[] yScrollerPositions = {146, 187, 227}; // top scroller positions
 
-            MarvinSegment barPosSeg = MarvinSegment.fromCue(BrowserManager.cues.get("StripScrollerTopPos"), 2 * Misc.Durations.SECOND, bot.browser);
+            // Theese are the positions of the top scroller
+            // Currently theese are only used for Orlag and Netherworld.
+            // Different position may be required in future based on wbType, just use an if statement
+            final int[] yScrollerPositions = {146, 187, 227};
+
+            seg = MarvinSegment.fromCue(BrowserManager.cues.get("StripScrollerTopPos"), 2 * Misc.Durations.SECOND, bot.browser);
 
             if (seg == null) {
                 BHBot.logger.error("Error: unable to detect world boss scrollbar postion in changeWorldBossTier!");
                 bot.saveGameScreen("scroll_wb_error", "errors");
                 return false;
             }
-            int pos = seg.y1;
 
-            int scrollBarPos = Misc.findClosestMatch(yScrollerPositions, barPosSeg.y1);
+            int scrollBarPos = Misc.findClosestMatch(yScrollerPositions, seg.y1);
+
             // if scrollBarPos is zero, the bar is at top and the max tier available is equal to maxTierAvailable
             int maxTierAvailable = wbType.getMaxTier() - scrollBarPos;
             int minTierAvailable = maxTierAvailable - 4;
