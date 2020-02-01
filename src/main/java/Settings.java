@@ -218,6 +218,9 @@ public class Settings {
     private boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
     private Map<String, String> lastUsedMap = new HashMap<>();
 
+    // If any error happens during the settings loading, this arraylist is populated with the offending lines
+    ArrayList<String> wrongSettingLines = new ArrayList<>();
+
     public Settings() {
         activitiesEnabled = new LinkedHashSet<>();
         setactivitiesEnabledFromString("r d t g p e i v"); // some default values
@@ -920,7 +923,11 @@ public class Settings {
         for (String line : lines) {
             if (line.trim().equals("")) continue;
             if (line.startsWith("#")) continue; // a comment
-            lastUsedMap.put(line.substring(0, line.indexOf(" ")), line.substring(line.indexOf(" ") + 1));
+            try {
+                lastUsedMap.put(line.substring(0, line.indexOf(" ")), line.substring(line.indexOf(" ") + 1));
+            } catch (StringIndexOutOfBoundsException e) {
+                wrongSettingLines.add(line);
+            }
         }
 
         username = lastUsedMap.getOrDefault("username", username);

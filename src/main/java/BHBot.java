@@ -137,6 +137,15 @@ public class BHBot {
         logLevel = bot.settings.logLevel;
 
         logger = BHBotLogger.create();
+        
+        if (bot.settings.wrongSettingLines.size() > 0 ) {
+            for (String wrongLine: bot.settings.wrongSettingLines) {
+                logger.fatal("It was impossible to parse the following setting line and it has been skipped: '" +  wrongLine  + "!" +
+                        "Please review your settings.ini file'");
+            }
+            return;
+        }
+        
         BrowserManager.buildCues();
 
         Properties properties = new Properties();
