@@ -1698,7 +1698,7 @@ public class DungeonThread implements Runnable {
                             if (currentTier != worldBossTier) {
                                 BHBot.logger.info("T" + currentTier + " detected, changing to T" + worldBossTier);
                                 Misc.sleep(500);
-                                if (!changeWorldBossTier(worldBossTier)) {
+                                if (!changeWorldBossTier(worldBossTier, wbType)) {
                                     restart();
                                     continue;
                                 }
@@ -4126,7 +4126,7 @@ public class DungeonThread implements Runnable {
         }
 
         //check tier
-        if (worldBossTier < wb.minTier && worldBossTier > wb.maxTier) {
+        if (worldBossTier < wb.minTier || worldBossTier > wb.maxTier) {
             BHBot.logger.error("Invalid world boss tier for " + wb.getName() + ", must be between " + wb.getMinTier() + " and " + wb.getMaxTier());
             return false;
         }
@@ -4808,7 +4808,7 @@ public class DungeonThread implements Runnable {
         return readNumFromImg(imb);
     }
 
-    private boolean changeWorldBossTier(int target) {
+    private boolean changeWorldBossTier(int target, WorldBoss wbType) {
         MarvinSegment seg;
         bot.browser.readScreen(Misc.Durations.SECOND); //wait for screen to stabilize
         seg = MarvinSegment.fromCue(BrowserManager.cues.get("WorldBossTierDropDown"), 2 * Misc.Durations.SECOND, bot.browser);
@@ -4822,49 +4822,71 @@ public class DungeonThread implements Runnable {
         bot.browser.clickOnSeg(seg);
         bot.browser.readScreen(2 * Misc.Durations.SECOND); //wait for screen to stabilize
 
-        //get known screen position for difficulty screen selection
-        if (target >= 5) { //top most
-            bot.browser.readScreen();
-            MarvinSegment up = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownUp"), Misc.Durations.SECOND, bot.browser);
-            if (up != null) {
-                bot.browser.clickOnSeg(up);
-                bot.browser.clickOnSeg(up);
-            }
-        } else { //bottom most
-            bot.browser.readScreen();
-            MarvinSegment down = MarvinSegment.fromCue(BrowserManager.cues.get("DropDownDown"), Misc.Durations.SECOND, bot.browser);
-            if (down != null) {
-                bot.browser.clickOnSeg(down);
-                bot.browser.clickOnSeg(down);
-            }
-        }
-        bot.browser.readScreen(Misc.Durations.SECOND); //wait for screen to stabilize
-        Point diff = getDifficultyButtonXY(target);
-        if (diff != null) {
-            //noinspection SuspiciousNameCombination
-            bot.browser.clickInGame(diff.y, diff.x);
-        }
-        return true;
-    }
+        /*
+         * The tier selecion window has a maximum of 5 choices. If for the current wb has more than five choices,
+         * the bot needs to scroll down the bar to the correct position and more checks are required.
+         */
+        Point tierButton = new Point(388, 167); // Position of the top tier selection button
+        int yOffset = 0;
+        if ( (wbType.getMaxTier() - wbType.getMinTier() + 1) > 5) {
+            // we have to make sure that the scroll bar is on top to perform the currect calculations
+            final int[] yScrollerPositions = {146, 187, 227}; // top scroller positions
 
-    private Point getDifficultyButtonXY(int target) {
-        switch (target) {
-            case 3:
-            case 5: // top 5 buttons after we scroll to the top
-                return new Point(410, 390);
-            case 4: // bottom 2 buttons after we scroll to the bottom
-            case 6:
-                return new Point(350, 390);
-            case 7:
-                return new Point(290, 390);
-            case 8:
-            case 10:
-                return new Point(230, 390);
-            case 9:
-            case 11:
-                return new Point(170, 390);
+            MarvinSegment barPosSeg = MarvinSegment.fromCue(BrowserManager.cues.get("StripScrollerTopPos"), 2 * Misc.Durations.SECOND, bot.browser);
+
+            if (seg == null) {
+                BHBot.logger.error("Error: unable to detect world boss scrollbar postion in changeWorldBossTier!");
+                bot.saveGameScreen("scroll_wb_error", "errors");
+                return false;
+            }
+            int pos = seg.y1;
+
+            int scrollBarPos = Misc.findClosestMatch(yScrollerPositions, barPosSeg.y1);
+            // if scrollBarPos is zero, the bar is at top and the max tier available is equal to maxTierAvailable
+            int maxTierAvailable = wbType.getMaxTier() - scrollBarPos;
+            int minTierAvailable = maxTierAvailable - 4;
+
+            // Do we need to scroll down?
+            if (target < minTierAvailable) {
+                while (target < minTierAvailable) {
+                    seg = MarvinSegment.fromCue("DropDownDown", 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(515, 415, 50, 50),  bot.browser);
+                    if (seg == null) {
+                        BHBot.logger.error("Error: unable to scroll dowon in changeWorldBossTier!");
+                        bot.saveGameScreen("scroll_down_wb_error", "errors");
+                        return false;
+                    }
+
+                    bot.browser.clickOnSeg(seg);
+                    maxTierAvailable -= 1;
+                    minTierAvailable -= 1;
+                }
+            }
+
+            // Do we need to scroll up?
+            if (target > maxTierAvailable) {
+                while (target > maxTierAvailable) {
+                    seg = MarvinSegment.fromCue("DropDownUp", 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(515, 115, 50, 50),  bot.browser);
+                    if (seg == null) {
+                        BHBot.logger.error("Error: unable to scroll up in changeWorldBossTier!");
+                        bot.saveGameScreen("scroll_up_wb_error", "errors");
+                        return false;
+                    }
+
+                    bot.browser.clickOnSeg(seg);
+                    maxTierAvailable += 1;
+                    minTierAvailable += 1;
+                }
+            }
+
+            yOffset = maxTierAvailable - target;
+        } else {
+            yOffset = wbType.getMaxTier() - wbType.getMinTier();
         }
-        return null;
+
+        tierButton.y += yOffset * 60;
+        bot.browser.clickInGame(tierButton);
+
+        return true;
     }
 
     private int detectWorldBossDifficulty() {
@@ -6172,7 +6194,7 @@ public class DungeonThread implements Runnable {
         Netherworld("n", "Netherworld", 2, 3, 9, 3),
         Melvin("m", "Melvin", 3, 10, 11, 4),
         Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11, 3),
-        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 12, 11, 3),
+        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 12, 3),
         TitansAttack("t", "Titans Attack", 6, 11, 12, 3),
         Unknown("?", "Unknown", 7, 11, 100, 1);
 

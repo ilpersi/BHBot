@@ -793,6 +793,10 @@ public class BrowserManager {
         clickInGame(seg.getCenterX(), seg.getCenterY());
     }
 
+    synchronized void clickInGame(Point clickPoint) {
+        clickInGame(clickPoint.x, clickPoint.y);
+    }
+
     synchronized void clickInGame(int x, int y) {
         Point clickCoordinates = getChromeOffset(x, y);
         Point awayCoordinates = getChromeOffset(0, 0);
