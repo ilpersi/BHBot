@@ -4830,11 +4830,6 @@ public class DungeonThread implements Runnable {
         int yOffset;
         if ( (wbType.getMaxTier() - wbType.getMinTier() + 1) > 5) {
 
-            // Theese are the positions of the top scroller
-            // Currently theese are only used for Orlag and Netherworld.
-            // Different position may be required in future based on wbType, just use an if statement
-            final int[] yScrollerPositions = {146, 187, 227};
-
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("StripScrollerTopPos"), 2 * Misc.Durations.SECOND, bot.browser);
 
             if (seg == null) {
@@ -4843,7 +4838,7 @@ public class DungeonThread implements Runnable {
                 return false;
             }
 
-            int scrollBarPos = Misc.findClosestMatch(yScrollerPositions, seg.y1);
+            int scrollBarPos = Misc.findClosestMatch(wbType.getYScrollerPositions(), seg.y1);
 
             // if scrollBarPos is zero, the bar is at top and the max tier available is equal to maxTierAvailable
             int maxTierAvailable = wbType.getMaxTier() - scrollBarPos;
@@ -6190,16 +6185,18 @@ public class DungeonThread implements Runnable {
         }
     }
 
+    /**
+     * This Enum is used to group together all the information related to the World Boss
+     */
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
     private enum WorldBoss {
-
-        Orlag("o", "Orlag Clan", 1, 3, 9, 5),
-        Netherworld("n", "Netherworld", 2, 3, 9, 3),
-        Melvin("m", "Melvin", 3, 10, 11, 4),
-        Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11, 3),
-        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 12, 3),
-        TitansAttack("t", "Titans Attack", 6, 11, 12, 3),
-        Unknown("?", "Unknown", 7, 11, 100, 1);
+        Orlag("o", "Orlag Clan", 1, 3, 9, 5, new int[] {146, 187, 227}),
+        Netherworld("n", "Netherworld", 2, 3, 9, 3, new int[] {146, 187, 227}),
+        Melvin("m", "Melvin", 3, 10, 11, 4, new int[] {}),
+        Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11, 3, new int[] {}),
+        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 12, 3, new int[] {}),
+        TitansAttack("t", "Titans Attack", 6, 11, 12, 3, new int[] {}),
+        Unknown("?", "Unknown", 7, 11, 100, 1, new int[] {});
 
         private String letter;
         private String Name;
@@ -6207,14 +6204,25 @@ public class DungeonThread implements Runnable {
         private int minTier;
         private int maxTier;
         private int partySize;
+        private int[] yScrollerPositions;
 
-        WorldBoss(String letter, String Name, int number, int minTier, int maxTier, int partySize) {
+        /**
+         * @param letter the shortcut letter used in settings.ini
+         * @param Name the real name of the World Boss
+         * @param number the World Boss number counting from left to right starting at 1
+         * @param minTier the minimun tier required to join the World Boss
+         * @param maxTier the maximum tier you are allowed to join for the World Boss
+         * @param partySize the party size of the World Boss
+         * @param yScrollerPositions the positions of the scroller bar in the tier selection window
+         */
+        WorldBoss(String letter, String Name, int number, int minTier, int maxTier, int partySize, int[] yScrollerPositions) {
             this.letter = letter;
             this.Name = Name;
             this.number = number;
             this.minTier = minTier;
             this.maxTier = maxTier;
             this.partySize = partySize;
+            this.yScrollerPositions = yScrollerPositions;
         }
 
         String getLetter() {
@@ -6236,6 +6244,8 @@ public class DungeonThread implements Runnable {
         int getMaxTier() {
             return maxTier;
         }
+
+        int[] getYScrollerPositions(){return yScrollerPositions;}
 
         static WorldBoss fromLetter(String Letter) {
             for (WorldBoss wb : WorldBoss.values()) {
