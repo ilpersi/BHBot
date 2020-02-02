@@ -4808,7 +4808,7 @@ public class DungeonThread implements Runnable {
         return readNumFromImg(imb);
     }
 
-    private boolean changeWorldBossTier(int target, WorldBoss wbType) {
+    private boolean changeWorldBossTier(int targetTier, WorldBoss wbType) {
         MarvinSegment seg;
         bot.browser.readScreen(Misc.Durations.SECOND); //wait for screen to stabilize
         seg = MarvinSegment.fromCue(BrowserManager.cues.get("WorldBossTierDropDown"), 2 * Misc.Durations.SECOND, bot.browser);
@@ -4822,13 +4822,12 @@ public class DungeonThread implements Runnable {
         bot.browser.clickOnSeg(seg);
         bot.browser.readScreen(2 * Misc.Durations.SECOND); //wait for screen to stabilize
 
-        /*
-         * The tier selecion window has a maximum of 5 choices. If for the current wb has more than five choices,
-         * the bot needs to scroll down the bar to the correct position and more checks are required.
-         */
+        // Temporary variables initialialized
         Point tierButton = new Point(388, 167); // Position of the top tier selection button
-        int yOffset;
-        if ( (wbType.getMaxTier() - wbType.getMinTier() + 1) > 5) {
+        int yOffset; // If the bot needs to click on a tier that is not the top most, what is the offset of it?
+
+        // If the world boss has scrollbar positions, it means that we must check if we need to scroll the bar
+        if ( wbType.getYScrollerPositions().length > 0) {
 
             seg = MarvinSegment.fromCue(BrowserManager.cues.get("StripScrollerTopPos"), 2 * Misc.Durations.SECOND, bot.browser);
 
@@ -4842,11 +4841,11 @@ public class DungeonThread implements Runnable {
 
             // if scrollBarPos is zero, the bar is at top and the max tier available is equal to maxTierAvailable
             int maxTierAvailable = wbType.getMaxTier() - scrollBarPos;
-            int minTierAvailable = maxTierAvailable - 4;
+            int minTierAvailable = maxTierAvailable - 4; // there are five buttons
 
             // Do we need to scroll down?
-            if (target < minTierAvailable) {
-                while (target < minTierAvailable) {
+            if (targetTier < minTierAvailable) {
+                while (targetTier < minTierAvailable) {
                     seg = MarvinSegment.fromCue("DropDownDown", 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(515, 415, 50, 50),  bot.browser);
                     if (seg == null) {
                         BHBot.logger.error("Error: unable to scroll dowon in changeWorldBossTier!");
@@ -4861,8 +4860,8 @@ public class DungeonThread implements Runnable {
             }
 
             // Do we need to scroll up?
-            if (target > maxTierAvailable) {
-                while (target > maxTierAvailable) {
+            if (targetTier > maxTierAvailable) {
+                while (targetTier > maxTierAvailable) {
                     seg = MarvinSegment.fromCue("DropDownUp", 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(515, 115, 50, 50),  bot.browser);
                     if (seg == null) {
                         BHBot.logger.error("Error: unable to scroll up in changeWorldBossTier!");
@@ -4876,9 +4875,9 @@ public class DungeonThread implements Runnable {
                 }
             }
 
-            yOffset = maxTierAvailable - target;
+            yOffset = maxTierAvailable - targetTier;
         } else {
-            yOffset = wbType.getMaxTier() - wbType.getMinTier();
+            yOffset = wbType.getMaxTier() - targetTier;
         }
 
         tierButton.y += yOffset * 60;
