@@ -6278,6 +6278,7 @@ public class DungeonThread implements Runnable {
     private boolean restrictedCues(Bounds foundArea) {
         MarvinSegment seg;
         HashMap<String, Cue> restrictedCues = new HashMap<>();
+        restrictedCues.put("Power Stone", BrowserManager.cues.get("Material_R9"));
         restrictedCues.put("Fire Blossom", BrowserManager.cues.get("Material_R8"));
         restrictedCues.put("Crubble", BrowserManager.cues.get("Material_R7"));
         restrictedCues.put("Beanstalk", BrowserManager.cues.get("Material_R6"));

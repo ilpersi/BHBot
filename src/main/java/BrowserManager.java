@@ -474,6 +474,7 @@ public class BrowserManager {
         BrowserManager.addCue("ItemSet", BrowserManager.loadImage("cues/items/cueItemSet.png"), null); // Set Item border
         BrowserManager.addCue("ItemMyt", BrowserManager.loadImage("cues/items/cueItemMyt.png"), null); // Mythical Item border
         //legendary
+        BrowserManager.addCue("Material_R9", BrowserManager.loadImage("cues/items/material_r9.png"), null);
         BrowserManager.addCue("Material_R8", BrowserManager.loadImage("cues/items/material_r8.png"), null);
         BrowserManager.addCue("Material_R7", BrowserManager.loadImage("cues/items/material_r7.png"), null);
         BrowserManager.addCue("Material_R6", BrowserManager.loadImage("cues/items/material_r6.png"), null);
