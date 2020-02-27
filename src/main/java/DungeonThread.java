@@ -2505,7 +2505,7 @@ public class DungeonThread implements Runnable {
          *  Check for the 'Victory' screen and handle post-activity tasks
          */
         if (bot.getState() == BHBot.State.WorldBoss || bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.Invasion || bot.getState() == BHBot.State.PVP || bot.getState() == BHBot.State.GVG) {
-            if (bot.getState() == BHBot.State.Gauntlet) {
+            if (bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.GVG) {
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("VictorySmall"), bot.browser);
             } else {
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("VictoryLarge"), bot.browser);
