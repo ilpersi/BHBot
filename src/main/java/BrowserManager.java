@@ -505,7 +505,10 @@ public class BrowserManager {
         BrowserManager.addCue("Fishing_Rewards", BrowserManager.loadImage("cues/weeklyrewards/fishing.png"), new Bounds(290, 130, 510, 160));
 
 
-        int newFamCnt = BrowserManager.loadCueFolder("cues/familiars/new_format", null, false, new Bounds(145, 50, 575, 125));
+        int newFamCnt = BrowserManager.loadCueFolder("cues/familiars/01 Common", null, false, new Bounds(145, 50, 575, 125));
+        newFamCnt += BrowserManager.loadCueFolder("cues/familiars/02 Rare", null, false, new Bounds(145, 50, 575, 125));
+        newFamCnt += BrowserManager.loadCueFolder("cues/familiars/03 Epic", null, false, new Bounds(145, 50, 575, 125));
+        newFamCnt += BrowserManager.loadCueFolder("cues/familiars/04 Legendary", null, false, new Bounds(145, 50, 575, 125));
         BHBot.logger.debug("Found " + newFamCnt + " familiar cues.");
     }
 
