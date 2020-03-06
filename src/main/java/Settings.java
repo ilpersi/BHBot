@@ -251,13 +251,13 @@ public class Settings {
 
     // a handy shortcut for some debug settings:
     Settings setDebug() {
-        activitiesEnabled.add("r"); // Raid
+        /*activitiesEnabled.add("r"); // Raid
         activitiesEnabled.add("d"); // Dungeon
         activitiesEnabled.add("g"); // Gauntlet
         activitiesEnabled.add("t"); // Trials
         activitiesEnabled.add("p"); // PVP
         activitiesEnabled.add("v"); // GVG
-        activitiesEnabled.add("i"); // Invasion
+        activitiesEnabled.add("i"); // Invasion*/
 
         difficultyTrials = 60;
         difficultyGauntlet = 60;

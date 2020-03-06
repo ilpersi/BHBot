@@ -1990,6 +1990,7 @@ public class DungeonThread implements Runnable {
             String activity;
 
             if (!bot.settings.activitiesRoundRobin) {
+                activitysIterator = null;
                 activitysIterator = bot.settings.activitiesEnabled.iterator(); //reset the iterator
             }
 
