@@ -121,8 +121,10 @@ public class DungeonThread implements Runnable {
     static void printFamiliars() {
 
         List<String> folders = new ArrayList<>();
-        folders.add("cues/familiars/old_format");
-        folders.add("cues/familiars/new_format");
+        folders.add("cues/familiars/01 Common");
+        folders.add("cues/familiars/02 Rare");
+        folders.add("cues/familiars/03 Epic");
+        folders.add("cues/familiars/04 Legendary");
 
         Set<String> uniqueFamiliars = new TreeSet<>();
 
