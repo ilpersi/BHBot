@@ -16,9 +16,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -58,6 +56,16 @@ public class BrowserManager {
         BufferedImage img = null;
         ClassLoader classLoader = DungeonThread.class.getClassLoader();
         InputStream resourceURL = classLoader.getResourceAsStream(f);
+
+        if (resourceURL == null) {
+            try {
+                String decodedURL = URLDecoder.decode(f, "UTF-8");
+                resourceURL = classLoader.getResourceAsStream(decodedURL);
+                BHBot.logger.trace("Encoded IMG URI is: " + decodedURL);
+            } catch (UnsupportedEncodingException e) {
+                BHBot.logger.error("Error while encoding img URI: ", e);
+            }
+        }
 
         if (resourceURL != null) {
             try {
