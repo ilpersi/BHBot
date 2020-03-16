@@ -2330,7 +2330,6 @@ public class DungeonThread implements Runnable {
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             startTimeCheck = true;
             encounterStatus = false; //true is in encounter, false is out of encounter
-            speedChecked = false;
         }
 
         long activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
@@ -2414,7 +2413,7 @@ public class DungeonThread implements Runnable {
          *  1x Speed check
          *  We check once per activity, when we're in combat
          */
-        if (!speedChecked && encounterStatus) { //we check once per activity when we are in encounter
+        if (activityDuration % 5 == 0 && encounterStatus) { //we check once per activity when we are in encounter
             MarvinSegment speedFull = MarvinSegment.fromCue("Speed_Full", bot.browser);
             MarvinSegment speedLabel = MarvinSegment.fromCue("Speed", bot.browser);
             if (speedLabel != null && speedFull == null) { //if we see speed label but not 3/3 speed
@@ -2426,7 +2425,6 @@ public class DungeonThread implements Runnable {
                 }
             } else {
                 BHBot.logger.debug("Speed settings checked.");
-                speedChecked = true; //if we're full speed we stop checking for this activity
             }
         }
 
