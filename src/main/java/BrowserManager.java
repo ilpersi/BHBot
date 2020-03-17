@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 public class BrowserManager {
     static Map<String, Cue> cues = new HashMap<>();
     private static By byElement;
+    private static ClassLoader classLoader = BrowserManager.class.getClassLoader();
 
     private WebDriver driver;
     private Capabilities caps;
@@ -54,7 +55,6 @@ public class BrowserManager {
 
     static BufferedImage loadImage(String f) {
         BufferedImage img = null;
-        ClassLoader classLoader = DungeonThread.class.getClassLoader();
         InputStream resourceURL = classLoader.getResourceAsStream(f);
 
         if (resourceURL == null) {

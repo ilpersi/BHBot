@@ -16,6 +16,8 @@ import java.util.Properties;
  */
 public class Misc {
 
+    private static Class<Misc> miscClass = Misc.class;
+
     static final class Durations {
         static final int SECOND = 1000;
         static final int MINUTE = 60 * SECOND;
@@ -181,10 +183,10 @@ public class Misc {
     }
 
     static long classBuildTimeMillis() throws URISyntaxException, IllegalStateException, IllegalArgumentException {
-        URL resource = DungeonThread.class.getResource(DungeonThread.class.getSimpleName() + ".class");
+        URL resource = miscClass.getResource(miscClass.getSimpleName() + ".class");
         if (resource == null) {
             throw new IllegalStateException("Failed to find class file for class: " +
-                    DungeonThread.class.getName());
+                    miscClass.getName());
         }
 
         if (resource.getProtocol().equals("file")) {
@@ -200,14 +202,14 @@ public class Misc {
 
             throw new IllegalArgumentException("Unhandled url protocol: " +
                     resource.getProtocol() + " for class: " +
-                    DungeonThread.class.getName() + " resource: " + resource.toString());
+                    miscClass.getName() + " resource: " + resource.toString());
         }
     }
 
     static Properties getGITInfo() {
         Properties properties = new Properties();
         try {
-            InputStream gitResource = Misc.class.getClassLoader().getResourceAsStream("git.properties");
+            InputStream gitResource = miscClass.getClassLoader().getResourceAsStream("git.properties");
             properties.load(gitResource);
         } catch (IOException e) {
             BHBot.logger.error("Impossible to get GIT information", e);
