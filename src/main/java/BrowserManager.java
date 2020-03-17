@@ -598,6 +598,7 @@ public class BrowserManager {
                 driver.close();
                 driver.quit();
             }
+            driver = null;
         } catch (Exception e) {
             BHBot.logger.error("Error while quitting from Chromium", e);
         }
