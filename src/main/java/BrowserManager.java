@@ -1,4 +1,3 @@
-import com.assertthat.selenium_shutterbug.core.Shutterbug;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.*;
@@ -748,19 +747,39 @@ public class BrowserManager {
     }
 
     synchronized BufferedImage takeScreenshot(boolean ofGame) {
+
+        // we scroll the window to the game element
+        jsExecutor.executeScript("arguments[0].scrollIntoView(true);", game);
+
         try {
-            if (ofGame)
-                return Shutterbug.shootElement(driver, game).getImage();
+
+            // we read the image as a byte array and later convert it to a BufferedImage
+            byte[] imgBytes = ((TakesScreenshot)driver).getScreenshotAs(OutputType.BYTES);
+            InputStream in  = new ByteArrayInputStream(imgBytes);
+            BufferedImage bImageFromConvert = ImageIO.read(in);
+
+            if (ofGame) {
+                String listStr = (String) jsExecutor.executeScript("var rect = arguments[0].getBoundingClientRect();" +
+                "return '' + parseInt(rect.left) + ',' + parseInt(rect.top) + ',' + parseInt(rect.width) + ',' + parseInt(rect.height)", game);
+                String[] list = listStr.split(",");
+
+                final int x = Integer.parseInt(list[0]);
+                final int y = Integer.parseInt(list[1]);
+                final int width = Integer.parseInt(list[2]);
+                final int height = Integer.parseInt(list[3]);
+
+                return bImageFromConvert.getSubimage(x, y, width, height);
+            }
             else
-                return Shutterbug.shootPage(driver).getImage();
+                return bImageFromConvert;
         } catch (StaleElementReferenceException e) {
             // sometimes the game element is not available, if this happen we just return an empty image
-            BHBot.logger.debug("Stale image detected while taking a screenshott", e);
+            BHBot.logger.debug("Stale image detected while taking a screenshot", e);
 
             return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-        } catch (TimeoutException e) {
+        } catch (TimeoutException | IOException e) {
             // sometimes Chrome/Chromium crashes and it is impossible to take screenshots from it
-            BHBot.logger.warn("Selenium timeout detected while taking a screenshot. A monitor screenshot will be taken", e);
+            BHBot.logger.warn("Selenium could not take a screenshot. A monitor screenshot will be taken using AWT.", e);
 
             if (bot.settings.hideWindowOnRestart) showBrowser();
 
@@ -773,7 +792,7 @@ public class BrowserManager {
                 screen = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
             }
 
-            if (bot.settings.hideWindowOnRestart) showBrowser();
+            if (bot.settings.hideWindowOnRestart) hideBrowser();
             return screen;
         }
     }
