@@ -73,9 +73,10 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                     <archive>
-                        <manifest>
-                            <mainClass>BHBot</mainClass>
-                        </manifest>
+                        <manifestEntries>
+                            <Multi-Release>true</Multi-Release>
+                            <Main-Class>com.github.ilpersi.BHBot.BHBot</Main-Class>
+                        </manifestEntries>
                     </archive>
                     <outputDirectory>${basedir}</outputDirectory>
                     <finalName>BHBot</finalName>
