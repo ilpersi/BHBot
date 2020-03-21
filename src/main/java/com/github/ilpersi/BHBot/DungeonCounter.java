@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.LongBinding;
 import javafx.beans.binding.StringExpression;

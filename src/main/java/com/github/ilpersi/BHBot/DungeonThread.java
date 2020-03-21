@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import com.google.common.collect.Maps;
 import net.pushover.client.MessagePriority;
 import org.apache.http.NameValuePair;

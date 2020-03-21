@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;

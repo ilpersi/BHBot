@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;

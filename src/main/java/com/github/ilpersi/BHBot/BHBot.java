@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import com.google.gson.Gson;
 import net.pushover.client.MessagePriority;
 import org.apache.http.HttpResponse;
@@ -65,7 +67,7 @@ public class BHBot {
         String userDataDir = "./chrome_profile";
 
         // We make sure that our configurationFactory is added to the list of configuration factories.
-        System.setProperty("log4j.configurationFactory", "BHBotConfigurationFactory");
+        System.setProperty("log4j.configurationFactory", "com.github.ilpersi.BHBot.BHBotConfigurationFactory");
         // We enable the log4j2 debug output if we need to
         if (bot.settings.logPringStatusMessages) System.setProperty("log4j2.debug", "true");
 

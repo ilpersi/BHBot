@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import net.pushover.client.*;
 
 import java.io.File;

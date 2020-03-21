@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.*;

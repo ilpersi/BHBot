@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 

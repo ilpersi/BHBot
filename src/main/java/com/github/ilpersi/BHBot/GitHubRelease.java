@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import com.google.gson.annotations.SerializedName;
 
 class GitHubTagObject {

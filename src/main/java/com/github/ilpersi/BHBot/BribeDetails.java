@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 class BribeDetails {
     String familiarName;
     int toBribeCnt;

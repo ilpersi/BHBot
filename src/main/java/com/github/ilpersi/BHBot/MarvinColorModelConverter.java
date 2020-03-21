@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 /**
  * This class has been copied from <br>
  * https://github.com/gabrielarchanjo/marvinproject/blob/master/marvinproject/dev/MarvinFramework/src/marvin/color/MarvinColorModelConverter.java

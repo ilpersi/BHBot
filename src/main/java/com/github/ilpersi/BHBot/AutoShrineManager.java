@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 public class AutoShrineManager {
     private BHBot bot;
 
