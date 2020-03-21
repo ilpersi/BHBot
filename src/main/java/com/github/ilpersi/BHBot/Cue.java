@@ -10,6 +10,7 @@ public class Cue {
     BufferedImage im;
     Bounds bounds;
 
+    @SuppressWarnings("unused")
     public Cue(String name, BufferedImage im) {
         this.name = name;
         this.im = im;

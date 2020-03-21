@@ -59,13 +59,9 @@ public class BrowserManager {
         InputStream resourceURL = classLoader.getResourceAsStream(f);
 
         if (resourceURL == null) {
-            try {
-                String decodedURL = URLDecoder.decode(f, "UTF-8");
-                resourceURL = classLoader.getResourceAsStream(decodedURL);
-                BHBot.logger.trace("Encoded IMG URI is: " + decodedURL);
-            } catch (UnsupportedEncodingException e) {
-                BHBot.logger.error("Error while encoding img URI: ", e);
-            }
+            String decodedURL = URLDecoder.decode(f, StandardCharsets.UTF_8);
+            resourceURL = classLoader.getResourceAsStream(decodedURL);
+            BHBot.logger.trace("Encoded IMG URI is: " + decodedURL);
         }
 
         if (resourceURL != null) {
@@ -108,7 +104,7 @@ public class BrowserManager {
                         resource = br.readLine();
                         if (resource == null) break;
                     } catch (IOException e) {
-                        BHBot.logger.error("Error while reading resources in loadCueFoler", e);
+                        BHBot.logger.error("Error while reading resources in loadCueFolder", e);
                         continue;
                     }
                     int dotPosition = resource.lastIndexOf('.');

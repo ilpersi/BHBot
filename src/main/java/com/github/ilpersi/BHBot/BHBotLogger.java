@@ -16,6 +16,7 @@ import org.apache.logging.log4j.util.Supplier;
  * the STATS, READOUT, AUTOSHRINE, AUTOREVIVE, AUTOBRIBE and AUTORUNE custom log levels.
  * <p>Compatible with Log4j 2.6 or higher.</p>
  */
+@SuppressWarnings("unused")
 public final class BHBotLogger extends ExtendedLoggerWrapper {
     private static final long serialVersionUID = 623677089894900L;
     private final ExtendedLoggerWrapper logger;
@@ -137,7 +138,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      */
     public void stats(final Marker marker, final Message msg) {
-        logger.logIfEnabled(FQCN, STATS, marker, msg, (Throwable) null);
+        logger.logIfEnabled(FQCN, STATS, marker, msg, null);
     }
 
     /**
@@ -158,7 +159,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message object to log.
      */
     public void stats(final Marker marker, final Object message) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, STATS, marker, message, null);
     }
 
     /**
@@ -169,7 +170,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.6
      */
     public void stats(final Marker marker, final CharSequence message) {
-        logger.logIfEnabled(FQCN, STATS, marker, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, STATS, marker, message, null);
     }
 
     /**
@@ -422,7 +423,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      */
     public void stats(final Message msg) {
-        logger.logIfEnabled(FQCN, STATS, null, msg, (Throwable) null);
+        logger.logIfEnabled(FQCN, STATS, null, msg, null);
     }
 
     /**
@@ -441,7 +442,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message object to log.
      */
     public void stats(final Object message) {
-        logger.logIfEnabled(FQCN, STATS, null, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, STATS, null, message, null);
     }
 
     /**
@@ -462,7 +463,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.6
      */
     public void stats(final CharSequence message) {
-        logger.logIfEnabled(FQCN, STATS, null, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, STATS, null, message, null);
     }
 
     /**
@@ -691,7 +692,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void stats(final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, null);
     }
 
     /**
@@ -717,7 +718,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void stats(final Marker marker, final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, null);
     }
 
     /**
@@ -770,7 +771,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void stats(final Marker marker, final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, STATS, marker, msgSupplier, null);
     }
 
     /**
@@ -797,7 +798,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void stats(final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, STATS, null, msgSupplier, null);
     }
 
     /**
@@ -821,7 +822,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      */
     public void readout(final Marker marker, final Message msg) {
-        logger.logIfEnabled(FQCN, READOUT, marker, msg, (Throwable) null);
+        logger.logIfEnabled(FQCN, READOUT, marker, msg, null);
     }
 
     /**
@@ -842,7 +843,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message object to log.
      */
     public void readout(final Marker marker, final Object message) {
-        logger.logIfEnabled(FQCN, READOUT, marker, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, READOUT, marker, message, null);
     }
 
     /**
@@ -853,7 +854,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.6
      */
     public void readout(final Marker marker, final CharSequence message) {
-        logger.logIfEnabled(FQCN, READOUT, marker, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, READOUT, marker, message, null);
     }
 
     /**
@@ -1106,7 +1107,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      */
     public void readout(final Message msg) {
-        logger.logIfEnabled(FQCN, READOUT, null, msg, (Throwable) null);
+        logger.logIfEnabled(FQCN, READOUT, null, msg, null);
     }
 
     /**
@@ -1125,7 +1126,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message object to log.
      */
     public void readout(final Object message) {
-        logger.logIfEnabled(FQCN, READOUT, null, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, READOUT, null, message, null);
     }
 
     /**
@@ -1146,7 +1147,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.6
      */
     public void readout(final CharSequence message) {
-        logger.logIfEnabled(FQCN, READOUT, null, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, READOUT, null, message, null);
     }
 
     /**
@@ -1375,7 +1376,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void readout(final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, READOUT, null, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, READOUT, null, msgSupplier, null);
     }
 
     /**
@@ -1401,7 +1402,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void readout(final Marker marker, final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, READOUT, marker, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, READOUT, marker, msgSupplier, null);
     }
 
     /**
@@ -1454,7 +1455,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void readout(final Marker marker, final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, READOUT, marker, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, READOUT, marker, msgSupplier, null);
     }
 
     /**
@@ -1481,7 +1482,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void readout(final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, READOUT, null, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, READOUT, null, msgSupplier, null);
     }
 
     /**
@@ -1505,7 +1506,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      */
     public void autoshrine(final Marker marker, final Message msg) {
-        logger.logIfEnabled(FQCN, AUTOSHRINE, marker, msg, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOSHRINE, marker, msg, null);
     }
 
     /**
@@ -1526,7 +1527,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message object to log.
      */
     public void autoshrine(final Marker marker, final Object message) {
-        logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, null);
     }
 
     /**
@@ -1537,7 +1538,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.6
      */
     public void autoshrine(final Marker marker, final CharSequence message) {
-        logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOSHRINE, marker, message, null);
     }
 
     /**
@@ -1790,7 +1791,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      */
     public void autoshrine(final Message msg) {
-        logger.logIfEnabled(FQCN, AUTOSHRINE, null, msg, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOSHRINE, null, msg, null);
     }
 
     /**
@@ -1809,7 +1810,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message object to log.
      */
     public void autoshrine(final Object message) {
-        logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, null);
     }
 
     /**
@@ -1830,7 +1831,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.6
      */
     public void autoshrine(final CharSequence message) {
-        logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOSHRINE, null, message, null);
     }
 
     /**
@@ -2059,7 +2060,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autoshrine(final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOSHRINE, null, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOSHRINE, null, msgSupplier, null);
     }
 
     /**
@@ -2085,7 +2086,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autoshrine(final Marker marker, final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOSHRINE, marker, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOSHRINE, marker, msgSupplier, null);
     }
 
     /**
@@ -2138,7 +2139,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autoshrine(final Marker marker, final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOSHRINE, marker, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOSHRINE, marker, msgSupplier, null);
     }
 
     /**
@@ -2165,7 +2166,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autoshrine(final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOSHRINE, null, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOSHRINE, null, msgSupplier, null);
     }
 
     /**
@@ -2189,7 +2190,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      */
     public void autorevive(final Marker marker, final Message msg) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msg, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msg, null);
     }
 
     /**
@@ -2210,7 +2211,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message object to log.
      */
     public void autorevive(final Marker marker, final Object message) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, null);
     }
 
     /**
@@ -2221,7 +2222,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.6
      */
     public void autorevive(final Marker marker, final CharSequence message) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, message, null);
     }
 
     /**
@@ -2474,7 +2475,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      */
     public void autorevive(final Message msg) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msg, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msg, null);
     }
 
     /**
@@ -2493,7 +2494,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message object to log.
      */
     public void autorevive(final Object message) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, null);
     }
 
     /**
@@ -2514,7 +2515,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.6
      */
     public void autorevive(final CharSequence message) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, message, null);
     }
 
     /**
@@ -2743,7 +2744,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autorevive(final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msgSupplier, null);
     }
 
     /**
@@ -2769,7 +2770,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autorevive(final Marker marker, final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msgSupplier, null);
     }
 
     /**
@@ -2822,7 +2823,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autorevive(final Marker marker, final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOREVIVE, marker, msgSupplier, null);
     }
 
     /**
@@ -2849,7 +2850,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autorevive(final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOREVIVE, null, msgSupplier, null);
     }
 
     /**
@@ -2873,7 +2874,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      */
     public void autobribe(final Marker marker, final Message msg) {
-        logger.logIfEnabled(FQCN, AUTOBRIBE, marker, msg, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOBRIBE, marker, msg, null);
     }
 
     /**
@@ -2894,7 +2895,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message object to log.
      */
     public void autobribe(final Marker marker, final Object message) {
-        logger.logIfEnabled(FQCN, AUTOBRIBE, marker, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOBRIBE, marker, message, null);
     }
 
     /**
@@ -2905,7 +2906,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.6
      */
     public void autobribe(final Marker marker, final CharSequence message) {
-        logger.logIfEnabled(FQCN, AUTOBRIBE, marker, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOBRIBE, marker, message, null);
     }
 
     /**
@@ -3158,7 +3159,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      */
     public void autobribe(final Message msg) {
-        logger.logIfEnabled(FQCN, AUTOBRIBE, null, msg, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOBRIBE, null, msg, null);
     }
 
     /**
@@ -3177,7 +3178,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message object to log.
      */
     public void autobribe(final Object message) {
-        logger.logIfEnabled(FQCN, AUTOBRIBE, null, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOBRIBE, null, message, null);
     }
 
     /**
@@ -3198,7 +3199,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.6
      */
     public void autobribe(final CharSequence message) {
-        logger.logIfEnabled(FQCN, AUTOBRIBE, null, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOBRIBE, null, message, null);
     }
 
     /**
@@ -3427,7 +3428,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autobribe(final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOBRIBE, null, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOBRIBE, null, msgSupplier, null);
     }
 
     /**
@@ -3453,7 +3454,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autobribe(final Marker marker, final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOBRIBE, marker, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOBRIBE, marker, msgSupplier, null);
     }
 
     /**
@@ -3506,7 +3507,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autobribe(final Marker marker, final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOBRIBE, marker, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOBRIBE, marker, msgSupplier, null);
     }
 
     /**
@@ -3533,7 +3534,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autobribe(final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTOBRIBE, null, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTOBRIBE, null, msgSupplier, null);
     }
 
     /**
@@ -3557,7 +3558,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      */
     public void autorune(final Marker marker, final Message msg) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, msg, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, msg, null);
     }
 
     /**
@@ -3578,7 +3579,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message object to log.
      */
     public void autorune(final Marker marker, final Object message) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, null);
     }
 
     /**
@@ -3589,7 +3590,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.6
      */
     public void autorune(final Marker marker, final CharSequence message) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, message, null);
     }
 
     /**
@@ -3842,7 +3843,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param msg the message string to be logged
      */
     public void autorune(final Message msg) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, msg, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTORUNE, null, msg, null);
     }
 
     /**
@@ -3861,7 +3862,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @param message the message object to log.
      */
     public void autorune(final Object message) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, null);
     }
 
     /**
@@ -3882,7 +3883,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.6
      */
     public void autorune(final CharSequence message) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, message, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTORUNE, null, message, null);
     }
 
     /**
@@ -4111,7 +4112,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autorune(final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTORUNE, null, msgSupplier, null);
     }
 
     /**
@@ -4137,7 +4138,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autorune(final Marker marker, final Supplier<?> msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, msgSupplier, null);
     }
 
     /**
@@ -4190,7 +4191,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autorune(final Marker marker, final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTORUNE, marker, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTORUNE, marker, msgSupplier, null);
     }
 
     /**
@@ -4217,7 +4218,7 @@ public final class BHBotLogger extends ExtendedLoggerWrapper {
      * @since Log4j-2.4
      */
     public void autorune(final MessageSupplier msgSupplier) {
-        logger.logIfEnabled(FQCN, AUTORUNE, null, msgSupplier, (Throwable) null);
+        logger.logIfEnabled(FQCN, AUTORUNE, null, msgSupplier, null);
     }
 
     /**

@@ -28,7 +28,7 @@ public class CueCompare {
     public static boolean imageDifference(BufferedImage img1, BufferedImage img2, double sensitivity, int x1, int x2, int y1, int y2) {
         int totalPixels = ((x2 - x1) * (y2 - y1));
         double matchingPixels = 0;
-        double result = 0;
+        double result;
 
         if (img1 != null && img2 != null) {
 
@@ -48,9 +48,7 @@ public class CueCompare {
             BHBot.logger.trace(matchingPixels);
             BHBot.logger.trace(totalPixels);
             BHBot.logger.trace(String.format("%.2f%%",result * 100) + " similarity between last two screenshots.");
-            if (result >= sensitivity) {
-                return true;
-            } else return false;
+            return result >= sensitivity;
         } else {
             BHBot.logger.error("Compare failed.");
             return false;

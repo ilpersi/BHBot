@@ -97,7 +97,7 @@ class DungeonCounter {
 
     int getVictoriesInARow() { return this.victoriesInARow.get();}
 
-    int getDefeatsInARow() { return this.defeatsInARow.get();}
+    // int getDefeatsInARow() { return this.defeatsInARow.get();}
 
     String successRateDesc() {
         return successRateDesc.getValue();

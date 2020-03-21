@@ -59,7 +59,6 @@ public class DungeonThread implements Runnable {
     private boolean[] revived = {false, false, false, false, false};
     private int potionsUsed = 0;
     private boolean startTimeCheck = false;
-    private boolean speedChecked = false;
     private long activityStartTime;
     private boolean encounterStatus = true;
     private long outOfEncounterTimestamp = 0;

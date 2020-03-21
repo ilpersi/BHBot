@@ -83,8 +83,8 @@ public class MarvinImage implements Cloneable {
     /**
      * Constructor to blank image, passing the size of image
      *
-     * @param int width
-     * @param int height
+     * @param w Width of the image
+     * @param h Height of the image
      */
     public MarvinImage(int w, int h) {
         colorModel = COLOR_MODEL_RGB;
@@ -247,11 +247,12 @@ public class MarvinImage implements Cloneable {
     }
 
     /**
+     *
      * Gets the integer color composition for x, y position
      *
-     * @param int x
-     * @param int y
-     * @return int        color
+     * @param x The x position
+     * @param y The y position
+     * @return integer color composition
      */
     public int getIntColor(int x, int y) {
         return arrIntColor[y * width + x];
