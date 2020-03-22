@@ -14,6 +14,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.RasterFormatException;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -794,6 +795,9 @@ public class BrowserManager {
 
             if (bot.settings.hideWindowOnRestart) hideBrowser();
             return screen;
+        } catch (RasterFormatException e) {
+            jsExecutor.executeScript("arguments[0].scrollIntoView(true);", game);
+            throw e;
         }
     }
 
