@@ -32,8 +32,6 @@ public class Settings {
     //Various settings
     int openSkeleton = 0;
     boolean contributeFamiliars = true;
-    private boolean collectBounties = false;
-    private boolean collectFishingBaits = false;
     boolean dungeonOnTimeout = true;
     LinkedHashSet<String> screenshots;
 
@@ -282,8 +280,6 @@ public class Settings {
         setAutoRuneDefaultFromString("");
         setactivitiesEnabledFromString("");
         setScreenshotsFromString("w d f b dg wg fe"); //so we dont miss any if we are in idle
-        collectBounties = false;
-        collectFishingBaits = false;
         idleMode = true;
     }
 
@@ -1008,9 +1004,6 @@ public class Settings {
         victoryScreenshot = lastUsedMap.getOrDefault("victoryScreenshot", victoryScreenshot ? "1" : "0").equals("1");
         setFamiliarsFromString(lastUsedMap.getOrDefault("familiars", getFamiliarsAsString()));
         familiarScreenshot = Integer.parseInt(lastUsedMap.getOrDefault("familiarScreenshot", "" + familiarScreenshot));
-
-        collectBounties = lastUsedMap.getOrDefault("collectBounties", collectBounties ? "1" : "0").equals("1");
-        collectFishingBaits = lastUsedMap.getOrDefault("collectFishingBaits", collectFishingBaits ? "1" : "0").equals("1");
 
         openSkeleton = Integer.parseInt(lastUsedMap.getOrDefault("openSkeletonChest", "" + openSkeleton));
 
