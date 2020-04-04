@@ -139,6 +139,7 @@ public class BHBot {
                         System.out.println("It was impossible to find settings.ini, even after it has been created!");
                         return;
                     }
+                    bot.settings.setIdle();
 
                 } else {
                     System.out.println("It was impossible to find file " + Settings.configurationFile + ".");
@@ -154,7 +155,8 @@ public class BHBot {
         logLevel = bot.settings.logLevel;
 
         logger = BHBotLogger.create();
-        
+
+        // If any error is present after parsing the config file, we stop the bot
         if (bot.settings.wrongSettingLines.size() > 0 ) {
             for (String wrongLine: bot.settings.wrongSettingLines) {
                 logger.fatal("It was impossible to parse the following setting line and it has been skipped: '" +  wrongLine  + "!" +
