@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;

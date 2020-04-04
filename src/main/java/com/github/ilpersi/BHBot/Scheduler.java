@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 class Scheduler {
     private static final long PAUSED_INDEFINITELY = Long.MAX_VALUE;
     /**

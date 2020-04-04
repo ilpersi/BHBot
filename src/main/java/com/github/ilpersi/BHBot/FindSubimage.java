@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -43,8 +45,9 @@ class FindSubimage {
      * @param endY                       may be 0 (will be ignored in this case)
      * @return a list of found subimages
      */
+    @SuppressWarnings("SameParameterValue")
     static List<MarvinSegment> findSubimage(BufferedImage imageIn, BufferedImage subimage, double similarity, boolean findAll, boolean treatTransparentAsObscured, int startX, int startY, int endX, int endY) {
-        List<MarvinSegment> segments = new ArrayList<MarvinSegment>();
+        List<MarvinSegment> segments = new ArrayList<>();
 
         if (endX == 0) endX = imageIn.getWidth(); // endX was not set
         if (endY == 0) endY = imageIn.getHeight(); // endY was not set

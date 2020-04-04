@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.Level;
 

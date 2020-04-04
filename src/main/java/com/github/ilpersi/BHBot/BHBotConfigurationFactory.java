@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -13,7 +15,7 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 
 import java.net.URI;
 
-@Plugin(name = "BHBotConfigurationFactory", category = ConfigurationFactory.CATEGORY)
+@Plugin(name = "com.github.ilpersi.BHBot.BHBotConfigurationFactory", category = ConfigurationFactory.CATEGORY)
 public class BHBotConfigurationFactory extends ConfigurationFactory {
 
     private static Configuration createConfiguration(final String name, ConfigurationBuilder<BuiltConfiguration> builder) {

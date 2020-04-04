@@ -1,9 +1,12 @@
+package com.github.ilpersi.BHBot;
+
 import com.google.gson.Gson;
 import net.pushover.client.MessagePriority;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -14,10 +17,13 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
 import javax.imageio.ImageIO;
+import javax.net.ssl.SSLContext;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -65,7 +71,7 @@ public class BHBot {
         String userDataDir = "./chrome_profile";
 
         // We make sure that our configurationFactory is added to the list of configuration factories.
-        System.setProperty("log4j.configurationFactory", "BHBotConfigurationFactory");
+        System.setProperty("log4j.configurationFactory", "com.github.ilpersi.BHBot.BHBotConfigurationFactory");
         // We enable the log4j2 debug output if we need to
         if (bot.settings.logPringStatusMessages) System.setProperty("log4j2.debug", "true");
 
@@ -664,7 +670,18 @@ public class BHBot {
 
     private static void checkNewRelease() {
 
-        HttpClient httpClient = HttpClients.custom().useSystemProperties().build();
+        SSLContext sslContext = null;
+        try {
+            sslContext = SSLContextBuilder.create().setProtocol("TLSv1.2").build();
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            e.printStackTrace();
+        }
+
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        builder.setSSLContext(sslContext);
+
+//        HttpClient httpClient = HttpClients.custom().useSystemProperties().build();
+        HttpClient httpClient = builder.build();
         final HttpGet releaseGetReq = new HttpGet("https://api.github.com/repos/ilpersi/BHBot/releases/latest");
 
         Gson gson = new Gson();

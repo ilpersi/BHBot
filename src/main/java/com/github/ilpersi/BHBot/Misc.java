@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 
@@ -210,7 +212,9 @@ public class Misc {
         Properties properties = new Properties();
         try {
             InputStream gitResource = miscClass.getClassLoader().getResourceAsStream("git.properties");
-            properties.load(gitResource);
+            if (gitResource != null) {
+                properties.load(gitResource);
+            }
         } catch (IOException e) {
             BHBot.logger.error("Impossible to get GIT information", e);
         }

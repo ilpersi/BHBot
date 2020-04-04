@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 public class AutoShrineManager {
     private BHBot bot;
 
@@ -177,7 +179,7 @@ public class AutoShrineManager {
                     return;
                 }
 
-                //noinspection DuplicatedCode
+                //noinspection DuplicatedCode,DuplicatedCode
                 bot.browser.readScreen(100);
 
                 // We disable and re-enable the auto feature

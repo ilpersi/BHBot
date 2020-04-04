@@ -1,3 +1,5 @@
+package com.github.ilpersi.BHBot;
+
 /**
  * "Number on screen". Used with number detection algorithm (when detecting selected difficulty level, for example).
  *
