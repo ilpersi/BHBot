@@ -13,7 +13,7 @@
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon></icon>
+  <icon>BHBot.ico</icon>
   <jre>
     <path>.\java-runtime</path>
     <bundledJre64Bit>true</bundledJre64Bit>
