@@ -75,6 +75,7 @@ public class BHBot {
         // We enable the log4j2 debug output if we need to
         if (bot.settings.logPringStatusMessages) System.setProperty("log4j2.debug", "true");
 
+        // manage command line options
         for (int i = 0; i < args.length; i++) { //select settings file to load
             switch (args[i]) {
                 case "settings":
@@ -116,23 +117,33 @@ public class BHBot {
         if ("LOAD_IDLE_SETTINGS".equals(Settings.configurationFile)) {
             bot.settings.setIdle();
         } else {
+            /* if the specified setting file is "settings.ini", we check if the file exists
+            if the file does not exist, we assume this is the first time the user is running the bot
+             */
             try {
                 bot.settings.load(Settings.configurationFile);
             } catch (FileNotFoundException e) {
-                System.out.println("It was impossible to find file " + Settings.configurationFile + ".");
-
                 // We handle the default configuration file and we generate an empty one
-                if ("bot.settings.ini".equals(Settings.configurationFile)) {
-
+                if ("settings.ini".equals(Settings.configurationFile)) {
                     try {
                         Settings.resetIniFile();
                     } catch (IOException ex) {
-                        System.out.println("Error while creating bot.settings.ini in main folder");
+                        System.out.println("Error while creating settings.ini in main folder");
                         ex.printStackTrace();
                         return;
                     }
+
+                    try {
+                        bot.settings.load(Settings.configurationFile);
+                    } catch (FileNotFoundException ex) {
+                        System.out.println("It was impossible to find settings.ini, even after it has been created!");
+                        return;
+                    }
+
+                } else {
+                    System.out.println("It was impossible to find file " + Settings.configurationFile + ".");
+                    return;
                 }
-                return;
             }
         }
 
