@@ -1,2 +1,2 @@
 @echo off
-java -jar BHBot.jar init
+BHBot.exe init
