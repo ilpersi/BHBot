@@ -2593,7 +2593,11 @@ public class DungeonThread implements Runnable {
             if (bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.Invasion || bot.getState() == BHBot.State.GVG) {
                 seg = MarvinSegment.fromCue(BrowserManager.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, bot.browser);
             } else {
-                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * Misc.Durations.SECOND, bot.browser);
+                if (bot.getState() == BHBot.State.PVP) {
+                    seg = MarvinSegment.fromCue("Close", 3 * Misc.Durations.SECOND, Bounds.fromWidthHeight(355, 345, 85, 35), bot.browser);
+                } else {
+                    seg = MarvinSegment.fromCue(BrowserManager.cues.get("Close"), 2 * Misc.Durations.SECOND, bot.browser);
+                }
             }
 
             if (seg != null) {
