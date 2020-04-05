@@ -1314,7 +1314,7 @@ public class DungeonThread implements Runnable {
                                 }
                                 bot.browser.clickOnSeg(seg);
 
-                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 10 * Misc.Durations.SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BrowserManager.cues.get("Accept"), 10 * Misc.Durations.SECOND, Bounds.fromWidthHeight(470, 450, 100, 30), bot.browser);
                                 if (seg == null) {
                                     BHBot.logger.error("Unable to find the Accept button in the Invasion screen, restarting!");
                                     restart();
