@@ -60,7 +60,12 @@ public class BrowserManager {
         InputStream resourceURL = classLoader.getResourceAsStream(f);
 
         if (resourceURL == null) {
-            String decodedURL = URLDecoder.decode(f, StandardCharsets.UTF_8);
+            String decodedURL = null;
+            try {
+                decodedURL = URLDecoder.decode(f, StandardCharsets.UTF_8.toString());
+            } catch (UnsupportedEncodingException e) {
+                BHBot.logger.error("Error while decoding URL: ", e);
+            }
             resourceURL = classLoader.getResourceAsStream(decodedURL);
             BHBot.logger.trace("Encoded IMG URI is: " + decodedURL);
         }
