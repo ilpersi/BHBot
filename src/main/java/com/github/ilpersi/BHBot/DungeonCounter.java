@@ -1,144 +1,98 @@
 package com.github.ilpersi.BHBot;
 
-import javafx.beans.binding.DoubleBinding;
-import javafx.beans.binding.LongBinding;
-import javafx.beans.binding.StringExpression;
-import javafx.beans.property.*;
-import javafx.beans.value.ObservableValue;
-
 class DungeonCounter {
 
     // Counters and rates
-    private IntegerProperty victories;
-    private IntegerProperty defeats;
-    private IntegerProperty total;
-    private IntegerProperty victoriesInARow;
-    private IntegerProperty defeatsInARow;
+    private int victories;
+    private int defeats;
+    private int total;
+    private int victoriesInARow;
+    private int defeatsInARow;
 
-    private LongProperty totalVictoryDuration;
-    private LongProperty victoryAverageDuration;
-    private LongProperty totalDefeatDuration;
-    private LongProperty defeatAverageDuration;
+    private Long totalVictoryDuration;
+    private Long victoryAverageDuration;
+    private Long totalDefeatDuration;
+    private Long defeatAverageDuration;
 
     // String description for success rate
-    private StringExpression successRateDesc;
+    private String successRateDesc;
 
     DungeonCounter(int victoryCnt, int defeatCnt) {
 
         // We initialize all the properties
-        this.victories = new SimpleIntegerProperty(victoryCnt);
-        this.defeats = new SimpleIntegerProperty(defeatCnt);
-        this.total = new SimpleIntegerProperty(victoryCnt + defeatCnt);
-        this.victoriesInARow = new SimpleIntegerProperty(0);
-        this.defeatsInARow = new SimpleIntegerProperty(0);
-        DoubleProperty succesRate = new SimpleDoubleProperty(0);
+        this.victories = victoryCnt;
+        this.defeats = defeatCnt;
+        this.total = victoryCnt + defeatCnt;
+        this.victoriesInARow = 0;
+        this.defeatsInARow = 0;
 
-        this.totalVictoryDuration = new SimpleLongProperty(0);
-        this.victoryAverageDuration = new SimpleLongProperty(0);
-        this.totalDefeatDuration = new SimpleLongProperty(0);
-        this.defeatAverageDuration = new SimpleLongProperty(0);
+        this.totalVictoryDuration = 0L;
+        this.victoryAverageDuration = 0L;
+        this.totalDefeatDuration = 0L;
+        this.defeatAverageDuration = 0L;
+    }
 
-        // We create the bindings
-        total.bind(this.victories.add(this.defeats));
+    private void  updateTotal() {
+        total = victories + defeats;
 
-        // we use two listeners to manage vicotriesInARow
-        victories.addListener(this::onVictoriesChange);
-        defeats.addListener(this::onDefeatsChange);
+        if (total > 0) updateSuccesRate();
+    }
 
-        // We want to avoid any division by zero, so we create a lazy binding using an anonymous class
-        DoubleBinding succesBinding = new DoubleBinding() {
-            {
-                this.bind(total);
-            }
+    private void updateSuccesRate() {
+        Double succesRate = (((double) victories / (total)) * 100);
 
-            @Override
-            protected double computeValue() {
-                if (total.get() == 0) {
-                    return 0.0;
-                } else {
-                    return (((double) victories.get() / (total.get())) * 100);
-                }
-            }
-        };
-        succesRate.bind(succesBinding);
-
-        // Duration management
-        LongBinding victoryDurationBinding = new NoZeroDivision(totalVictoryDuration, victories);
-        victoryAverageDuration.bind(victoryDurationBinding);
-        LongBinding defeatDurationBinding = new NoZeroDivision(totalDefeatDuration, defeats);
-        defeatAverageDuration.bind(defeatDurationBinding);
-
-        StringProperty initStr = new SimpleStringProperty("success rate is ");
-        successRateDesc = initStr.concat(succesRate.asString("%.02f%%"))
-                .concat(" W:").concat(this.victories.asString())
-                .concat(" L:").concat(this.defeats.asString())
+        successRateDesc = "success rate is "
+                .concat(String.format("%.02f%%", succesRate))
+                .concat(" W:").concat("" + this.victories)
+                .concat(" L:").concat("" + this.defeats)
                 .concat(".");
     }
 
     void increaseVictories() {
-        victories.setValue(victories.get() + 1);
+        victories += 1;
+
+        victoriesInARow += 1;
+        defeatsInARow = 0;
+
+        updateTotal();
     }
 
     void increaseVictoriesDuration(long milliSeconds) {
-        totalVictoryDuration.setValue(totalVictoryDuration.get() + milliSeconds);
+        totalVictoryDuration += milliSeconds;
+
+        if (victories > 0) victoryAverageDuration = totalVictoryDuration / victories;
     }
 
     void increaseDefeatsDuration(long milliSeconds) {
-        totalDefeatDuration.setValue(totalDefeatDuration.get() + milliSeconds);
+        totalDefeatDuration += milliSeconds;
+
+        if (defeats > 0) defeatAverageDuration = totalDefeatDuration / defeats;
     }
 
     void increaseDefeats() {
-        defeats.setValue(defeats.get() + 1);
+        defeats += 1;
+
+        defeatsInARow += 1;
+        victoriesInARow = 0;
+
+        updateTotal();
     }
 
     int getTotal() {
-        return this.total.get();
+        return this.total;
     }
 
-    int getVictoriesInARow() { return this.victoriesInARow.get();}
+    int getVictoriesInARow() { return this.victoriesInARow;}
 
-    // int getDefeatsInARow() { return this.defeatsInARow.get();}
+    @SuppressWarnings("unused")
+    int getDefeatsInARow() { return this.defeatsInARow;}
 
     String successRateDesc() {
-        return successRateDesc.getValue();
+        return successRateDesc;
     }
 
-    long getVictoryAverageDuration() {return  victoryAverageDuration.get();}
+    long getVictoryAverageDuration() {return  victoryAverageDuration;}
 
-    long getDefeatAverageDuration() {return  defeatAverageDuration.get();}
+    long getDefeatAverageDuration() {return  defeatAverageDuration;}
 
-    private void onVictoriesChange(ObservableValue<? extends Number> prop, Number oldValue, Number newValue) {
-        this.defeatsInARow.setValue(0);
-        this.victoriesInARow.setValue(victoriesInARow.get() + 1);
-    }
-
-    private void onDefeatsChange(ObservableValue<? extends Number> prop, Number oldValue, Number newValue) {
-        this.victoriesInARow.setValue(0);
-        this.defeatsInARow.setValue(defeatsInARow.get() + 1);
-    }
-
-}
-
-class NoZeroDivision extends LongBinding {
-
-    private LongProperty total;
-    private IntegerProperty counter;
-
-    NoZeroDivision (LongProperty numerator, IntegerProperty denominator) {
-        total = new SimpleLongProperty(0);
-        counter = new SimpleIntegerProperty(0);
-
-        this.bind(numerator, denominator);
-        total.bind(numerator);
-        counter.bind(denominator);
-    }
-
-    @Override
-    protected long computeValue() {
-        if (counter.get() == 0) {
-            return 0;
-        } else {
-            return total.get() / counter.get();
-        }
-    }
 }
