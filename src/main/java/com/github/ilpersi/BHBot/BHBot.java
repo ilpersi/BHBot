@@ -79,22 +79,6 @@ public class BHBot {
         // manage command line options
         for (int i = 0; i < args.length; i++) { //select settings file to load
             switch (args[i]) {
-                case "settings":
-                case "configurationFile":
-                    Settings.configurationFile = args[i + 1];
-                    i++;
-                    continue;
-                case "init":  //start bot in idle mode
-                case "idle":  //start bot in idle mode
-                    Settings.configurationFile = "LOAD_IDLE_SETTINGS";
-                    i++;
-                    continue;
-                case "chromium":
-                case "chromiumpath":
-                case "chromiumExePath":
-                    bot.chromiumExePath = args[i + 1];
-                    i++;
-                    continue;
                 case "chromedriver":
                 case "chromedriverpath":
                 case "chromeDriverExePath":
@@ -104,6 +88,22 @@ public class BHBot {
                 case "chromedriveraddress":  //change chrome driver port
                 case "chromeDriverAddress":
                     bot.chromeDriverAddress = args[i + 1];
+                    i++;
+                    continue;
+                case "chromium":
+                case "chromiumpath":
+                case "chromiumExePath":
+                    bot.chromiumExePath = args[i + 1];
+                    i++;
+                    continue;
+                case "init":  //start bot in idle mode
+                case "idle":  //start bot in idle mode
+                    Settings.configurationFile = "LOAD_IDLE_SETTINGS";
+                    i++;
+                    continue;
+                case "settings":
+                case "configurationFile":
+                    Settings.configurationFile = args[i + 1];
                     i++;
                     continue;
                 case "userdatadir":
@@ -288,6 +288,9 @@ public class BHBot {
                 }
                 break;
             }
+            case "compare":
+                dungeon.cueDifference();
+                break;
             case "crash": {
                 throw new RuntimeException("CRASH!");
             }
@@ -306,10 +309,15 @@ public class BHBot {
             }
             case "do":
                 switch (params[1]) {
-                    case "raid":
-                        // force raid (if we have at least 1 shard though)
-                        logger.info("Forcing raid...");
-                        scheduler.doRaidImmediately = true;
+                    case "baits":
+                        // force fishing baits
+                        logger.info("Forcing fishing baits collection...");
+                        scheduler.doFishingBaitsImmediately = true;
+                        break;
+                    case "bounties":
+                        // force bounties
+                        logger.info("Forcing Bounty collection...");
+                        scheduler.collectBountiesImmediately = true;
                         break;
                     case "expedition":
                         // force dungeon (regardless of energy)
@@ -321,19 +329,14 @@ public class BHBot {
                         logger.info("Forcing dungeon...");
                         scheduler.doDungeonImmediately = true;
                         break;
+                    case "fishing":
+                        // force fishing
+                        logger.info("Forcing fishing...");
+                        scheduler.doFishingImmediately = true;
+                        break;
                     case "gauntlet":
                         logger.info("Forcing gauntlet...");
                         scheduler.doGauntletImmediately = true;
-                        break;
-                    case "trials":
-                        // force 1 run of gauntlet/trials (regardless of tokens)
-                        logger.info("Forcing trials...");
-                        scheduler.doTrialsImmediately = true;
-                        break;
-                    case "pvp":
-                        // force pvp
-                        logger.info("Forcing PVP...");
-                        scheduler.doPVPImmediately = true;
                         break;
                     case "gvg":
                         // force gvg
@@ -345,25 +348,25 @@ public class BHBot {
                         logger.info("Forcing invasion...");
                         scheduler.doInvasionImmediately = true;
                         break;
+                    case "pvp":
+                        // force pvp
+                        logger.info("Forcing PVP...");
+                        scheduler.doPVPImmediately = true;
+                        break;
+                    case "raid":
+                        // force raid (if we have at least 1 shard though)
+                        logger.info("Forcing raid...");
+                        scheduler.doRaidImmediately = true;
+                        break;
+                    case "trials":
+                        // force 1 run of gauntlet/trials (regardless of tokens)
+                        logger.info("Forcing trials...");
+                        scheduler.doTrialsImmediately = true;
+                        break;
                     case "worldboss":
                         // force invasion
                         logger.info("Forcing World Boss...");
                         scheduler.doWorldBossImmediately = true;
-                        break;
-                    case "bounties":
-                        // force bounties
-                        logger.info("Forcing Bounty collection...");
-                        scheduler.collectBountiesImmediately = true;
-                        break;
-                    case "baits":
-                        // force fishing baits
-                        logger.info("Forcing fishing baits collection...");
-                        scheduler.doFishingBaitsImmediately = true;
-                        break;
-                    case "fishing":
-                        // force fishing
-                        logger.info("Forcing fishing...");
-                        scheduler.doFishingImmediately = true;
                         break;
                     default:
                         logger.warn("Unknown dungeon : '" + params[1] + "'");
@@ -516,9 +519,6 @@ public class BHBot {
             case "resettimers":
                 dungeon.resetTimers();
                 logger.info("Readout timers reset.");
-                break;
-            case "compare":
-                dungeon.cueDifference();
                 break;
             case "softreset":
                 dungeon.softReset();

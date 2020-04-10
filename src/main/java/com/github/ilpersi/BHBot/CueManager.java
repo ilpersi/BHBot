@@ -194,7 +194,7 @@ class CueManager {
         return totalLoaded;
     }
 
-    void buildCues() {
+    private void buildCues() {
         addCue("Main", "cues/cueMainScreen.png", new Bounds(90, 5, 100, 20));
         addCue("Login", "cues/cueLogin.png", new Bounds(270, 260, 330, 300)); // login window (happens seldom)
         addCue("AreYouThere", "cues/cueAreYouThere.png", Bounds.fromWidthHeight(250, 240, 300, 45));
