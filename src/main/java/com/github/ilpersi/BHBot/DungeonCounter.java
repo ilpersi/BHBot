@@ -35,11 +35,13 @@ class DungeonCounter {
     private void  updateTotal() {
         total = victories + defeats;
 
-        if (total > 0) updateSuccesRate();
+        updateSuccesRate();
     }
 
     private void updateSuccesRate() {
-        Double succesRate = (((double) victories / (total)) * 100);
+        double succesRate = 0.0;
+
+        if (total > 0) succesRate = (((double) victories / (total)) * 100);
 
         successRateDesc = "success rate is "
                 .concat(String.format("%.02f%%", succesRate))
