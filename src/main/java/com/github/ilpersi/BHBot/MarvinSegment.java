@@ -17,7 +17,7 @@ public class MarvinSegment {
             x2,
             y1,
             y2;
-    private int area;
+    private final int area;
 
     MarvinSegment(int x1, int y1, int x2, int y2) {
         this.x1 = x1;

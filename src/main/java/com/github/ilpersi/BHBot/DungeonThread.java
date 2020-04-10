@@ -52,11 +52,11 @@ public class DungeonThread implements Runnable {
           Match the regex below and capture its match into a backreference named “difficulty” (also backreference number 3) «(?<difficulty>[123])»
              Match a single character from the list “123” «[123]»
          */
-    private Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])\\s+(?<difficulty>[123])");
+    private final Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])\\s+(?<difficulty>[123])");
     @SuppressWarnings("FieldCanBeLocal")
     private final long MAX_IDLE_TIME = 15 * Misc.Durations.MINUTE;
 
-    private boolean[] revived = {false, false, false, false, false};
+    private final boolean[] revived = {false, false, false, false, false};
     private int potionsUsed = 0;
     private boolean startTimeCheck = false;
     private long activityStartTime;
@@ -78,7 +78,7 @@ public class DungeonThread implements Runnable {
     private long TOKENS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
     private long BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
     @SuppressWarnings("FieldCanBeLocal")
-    private long BONUS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
+    private final long BONUS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
 
     private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
     private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
@@ -5936,7 +5936,7 @@ public class DungeonThread implements Runnable {
         Neck("StripTypeNeck"),
         Ring("StripTypeRing");
 
-        private String cueName;
+        private final String cueName;
 
         EquipmentType(String cueName) {
             this.cueName = cueName;
@@ -6022,8 +6022,8 @@ public class DungeonThread implements Runnable {
         SPEED_AVERAGE("speed_average", "ConsumableSpeedAverage"),
         SPEED_MAJOR("speed_major", "ConsumableSpeedMajor");
 
-        private String name;
-        private String inventoryCue;
+        private final String name;
+        private final String inventoryCue;
 
         ConsumableType(String name, String inventoryCue) {
             this.name = name;
@@ -6139,8 +6139,8 @@ public class DungeonThread implements Runnable {
         CAPTURE_LEGENDARY(MinorRuneEffect.CAPTURE, ItemGrade.LEGENDARY);
 
         public static ItemGrade maxGrade = ItemGrade.LEGENDARY;
-        private MinorRuneEffect effect;
-        private ItemGrade grade;
+        private final MinorRuneEffect effect;
+        private final ItemGrade grade;
 
         MinorRune(MinorRuneEffect effect, ItemGrade grade) {
             this.effect = effect;
@@ -6203,19 +6203,19 @@ public class DungeonThread implements Runnable {
         TitansAttack("t", "Titans Attack", 6, 11, 12, 3, new int[] {}),
         Unknown("?", "Unknown", 7, 11, 100, 1, new int[] {});
 
-        private String letter;
-        private String Name;
-        private int number;
-        private int minTier;
-        private int maxTier;
-        private int partySize;
-        private int[] yScrollerPositions;
+        private final String letter;
+        private final String Name;
+        private final int number;
+        private final int minTier;
+        private final int maxTier;
+        private final int partySize;
+        private final int[] yScrollerPositions;
 
         /**
          * @param letter the shortcut letter used in settings.ini
          * @param Name the real name of the World Boss
          * @param number the World Boss number counting from left to right starting at 1
-         * @param minTier the minimun tier required to join the World Boss
+         * @param minTier the minimum tier required to join the World Boss
          * @param maxTier the maximum tier you are allowed to join for the World Boss
          * @param partySize the party size of the World Boss
          * @param yScrollerPositions the positions of the scroller bar in the tier selection window

@@ -14,8 +14,8 @@ import java.util.jar.JarFile;
 
 class CueManager {
     private static class CueData {
-        private String cuePath;
-        private Bounds cueBounds;
+        private final String cuePath;
+        private final Bounds cueBounds;
 
         CueData(String cuePath, Bounds cueBounds) {
             this.cuePath = cuePath;
@@ -23,9 +23,9 @@ class CueManager {
         }
     }
 
-    private Map<String, CueData> addedCues = new HashMap<>();
-    private Map<String, Cue> loadedCues = new HashMap<>();
-    private ClassLoader classLoader = CueManager.class.getClassLoader();
+    private final Map<String, CueData> addedCues = new HashMap<>();
+    private final Map<String, Cue> loadedCues = new HashMap<>();
+    private final ClassLoader classLoader = CueManager.class.getClassLoader();
 
     CueManager() {
         buildCues();

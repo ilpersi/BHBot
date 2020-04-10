@@ -1,7 +1,7 @@
 package com.github.ilpersi.BHBot;
 
 public class AutoShrineManager {
-    private BHBot bot;
+    private final BHBot bot;
 
     // this variables are used to store the current status of the settings
     boolean ignoreBoss;
@@ -107,6 +107,18 @@ public class AutoShrineManager {
         }
     }
 
+    private void resetAutoButton() {
+        // We disable and re-enable the auto feature
+        while (MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), 500, bot.browser) != null) {
+            bot.browser.clickInGame(780, 270); //auto off
+            bot.browser.readScreen(500);
+        }
+        while (MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), 500, bot.browser) != null) {
+            bot.browser.clickInGame(780, 270); //auto on again
+            bot.browser.readScreen(500);
+        }
+    }
+
     private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {
         bot.browser.readScreen();
 
@@ -150,15 +162,7 @@ public class AutoShrineManager {
                 //noinspection DuplicatedCode
                 bot.browser.readScreen(100);
 
-                // We disable and re-enable the auto feature
-                while (MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), 500, bot.browser) != null) {
-                    bot.browser.clickInGame(780, 270); //auto off
-                    bot.browser.readScreen(500);
-                }
-                while (MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), 500, bot.browser) != null) {
-                    bot.browser.clickInGame(780, 270); //auto on again
-                    bot.browser.readScreen(500);
-                }
+                resetAutoButton();
 
                 BHBot.logger.autoshrine("Waiting " + bot.settings.shrineDelay + "s to disable ignore boss");
                 long timeToWait = Misc.getTime() + (battleDelay * Misc.Durations.SECOND);
@@ -182,15 +186,7 @@ public class AutoShrineManager {
                 //noinspection DuplicatedCode,DuplicatedCode
                 bot.browser.readScreen(100);
 
-                // We disable and re-enable the auto feature
-                while (MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), 500, bot.browser) != null) {
-                    bot.browser.clickInGame(780, 270); //auto off
-                    bot.browser.readScreen(500);
-                }
-                while (MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), 500, bot.browser) != null) {
-                    bot.browser.clickInGame(780, 270); //auto on again
-                    bot.browser.readScreen(500);
-                }
+                resetAutoButton();
 
                 bot.scheduler.resetIdleTime(true);
             }

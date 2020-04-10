@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 
 public class BrowserManager {
     private static By byElement;
-    private static ClassLoader classLoader = BrowserManager.class.getClassLoader();
 
     private WebDriver driver;
     private Capabilities caps;
@@ -37,9 +36,9 @@ public class BrowserManager {
     private String doNotShareUrl = "";
 
     private BufferedImage img; // latest screen capture
-    private BHBot bot;
+    private final BHBot bot;
 
-    private String userDataDir;
+    private final String userDataDir;
 
     BrowserManager(BHBot bot, String UserDataDir) {
         this.bot = bot;

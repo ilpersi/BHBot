@@ -33,7 +33,7 @@ public class BHBot {
     private static final String PROGRAM_NAME = "BHBot";
     static CueManager cues;
     private static String BHBotVersion;
-    private static Properties gitPropertis;
+    private static Properties gitProperties;
     static String screenshotPath = "./screenshots/";
     static BHBotLogger logger;
 
@@ -184,8 +184,8 @@ public class BHBot {
             logger.info(PROGRAM_NAME + " v" + BHBotVersion + " started. Unknown build date.");
         }
 
-        gitPropertis = Misc.getGITInfo();
-        logger.info("GIT commit id: " + gitPropertis.get("git.commit.id") + "  time: " + gitPropertis.get("git.commit.time"));
+        gitProperties = Misc.getGITInfo();
+        logger.info("GIT commit id: " + gitProperties.get("git.commit.id") + "  time: " + gitProperties.get("git.commit.time"));
 
         if (!"UNKNOWN".equals(BHBotVersion)) {
             checkNewRelease();
@@ -760,7 +760,7 @@ public class BHBot {
                     logger.warn("Error while waiting for GitHub release check");
                 }
             } else if (onlineVersion.equals(currentVersion)) {
-                if (lastReleaseTagInfo.object.sha.equals(gitPropertis.get("git.commit.id"))) {
+                if (lastReleaseTagInfo.object.sha.equals(gitProperties.get("git.commit.id"))) {
                     logger.debug("BHBot is running on the latest version.");
                 } else {
                     logger.warn("You are running on a bleeding edge version of BHBot and there may be bugs.");
@@ -967,8 +967,8 @@ public class BHBot {
         UnidentifiedDungeon("Unidentified dungeon", "ud"), // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
         WorldBoss("World Boss", "w");
 
-        private String name;
-        private String shortcut;
+        private final String name;
+        private final String shortcut;
 
         State(String name) {
             this.name = name;
