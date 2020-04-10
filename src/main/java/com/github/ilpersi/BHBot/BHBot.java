@@ -31,6 +31,7 @@ import java.util.*;
 public class BHBot {
 
     private static final String PROGRAM_NAME = "BHBot";
+    static CueManager cues;
     private static String BHBotVersion;
     private static Properties gitPropertis;
     static String screenshotPath = "./screenshots/";
@@ -156,6 +157,9 @@ public class BHBot {
 
         logger = BHBotLogger.create();
 
+        // we need to initialize the CueManager after that we started log4j, so that the cue manager can use it to log
+        cues = new CueManager();
+
         // If any error is present after parsing the config file, we stop the bot
         if (bot.settings.wrongSettingLines.size() > 0 ) {
             for (String wrongLine: bot.settings.wrongSettingLines) {
@@ -165,8 +169,6 @@ public class BHBot {
             return;
         }
         
-        BrowserManager.buildCues();
-
         Properties properties = new Properties();
         try {
             properties.load(BHBot.class.getResourceAsStream("/pom.properties"));
@@ -914,7 +916,7 @@ public class BHBot {
             try {
                 browser.readScreen();
 
-                MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("Login"), browser);
+                MarvinSegment seg = MarvinSegment.fromCue(cues.get("Login"), browser);
                 browser.detectLoginFormAndHandleIt(seg);
             } catch (Exception e) {
                 counter++;

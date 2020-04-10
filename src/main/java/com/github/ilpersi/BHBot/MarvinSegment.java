@@ -94,15 +94,15 @@ public class MarvinSegment {
 
     // Cue detection based on String
     static MarvinSegment fromCue(String cueName, BrowserManager browserManager) {
-        return fromCue(BrowserManager.cues.get(cueName), 0, true, browserManager);
+        return fromCue(BHBot.cues.get(cueName), 0, true, browserManager);
     }
 
     static MarvinSegment fromCue(String cueName, int timeout, Bounds bounds, BrowserManager browserManager) {
-        return fromCue(new Cue(BrowserManager.cues.get(cueName), bounds), timeout, true, browserManager);
+        return fromCue(new Cue(BHBot.cues.get(cueName), bounds), timeout, true, browserManager);
     }
 
     static MarvinSegment fromCue(String cueName, int timeout, BrowserManager browserManager) {
-        return fromCue(BrowserManager.cues.get(cueName), timeout, true, browserManager);
+        return fromCue(BHBot.cues.get(cueName), timeout, true, browserManager);
     }
 
     public String toString() {

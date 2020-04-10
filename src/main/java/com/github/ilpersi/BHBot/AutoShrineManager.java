@@ -40,7 +40,7 @@ public class AutoShrineManager {
         if (openSettings(Misc.Durations.SECOND)) {
             if (!initialized || ignoreBoss != this.ignoreBoss) {
                 if (ignoreBoss) {
-                    while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreBoss"), Misc.Durations.SECOND, bot.browser) != null) {
+                    while (MarvinSegment.fromCue(BHBot.cues.get("IgnoreBoss"), Misc.Durations.SECOND, bot.browser) != null) {
                         BHBot.logger.debug("Enabling Ignore Boss");
                         bot.browser.clickInGame(194, 366);
                         bot.browser.readScreen(1000);
@@ -52,7 +52,7 @@ public class AutoShrineManager {
                     }
                     BHBot.logger.debug("Ignore Boss Enabled");
                 } else {
-                    while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreBoss"), Misc.Durations.SECOND, bot.browser) == null) {
+                    while (MarvinSegment.fromCue(BHBot.cues.get("IgnoreBoss"), Misc.Durations.SECOND, bot.browser) == null) {
                         BHBot.logger.debug("Disabling Ignore Boss");
                         bot.browser.clickInGame(194, 366);
                         bot.browser.readScreen(1000);
@@ -69,7 +69,7 @@ public class AutoShrineManager {
 
             if (!initialized || ignoreShrines != this.ignoreShrines) {
                 if (ignoreShrines) {
-                    while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreShrines"), Misc.Durations.SECOND, bot.browser) != null) {
+                    while (MarvinSegment.fromCue(BHBot.cues.get("IgnoreShrines"), Misc.Durations.SECOND, bot.browser) != null) {
                         BHBot.logger.debug("Enabling Ignore Shrine");
                         bot.browser.clickInGame(194, 402);
                         bot.browser.readScreen(1000);
@@ -81,7 +81,7 @@ public class AutoShrineManager {
                     }
                     BHBot.logger.debug("Ignore Shrine Enabled");
                 } else {
-                    while (MarvinSegment.fromCue(BrowserManager.cues.get("IgnoreShrines"), Misc.Durations.SECOND, bot.browser) == null) {
+                    while (MarvinSegment.fromCue(BHBot.cues.get("IgnoreShrines"), Misc.Durations.SECOND, bot.browser) == null) {
                         BHBot.logger.debug("Disabling Ignore Shrine");
                         bot.browser.clickInGame(194, 402);
                         bot.browser.readScreen(1000);
@@ -98,7 +98,7 @@ public class AutoShrineManager {
 
             bot.browser.readScreen(Misc.Durations.SECOND);
 
-            bot.browser.closePopupSecurely(BrowserManager.cues.get("Settings"), new Cue(BrowserManager.cues.get("X"), new Bounds(608, 39, 711, 131)));
+            bot.browser.closePopupSecurely(BHBot.cues.get("Settings"), new Cue(BHBot.cues.get("X"), new Bounds(608, 39, 711, 131)));
 
             return true;
         } else {
@@ -110,11 +110,11 @@ public class AutoShrineManager {
     private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {
         bot.browser.readScreen();
 
-        MarvinSegment seg = MarvinSegment.fromCue(BrowserManager.cues.get("SettingsGear"), bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("SettingsGear"), bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
             bot.browser.readScreen(delay);
-            seg = MarvinSegment.fromCue(BrowserManager.cues.get("Settings"), Misc.Durations.SECOND * 3, bot.browser);
+            seg = MarvinSegment.fromCue(BHBot.cues.get("Settings"), Misc.Durations.SECOND * 3, bot.browser);
             return seg != null;
         } else {
             BHBot.logger.error("Impossible to find the settings button!");
@@ -137,7 +137,7 @@ public class AutoShrineManager {
                 (bot.getState() == BHBot.State.Expedition && bot.settings.autoShrine.contains("e")) ||
                 (bot.getState() == BHBot.State.UnidentifiedDungeon)) {
 
-            guildButtonSeg = MarvinSegment.fromCue(BrowserManager.cues.get("GuildButton"), bot.browser);
+            guildButtonSeg = MarvinSegment.fromCue(BHBot.cues.get("GuildButton"), bot.browser);
 
             if (battleDelay >= bot.settings.battleDelay && guildButtonSeg != null) {
                 BHBot.logger.autoshrine(bot.settings.battleDelay + "s since last encounter, disabling ignore shrines");
@@ -151,11 +151,11 @@ public class AutoShrineManager {
                 bot.browser.readScreen(100);
 
                 // We disable and re-enable the auto feature
-                while (MarvinSegment.fromCue(BrowserManager.cues.get("AutoOn"), 500, bot.browser) != null) {
+                while (MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), 500, bot.browser) != null) {
                     bot.browser.clickInGame(780, 270); //auto off
                     bot.browser.readScreen(500);
                 }
-                while (MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), 500, bot.browser) != null) {
+                while (MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), 500, bot.browser) != null) {
                     bot.browser.clickInGame(780, 270); //auto on again
                     bot.browser.readScreen(500);
                 }
@@ -183,11 +183,11 @@ public class AutoShrineManager {
                 bot.browser.readScreen(100);
 
                 // We disable and re-enable the auto feature
-                while (MarvinSegment.fromCue(BrowserManager.cues.get("AutoOn"), 500, bot.browser) != null) {
+                while (MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), 500, bot.browser) != null) {
                     bot.browser.clickInGame(780, 270); //auto off
                     bot.browser.readScreen(500);
                 }
-                while (MarvinSegment.fromCue(BrowserManager.cues.get("AutoOff"), 500, bot.browser) != null) {
+                while (MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), 500, bot.browser) != null) {
                     bot.browser.clickInGame(780, 270); //auto on again
                     bot.browser.readScreen(500);
                 }
