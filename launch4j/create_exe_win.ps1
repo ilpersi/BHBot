@@ -25,7 +25,8 @@ launch4jc conf.xml
 
 safeDelete $JavaRunTimePath $true
 Write-Host "Creating Java Distro..."
-jlink.exe --no-header-files --no-man-pages --add-modules java.base,java.compiler,java.desktop,java.instrument,java.management,java.naming,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.unsupported --output $JavaRunTimePath
+# always remember to manually add jdk.crypto.ec if you change the linked libraries
+jlink.exe --no-header-files --no-man-pages --add-modules java.base,java.compiler,java.desktop,java.instrument,java.management,java.naming,java.net.http,jdk.crypto.ec,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.unsupported --output $JavaRunTimePath
 
 Write-Host "Creating BHBot zip"
 $compress = @{
