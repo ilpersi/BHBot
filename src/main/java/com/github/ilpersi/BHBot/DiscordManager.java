@@ -38,6 +38,7 @@ public class DiscordManager {
             DiscordWebHookMessage discordWebHookMessage = new DiscordWebHookMessage();
             discordWebHookMessage.userName = bot.settings.discordUserName;
             discordWebHookMessage.messageText = content;
+            discordWebHookMessage.avatarURL = "https://i.imgur.com/FEJh2M7.png";
 
             Gson gson = new Gson();
 
@@ -85,6 +86,9 @@ class DiscordWebHookMessage {
 
     @SerializedName(value = "content")
     String messageText;
+
+    @SerializedName(value = "avatar_url")
+    String avatarURL;
 
 }
 
