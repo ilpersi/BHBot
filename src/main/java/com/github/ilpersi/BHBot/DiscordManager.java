@@ -63,7 +63,7 @@ public class DiscordManager {
                     .build();
 
             HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<String> response = null;
+            HttpResponse<String> response;
             try {
                 response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -101,11 +101,11 @@ class MultiPartBodyPublisher {
         return HttpRequest.BodyPublishers.ofByteArrays(PartsIterator::new);
     }
 
-    public String getBoundary() {
+    String getBoundary() {
         return boundary;
     }
 
-    public MultiPartBodyPublisher addPart(String name, String value) {
+    MultiPartBodyPublisher addPart(@SuppressWarnings("SameParameterValue") String name, String value) {
         PartsSpecification newPart = new PartsSpecification();
         newPart.type = PartsSpecification.TYPE.STRING;
         newPart.name = name;
@@ -114,16 +114,17 @@ class MultiPartBodyPublisher {
         return this;
     }
 
-    public MultiPartBodyPublisher addPart(String name, Path value) {
+    /*MultiPartBodyPublisher addPart(String name, Path value) {
         PartsSpecification newPart = new PartsSpecification();
         newPart.type = PartsSpecification.TYPE.FILE;
         newPart.name = name;
         newPart.path = value;
         partsSpecificationList.add(newPart);
         return this;
-    }
+    }*/
 
-    public MultiPartBodyPublisher addPart(String name, Supplier<InputStream> value, String filename, String contentType) {
+    @SuppressWarnings({"UnusedReturnValue", "SameParameterValue"})
+    MultiPartBodyPublisher addPart(String name, Supplier<InputStream> value, String filename, String contentType) {
         PartsSpecification newPart = new PartsSpecification();
         newPart.type = PartsSpecification.TYPE.STREAM;
         newPart.name = name;

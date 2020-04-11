@@ -1,7 +1,6 @@
 package com.github.ilpersi.BHBot;
 
 import com.google.common.collect.Maps;
-import net.pushover.client.MessagePriority;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -2983,7 +2982,7 @@ public class DungeonThread implements Runnable {
             seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Yes button not found, restarting");
-                String STScreen = bot.saveGameScreen("skeleton-treasure-no-yes");
+                bot.saveGameScreen("skeleton-treasure-no-yes");
                 bot.notificationManager.notifyError("Treasure chest error", "Skeleton Chest gump without YES button");
                 return true;
             }
@@ -2995,7 +2994,7 @@ public class DungeonThread implements Runnable {
             seg = MarvinSegment.fromCue(BHBot.cues.get("Open"), 5 * Misc.Durations.SECOND, bot.browser);
             if (seg == null) {
                 BHBot.logger.error("Open button not found, restarting");
-                String STScreen = bot.saveGameScreen("skeleton-treasure-no-open");
+                bot.saveGameScreen("skeleton-treasure-no-open");
                 bot.notificationManager.notifyError("Treasure chest error", "Skeleton Chest gump without OPEN button");
                 return true;
             }
