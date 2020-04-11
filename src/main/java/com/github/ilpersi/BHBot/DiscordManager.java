@@ -1,5 +1,8 @@
 package com.github.ilpersi.BHBot;
 
+import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
+
 import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -32,8 +35,14 @@ public class DiscordManager {
                 content = "[" + bot.settings.username + "]\n" + content;
             }
 
+            DiscordWebHookMessage discordWebHookMessage = new DiscordWebHookMessage();
+            discordWebHookMessage.userName = bot.settings.discordUserName;
+            discordWebHookMessage.messageText = content;
+
+            Gson gson = new Gson();
+
             MultiPartBodyPublisher publisher = new MultiPartBodyPublisher()
-                    .addPart("payload_json", String.format("{\"username\": \"%s\", \"content\": \"%s\"}", bot.settings.discordUserName, content));
+                    .addPart("payload_json", gson.toJson(discordWebHookMessage));
 
             if (attachment != null) {
                 publisher.addPart("file", () -> {
@@ -67,6 +76,16 @@ public class DiscordManager {
             }
         }
     }
+}
+
+class DiscordWebHookMessage {
+
+    @SerializedName(value = "username")
+    String userName;
+
+    @SerializedName(value = "content")
+    String messageText;
+
 }
 
 // https://stackoverflow.com/questions/46392160/java-9-httpclient-send-a-multipart-form-data-request
