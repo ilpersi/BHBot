@@ -1,9 +1,6 @@
 package com.github.ilpersi.BHBot;
 
-import net.pushover.client.MessagePriority;
-
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -221,13 +218,7 @@ public class BlockerThread implements Runnable {
 
             try {
                 String pmFileName = bot.saveGameScreen("pm", "pm");
-                if (bot.settings.enablePushover && bot.settings.poNotifyPM) {
-                    if (pmFileName != null) {
-                        bot.poManager.sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, new File(pmFileName));
-                    } else {
-                        bot.poManager.sendPushOverMessage("New PM", "You've just received a new PM, check it out!", MessagePriority.NORMAL, null);
-                    }
-                }
+                bot.notificationManager.notifyPM(pmFileName);
                 bot.browser.clickOnSeg(seg);
             } catch (Exception e) {
                 // ignore it

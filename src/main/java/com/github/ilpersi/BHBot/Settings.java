@@ -22,6 +22,11 @@ public class Settings {
     // Pushover info
     String poAppToken = "";
     String poUserToken = "";
+
+    // Discord info
+    String discordUserName = "";
+    String discordWebHookUrl = "";
+
     boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
     boolean useDoNotShareURL = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
     boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
@@ -38,6 +43,7 @@ public class Settings {
     //activity settings
     LinkedHashSet<String> activitiesEnabled;
     boolean activitiesRoundRobin = true;
+
     // Pushover settings
     boolean enablePushover = false;
     boolean poNotifyPM = false;
@@ -45,6 +51,15 @@ public class Settings {
     boolean poNotifyErrors = false;
     boolean poNotifyBribe = false;
     int poNotifyAlive = 0;
+
+    // discord settings
+    boolean enableDiscord = false;
+    boolean discordNotifyPM = false;
+    boolean discordNotifyCrash = false;
+    boolean discordNotifyErrors = false;
+    boolean discordNotifyBribe = false;
+    int discordNotifyAlive = 0;
+
     /**
      * This is the minimum amount of shards that the bot must leave for the user. If shards get above this value, bot will play the raids in case raiding is enabled of course.
      */
@@ -155,6 +170,7 @@ public class Settings {
      * Drop notificatoin settings
      **/
     List<String> poNotifyDrop;
+    List<String> discordNotifyDrop;
     /**
      * List of equipment that should be stripped before attempting PvP (and dressed up again after PvP is done).
      * Allowed tokens:
@@ -246,6 +262,7 @@ public class Settings {
         autoShrine = new ArrayList<>();
         autoRuneDefault = new ArrayList<>();
         poNotifyDrop = new ArrayList<>();
+        discordNotifyDrop = new ArrayList<>();
         setDifficultyFailsafeFromString("t:0 g:0");
     }
 
@@ -272,6 +289,7 @@ public class Settings {
      */
     void setIdle() {
         enablePushover = false;
+        enableDiscord = false;
         poNotifyPM = false;
         poNotifyCrash = false;
         poNotifyErrors = false;
@@ -427,6 +445,15 @@ public class Settings {
             if (add.equals(""))
                 continue;
             this.poNotifyDrop.add(add);
+        }
+    }
+    private void setDiscordNotifyDrop(String... types) {
+        this.discordNotifyDrop.clear();
+        for (String t : types) {
+            String add = t.trim();
+            if (add.equals(""))
+                continue;
+            this.discordNotifyDrop.add(add);
         }
     }
 
@@ -655,6 +682,15 @@ public class Settings {
         return result.toString();
     }
 
+    private String getDiscordNotifyDropAsString() {
+        StringBuilder result = new StringBuilder();
+        for (String s : discordNotifyDrop)
+            result.append(s).append(" ");
+        if (result.length() > 0)
+            result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+        return result.toString();
+    }
+
     private String getTankPriorityAsString() {
         StringBuilder result = new StringBuilder();
         for (String s : tankPriority)
@@ -826,6 +862,16 @@ public class Settings {
         }
     }
 
+    private void setDiscordNotifyDropFromString(String s) {
+        setDiscordNotifyDrop(s.split(" "));
+        // clean up (trailing spaces and remove if empty):
+        for (int i = discordNotifyDrop.size() - 1; i >= 0; i--) {
+            discordNotifyDrop.set(i, discordNotifyDrop.get(i).trim());
+            if (discordNotifyDrop.get(i).equals(""))
+                discordNotifyDrop.remove(i);
+        }
+    }
+
     private void setTankPriorityFromString(String s) {
         setTankPriority(s.split(" "));
         // clean up (trailing spaces and remove if empty):
@@ -932,6 +978,8 @@ public class Settings {
         password = lastUsedMap.getOrDefault("password", password);
         poAppToken = lastUsedMap.getOrDefault("poAppToken", poAppToken);
         poUserToken = lastUsedMap.getOrDefault("poUserToken", poUserToken);
+        discordWebHookUrl = lastUsedMap.getOrDefault("discordWebHookUrl", discordWebHookUrl);
+        discordUserName = lastUsedMap.getOrDefault("discordUserName", discordUserName);
         useHeadlessMode = lastUsedMap.getOrDefault("headlessmode", useHeadlessMode ? "1" : "0").equals("1");
         restartAfterAdOfferTimeout = lastUsedMap.getOrDefault("restartAfterAdOfferTimeout", restartAfterAdOfferTimeout ? "1" : "0").equals("1");
         debugDetectionTimes = lastUsedMap.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("1");
@@ -951,6 +999,12 @@ public class Settings {
         poNotifyErrors = lastUsedMap.getOrDefault("poNotifyErrors", poNotifyErrors ? "1" : "0").equals("1");
         poNotifyBribe = lastUsedMap.getOrDefault("poNotifyBribe", poNotifyBribe ? "1" : "0").equals("1");
 
+        enableDiscord = lastUsedMap.getOrDefault("enableDiscord", enableDiscord ? "1" : "0").equals("1");
+        discordNotifyPM = lastUsedMap.getOrDefault("discordNotifyPM", discordNotifyPM ? "1" : "0").equals("1");
+        discordNotifyCrash = lastUsedMap.getOrDefault("discordNotifyCrash", discordNotifyCrash ? "1" : "0").equals("1");
+        discordNotifyErrors = lastUsedMap.getOrDefault("discordNotifyErrors", discordNotifyErrors ? "1" : "0").equals("1");
+        discordNotifyBribe = lastUsedMap.getOrDefault("discordNotifyBribe", discordNotifyBribe ? "1" : "0").equals("1");
+
         maxShards = Integer.parseInt(lastUsedMap.getOrDefault("maxShards", "" + maxShards));
         maxTokens = Integer.parseInt(lastUsedMap.getOrDefault("maxTokens", "" + maxTokens));
         maxTickets = Integer.parseInt(lastUsedMap.getOrDefault("maxTickets", "" + maxTickets));
@@ -963,6 +1017,7 @@ public class Settings {
         minBadges = Integer.parseInt(lastUsedMap.getOrDefault("minBadges", "" + minBadges));
 
         poNotifyAlive = Integer.parseInt(lastUsedMap.getOrDefault("poNotifyAlive", "" + poNotifyAlive));
+        discordNotifyAlive = Integer.parseInt(lastUsedMap.getOrDefault("discordNotifyAlive", "" + discordNotifyAlive));
 
         costPVP = Integer.parseInt(lastUsedMap.getOrDefault("costPVP", "" + costPVP));
         costGVG = Integer.parseInt(lastUsedMap.getOrDefault("costGVG", "" + costGVG));
@@ -978,6 +1033,7 @@ public class Settings {
 
         setAutoReviveFromString(lastUsedMap.getOrDefault("autoRevive", getAutoReviveAsString()));
         setPoNotifyDropFromString(lastUsedMap.getOrDefault("poNotifyDrop", getPoNotifyDropAsString()));
+        setDiscordNotifyDropFromString(lastUsedMap.getOrDefault("discordNotifyDrop", getDiscordNotifyDropAsString()));
         setTankPriorityFromString(lastUsedMap.getOrDefault("tankPriority", getTankPriorityAsString()));
         tankPosition = Integer.parseInt(lastUsedMap.getOrDefault("tankPosition", "" + tankPosition));
         potionOrder = lastUsedMap.getOrDefault("potionOrder", potionOrder);

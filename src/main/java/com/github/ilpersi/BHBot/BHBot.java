@@ -1,7 +1,6 @@
 package com.github.ilpersi.BHBot;
 
 import com.google.gson.Gson;
-import net.pushover.client.MessagePriority;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -44,7 +43,7 @@ public class BHBot {
 
     Settings settings = new Settings().setDebug();
     Scheduler scheduler = new Scheduler();
-    PushOverManager poManager;
+    NotificationManager notificationManager;
     ExceptionManager excManager;
     String chromeDriverAddress = "127.0.0.1:9515";
     String chromiumExePath = "C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Local\\Chromium\\Application\\chrome.exe";
@@ -59,9 +58,11 @@ public class BHBot {
     boolean finished = false;
     BrowserManager browser;
 
+    long botStartTime;
+
     public static void main(String[] args) {
         BHBot bot = new BHBot();
-        bot.poManager = new PushOverManager(bot);
+        bot.notificationManager = new NotificationManager(bot);
         bot.excManager = new ExceptionManager(bot);
 
         String userDataDir = "./chrome_profile";
@@ -199,6 +200,7 @@ public class BHBot {
 
         if (!bot.checkPaths()) return;
 
+        bot.botStartTime = Misc.getTime();
         bot.processCommand("start");
 
         Scanner scanner = new Scanner(System.in);
@@ -415,28 +417,7 @@ public class BHBot {
                 logger.info("Plan loaded from " + "<plans/" + params[1] + ".ini>.");
                 break;
             case "pomessage":
-                String message = "Test message from BHbot!";
-
-                // We split on spaces so we re-build the original message
-                if (params.length > 1)
-                    message = String.join(" ", Arrays.copyOfRange(params, 1, params.length));
-
-                if (settings.enablePushover) {
-                    String poLogMessage = "Sending Pushover test message.";
-                    poLogMessage += "\n\n poUserToken is: " + settings.poUserToken;
-                    poLogMessage += "\n poAppToken is: " + settings.poAppToken;
-                    logger.info(poLogMessage);
-
-                    String poScreenName = dungeon.bot.saveGameScreen("pomessage");
-                    File poScreenFile = poScreenName != null ? new File(poScreenName) : null;
-
-                    poManager.sendPushOverMessage("Test Notification", message, MessagePriority.NORMAL, poScreenFile);
-                    if (poScreenFile != null && !poScreenFile.delete())
-                        logger.warn("Impossible to delete tmp img for pomessage command.");
-
-                } else {
-                    logger.warn("Pushover integration is disabled in the settings!");
-                }
+                logger.info("This command is deprecated, use 'test notification [your_message]' instead");
                 break;
             case "print":
                 if (params.length < 2) {
@@ -596,6 +577,12 @@ public class BHBot {
                     case "e":
                     case "expeditionread":
                         dungeon.expeditionReadTest();
+                        break;
+                    case "notification":
+                        // We split on spaces so we re-build the original message
+                        String notificationMessage = params.length > 2 ? String.join(" ", Arrays.copyOfRange(params, 2, params.length)) : "Test message from BHbot!";
+
+                        notificationManager.testNotification(notificationMessage);
                         break;
                     case "runes":
                         dungeon.detectEquippedMinorRunes(true, true);
@@ -842,12 +829,8 @@ public class BHBot {
             logger.info("Impossible to save the stack trace in dumpCrashLog!");
         }
 
-        if (settings.enablePushover && settings.poNotifyCrash) {
-            File poCrashScreen = new File(file);
-            poManager.sendPushOverMessage("BHBot CRASH!",
-                    "BHBot has crashed and a driver emergency restart has been performed!\n\n" + stackTrace, "falling",
-                    MessagePriority.HIGH, poCrashScreen.exists() ? poCrashScreen : null);
-        }
+        notificationManager.notifyCrash("BHBot has crashed and a driver emergency restart has been performed!\n\n" + stackTrace, file);
+
     }
 
     /**
