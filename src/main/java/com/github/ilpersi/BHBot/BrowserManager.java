@@ -34,6 +34,7 @@ public class BrowserManager {
     private JavascriptExecutor jsExecutor;
     private WebElement game;
     private String doNotShareUrl = "";
+    private final String standardURL = "http://www.kongregate.com/games/Juppiomenz/bit-heroes";
 
     private BufferedImage img; // latest screen capture
     private final BHBot bot;
@@ -135,10 +136,10 @@ public class BrowserManager {
         if (bot.settings.hideWindowOnRestart)
             hideBrowser();
         if ("".equals(doNotShareUrl)) {
-            driver.navigate().to("http://www.kongregate.com/games/Juppiomenz/bit-heroes");
+            if (!standardURL.equals(driver.getCurrentUrl())) driver.navigate().to(standardURL);
             byElement = By.id("game");
         } else {
-            driver.navigate().to(doNotShareUrl);
+            if (!doNotShareUrl.equals(driver.getCurrentUrl())) driver.navigate().to(doNotShareUrl);
             byElement = By.xpath("//div[1]");
         }
 
