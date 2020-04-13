@@ -212,13 +212,14 @@ public class Settings {
     /**
      * Fishing Settings
      **/
-    private boolean doFishing = false;
+    boolean enterGuildHall = true;
     int baitAmount = 5;
     /**
      * log4j settings
      */
     // Where do we save the logs?
     String logBaseDir = "logs";
+
     // What is the default level of the logs
     Level logLevel = Level.INFO;
     // How many days of logs do we store?
@@ -232,7 +233,7 @@ public class Settings {
     private boolean useHeadlessMode = false; // run Chrome with --headless switch?
     private boolean restartAfterAdOfferTimeout = true; // if true, then bot will automatically restart itself if it hasn't claimed any ad offer in a time longer than defined. This is needed because ads don't appear anymore if Chrome doesn't get restarted.
     private boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
-    private Map<String, String> lastUsedMap = new HashMap<>();
+    private final Map<String, String> lastUsedMap = new HashMap<>();
 
     // If any error happens during the settings loading, this arraylist is populated with the offending lines
     ArrayList<String> wrongSettingLines = new ArrayList<>();
@@ -1077,7 +1078,7 @@ public class Settings {
         persuasionLevel = Integer.parseInt(lastUsedMap.getOrDefault("persuasionLevel", "" + persuasionLevel));
         bribeLevel = Integer.parseInt(lastUsedMap.getOrDefault("bribeLevel", "" + bribeLevel));
 
-        doFishing = lastUsedMap.getOrDefault("doFishing", doFishing ? "1" : "0").equals("1");
+        enterGuildHall = lastUsedMap.getOrDefault("enterGuildHall", enterGuildHall ? "1" : "0").equals("1");
         baitAmount = Integer.parseInt(lastUsedMap.getOrDefault("baitAmount", "" + baitAmount));
 
         logMaxDays = Integer.parseInt(lastUsedMap.getOrDefault("logMaxDays", "" + logMaxDays));

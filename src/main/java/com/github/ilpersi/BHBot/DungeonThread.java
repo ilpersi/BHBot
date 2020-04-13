@@ -5660,7 +5660,7 @@ public class DungeonThread implements Runnable {
             }
 
             bot.browser.readScreen(Misc.Durations.SECOND);
-            enterGuildHall();
+            if (bot.settings.enterGuildHall) enterGuildHall();
 
             if (bot.settings.hideWindowOnRestart) bot.browser.hideBrowser();
         }
