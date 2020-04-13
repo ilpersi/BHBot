@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch4jConfig>
-  <dontWrapJar>false</dontWrapJar>
+  <dontWrapJar>true</dontWrapJar>
   <headerType>console</headerType>
-  <jar>..\BHBot.jar</jar>
+  <jar>BHBot.jar</jar>
   <outfile>BHBot.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
