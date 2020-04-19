@@ -48,7 +48,11 @@ class CueManager {
     }
 
     Cue getOrNull(String cueKey) {
-        return loadedCues.getOrDefault(cueKey, null);
+        try {
+            return get(cueKey);
+        } catch (NullPointerException ex) {
+            return null;
+        }
     }
 
     int size () {
