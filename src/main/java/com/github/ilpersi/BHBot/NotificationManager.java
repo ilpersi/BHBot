@@ -56,8 +56,8 @@ public class NotificationManager {
     void notifyAlive() {
 
         // periodic notification
-        if (((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * Misc.Durations.HOUR)) ||
-                ((Misc.getTime() - timeLastDiscordAlive) > (bot.settings.discordNotifyAlive * Misc.Durations.HOUR))) {
+        if (((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * Misc.Durations.HOUR)) && timeLastPOAlive != 0 ||
+                ((Misc.getTime() - timeLastDiscordAlive) > (bot.settings.discordNotifyAlive * Misc.Durations.HOUR)) && timeLastDiscordAlive != 0 ) {
 
             String aliveScreenName = bot.saveGameScreen("alive-screen");
             File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
@@ -75,12 +75,12 @@ public class NotificationManager {
                 }
             }
 
-            if ((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * Misc.Durations.HOUR)) {
+            if ((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * Misc.Durations.HOUR) && timeLastPOAlive != 0) {
                 timeLastPOAlive = Misc.getTime();
                 poManager.sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
             }
 
-            if ((Misc.getTime() - timeLastDiscordAlive) > (bot.settings.discordNotifyAlive * Misc.Durations.HOUR)) {
+            if ((Misc.getTime() - timeLastDiscordAlive) > (bot.settings.discordNotifyAlive * Misc.Durations.HOUR) && timeLastDiscordAlive != 0) {
                 timeLastDiscordAlive = Misc.getTime();
                 discordManager.sendDiscordMessage(aliveMsg.toString(), aliveScreenFile);
             }

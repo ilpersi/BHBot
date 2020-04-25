@@ -325,7 +325,6 @@ public class DungeonThread implements Runnable {
                     bot.setState(BHBot.State.Main);
 
                     bot.notificationManager.notifyStartUp();
-                    bot.notificationManager.notifyAlive();
 
                     // weekly gem screenshot every Sunday and after or after a week the bot is running.
                     if (bot.settings.screenshots.contains("wg")) {
