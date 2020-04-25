@@ -286,8 +286,7 @@ class CueManager {
         addCue("Purchase", "cues/cuePurchase.png", new Bounds(240, 240, 390, 280));
 
         addCue("GuildButton", "cues/cueGuildButton.png", new Bounds(500, 420, 590, 520));
-        addCue("IgnoreShrines", "cues/cueIgnoreShrines.png", new Bounds(120, 250, 675, 475));
-        addCue("IgnoreBoss", "cues/cueIgnoreBoss.png", new Bounds(120, 250, 675, 475));
+        addCue("IgnoreCheck", "cues/cueIgnoreCheck.png", null);
 
         addCue("Quest", "cues/cueQuest.png", new Bounds(0, 0, 40, 40)); // cue for quest (dungeons) button
         addCue("ZonesButton", "cues/cueZonesButton.png", new Bounds(105, 60, 125, 75));

@@ -33,71 +33,37 @@ public class AutoShrineManager {
             return true;
         }
 
-        //open settings
-        int ignoreBossCnt = 0;
-        int ignoreShrineCnt = 0;
-
         if (openSettings(Misc.Durations.SECOND)) {
             if (!initialized || ignoreBoss != this.ignoreBoss) {
-                if (ignoreBoss) {
-                    while (MarvinSegment.fromCue(BHBot.cues.get("IgnoreBoss"), Misc.Durations.SECOND, bot.browser) != null) {
-                        BHBot.logger.debug("Enabling Ignore Boss");
-                        bot.browser.clickInGame(194, 366);
-                        bot.browser.readScreen(1000);
+                Bounds ignoreBossBounds = Bounds.fromWidthHeight(175, 339, 38, 35);
+                MarvinSegment ignoreBossCheck = MarvinSegment.fromCue(BHBot.cues.get("IgnoreCheck"), 0, ignoreBossBounds, bot.browser);
 
-                        if (ignoreBossCnt++ > 10) {
-                            BHBot.logger.error("Impossible to enable Ignore Boss");
-                            return false;
-                        }
-                    }
-                    BHBot.logger.debug("Ignore Boss Enabled");
-                } else {
-                    while (MarvinSegment.fromCue(BHBot.cues.get("IgnoreBoss"), Misc.Durations.SECOND, bot.browser) == null) {
-                        BHBot.logger.debug("Disabling Ignore Boss");
-                        bot.browser.clickInGame(194, 366);
-                        bot.browser.readScreen(1000);
-
-                        if (ignoreBossCnt++ > 10) {
-                            BHBot.logger.error("Impossible to Disable Ignore Boss");
-                            return false;
-                        }
-                    }
-                    BHBot.logger.debug("Ignore Boss Disabled");
+                if (ignoreBoss && ignoreBossCheck == null) {
+                    BHBot.logger.debug("Enabling Ignore Boss");
+                    bot.browser.clickInGame(194, 366);
+                } else if (!ignoreBoss && ignoreBossCheck != null) {
+                    BHBot.logger.debug("Disabling Ignore Boss");
+                    bot.browser.clickInGame(194, 366);
+                    bot.browser.readScreen(1000);
                 }
                 this.ignoreBoss = ignoreBoss;
             }
 
             if (!initialized || ignoreShrines != this.ignoreShrines) {
-                if (ignoreShrines) {
-                    while (MarvinSegment.fromCue(BHBot.cues.get("IgnoreShrines"), Misc.Durations.SECOND, bot.browser) != null) {
-                        BHBot.logger.debug("Enabling Ignore Shrine");
-                        bot.browser.clickInGame(194, 402);
-                        bot.browser.readScreen(1000);
+                Bounds ignoreShrineBounds = Bounds.fromWidthHeight(174, 382, 37, 32);
+                MarvinSegment ignoreShrineCheck = MarvinSegment.fromCue(BHBot.cues.get("IgnoreCheck"), 0, ignoreShrineBounds, bot.browser);
 
-                        if (ignoreShrineCnt++ > 10) {
-                            BHBot.logger.error("Impossible to enable Ignore Shrines");
-                            return false;
-                        }
-                    }
-                    BHBot.logger.debug("Ignore Shrine Enabled");
-                } else {
-                    while (MarvinSegment.fromCue(BHBot.cues.get("IgnoreShrines"), Misc.Durations.SECOND, bot.browser) == null) {
-                        BHBot.logger.debug("Disabling Ignore Shrine");
-                        bot.browser.clickInGame(194, 402);
-                        bot.browser.readScreen(1000);
-
-                        if (ignoreShrineCnt++ > 10) {
-                            BHBot.logger.error("Impossible to disable Ignore Shrines");
-                            return false;
-                        }
-                    }
-                    BHBot.logger.debug("Ignore Shrine Disabled");
+                if (ignoreShrines && ignoreShrineCheck == null) {
+                    BHBot.logger.debug("Enabling Ignore Shrine");
+                    bot.browser.clickInGame(194, 402);
+                } else if (!ignoreShrines && ignoreShrineCheck != null) {
+                    BHBot.logger.debug("Disabling Ignore Shrine");
+                    bot.browser.clickInGame(194, 402);
                 }
                 this.ignoreShrines = ignoreShrines;
             }
 
             bot.browser.readScreen(Misc.Durations.SECOND);
-
             bot.browser.closePopupSecurely(BHBot.cues.get("Settings"), new Cue(BHBot.cues.get("X"), new Bounds(608, 39, 711, 131)));
 
             return true;
@@ -109,13 +75,22 @@ public class AutoShrineManager {
 
     private void resetAutoButton() {
         // We disable and re-enable the auto feature
-        while (MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), 500, bot.browser) != null) {
-            bot.browser.clickInGame(780, 270); //auto off
-            bot.browser.readScreen(500);
-        }
-        while (MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), 500, bot.browser) != null) {
-            bot.browser.clickInGame(780, 270); //auto on again
-            bot.browser.readScreen(500);
+        MarvinSegment autoSeg = MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), 500, bot.browser);
+
+        if (autoSeg != null) {
+            bot.browser.clickOnSeg(autoSeg);
+
+            autoSeg = MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), 5000, bot.browser);
+            if (autoSeg != null) {
+                bot.browser.clickOnSeg(autoSeg);
+            } else {
+                BHBot.logger.error("Impossible to find Auto Off button");
+                bot.notificationManager.notifyError("Auto Shrine Error", "Impossible to find Auto Off button");
+            }
+
+        } else {
+            BHBot.logger.error("Impossible to find Auto On button!");
+            bot.notificationManager.notifyError("Auto Shrine Error", "Impossible to find Auto On button");
         }
     }
 
