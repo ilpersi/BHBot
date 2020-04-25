@@ -3532,24 +3532,21 @@ public class DungeonThread implements Runnable {
     private void closeWorldBoss() {
         MarvinSegment seg;
 
-        Misc.sleep(Misc.Durations.SECOND);
-        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 2 * Misc.Durations.SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 3 * Misc.Durations.SECOND, Bounds.fromWidthHeight(700, 50, 55, 60), bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
         } else {
             BHBot.logger.error("first x Error returning to main screen from World Boss, restarting");
         }
 
-        Misc.sleep(Misc.Durations.SECOND);
-        seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 3 * Misc.Durations.SECOND, Bounds.fromWidthHeight(295, 345, 60, 35), bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
         } else {
             BHBot.logger.error("yesgreen Error returning to main screen from World Boss, restarting");
         }
 
-        Misc.sleep(Misc.Durations.SECOND);
-        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 2 * Misc.Durations.SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 3 * Misc.Durations.SECOND, Bounds.fromWidthHeight(640, 75, 55, 55), bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
         } else {
