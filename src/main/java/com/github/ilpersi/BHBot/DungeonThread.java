@@ -655,14 +655,21 @@ public class DungeonThread implements Runnable {
                             }
                             if (difficulty != targetDifficulty) {
                                 BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + targetDifficulty + ". Changing..");
-                                boolean result = selectDifficulty(difficulty, targetDifficulty);
+                                boolean result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficulty"), 1);
                                 if (!result) { // error!
                                     // see if drop down menu is still open and close it:
                                     bot.browser.readScreen(Misc.Durations.SECOND);
                                     tryClosingWindow(BHBot.cues.get("DifficultyDropDown"));
                                     bot.browser.readScreen(5 * Misc.Durations.SECOND);
                                     BHBot.logger.warn("Unable to change difficulty, usually because desired level is not unlocked. Running " + (trials ? "trials" : "gauntlet") + " at " + difficulty + ".");
-                                    bot.notificationManager.notifyError("T/G Error", "Unable to change difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.");
+                                    bot.notificationManager.notifyError("T/G Error", "Unable to change " + (trials ? "trials" : "gauntlet") + " difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.");
+
+                                    // We update the setting file with the old difficulty level
+                                    String settingName = trials ? "difficultyTrials": "difficultyGauntlet";
+                                    String original = settingName + " " + targetDifficulty;
+                                    String updated = settingName + " " + difficulty;
+                                    settingsUpdate(original, updated);
+
                                 }
                             }
 
@@ -1463,15 +1470,17 @@ public class DungeonThread implements Runnable {
                                     boolean result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficultyExpedition"), 5);
                                     if (!result) { // error!
                                         // see if drop down menu is still open and close it:
-                                        bot.browser.readScreen();
-                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
-                                        while (seg != null) {
-                                            bot.browser.clickOnSeg(seg);
-                                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
-                                            seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
-                                        }
-                                        BHBot.logger.error("Due to an error in difficulty selection, Expedition will be skipped.");
-                                        continue;
+                                        bot.browser.readScreen(Misc.Durations.SECOND);
+                                        tryClosingWindow(BHBot.cues.get("DifficultyDropDown"));
+                                        bot.browser.readScreen(5 * Misc.Durations.SECOND);
+                                        BHBot.logger.warn("Unable to change difficulty, usually because desired level is not unlocked. Running Expedition at " + difficulty + ".");
+                                        bot.notificationManager.notifyError("Expedition Error", "Unable to change expedtion difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.");
+
+                                        // We update the file with the old difficulty level
+                                        String original = expeditionFailsafePortal + " " + targetDifficulty;
+                                        String updated = expeditionFailsafePortal + " " + difficulty;
+                                        settingsUpdate(original, updated);
+
                                     }
                                 }
 
@@ -4906,7 +4915,7 @@ public class DungeonThread implements Runnable {
             // move up
             seg = MarvinSegment.fromCue(BHBot.cues.get("DropDownUp"), bot.browser);
             if (seg == null) {
-                BHBot.logger.error("Error: unable to detect up arrow in trials/gauntlet difficulty drop-down menu!");
+                BHBot.logger.error("Error: unable to detect up arrow in trials/gauntlet/expedition difficulty drop-down menu!");
                 bot.saveGameScreen("select_difficulty_arrow_up", "errors");
                 bot.browser.clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
                 return false;
@@ -4919,7 +4928,7 @@ public class DungeonThread implements Runnable {
             // move down
             seg = MarvinSegment.fromCue(BHBot.cues.get("DropDownDown"), bot.browser);
             if (seg == null) {
-                BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty drop-down menu!");
+                BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet/expedition difficulty drop-down menu!");
                 bot.saveGameScreen("select_difficulty_arrow_down", "errors");
                 bot.browser.clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
                 return false;
