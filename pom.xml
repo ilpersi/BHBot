@@ -6,7 +6,7 @@
 
     <groupId>com.github.ilpersi</groupId>
     <artifactId>BHBot</artifactId>
-    <version>44.2</version>
+    <version>45</version>
     <developers>
         <developer>
             <id>betalord</id>
