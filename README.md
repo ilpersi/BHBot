@@ -30,7 +30,7 @@ The level/difficulty for each activity can be defined in the settings file. The 
 * Revive fallen party members
 * Save shrines for use before the boss in Trials and Raids
 * Switch runes based on activity
-* Notify you on your mobile devices through [Pushover](https://github.com/ilpersi/BHBot/wiki/Pushover-integration-Documentation) on how it is doing and if any issue is present
+* Notify you on how it is doing and if any issue is present on different devices through [Pushover](https://github.com/ilpersi/BHBot/wiki/Pushover-integration-Documentation) or [Discord](https://github.com/ilpersi/BHBot/wiki/Discord-integration-Documentation)
 * Use consumables to keep boosts running unattended
 * Strip items for PvP/GvG
 * Solo certain zones for bounty requirements
