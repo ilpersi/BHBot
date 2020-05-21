@@ -1184,7 +1184,7 @@ public class DungeonThread implements Runnable {
                                 bot.browser.readScreen();
                                 Misc.sleep(Misc.Durations.SECOND);
 
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 2 * Misc.Durations.SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(470, 445, 100, 40), bot.browser);
                                 if (seg == null) {
                                     BHBot.logger.error("Imppossible to find the Accept button in the GvG screen, restarting!");
                                     restart();
