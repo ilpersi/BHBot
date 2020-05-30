@@ -3649,7 +3649,7 @@ public class DungeonThread implements Runnable {
      * @return null in case dungeon parameter is malformed (can even throw an exception)
      */
     private Point getDungeonIconPos(int z, int d) {
-        if (z < 1 || z > 11) return null;
+        if (z < 1 || z > 12) return null;
         if (d < 1 || d > 4) return null;
 
         switch (z) {
@@ -3787,6 +3787,17 @@ public class DungeonThread implements Runnable {
                     case 4:
                         BHBot.logger.warn("Zone 11 only has 3 dungeons, falling back to z11d2");
                         return new Point(205, 160);
+                }
+            case 12:
+                switch (d) {
+                    case 1:
+                        return new Point(567, 413);
+                    case 2:
+                        return new Point(460, 150);
+                    case 3:
+                        return new Point(560, 400);
+                    case 4:
+                        return new Point(405, 290);
                 }
         }
 
@@ -4109,6 +4120,8 @@ public class DungeonThread implements Runnable {
             return 10;
         else if (MarvinSegment.fromCue("Zone11", bot.browser) != null)
             return 11;
+        else if (MarvinSegment.fromCue("Zone12", bot.browser) != null)
+            return 12;
         else
             return 0;
     }
