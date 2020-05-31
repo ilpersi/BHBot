@@ -55,8 +55,8 @@ public class DungeonThread implements Runnable {
     @SuppressWarnings("FieldCanBeLocal")
     private final long MAX_IDLE_TIME = 15 * Misc.Durations.MINUTE;
 
-    private final boolean[] revived = {false, false, false, false, false};
-    private int potionsUsed = 0;
+    //private final boolean[] revived = {false, false, false, false, false};
+    //private int potionsUsed = 0;
     private boolean startTimeCheck = false;
     private long activityStartTime;
     private boolean encounterStatus = true;
@@ -104,6 +104,7 @@ public class DungeonThread implements Runnable {
 
     BHBot bot;
     AutoShrineManager shrineManager;
+    AutoReviveManager reviveManager;
 
     private Iterator<String> activitysIterator;
 
@@ -114,6 +115,7 @@ public class DungeonThread implements Runnable {
         this.bot = bot;
 
         activitysIterator = bot.settings.activitiesEnabled.iterator();
+        reviveManager = new AutoReviveManager(bot);
     }
 
     static void printFamiliars() {
@@ -2329,7 +2331,7 @@ public class DungeonThread implements Runnable {
          */
         seg = MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), bot.browser);
         if (seg != null) {
-            handleAutoRevive();
+            handleAutoOff();
         }
 
         /*
@@ -2442,7 +2444,8 @@ public class DungeonThread implements Runnable {
                 }
 
                 resetAppropriateTimers();
-                resetRevives();
+                reviveManager.reset();
+
                 bot.setState(BHBot.State.Main); // reset state
                 return;
             }
@@ -2489,7 +2492,7 @@ public class DungeonThread implements Runnable {
 
                 //last few post activity tasks
                 resetAppropriateTimers();
-                resetRevives();
+                reviveManager.reset();
                 if (bot.getState() == BHBot.State.GVG) dressUp(bot.settings.gvgstrip);
                 if (bot.getState() == BHBot.State.PVP) dressUp(bot.settings.pvpstrip);
 
@@ -2638,7 +2641,7 @@ public class DungeonThread implements Runnable {
             }
 
             resetAppropriateTimers();
-            resetRevives();
+            reviveManager.reset();
 
             // We make sure to dress up
             if (bot.getState() == BHBot.State.PVP && bot.settings.pvpstrip.size() > 0) dressUp(bot.settings.pvpstrip);
@@ -3290,10 +3293,10 @@ public class DungeonThread implements Runnable {
         return false;
     }
 
-    private void handleAutoRevive() {
+    private void handleAutoOff() {
         MarvinSegment seg;
 
-        // Auto Revive is disabled, we re-enable it
+        // Auto Revive is disabled, we re-enable Auto on Dungeon
         if ((bot.settings.autoRevive.size() == 0) || (bot.getState() != BHBot.State.Trials && bot.getState() != BHBot.State.Gauntlet
                 && bot.getState() != BHBot.State.Raid && bot.getState() != BHBot.State.Expedition)) {
             BHBot.logger.debug("AutoRevive disabled, reenabling auto.. State = '" + bot.getState() + "'");
@@ -3331,211 +3334,15 @@ public class DungeonThread implements Runnable {
             return;
         }
 
-        // we make sure that we stick with the limits
-        if (potionsUsed >= bot.settings.potionLimit) {
-            BHBot.logger.autorevive("Potion limit reached, skipping revive check");
-            seg = MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
-            if (seg != null) bot.browser.clickOnSeg(seg);
-            bot.scheduler.resetIdleTime(true);
-            return;
-        }
-
-        seg = MarvinSegment.fromCue(BHBot.cues.get("Potions"), Misc.Durations.SECOND, bot.browser);
-        if (seg != null) {
-            bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(Misc.Durations.SECOND);
-
-            // If no potions are needed, we re-enable the Auto function
-            seg = MarvinSegment.fromCue(BHBot.cues.get("NoPotions"), Misc.Durations.SECOND, bot.browser); // Everyone is Full HP
-            if (seg != null) {
-                seg = MarvinSegment.fromCue("Close", Misc.Durations.SECOND, new Bounds(300, 330, 500, 400), bot.browser);
-                if (seg != null) {
-                    BHBot.logger.autorevive("None of the team members need a consumable, exiting from autoRevive");
-                    bot.browser.clickOnSeg(seg);
-                    seg = MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
-                    bot.browser.clickOnSeg(seg);
-                } else {
-                    BHBot.logger.error("No potions cue detected, without close button, restarting!");
-                    bot.saveGameScreen("autorevive-no-potions-no-close", bot.browser.getImg());
-                    restart();
-                }
-                bot.scheduler.resetIdleTime(true);
-                return;
-            }
-
-            // Based on the state we get the team size
-            HashMap<Integer, Point> revivePositions = new HashMap<>();
-            switch (bot.getState()) {
-                case Trials:
-                case Gauntlet:
-                case Expedition:
-                    revivePositions.put(1, new Point(290, 315));
-                    revivePositions.put(2, new Point(200, 340));
-                    revivePositions.put(3, new Point(115, 285));
-                    break;
-                case Raid:
-                    revivePositions.put(1, new Point(305, 320));
-                    revivePositions.put(2, new Point(250, 345));
-                    revivePositions.put(3, new Point(200, 267));
-                    revivePositions.put(4, new Point(150, 325));
-                    revivePositions.put(5, new Point(90, 295));
-                    break;
-                default:
-                    break;
-            }
-
-            if ((bot.getState() == BHBot.State.Trials && bot.settings.autoRevive.contains("t")) ||
-                    (bot.getState() == BHBot.State.Gauntlet && bot.settings.autoRevive.contains("g")) ||
-                    (bot.getState() == BHBot.State.Raid && bot.settings.autoRevive.contains("r")) ||
-                    (bot.getState() == BHBot.State.Expedition && bot.settings.autoRevive.contains("e"))) {
-
-                // from char to potion name
-                HashMap<Character, String> potionTranslate = new HashMap<>();
-                potionTranslate.put('1', "Minor");
-                potionTranslate.put('2', "Average");
-                potionTranslate.put('3', "Major");
-
-                //for loop for each entry in revivePositions
-                for (Map.Entry<Integer, Point> item : revivePositions.entrySet()) {
-                    Integer slotNum = item.getKey();
-                    Point slotPos = item.getValue();
-
-                    //if we have reached potionLimit we exit autoRevive
-                    if (potionsUsed == bot.settings.potionLimit) {
-                        BHBot.logger.autorevive("Potion limit reached, exiting from Auto Revive");
-                        bot.browser.readScreen(Misc.Durations.SECOND);
-                        break;
-                    }
-
-                    //if position has been revived don't check it again
-                    if (revived[slotNum - 1]) continue;
-
-                    //check if there is a gravestone to see if we need to revive
-                    //we MouseOver to make sure the grave is in the foreground and not covered
-                    bot.browser.moveMouseToPos(slotPos.x, slotPos.y);
-                    if (MarvinSegment.fromCue(BHBot.cues.get("GravestoneHighlighted"), 3 * Misc.Durations.SECOND, bot.browser) == null)
-                        continue;
-
-                    // If we revive a team member we need to reopen the potion menu again
-                    seg = MarvinSegment.fromCue(BHBot.cues.get("UnitSelect"), Misc.Durations.SECOND, bot.browser);
-                    if (seg == null) {
-                        seg = MarvinSegment.fromCue(BHBot.cues.get("Potions"), Misc.Durations.SECOND * 2, bot.browser);
-                        if (seg != null) {
-                            bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(Misc.Durations.SECOND);
-
-                            // If no potions are needed, we re-enable the Auto function
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("NoPotions"), Misc.Durations.SECOND, bot.browser); // Everyone is Full HP
-                            if (seg != null) {
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Close"), Misc.Durations.SECOND, new Bounds(300, 330, 500, 400), bot.browser);
-                                if (seg != null) {
-                                    BHBot.logger.autorevive("None of the team members need a consumable, exiting from autoRevive");
-                                    bot.browser.clickOnSeg(seg);
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
-                                    bot.browser.clickOnSeg(seg);
-                                } else {
-                                    BHBot.logger.error("Error while reopening the potions menu: no close button found!");
-                                    bot.saveGameScreen("autorevive-no-potions-for-error", bot.browser.getImg());
-                                    restart();
-                                }
-                                return;
-                            }
-                        }
-                    }
-
-                    bot.browser.readScreen(Misc.Durations.SECOND);
-                    bot.browser.clickInGame(slotPos.x, slotPos.y);
-                    bot.browser.readScreen(Misc.Durations.SECOND);
-
-                    MarvinSegment superHealSeg = MarvinSegment.fromCue(BHBot.cues.get("SuperAvailable"), bot.browser);
-
-                    if (superHealSeg != null) {
-                        // If super potion is available, we skip it
-                        int superPotionMaxChecks = 10, superPotionCurrentCheck = 0;
-                        while (superPotionCurrentCheck < superPotionMaxChecks && MarvinSegment.fromCue(BHBot.cues.get("SuperAvailable"), bot.browser) != null) {
-                            bot.browser.clickInGame(656, 434);
-                            bot.browser.readScreen(500);
-                            superPotionCurrentCheck++;
-                        }
-                    }
-
-                    // We check what revives are available, and we save the seg for future reuse
-                    HashMap<Character, MarvinSegment> availablePotions = new HashMap<>();
-                    availablePotions.put('1', MarvinSegment.fromCue(BHBot.cues.get("MinorAvailable"), bot.browser));
-                    availablePotions.put('2', MarvinSegment.fromCue(BHBot.cues.get("AverageAvailable"), bot.browser));
-                    availablePotions.put('3', MarvinSegment.fromCue(BHBot.cues.get("MajorAvailable"), bot.browser));
-
-                    // No more potions are available
-                    if (availablePotions.get('1') == null && availablePotions.get('2') == null && availablePotions.get('3') == null) {
-                        BHBot.logger.warn("No potions are avilable, autoRevive well be temporary disabled!");
-                        bot.settings.autoRevive = new ArrayList<>();
-                        bot.scheduler.resetIdleTime(true);
-                        return;
-                    }
-
-                    // We manage tank priority using the best potion we have
-                    if (slotNum == (bot.settings.tankPosition) &&
-                            ((bot.getState() == BHBot.State.Trials && bot.settings.tankPriority.contains("t")) ||
-                                    (bot.getState() == BHBot.State.Gauntlet && bot.settings.tankPriority.contains("g")) ||
-                                    (bot.getState() == BHBot.State.Raid && bot.settings.tankPriority.contains("r")) ||
-                                    (bot.getState() == BHBot.State.Expedition && bot.settings.tankPriority.contains("e")))) {
-                        for (char potion : "321".toCharArray()) {
-                            seg = availablePotions.get(potion);
-                            if (seg != null) {
-                                BHBot.logger.autorevive("Handling tank priority (position: " + bot.settings.tankPosition + ") with " + potionTranslate.get(potion) + " revive.");
-                                bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), Misc.Durations.SECOND, new Bounds(230, 320, 550, 410), bot.browser);
-                                bot.browser.clickOnSeg(seg);
-                                revived[bot.settings.tankPosition - 1] = true;
-                                potionsUsed++;
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                bot.scheduler.resetIdleTime(true);
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!revived[slotNum - 1]) { // This is only false when tank priory kicks in
-                        for (char potion : bot.settings.potionOrder.toCharArray()) {
-                            // BHBot.logger.info("Checking potion " + potion);
-                            seg = availablePotions.get(potion);
-                            if (seg != null) {
-                                BHBot.logger.autorevive("Using " + potionTranslate.get(potion) + " revive on slot " + slotNum + ".");
-                                bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), Misc.Durations.SECOND, new Bounds(230, 320, 550, 410), bot.browser);
-                                bot.browser.clickOnSeg(seg);
-                                revived[slotNum - 1] = true;
-                                potionsUsed++;
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                bot.scheduler.resetIdleTime(true);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        } else { // Impossible to find the potions button
-            bot.saveGameScreen("auto-revive-no-potions");
-            BHBot.logger.autorevive("Impossible to find the potions button!");
-        }
-
-        // If the unit selection screen is still open, we need to close it
-        seg = MarvinSegment.fromCue(BHBot.cues.get("UnitSelect"), Misc.Durations.SECOND, bot.browser);
-        if (seg != null) {
-            seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-            if (seg != null) {
-                bot.browser.clickOnSeg(seg);
-                bot.browser.readScreen(Misc.Durations.SECOND);
-            }
-        }
-
-        inEncounterTimestamp = Misc.getTime() / 1000; //after reviving we update encounter timestamp as it wasn't updating from processDungeon
+        reviveManager.processAutoRevive();
 
         seg = MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
         if (seg != null) bot.browser.clickOnSeg(seg);
         bot.scheduler.resetIdleTime(true);
+
+        // after reviving we update encounter timestamp as it wasn't updating from processDungeon
+        inEncounterTimestamp = Misc.getTime() / 1000;
+
     }
 
     private void closeWorldBoss() {
@@ -5546,7 +5353,6 @@ public class DungeonThread implements Runnable {
     private void resetAppropriateTimers() {
         startTimeCheck = false;
         specialDungeon = false;
-        potionsUsed = 0;
 
         /*
             In this section we check if we are able to run the activity again and if so reset the timer to 0
@@ -5588,14 +5394,6 @@ public class DungeonThread implements Runnable {
         if (((globalTokens - bot.settings.costGauntlet) >= bot.settings.costGauntlet && bot.getState() == BHBot.State.Gauntlet)) {
             timeLastGauntletTokensCheck = 0;
         }
-    }
-
-    private void resetRevives() {
-        revived[0] = false;
-        revived[1] = false;
-        revived[2] = false;
-        revived[3] = false;
-        revived[4] = false;
     }
 
     private Bounds opponentSelector(int opponent) {
