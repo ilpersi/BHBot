@@ -121,7 +121,7 @@ public class BrowserManager {
 
         try {
             if (driver != null) {
-                driver.close();
+                // driver.close();
                 driver.quit();
             }
             driver = null;
