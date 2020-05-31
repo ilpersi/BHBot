@@ -75,6 +75,26 @@ public class NotificationManager {
                 }
             }
 
+            // Notify level for T/G
+            if (bot.dungeon.counters.get(BHBot.State.Trials).getTotal() > 0 ||
+                    bot.dungeon.counters.get(BHBot.State.Gauntlet).getTotal() > 0) {
+                aliveMsg.append("\n");
+
+                // We append trial level if we did at least one trial
+                if (bot.dungeon.counters.get(BHBot.State.Trials).getTotal() > 0) {
+                    aliveMsg.append("Trial Level: ")
+                        .append(bot.settings.difficultyTrials)
+                        .append("\n");
+                }
+
+                // We append gauntlet level if we did at least one trial
+                if (bot.dungeon.counters.get(BHBot.State.Gauntlet).getTotal() > 0) {
+                    aliveMsg.append("Ganutlet Level: ")
+                            .append(bot.settings.difficultyGauntlet)
+                            .append("\n");
+                }
+            }
+
             if ((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * Misc.Durations.HOUR) && timeLastPOAlive != 0) {
                 timeLastPOAlive = Misc.getTime();
                 poManager.sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
