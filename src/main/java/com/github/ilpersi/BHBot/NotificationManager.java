@@ -89,7 +89,7 @@ public class NotificationManager {
 
                 // We append gauntlet level if we did at least one trial
                 if (bot.dungeon.counters.get(BHBot.State.Gauntlet).getTotal() > 0) {
-                    aliveMsg.append("Ganutlet Level: ")
+                    aliveMsg.append("Gauntlet Level: ")
                             .append(bot.settings.difficultyGauntlet)
                             .append("\n");
                 }
