@@ -4492,7 +4492,7 @@ public class DungeonThread implements Runnable {
             bot.browser.closePopupSecurely(BHBot.cues.get("NotEnoughEnergy"), BHBot.cues.get("No"));
 
 
-            if (bot.getState().equals(BHBot.State.WorldBoss)) {
+            if (state.equals(BHBot.State.WorldBoss)) {
                 bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossSummonTitle"), BHBot.cues.get("X"));
 
                 bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossTitle"), BHBot.cues.get("X"));
