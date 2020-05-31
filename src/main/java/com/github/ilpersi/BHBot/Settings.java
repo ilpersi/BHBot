@@ -240,7 +240,6 @@ public class Settings {
 
     public Settings() {
         activitiesEnabled = new LinkedHashSet<>();
-        setactivitiesEnabledFromString("r d t g p e i v"); // some default values
         screenshots = new LinkedHashSet<>();
         setScreenshotsFromString("w d f b dg wg fe"); // enabled all by default
         worldBossSettings = new ArrayList<>();
