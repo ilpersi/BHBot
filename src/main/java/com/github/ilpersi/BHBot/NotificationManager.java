@@ -63,6 +63,7 @@ public class NotificationManager {
             File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
 
             StringBuilder aliveMsg = new StringBuilder();
+            StringBuilder usedPotionsMsg;
             aliveMsg.append("I am alive and doing fine since ")
                     .append(Misc.millisToHumanForm(Misc.getTime() - bot.botStartTime))
                     .append("!\n\n");
@@ -71,6 +72,31 @@ public class NotificationManager {
                 if (bot.dungeon.counters.get(state).getTotal() > 0) {
                     aliveMsg.append(state.getName()).append(" ")
                             .append(bot.dungeon.counters.get(state).successRateDesc())
+                            .append("\n");
+                }
+            }
+
+            // We notify the used potions
+            aliveMsg.append("\n");
+            for (AutoReviveManager.PotionType pt : AutoReviveManager.PotionType.values()) {
+                usedPotionsMsg  = new StringBuilder();
+                usedPotionsMsg.append(pt.toString())
+                        .append(" revive potion used: ");
+                // We save the initial len
+                int usedPotionInitLen = usedPotionsMsg.length();
+
+                for (BHBot.State state : BHBot.State.values()) {
+                    Integer tmpUsedPotion = bot.dungeon.reviveManager.getCounter(pt, state);
+                    if (tmpUsedPotion > 0) {
+                        if (usedPotionsMsg.length() > usedPotionInitLen) usedPotionsMsg.append(" ");
+                        usedPotionsMsg.append(state.getShortcut())
+                                .append(":")
+                                .append(tmpUsedPotion);
+                    }
+                }
+
+                if (usedPotionsMsg.length() > usedPotionInitLen) {
+                    aliveMsg.append(usedPotionsMsg)
                             .append("\n");
                 }
             }
