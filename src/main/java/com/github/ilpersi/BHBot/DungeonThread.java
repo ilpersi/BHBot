@@ -2032,11 +2032,15 @@ public class DungeonThread implements Runnable {
             MarvinSegment seg = MarvinSegment.fromCue(runeCue, 0, new Bounds(230, 245, 320, 330), bot.browser);
             if (seg != null)
                 leftMinorRune = rune;
+            else
+                BHBot.logger.warn("Impossible to detect left minor rune!");
 
             // right rune
             seg = MarvinSegment.fromCue(runeCue, 0, new Bounds(480, 245, 565, 330), bot.browser);
             if (seg != null)
                 rightMinorRune = rune;
+            else
+                BHBot.logger.warn("Impossible to detect right minor rune!");
 
         }
 
