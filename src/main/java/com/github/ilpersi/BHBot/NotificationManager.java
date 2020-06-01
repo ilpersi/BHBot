@@ -77,7 +77,6 @@ public class NotificationManager {
             }
 
             // We notify the used potions
-            aliveMsg.append("\n");
             for (AutoReviveManager.PotionType pt : AutoReviveManager.PotionType.values()) {
                 usedPotionsMsg  = new StringBuilder();
                 usedPotionsMsg.append(pt.toString())
@@ -96,7 +95,8 @@ public class NotificationManager {
                 }
 
                 if (usedPotionsMsg.length() > usedPotionInitLen) {
-                    aliveMsg.append(usedPotionsMsg)
+                    aliveMsg.append("\n")
+                            .append(usedPotionsMsg)
                             .append("\n");
                 }
             }
