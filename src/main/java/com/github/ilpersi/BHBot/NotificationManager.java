@@ -63,7 +63,6 @@ public class NotificationManager {
             File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
 
             StringBuilder aliveMsg = new StringBuilder();
-            StringBuilder usedPotionsMsg;
             aliveMsg.append("I am alive and doing fine since ")
                     .append(Misc.millisToHumanForm(Misc.getTime() - bot.botStartTime))
                     .append("!\n\n");
@@ -77,35 +76,43 @@ public class NotificationManager {
             }
 
             // We notify the used potions
+            StringBuilder usedPotionsMsg = new StringBuilder();
             for (AutoReviveManager.PotionType pt : AutoReviveManager.PotionType.values()) {
-                usedPotionsMsg  = new StringBuilder();
-                usedPotionsMsg.append(pt.toString())
+                // For each potion type we have a message
+                StringBuilder potionTypeMsg  = new StringBuilder();
+                potionTypeMsg.append(pt.toString())
                         .append(" revive potion used: ");
-                // We save the initial len
-                int usedPotionInitLen = usedPotionsMsg.length();
 
+                // We save the initial len
+                int ptMsgInitLen = potionTypeMsg.length();
+
+                // We loop on the used potions in dungeons
                 for (BHBot.State state : BHBot.State.values()) {
                     Integer tmpUsedPotion = bot.dungeon.reviveManager.getCounter(pt, state);
                     if (tmpUsedPotion > 0) {
-                        if (usedPotionsMsg.length() > usedPotionInitLen) usedPotionsMsg.append(" ");
-                        usedPotionsMsg.append(state.getShortcut())
+                        if (potionTypeMsg.length() > ptMsgInitLen) potionTypeMsg.append(" ");
+                        potionTypeMsg.append(state.getShortcut())
                                 .append(":")
                                 .append(tmpUsedPotion);
                     }
                 }
 
-                if (usedPotionsMsg.length() > usedPotionInitLen) {
-                    aliveMsg.append("\n")
-                            .append(usedPotionsMsg)
+                // If a type has been ued in one or more dungeon we append it to the dedicated StringBuilder
+                if (potionTypeMsg.length() > ptMsgInitLen) {
+                    usedPotionsMsg.append(potionTypeMsg)
                             .append("\n");
                 }
+            }
+            if (usedPotionsMsg.length() > 0) {
+                aliveMsg.append("\n")
+                        .append(usedPotionsMsg);
             }
 
             // Notify level for T/G
             if (bot.dungeon.counters.get(BHBot.State.Trials).getTotal() > 0 ||
                     bot.dungeon.counters.get(BHBot.State.Gauntlet).getTotal() > 0) {
-                aliveMsg.append("\n");
 
+                aliveMsg.append("\n");
                 // We append trial level if we did at least one trial
                 if (bot.dungeon.counters.get(BHBot.State.Trials).getTotal() > 0) {
                     aliveMsg.append("Trial Level: ")
@@ -120,6 +127,7 @@ public class NotificationManager {
                             .append("\n");
                 }
             }
+            aliveMsg.append("\n");
 
             if ((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * Misc.Durations.HOUR) && timeLastPOAlive != 0) {
                 timeLastPOAlive = Misc.getTime();
