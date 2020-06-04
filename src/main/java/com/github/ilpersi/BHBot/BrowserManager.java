@@ -275,10 +275,10 @@ public class BrowserManager {
 
     synchronized BufferedImage takeScreenshot(boolean ofGame) {
 
-        // we scroll the window to the game element
-        jsExecutor.executeScript("arguments[0].scrollIntoView(true);", game);
 
         try {
+            // we scroll the window to the game element
+            jsExecutor.executeScript("arguments[0].scrollIntoView(true);", game);
 
             // we read the image as a byte array and later convert it to a BufferedImage
             byte[] imgBytes = ((TakesScreenshot)driver).getScreenshotAs(OutputType.BYTES);
