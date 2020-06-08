@@ -510,7 +510,8 @@ public class DungeonThread implements Runnable {
                             bot.browser.clickOnSeg(seg);
                             bot.browser.readScreen(2 * Misc.Durations.SECOND);
                             seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
-                            bot.browser.clickOnSeg(seg);
+                            //bot.browser.clickOnSeg(seg);
+                            bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
                             bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                             if (handleTeamMalformedWarning()) {
@@ -719,7 +720,8 @@ public class DungeonThread implements Runnable {
                             detectCharacterDialogAndHandleIt();
 
                             seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
-                            bot.browser.clickOnSeg(seg);
+                            //bot.browser.clickOnSeg(seg);
+                            bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
                             bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                             // This is a Bit Heroes bug!
@@ -884,7 +886,8 @@ public class DungeonThread implements Runnable {
 
                             bot.browser.readScreen();
                             seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), Misc.Durations.SECOND * 2, bot.browser);
-                            bot.browser.clickOnSeg(seg);
+                            bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
+                            //bot.browser.clickOnSeg(seg);
 
                             if (goalZone <= bot.settings.minSolo) {
                                 bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for dropdown animation to finish
@@ -1012,7 +1015,8 @@ public class DungeonThread implements Runnable {
                                 restart();
                                 continue;
                             }
-                            bot.browser.clickOnSeg(seg);
+                            bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
+                            //bot.browser.clickOnSeg(seg);
 
                             if (handleTeamMalformedWarning()) {
                                 BHBot.logger.error("Team incomplete, doing emergency restart..");
@@ -1192,7 +1196,8 @@ public class DungeonThread implements Runnable {
                                     restart();
                                     continue;
                                 }
-                                bot.browser.clickOnSeg(seg);
+                                //bot.browser.clickOnSeg(seg);
+                                bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
                                 Misc.sleep(Misc.Durations.SECOND);
 
                                 if (handleTeamMalformedWarning()) {
@@ -1274,7 +1279,8 @@ public class DungeonThread implements Runnable {
                                     restart();
                                     continue;
                                 }
-                                bot.browser.clickOnSeg(seg);
+                                //bot.browser.clickOnSeg(seg);
+                                bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
                                 Misc.sleep(2 * Misc.Durations.SECOND);
 
                                 if (handleTeamMalformedWarning()) {
@@ -1493,7 +1499,8 @@ public class DungeonThread implements Runnable {
                                 //click enter
                                 seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 3 * Misc.Durations.SECOND, bot.browser);
                                 if (seg != null) {
-                                    bot.browser.clickOnSeg(seg);
+                                    //bot.browser.clickOnSeg(seg);
+                                    bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
                                 } else {
                                     BHBot.logger.error("No accept button for expedition team!");
                                     bot.saveGameScreen("expedtion-no-accept", "errors");
@@ -4238,7 +4245,8 @@ public class DungeonThread implements Runnable {
 
             bot.notificationManager.notifyError("Team auto assigned", message);
 
-            bot.browser.clickOnSeg(seg);
+            //bot.browser.clickOnSeg(seg);
+            bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
 
             BHBot.logger.info(message);
         }
