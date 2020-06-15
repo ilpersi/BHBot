@@ -21,7 +21,7 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Screenshots**
-If applicable, add screenshots to help explain your problem.
+Usually, when there is a problem or a crash, the game creates a screenshot of it in the `/screenshots` make sure to attach it and, if applicable, add other screenshots to help explain your problem.
 
 **Settings**
 Please attach a copy of your settings.ini file. Make sure to remove personal/sensitive information
@@ -29,7 +29,7 @@ Please attach a copy of your settings.ini file. Make sure to remove personal/sen
 **Desktop (please complete the following information):**
  - OS: [e.g. Windows]
  - Browser [e.g. Chrome, Chromium]
- - Version [e.g. v36] (use the `print version` command to get the exact version of BHBot)
+ - Version [e.g. v45] (use the `print version` command to get the exact version of BHBot)
 
 **Additional context**
 Add any other context about the problem here.
