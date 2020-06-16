@@ -34,7 +34,6 @@ public class BrowserManager {
     private JavascriptExecutor jsExecutor;
     private WebElement game;
     private String doNotShareUrl = "";
-    private final String standardURL = "http://www.kongregate.com/games/Juppiomenz/bit-heroes";
 
     private BufferedImage img; // latest screen capture
     private final BHBot bot;
@@ -50,7 +49,7 @@ public class BrowserManager {
         return !"".equals(doNotShareUrl);
     }
 
-    private synchronized void connect() throws MalformedURLException {
+    private synchronized void connect()  {
         ChromeOptions options = new ChromeOptions();
 
         // will create this profile folder where chromedriver.exe is located!
@@ -98,7 +97,13 @@ public class BrowserManager {
             driver = new ChromeDriver(options);
             caps = ((ChromeDriver) driver).getCapabilities();
         } else {
-            driver = new RemoteWebDriver(new URL("http://" + bot.chromeDriverAddress), capabilities);
+            URL driverAddress = null;
+            try {
+                driverAddress = new URL("http://" + bot.chromeDriverAddress);
+            } catch (MalformedURLException e) {
+                BHBot.logger.error("Malformed URL when connecting to Web driver: ", e);
+            }
+            driver = new RemoteWebDriver(driverAddress, capabilities);
             caps = ((RemoteWebDriver) driver).getCapabilities();
         }
         jsExecutor = (JavascriptExecutor) driver;
@@ -106,7 +111,7 @@ public class BrowserManager {
 
     }
 
-    synchronized void restart(boolean useDoNotShareUrl) throws MalformedURLException {
+    synchronized void restart(boolean useDoNotShareUrl) {
         if (useDoNotShareUrl) {
             Pattern regex = Pattern.compile("\"(https://.+?\\?DO_NOT_SHARE_THIS_LINK[^\"]+?)\"");
             for (LogEntry le : driver.manage().logs().get(LogType.PERFORMANCE)) {
@@ -136,6 +141,7 @@ public class BrowserManager {
         if (bot.settings.hideWindowOnRestart)
             hideBrowser();
         if ("".equals(doNotShareUrl)) {
+            String standardURL = "http://www.kongregate.com/games/Juppiomenz/bit-heroes";
             if (!standardURL.equals(driver.getCurrentUrl())) driver.navigate().to(standardURL);
             byElement = By.id("game");
         } else {
@@ -331,6 +337,10 @@ public class BrowserManager {
         } catch (RasterFormatException e) {
             jsExecutor.executeScript("arguments[0].scrollIntoView(true);", game);
             throw e;
+        } catch (RuntimeException e) {
+            BHBot.logger.error("Runtime error when taking screenshot: ", e);
+            restart(false);
+            return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
         }
     }
 
