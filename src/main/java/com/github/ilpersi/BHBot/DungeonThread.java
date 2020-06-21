@@ -5535,7 +5535,7 @@ public class DungeonThread implements Runnable {
         BufferedImage victoryPopUpImg = bot.browser.getImg();
         boolean itemFound = false;
 
-        if (bot.settings.enablePushover) {
+        if (bot.notificationManager.shouldNotify()) {
             bot.browser.readScreen();
             String droppedItemMessage;
             String tierName = "";
