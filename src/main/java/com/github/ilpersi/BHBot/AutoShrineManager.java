@@ -85,12 +85,12 @@ public class AutoShrineManager {
                 bot.browser.clickOnSeg(autoSeg);
             } else {
                 BHBot.logger.error("Impossible to find Auto Off button");
-                bot.notificationManager.notifyError("Auto Shrine Error", "Impossible to find Auto Off button");
+                bot.notificationManager.sendErrorNotification("Auto Shrine Error", "Impossible to find Auto Off button");
             }
 
         } else {
             BHBot.logger.error("Impossible to find Auto On button!");
-            bot.notificationManager.notifyError("Auto Shrine Error", "Impossible to find Auto On button");
+            bot.notificationManager.sendErrorNotification("Auto Shrine Error", "Impossible to find Auto On button");
         }
     }
 

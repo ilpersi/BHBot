@@ -26,7 +26,7 @@ public class NotificationManager {
         this.timeLastDiscordAlive = 0;
     }
 
-    void notifyStartUp() {
+    void sendStartUpnotification() {
 
         // We check if Pushover or Discord require a startup notification
         if ((bot.settings.enablePushover && bot.settings.poNotifyAlive > 0 && timeLastPOAlive == 0) ||
@@ -53,101 +53,104 @@ public class NotificationManager {
         }
     }
 
-    void notifyAlive() {
+    void sendAliveNotification() {
 
         // periodic notification
-        if (((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * Misc.Durations.HOUR)) && timeLastPOAlive != 0 ||
-                ((Misc.getTime() - timeLastDiscordAlive) > (bot.settings.discordNotifyAlive * Misc.Durations.HOUR)) && timeLastDiscordAlive != 0 ) {
+        if (shouldNotify ()) {
+            if (((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * Misc.Durations.HOUR)) && timeLastPOAlive != 0 ||
+                    ((Misc.getTime() - timeLastDiscordAlive) > (bot.settings.discordNotifyAlive * Misc.Durations.HOUR)) && timeLastDiscordAlive != 0 ) {
 
-            String aliveScreenName = bot.saveGameScreen("alive-screen");
-            File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
+                String aliveScreenName = bot.saveGameScreen("alive-screen");
+                File aliveScreenFile = aliveScreenName != null ? new File(aliveScreenName) : null;
 
-            StringBuilder aliveMsg = new StringBuilder();
-            aliveMsg.append("I am alive and doing fine since ")
-                    .append(Misc.millisToHumanForm(Misc.getTime() - bot.botStartTime))
-                    .append("!\n\n");
+                StringBuilder aliveMsg = new StringBuilder();
+                aliveMsg.append("I am alive and doing fine since ")
+                        .append(Misc.millisToHumanForm(Misc.getTime() - bot.botStartTime))
+                        .append("!\n\n");
 
-            for (BHBot.State state : BHBot.State.values()) {
-                if (bot.dungeon.counters.get(state).getTotal() > 0) {
-                    aliveMsg.append(state.getName()).append(" ")
-                            .append(bot.dungeon.counters.get(state).successRateDesc())
-                            .append("\n");
-                }
-            }
-
-            // We notify the used potions
-            StringBuilder usedPotionsMsg = new StringBuilder();
-            for (AutoReviveManager.PotionType pt : AutoReviveManager.PotionType.values()) {
-                // For each potion type we have a message
-                StringBuilder potionTypeMsg  = new StringBuilder();
-                potionTypeMsg.append(pt.toString())
-                        .append(" revive potion used: ");
-
-                // We save the initial len
-                int ptMsgInitLen = potionTypeMsg.length();
-
-                // We loop on the used potions in dungeons
                 for (BHBot.State state : BHBot.State.values()) {
-                    Integer tmpUsedPotion = bot.dungeon.reviveManager.getCounter(pt, state);
-                    if (tmpUsedPotion > 0) {
-                        if (potionTypeMsg.length() > ptMsgInitLen) potionTypeMsg.append(" ");
-                        potionTypeMsg.append(state.getShortcut())
-                                .append(":")
-                                .append(tmpUsedPotion);
+                    if (bot.dungeon.counters.get(state).getTotal() > 0) {
+                        aliveMsg.append(state.getName()).append(" ")
+                                .append(bot.dungeon.counters.get(state).successRateDesc())
+                                .append("\n");
                     }
                 }
 
-                // If a type has been ued in one or more dungeon we append it to the dedicated StringBuilder
-                if (potionTypeMsg.length() > ptMsgInitLen) {
-                    usedPotionsMsg.append(potionTypeMsg)
-                            .append("\n");
+                // We notify the used potions
+                StringBuilder usedPotionsMsg = new StringBuilder();
+                for (AutoReviveManager.PotionType pt : AutoReviveManager.PotionType.values()) {
+                    // For each potion type we have a message
+                    StringBuilder potionTypeMsg  = new StringBuilder();
+                    potionTypeMsg.append(pt.toString())
+                            .append(" revive potion used: ");
+
+                    // We save the initial len
+                    int ptMsgInitLen = potionTypeMsg.length();
+
+                    // We loop on the used potions in dungeons
+                    for (BHBot.State state : BHBot.State.values()) {
+                        Integer tmpUsedPotion = bot.dungeon.reviveManager.getCounter(pt, state);
+                        if (tmpUsedPotion > 0) {
+                            if (potionTypeMsg.length() > ptMsgInitLen) potionTypeMsg.append(" ");
+                            potionTypeMsg.append(state.getShortcut())
+                                    .append(":")
+                                    .append(tmpUsedPotion);
+                        }
+                    }
+
+                    // If a type has been ued in one or more dungeon we append it to the dedicated StringBuilder
+                    if (potionTypeMsg.length() > ptMsgInitLen) {
+                        usedPotionsMsg.append(potionTypeMsg)
+                                .append("\n");
+                    }
                 }
-            }
-            if (usedPotionsMsg.length() > 0) {
-                aliveMsg.append("\n")
-                        .append(usedPotionsMsg);
-            }
+                if (usedPotionsMsg.length() > 0) {
+                    aliveMsg.append("\n")
+                            .append(usedPotionsMsg);
+                }
 
-            // Notify level for T/G
-            if (bot.dungeon.counters.get(BHBot.State.Trials).getTotal() > 0 ||
-                    bot.dungeon.counters.get(BHBot.State.Gauntlet).getTotal() > 0) {
+                // Notify level for T/G
+                if (bot.dungeon.counters.get(BHBot.State.Trials).getTotal() > 0 ||
+                        bot.dungeon.counters.get(BHBot.State.Gauntlet).getTotal() > 0) {
 
+                    aliveMsg.append("\n");
+                    // We append trial level if we did at least one trial
+                    if (bot.dungeon.counters.get(BHBot.State.Trials).getTotal() > 0) {
+                        aliveMsg.append("Trial Level: ")
+                            .append(bot.settings.difficultyTrials)
+                            .append("\n");
+                    }
+
+                    // We append gauntlet level if we did at least one trial
+                    if (bot.dungeon.counters.get(BHBot.State.Gauntlet).getTotal() > 0) {
+                        aliveMsg.append("Gauntlet Level: ")
+                                .append(bot.settings.difficultyGauntlet)
+                                .append("\n");
+                    }
+                }
                 aliveMsg.append("\n");
-                // We append trial level if we did at least one trial
-                if (bot.dungeon.counters.get(BHBot.State.Trials).getTotal() > 0) {
-                    aliveMsg.append("Trial Level: ")
-                        .append(bot.settings.difficultyTrials)
-                        .append("\n");
+
+                if ((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * Misc.Durations.HOUR) && timeLastPOAlive != 0) {
+                    timeLastPOAlive = Misc.getTime();
+                    poManager.sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
                 }
 
-                // We append gauntlet level if we did at least one trial
-                if (bot.dungeon.counters.get(BHBot.State.Gauntlet).getTotal() > 0) {
-                    aliveMsg.append("Gauntlet Level: ")
-                            .append(bot.settings.difficultyGauntlet)
-                            .append("\n");
+                if ((Misc.getTime() - timeLastDiscordAlive) > (bot.settings.discordNotifyAlive * Misc.Durations.HOUR) && timeLastDiscordAlive != 0) {
+                    timeLastDiscordAlive = Misc.getTime();
+                    discordManager.sendDiscordMessage(aliveMsg.toString(), aliveScreenFile);
                 }
-            }
-            aliveMsg.append("\n");
 
-            if ((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * Misc.Durations.HOUR) && timeLastPOAlive != 0) {
-                timeLastPOAlive = Misc.getTime();
-                poManager.sendPushOverMessage("Alive notification", aliveMsg.toString(), MessagePriority.QUIET, aliveScreenFile);
+                if (aliveScreenFile != null && !aliveScreenFile.delete())
+                    BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
             }
-
-            if ((Misc.getTime() - timeLastDiscordAlive) > (bot.settings.discordNotifyAlive * Misc.Durations.HOUR) && timeLastDiscordAlive != 0) {
-                timeLastDiscordAlive = Misc.getTime();
-                discordManager.sendDiscordMessage(aliveMsg.toString(), aliveScreenFile);
-            }
-
-            if (aliveScreenFile != null && !aliveScreenFile.delete())
-                BHBot.logger.warn("Impossible to delete tmp img for alive notification.");
         }
 
     }
 
-    void notifyCrash(String crashMsg, String crashPrintScreenPath) {
+    void sendCrashNotification(String crashMsg, String crashPrintScreenPath) {
 
-        if ((bot.settings.enablePushover && bot.settings.poNotifyCrash) || (bot.settings.enableDiscord && bot.settings.discordNotifyCrash)) {
+        if ((bot.settings.enablePushover && bot.settings.poNotifyCrash) ||
+                (bot.settings.enableDiscord && bot.settings.discordNotifyCrash)) {
 
             File crashPrintScreen = new File(crashPrintScreenPath);
             boolean crashScreenExists = crashPrintScreen.exists();
@@ -164,7 +167,7 @@ public class NotificationManager {
 
     }
 
-    void notifyError(String errorTitle, String errorMsg) {
+    void sendErrorNotification(String errorTitle, String errorMsg) {
         if ((bot.settings.enablePushover && bot.settings.poNotifyErrors) ||
                 (bot.settings.enableDiscord && bot.settings.discordNotifyErrors)) {
 
@@ -185,7 +188,7 @@ public class NotificationManager {
         }
     }
 
-    void notifyPM(String pmScreenPath) {
+    void sendPMNotification(String pmScreenPath) {
 
         if ((bot.settings.enablePushover && bot.settings.poNotifyPM) ||
                 (bot.settings.enableDiscord && bot.settings.discordNotifyPM)) {
@@ -206,7 +209,7 @@ public class NotificationManager {
 
     }
 
-    void notifyBribe(BufferedImage bribeImg) {
+    void sendBribeNotification(BufferedImage bribeImg) {
         if ((bot.settings.enablePushover && bot.settings.poNotifyBribe) ||
                 (bot.settings.enableDiscord && bot.settings.discordNotifyBribe)) {
 
@@ -229,7 +232,7 @@ public class NotificationManager {
         }
     }
 
-    void notifyDrop(String dropTitle, String dropMsg, BufferedImage dropScreenImg) {
+    void sendDropNotification(String dropTitle, String dropMsg, BufferedImage dropScreenImg) {
         String victoryScreenName = bot.saveGameScreen("victory-screen", dropScreenImg);
         File victoryScreenFile = victoryScreenName != null ? new File(victoryScreenName) : null;
 
@@ -240,8 +243,8 @@ public class NotificationManager {
             BHBot.logger.warn("Impossible to delete tmp img file for victory drop.");
     }
 
-    void testNotification(String testNotificationMsg) {
-        if (bot.settings.enablePushover || bot.settings.enableDiscord) {
+    void sendTestNotification(String testNotificationMsg) {
+        if (shouldNotify ()) {
             String testScreenName = bot.saveGameScreen("test-notification");
             File testScreenFile = testScreenName != null ? new File(testScreenName) : null;
 
@@ -269,6 +272,10 @@ public class NotificationManager {
             if (testScreenFile != null && !testScreenFile.delete())
                 BHBot.logger.warn("Impossible to delete tmp img for pomessage command.");
         }
+    }
+
+    boolean shouldNotify () {
+        return bot.settings.enablePushover || bot.settings.enableDiscord;
     }
 
 }

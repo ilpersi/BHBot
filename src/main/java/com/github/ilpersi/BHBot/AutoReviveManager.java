@@ -198,7 +198,7 @@ public class AutoReviveManager {
                         bot.settings.autoRevive = new ArrayList<>();
                         bot.scheduler.resetIdleTime(true);
 
-                        bot.notificationManager.notifyError("AutoRevive Error", "No more potions are available, please restock them!");
+                        bot.notificationManager.sendErrorNotification("AutoRevive Error", "No more potions are available, please restock them!");
                         return;
                     }
 

@@ -281,7 +281,7 @@ public class DungeonThread implements Runnable {
                         }
                     }
 
-                    bot.notificationManager.notifyError("Idle timer exceeded", "Idle time exceeded while state = " + bot.getState());
+                    bot.notificationManager.sendErrorNotification("Idle timer exceeded", "Idle time exceeded while state = " + bot.getState());
 
                     restart();
                     continue;
@@ -326,7 +326,7 @@ public class DungeonThread implements Runnable {
 
                     bot.setState(BHBot.State.Main);
 
-                    bot.notificationManager.notifyStartUp();
+                    bot.notificationManager.sendStartUpnotification();
 
                     // weekly gem screenshot every Sunday and after or after a week the bot is running.
                     if (bot.settings.screenshots.contains("wg")) {
@@ -479,7 +479,7 @@ public class DungeonThread implements Runnable {
                             if (raid == null) {
                                 bot.settings.activitiesEnabled.remove("r");
                                 BHBot.logger.error("It was impossible to choose a raid randomly, raids are disabled!");
-                                bot.notificationManager.notifyError("Raid Error", "It was impossible to choose a raid randomly, raids are disabled!");
+                                bot.notificationManager.sendErrorNotification("Raid Error", "It was impossible to choose a raid randomly, raids are disabled!");
 
                                 continue;
                             }
@@ -664,7 +664,7 @@ public class DungeonThread implements Runnable {
                                     tryClosingWindow(BHBot.cues.get("DifficultyDropDown"));
                                     bot.browser.readScreen(5 * Misc.Durations.SECOND);
                                     BHBot.logger.warn("Unable to change difficulty, usually because desired level is not unlocked. Running " + (trials ? "trials" : "gauntlet") + " at " + difficulty + ".");
-                                    bot.notificationManager.notifyError("T/G Error", "Unable to change " + (trials ? "trials" : "gauntlet") + " difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.");
+                                    bot.notificationManager.sendErrorNotification("T/G Error", "Unable to change " + (trials ? "trials" : "gauntlet") + " difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.");
 
                                     // We update the setting file with the old difficulty level
                                     String settingName = trials ? "difficultyTrials": "difficultyGauntlet";
@@ -802,14 +802,14 @@ public class DungeonThread implements Runnable {
                             if (dungeon == null) {
                                 bot.settings.activitiesEnabled.remove("d");
                                 BHBot.logger.error("It was impossible to choose a dungeon randomly, dungeons are disabled!");
-                                bot.notificationManager.notifyError("Dungeon error", "It was impossible to choose a dungeon randomly, dungeons are disabled!");
+                                bot.notificationManager.sendErrorNotification("Dungeon error", "It was impossible to choose a dungeon randomly, dungeons are disabled!");
                                 continue;
                             }
 
                             Matcher dungeonMatcher = dungeonRegex.matcher(dungeon.toLowerCase());
                             if (!dungeonMatcher.find()) {
                                 BHBot.logger.error("Wrong format in dungeon detected: " + dungeon + "! It will be skipped...");
-                                bot.notificationManager.notifyError("Dungeon error", "Wrong dungeon format detected: " + dungeon);
+                                bot.notificationManager.sendErrorNotification("Dungeon error", "Wrong dungeon format detected: " + dungeon);
                                 continue;
                             }
 
@@ -851,7 +851,7 @@ public class DungeonThread implements Runnable {
                             if (p == null) {
                                 bot.settings.activitiesEnabled.remove("d");
                                 BHBot.logger.error("It was impossible to get icon position of dungeon z" + goalZone + "d" + goalDungeon + ". Dungeons are now disabled!");
-                                bot.notificationManager.notifyError("Dungeon error", "It was impossible to get icon position of dungeon z" + goalZone + "d" + goalDungeon + ". Dungeons are now disabled!");
+                                bot.notificationManager.sendErrorNotification("Dungeon error", "It was impossible to get icon position of dungeon z" + goalZone + "d" + goalDungeon + ". Dungeons are now disabled!");
                                 continue;
                             }
 
@@ -1387,7 +1387,7 @@ public class DungeonThread implements Runnable {
                                 if (randomExpedition == null) {
                                     bot.settings.activitiesEnabled.remove("e");
                                     BHBot.logger.error("It was impossible to randomly choose an expedition. Expeditions are disabled.");
-                                    bot.notificationManager.notifyError("Expedition error", "It was impossible to randomly choose an expedition. Expeditions are disabled.");
+                                    bot.notificationManager.sendErrorNotification("Expedition error", "It was impossible to randomly choose an expedition. Expeditions are disabled.");
                                     continue;
                                 }
 
@@ -1422,7 +1422,7 @@ public class DungeonThread implements Runnable {
                                 } else {
                                     bot.settings.activitiesEnabled.remove("e");
                                     BHBot.logger.error("It was impossible to get the current expedition type!");
-                                    bot.notificationManager.notifyError("Expedition error", "It was impossible to get the current expedition type. Expeditions are now disabled!");
+                                    bot.notificationManager.sendErrorNotification("Expedition error", "It was impossible to get the current expedition type. Expeditions are now disabled!");
 
                                     bot.browser.readScreen();
                                     seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
@@ -1443,7 +1443,7 @@ public class DungeonThread implements Runnable {
                                 if (p == null) {
                                     bot.settings.activitiesEnabled.remove("e");
                                     BHBot.logger.error("It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!");
-                                    bot.notificationManager.notifyError("Expedition error", "It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!");
+                                    bot.notificationManager.sendErrorNotification("Expedition error", "It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!");
 
                                     bot.browser.readScreen();
                                     seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
@@ -1476,7 +1476,7 @@ public class DungeonThread implements Runnable {
                                         tryClosingWindow(BHBot.cues.get("DifficultyDropDown"));
                                         bot.browser.readScreen(5 * Misc.Durations.SECOND);
                                         BHBot.logger.warn("Unable to change difficulty, usually because desired level is not unlocked. Running Expedition at " + difficulty + ".");
-                                        bot.notificationManager.notifyError("Expedition Error", "Unable to change expedtion difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.");
+                                        bot.notificationManager.sendErrorNotification("Expedition Error", "Unable to change expedtion difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.");
 
                                         // We update the file with the old difficulty level
                                         String original = expeditionFailsafePortal + " " + targetDifficulty;
@@ -1606,7 +1606,7 @@ public class DungeonThread implements Runnable {
                                 BHBot.logger.error("Impossible to find blue summon in world boss.");
 
                                 bot.saveGameScreen("wb-no-blue-summon", "errors");
-                                bot.notificationManager.notifyError("World Boss error", "Impossible to find blue summon.");
+                                bot.notificationManager.sendErrorNotification("World Boss error", "Impossible to find blue summon.");
 
                                 bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossTitle"), BHBot.cues.get("X"));
                                 continue;
@@ -2985,7 +2985,7 @@ public class DungeonThread implements Runnable {
             if (seg == null) {
                 BHBot.logger.error("Open button not found, restarting");
                 bot.saveGameScreen("skeleton-treasure-no-open");
-                bot.notificationManager.notifyError("Treasure chest error", "Skeleton Chest gump without OPEN button");
+                bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without OPEN button");
                 return true;
             }
             bot.browser.clickOnSeg(seg);
@@ -2994,7 +2994,7 @@ public class DungeonThread implements Runnable {
             if (seg == null) {
                 BHBot.logger.error("Yes button not found, restarting");
                 bot.saveGameScreen("skeleton-treasure-no-yes");
-                bot.notificationManager.notifyError("Treasure chest error", "Skeleton Chest gump without YES button");
+                bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without YES button");
                 return true;
             }
             bot.browser.clickOnSeg(seg);
@@ -3006,7 +3006,7 @@ public class DungeonThread implements Runnable {
             if (seg == null) {
                 BHBot.logger.error("Open button not found, restarting");
                 bot.saveGameScreen("skeleton-treasure-no-open");
-                bot.notificationManager.notifyError("Treasure chest error", "Skeleton Chest gump without OPEN button");
+                bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without OPEN button");
                 return true;
             }
             bot.browser.clickOnSeg(seg);
@@ -3015,7 +3015,7 @@ public class DungeonThread implements Runnable {
             if (seg == null) {
                 BHBot.logger.error("Yes button not found, restarting");
                 bot.saveGameScreen("skeleton-treasure-no-yes");
-                bot.notificationManager.notifyError("Treasure chest error", "Skeleton Chest gump without YES button");
+                bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without YES button");
                 return true;
             }
             bot.browser.clickOnSeg(seg);
@@ -3266,7 +3266,7 @@ public class DungeonThread implements Runnable {
                 }
                 return false;
             }
-            bot.notificationManager.notifyBribe(tmpScreen);
+            bot.notificationManager.sendBribeNotification(tmpScreen);
             return true;
         }
 
@@ -4236,7 +4236,7 @@ public class DungeonThread implements Runnable {
 
             String message = "'Team not full/ordered' dialog detected and handled - team has been auto assigned!";
 
-            bot.notificationManager.notifyError("Team auto assigned", message);
+            bot.notificationManager.sendErrorNotification("Team auto assigned", message);
 
             bot.browser.clickOnSeg(seg);
 
@@ -5568,7 +5568,7 @@ public class DungeonThread implements Runnable {
                     bot.saveGameScreen(bot.getState() + "-" + tierName.toLowerCase(), "loot", victoryPopUpImg);
                 }
 
-                bot.notificationManager.notifyDrop(tierName + " item drop in " + bot.getState(), droppedItemMessage, victoryPopUpImg);
+                bot.notificationManager.sendDropNotification(tierName + " item drop in " + bot.getState(), droppedItemMessage, victoryPopUpImg);
             }
         }
 

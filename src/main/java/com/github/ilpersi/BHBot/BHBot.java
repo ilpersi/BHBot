@@ -582,7 +582,7 @@ public class BHBot {
                         // We split on spaces so we re-build the original message
                         String notificationMessage = params.length > 2 ? String.join(" ", Arrays.copyOfRange(params, 2, params.length)) : "Test message from BHbot!";
 
-                        notificationManager.testNotification(notificationMessage);
+                        notificationManager.sendTestNotification(notificationMessage);
                         break;
                     case "runes":
                         dungeon.detectEquippedMinorRunes(true, true);
@@ -829,7 +829,7 @@ public class BHBot {
             logger.info("Impossible to save the stack trace in dumpCrashLog!");
         }
 
-        notificationManager.notifyCrash("BHBot has crashed and a driver emergency restart has been performed!\n\n" + stackTrace, file);
+        notificationManager.sendCrashNotification("BHBot has crashed and a driver emergency restart has been performed!\n\n" + stackTrace, file);
 
     }
 

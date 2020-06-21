@@ -28,7 +28,7 @@ public class BlockerThread implements Runnable {
 
                 bot.browser.readScreen();
 
-                bot.notificationManager.notifyAlive();
+                bot.notificationManager.sendAliveNotification();
 
                 seg = MarvinSegment.fromCue(BHBot.cues.get("UnableToConnect"), bot.browser);
                 if (seg != null) {
@@ -220,7 +220,7 @@ public class BlockerThread implements Runnable {
 
             try {
                 String pmFileName = bot.saveGameScreen("pm", "pm");
-                bot.notificationManager.notifyPM(pmFileName);
+                bot.notificationManager.sendPMNotification(pmFileName);
                 bot.browser.clickOnSeg(seg);
             } catch (Exception e) {
                 // ignore it
