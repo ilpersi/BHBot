@@ -5998,6 +5998,7 @@ public class DungeonThread implements Runnable {
     private boolean restrictedCues(BufferedImage victoryPopUpImg, Bounds foundArea) {
         MarvinSegment seg;
         HashMap<String, Cue> restrictedCues = new HashMap<>();
+        restrictedCues.put("Monster Cell", BHBot.cues.get("Material_R10"));
         restrictedCues.put("Power Stone", BHBot.cues.get("Material_R9"));
         restrictedCues.put("Fire Blossom", BHBot.cues.get("Material_R8"));
         restrictedCues.put("Crubble", BHBot.cues.get("Material_R7"));
