@@ -509,7 +509,8 @@ public class DungeonThread implements Runnable {
                             seg = MarvinSegment.fromCue(BHBot.cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), bot.browser);
                             bot.browser.clickOnSeg(seg);
                             bot.browser.readScreen(2 * Misc.Durations.SECOND);
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
+
+                            //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
                             //bot.browser.clickOnSeg(seg);
                             bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
                             bot.browser.readScreen(2 * Misc.Durations.SECOND);
@@ -719,7 +720,7 @@ public class DungeonThread implements Runnable {
                             // dismiss character dialog if it pops up:
                             detectCharacterDialogAndHandleIt();
 
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
+                            //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
                             //bot.browser.clickOnSeg(seg);
                             bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
                             bot.browser.readScreen(2 * Misc.Durations.SECOND);
@@ -885,9 +886,9 @@ public class DungeonThread implements Runnable {
                             }
 
                             bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), Misc.Durations.SECOND * 2, bot.browser);
-                            bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
+                            //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), Misc.Durations.SECOND * 2, bot.browser);
                             //bot.browser.clickOnSeg(seg);
+                            bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
 
                             if (goalZone <= bot.settings.minSolo) {
                                 bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for dropdown animation to finish
