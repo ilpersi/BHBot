@@ -2103,14 +2103,6 @@ public class DungeonThread implements Runnable {
     }
 
     /**
-     * Returns the position of the detected cue as Bounds
-     */
-
-    private Bounds getSegBounds(MarvinSegment seg) {
-        return new Bounds(seg.x1, seg.y1, seg.x2, seg.y2);
-    }
-
-    /**
      * Returns amount of energy in percent (0-100). Returns -1 in case it cannot read energy for some reason.
      */
     private int getEnergy() {
@@ -5534,7 +5526,6 @@ public class DungeonThread implements Runnable {
     private void handleLoot() {
         MarvinSegment seg;
         BufferedImage victoryPopUpImg = bot.browser.getImg();
-        boolean itemFound = false;
 
         if (bot.notificationManager.shouldNotify()) {
             bot.browser.readScreen();
@@ -5551,12 +5542,15 @@ public class DungeonThread implements Runnable {
 
             for (Map.Entry<String, Cue> item : itemTier.entrySet()) {
                 if (bot.settings.poNotifyDrop.contains(item.getKey()) || bot.settings.discordNotifyDrop.contains(item.getKey())) {
-                    seg = MarvinSegment.fromCue(item.getValue(), 0, victoryDropArea, bot.browser);
-                    if (seg != null && !itemFound) {
-                        //so we don't get legendary crafting materials in raids triggering handleLoot
-                        if ((item.getKey().equals("l")) && (restrictedCues(getSegBounds(seg)))) return;
-                        //this is so we only get Coins, Crafting Materials and Schematics for heroic items
-                        if (item.getKey().equals("h") && (!allowedCues(getSegBounds(seg)))) return;
+                    seg = FindSubimage.findImage(victoryPopUpImg, item.getValue().im, victoryDropArea.x1, victoryDropArea.y1, victoryDropArea.x2, victoryDropArea.y2);
+                    if (seg != null) {
+                        // so we don't get legendary crafting materials in raids triggering handleLoot
+                        if ((item.getKey().equals("l")) && (restrictedCues(victoryPopUpImg, seg.getBounds()))) return;
+
+                        // this is so we only get Coins, Crafting Materials and Schematics for heroic items
+                        if (item.getKey().equals("h") && (!allowedCues(victoryPopUpImg, seg.getBounds()))) return;
+
+                        // we get a mouse over screen of the item if possible
                         if (bot.getState() != BHBot.State.Raid && bot.getState() != BHBot.State.Dungeon && bot.getState() != BHBot.State.Expedition && bot.getState() != BHBot.State.Trials) {
                             //the window moves too fast in these events to mouseOver
                             bot.browser.moveMouseToPos(seg.getCenterX(), seg.getCenterY());
@@ -5564,20 +5558,17 @@ public class DungeonThread implements Runnable {
                             victoryPopUpImg = bot.browser.getImg();
                             bot.browser.moveMouseAway();
                         }
-                        itemFound = true; //so we only screenshot the highest tier found, and not equipped items on the hover popup
-                        tierName = getItemTier(item.getKey());
+
+                        droppedItemMessage = tierName + " item dropped!";
+                        BHBot.logger.debug(droppedItemMessage);
+                        if (bot.settings.victoryScreenshot) {
+                            bot.saveGameScreen(bot.getState() + "-" + tierName.toLowerCase(), "loot", victoryPopUpImg);
+                        }
+
+                        bot.notificationManager.sendDropNotification(tierName + " item drop in " + bot.getState(), droppedItemMessage, victoryPopUpImg);
+                        break;
                     }
                 }
-            }
-
-            if (itemFound) {
-                droppedItemMessage = tierName + " item dropped!";
-                BHBot.logger.debug(droppedItemMessage);
-                if (bot.settings.victoryScreenshot) {
-                    bot.saveGameScreen(bot.getState() + "-" + tierName.toLowerCase(), "loot", victoryPopUpImg);
-                }
-
-                bot.notificationManager.sendDropNotification(tierName + " item drop in " + bot.getState(), droppedItemMessage, victoryPopUpImg);
             }
         }
 
@@ -6004,7 +5995,7 @@ public class DungeonThread implements Runnable {
      * You can input with getSegBounds to only search the found item area
      */
 
-    private boolean restrictedCues(Bounds foundArea) {
+    private boolean restrictedCues(BufferedImage victoryPopUpImg, Bounds foundArea) {
         MarvinSegment seg;
         HashMap<String, Cue> restrictedCues = new HashMap<>();
         restrictedCues.put("Power Stone", BHBot.cues.get("Material_R9"));
@@ -6016,10 +6007,10 @@ public class DungeonThread implements Runnable {
         restrictedCues.put("Dubloon", BHBot.cues.get("Material_R3"));
         restrictedCues.put("Hyper Shard", BHBot.cues.get("Material_R2"));
 
-        for (Map.Entry<String, Cue> cues : restrictedCues.entrySet()) {
-            seg = MarvinSegment.fromCue(cues.getValue(), 0, foundArea, bot.browser);
+        for (Map.Entry<String, Cue> cue : restrictedCues.entrySet()) {
+            seg = FindSubimage.findImage(victoryPopUpImg, cue.getValue().im, foundArea.x1, foundArea.y1, foundArea.x2, foundArea.y2);
             if (seg != null) {
-                BHBot.logger.debug("Legendary: " + cues.getKey() + " found, skipping handleLoot");
+                BHBot.logger.debug("Legendary: " + cue.getKey() + " found, skipping handleLoot");
                 return true;
             }
         }
@@ -6031,7 +6022,7 @@ public class DungeonThread implements Runnable {
      * You can input with getSegBounds to only search the found item area
      */
 
-    private boolean allowedCues(Bounds foundArea) {
+    private boolean allowedCues(BufferedImage victoryPopUpImg, Bounds foundArea) {
         MarvinSegment seg;
 
         //so we aren't triggered by Skeleton Key heroic cue
@@ -6050,10 +6041,10 @@ public class DungeonThread implements Runnable {
         allowedCues.put("Neural Net Rom", BHBot.cues.get("NeuralNetRom"));
         allowedCues.put("Scarlarg Skin", BHBot.cues.get("ScarlargSkin"));
 
-        for (Map.Entry<String, Cue> cues : allowedCues.entrySet()) {
-            seg = MarvinSegment.fromCue(cues.getValue(), 0, foundArea, bot.browser);
+        for (Map.Entry<String, Cue> cue : allowedCues.entrySet()) {
+            seg = FindSubimage.findImage(victoryPopUpImg, cue.getValue().im, foundArea.x1, foundArea.y1, foundArea.x2, foundArea.y2);
             if (seg != null) {
-                BHBot.logger.debug(cues.getKey() + " found!");
+                BHBot.logger.debug(cue.getKey() + " found!");
                 return true;
             }
         }
