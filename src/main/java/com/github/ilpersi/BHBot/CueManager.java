@@ -230,8 +230,8 @@ class CueManager {
         addCue("RaidButton", "cues/cueRaidButton.png", new Bounds(0, 200, 40, 400));
         addCue("RaidPopup", "cues/cueRaidPopup.png", Bounds.fromWidthHeight(300, 35, 70, 60));
         addCue("RaidSummon", "cues/cueRaidSummon.png", new Bounds(480, 360, 540, 380));
-        addCue("RaidLevel", "cues/cueRaidLevel.png", new Bounds(300, 435, 510, 455)); // selected raid type button cue
-        addCue("cueRaidLevelEmpty", "cues/cueRaidLevelEmpty.png", new Bounds(300, 435, 510, 455)); // selected raid type button cue
+        addCue("RaidLevel", "cues/cueRaidLevel.png", Bounds.fromWidthHeight(230, 435, 330, 20)); // selected raid type button cue
+        addCue("cueRaidLevelEmpty", "cues/cueRaidLevelEmpty.png", Bounds.fromWidthHeight(230, 435, 330, 20)); // unselected raid type button cue
 
         // New Raid level detection logic
         addCue("Raid1Name", "cues/raid/r1Name.png", new Bounds(185, 340, 485, 395));// Raid 1 Name

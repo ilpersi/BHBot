@@ -4055,7 +4055,7 @@ public class DungeonThread implements Runnable {
                 selectedRaidX1 = seg.getX1();
                 raidDotsList.add(seg);
             } else {
-                BHBot.logger.error("Impossible to detect the currently selected grey cue!");
+                BHBot.logger.error("Impossible to detect the currently selected green cue!");
                 return false;
             }
         }
