@@ -120,4 +120,8 @@ public class MarvinSegment {
     int getCenterY() {
         return (this.y1 + this.y2) / 2;
     }
+
+    Bounds getBounds() {
+        return new Bounds(this.x1, this.y1, this.x2, this.y2);
+    }
 }
