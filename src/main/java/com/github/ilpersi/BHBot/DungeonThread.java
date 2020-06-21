@@ -5530,7 +5530,6 @@ public class DungeonThread implements Runnable {
         if (bot.notificationManager.shouldNotify()) {
             bot.browser.readScreen();
             String droppedItemMessage;
-            String tierName = "";
             Bounds victoryDropArea = new Bounds(100, 160, 630, 420);
 
             //linkedHashMap so we iterate from mythic > heroic
@@ -5559,6 +5558,7 @@ public class DungeonThread implements Runnable {
                             bot.browser.moveMouseAway();
                         }
 
+                        String tierName = getItemTier(item.getKey());
                         droppedItemMessage = tierName + " item dropped!";
                         BHBot.logger.debug(droppedItemMessage);
                         if (bot.settings.victoryScreenshot) {
