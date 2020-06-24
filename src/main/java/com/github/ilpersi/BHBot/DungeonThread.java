@@ -5541,7 +5541,7 @@ public class DungeonThread implements Runnable {
         BufferedImage victoryPopUpImg = bot.browser.getImg();
 
         if (bot.notificationManager.shouldNotify()) {
-            bot.browser.readScreen();
+
             String droppedItemMessage;
             Bounds victoryDropArea = new Bounds(100, 160, 630, 420);
 
