@@ -2468,6 +2468,7 @@ public class DungeonThread implements Runnable {
                 seg = MarvinSegment.fromCue(BHBot.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, closeBounds, bot.browser);
                 if (seg == null) {
                     BHBot.logger.debug("Unable to find close button for " + bot.getState().getName() + " victory screen. Ignoring it.");
+                    handleLoot();
                     return;
                 }
 
