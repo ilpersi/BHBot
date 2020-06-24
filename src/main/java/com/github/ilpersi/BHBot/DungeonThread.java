@@ -2462,6 +2462,15 @@ public class DungeonThread implements Runnable {
             }
             if (seg != null) {
 
+                Bounds closeBounds = null;
+                if (BHBot.State.Gauntlet.equals(bot.getState())) closeBounds = Bounds.fromWidthHeight(320, 420, 160, 65);
+                // Sometime the victory pop-up is show without the close button, this check is there to ignore it
+                seg = MarvinSegment.fromCue(BHBot.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, closeBounds, bot.browser);
+                if (seg == null) {
+                    BHBot.logger.debug("Unable to find close button for " + bot.getState().getName() + " victory screen. Ignoring it.");
+                    return;
+                }
+
                 //Calculate activity stats
                 counters.get(bot.getState()).increaseVictories();
                 long activityRuntime = Misc.getTime() - activityStartTime * 1000; //get elapsed time in milliseconds
@@ -2479,12 +2488,15 @@ public class DungeonThread implements Runnable {
                 //check for loot drops and send via Pushover/Screenshot
                 handleLoot();
 
-                //close the loot window
-                seg = MarvinSegment.fromCue(BHBot.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, bot.browser);
+                // If we are here the close button should be there
+                seg = MarvinSegment.fromCue(BHBot.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, closeBounds, bot.browser);
                 if (seg != null) {
                     bot.browser.clickOnSeg(seg);
-                } else
-                    BHBot.logger.warn("Unable to find close button for " + bot.getState().getName() + " victory screen..");
+                } else {
+                    BHBot.logger.error("Victory pop-up error while performing " + bot.getState().getName() + "! Restarting the bot.");
+                    restart();
+                    return;
+                }
 
                 // close the activity window to return us to the main screen
                 bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
