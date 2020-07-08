@@ -801,6 +801,12 @@ public class DungeonThread implements Runnable {
                             }
 
                             seg = MarvinSegment.fromCue(BHBot.cues.get("Quest"), bot.browser);
+                            if (seg == null) {
+                                bot.saveGameScreen("no-quest-btn", "errors", bot.browser.getImg());
+                                BHBot.logger.error("Impposible to find the quest button!");
+                                continue;
+                            }
+
                             bot.browser.clickOnSeg(seg);
                             bot.browser.readScreen(5 * Misc.Durations.SECOND);
 
