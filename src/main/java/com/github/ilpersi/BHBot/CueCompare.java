@@ -56,10 +56,15 @@ public class CueCompare {
     }
 
     public static void main(String[] args) {
+        if (args.length != 3) {
+            System.out.println("USAGE: CueCompare <inputImg1Path> <inputImg2Path> <outputImgPath>");
+            return;
+        }
+
         // Images paths
-        String img1Path = "steam_restores_1.png";
-        String img2Path = "steam_restores_2.png";
-        String imgOutPath = "cue_comparison.png";
+        String img1Path = args[0];
+        String img2Path = args[1];
+        String imgOutPath = args[2];
 
         // Buffered images
         BufferedImage img1 = null;
