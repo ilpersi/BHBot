@@ -12,7 +12,6 @@ import org.openqa.selenium.remote.UnreachableBrowserException;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -812,7 +811,7 @@ public class BHBot {
         return f.getPath();
     }
 
-    void dumpCrashLog() {
+    void dumpCrashLog(Exception originalException) {
         // save screen shot:
         String file = saveGameScreen("crash", "errors");
 
@@ -821,9 +820,15 @@ public class BHBot {
             return;
         }
 
-        String stackTrace = Misc.getStackTrace();
+        String stackTrace;
+        if (originalException != null) {
+            StringWriter sw = new StringWriter();
+            originalException.printStackTrace(new PrintWriter(sw));
+            stackTrace = sw.toString();
+        } else {
+            stackTrace = Misc.getStackTrace();
+        }
 
-        // save stack trace:
         boolean savedST = Misc.saveTextFile(file.substring(0, file.length() - 4) + ".txt", stackTrace);
         if (!savedST) {
             logger.info("Impossible to save the stack trace in dumpCrashLog!");
@@ -838,12 +843,16 @@ public class BHBot {
      * @param useDoNotShareLink is the bot running with do_not_share link enabled?
      */
     void restart(boolean emergency, boolean useDoNotShareLink) {
+        restart(emergency, useDoNotShareLink, null);
+    }
+
+    void restart(boolean emergency, boolean useDoNotShareLink, Exception originalException) {
         final int MAX_NUM_FAILED_RESTARTS = 5;
 
         // take emergency screenshot (which will have the developer to debug the problem):
         if (emergency) {
             logger.warn("Doing driver emergency restart...");
-            dumpCrashLog();
+            dumpCrashLog(originalException);
         }
 
         try {
@@ -852,12 +861,10 @@ public class BHBot {
 
             if (e instanceof NoSuchElementException)
                 logger.warn("Problem: web element with id 'game' not found!");
-            if (e instanceof MalformedURLException)
-                logger.warn("Problem: malformed url detected!");
             if (e instanceof UnreachableBrowserException) {
                 logger.error("Impossible to connect to the bot.browser. Make sure chromedirver is started. Will retry in a few minutes... (sleeping)");
                 Misc.sleep(5 * Misc.Durations.MINUTE);
-                restart(true, useDoNotShareLink);
+                restart(true, useDoNotShareLink, e);
                 return;
             }
 
@@ -868,7 +875,7 @@ public class BHBot {
             } else {
                 logger.error("Something went wrong with driver restart. Will retry in a few minutes... (sleeping)", e);
                 Misc.sleep(5 * Misc.Durations.MINUTE);
-                restart(true, useDoNotShareLink);
+                restart(true, useDoNotShareLink, e);
             }
             return;
         }
