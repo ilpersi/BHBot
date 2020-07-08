@@ -18,7 +18,10 @@ public class BlockerThread implements Runnable {
         while (!bot.finished) {
             try {
                 bot.scheduler.process();
-                if (bot.scheduler.isPaused()) continue;
+                if (bot.scheduler.isPaused()) {
+                    bot.browser.readScreen(500);
+                    continue;
+                }
 
                 // We wait for the cues to be loaded and for the browser to be working!
                 if (BHBot.cues.size() == 0 || bot.browser.getImg() == null) {

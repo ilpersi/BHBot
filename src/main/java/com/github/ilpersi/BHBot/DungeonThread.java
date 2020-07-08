@@ -265,7 +265,10 @@ public class DungeonThread implements Runnable {
             bot.scheduler.backupIdleTime();
             try {
                 bot.scheduler.process();
-                if (bot.scheduler.isPaused()) continue;
+                if (bot.scheduler.isPaused()) {
+                    bot.browser.readScreen(500);
+                    continue;
+                }
 
                 if (Misc.getTime() - bot.scheduler.getIdleTime() > MAX_IDLE_TIME) {
                     BHBot.logger.warn("Idle time exceeded... perhaps caught in a loop? Restarting... (state=" + bot.getState() + ")");
