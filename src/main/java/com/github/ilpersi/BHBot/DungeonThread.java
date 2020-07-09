@@ -1604,13 +1604,12 @@ public class DungeonThread implements Runnable {
 
                             int worldBossDifficulty = Integer.parseInt(bot.settings.worldBossSettings.get(1));
                             int worldBossTier = Integer.parseInt(bot.settings.worldBossSettings.get(2));
-                            int worldBossTimer = bot.settings.worldBossTimer;
 
                             //new settings loading
                             String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
 
                             if (!bot.settings.worldBossSolo) {
-                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + ". Lobby timeout is " + worldBossTimer + "s.");
+                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + ". Lobby timeout is " + bot.settings.worldBossTimer + "s.");
                             } else {
                                 BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " Solo");
                             }
@@ -1690,82 +1689,77 @@ public class DungeonThread implements Runnable {
                                 continue;
                             }
 
-                            BHBot.logger.info("Starting lobby");
-
-                            /*
-                             *
-                             * this part gets messy as WB is much more dynamic and harder to automate with human players
-                             * I've tried to introduce as many error catchers with restarts(); as possible to keep things running smoothly
-                             *
-                             */
+                            BHBot.logger.info("Starting lobby: " + wbType.getName() + " has " + wbType.getPartySize() + " members");
 
                             //wait for lobby to fill with a timer
                             if (!bot.settings.worldBossSolo) {
-                                Bounds inviteButton = inviteBounds(wbType.getLetter());
-                                for (int i = 0; i < worldBossTimer; i++) {
-                                    bot.browser.readScreen(Misc.Durations.SECOND);
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Invite"), 0, inviteButton, bot.browser);
-                                    if (seg != null) { //while the relevant invite button exists
-                                        if (i != 0 && (i % 15) == 0) { //every 15 seconds
-                                            int timeLeft = worldBossTimer - i;
-                                            BHBot.logger.info("Waiting for full team. Time out in " + timeLeft + " seconds.");
+                                // How many invites do we expect for this WB?
+                                int inviteCnt = wbType.getPartySize() - 1;
+
+                                // Invite and unready buttons bounds are dinamically calculated based on the WB party member
+                                Bounds inviteBounds = Bounds.fromWidthHeight(330, 217, 127, 54 * inviteCnt);
+                                Bounds unreadyBounds = Bounds.fromWidthHeight(177, 217, 24, 54 * inviteCnt);
+
+                                // we assume we did not start the WB
+                                boolean lobbyTimeout = true;
+
+                                // Timings
+                                long startTime = Misc.getTime();
+                                long cutOffTime = startTime + (bot.settings.worldBossTimer * Misc.Durations.SECOND);
+                                long nextUpdateTime = startTime + (15 * Misc.Durations.SECOND);
+
+                                while (Misc.getTime() < cutOffTime) {
+
+                                    List<MarvinSegment> inviteSegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Invite").im, 1.0, true, false, inviteBounds.x1, inviteBounds.y1, inviteBounds.x2, inviteBounds.y2);
+                                    if (inviteSegs.isEmpty()) {
+                                        List<MarvinSegment> unreadySegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Unready").im, 1.0, true, false, unreadyBounds.x1, unreadyBounds.y1, unreadyBounds.x2, unreadyBounds.y2);
+
+                                        if (unreadySegs.isEmpty()) {
+                                            BHBot.logger.info("Lobby filled and ready in " + Misc.millisToHumanForm(Misc.getTime() - startTime));
+                                            lobbyTimeout = false;
+                                            break;
                                         }
-                                        if (i == (worldBossTimer - 1)) { //out of time
-                                            if (bot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
-                                                BHBot.logger.info("Lobby timed out, running dungeon instead");
-                                                closeWorldBoss();
-                                                Misc.sleep(4 * Misc.Durations.SECOND); //make sure we're stable on the main screen
-                                                bot.scheduler.doDungeonImmediately = true;
-                                            } else {
-                                                BHBot.logger.info("Lobby timed out, returning to main screen.");
-                                                // we say we checked (interval - 1) minutes ago, so we check again in a minute
-                                                timeLastEnergyCheck = Misc.getTime() - ((ENERGY_CHECK_INTERVAL) - Misc.Durations.MINUTE);
-                                                closeWorldBoss();
-                                            }
-                                        }
+                                    }
+
+                                    if (Misc.getTime() >= nextUpdateTime) {
+                                        BHBot.logger.info("Waiting for full ready team. Time out in " + Misc.millisToHumanForm(cutOffTime - Misc.getTime()));
+                                        nextUpdateTime = Misc.getTime() + (15 * Misc.Durations.SECOND);
+                                    }
+
+                                    // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
+                                    // at the same time we also wait 500ms so to easu CPU consumption
+                                    bot.browser.readScreen(500);
+                                }
+
+                                if (lobbyTimeout) {
+                                    if (bot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
+                                        BHBot.logger.info("Lobby timed out, running dungeon instead");
+                                        closeWorldBoss();
+                                        bot.browser.readScreen(4 * Misc.Durations.SECOND); //make sure we're stable on the main screen
+                                        bot.scheduler.doDungeonImmediately = true;
                                     } else {
-                                        BHBot.logger.info("Lobby filled in " + i + " seconds!");
-                                        i = worldBossTimer; // end the for loop
-
-                                        //check that all players are ready
-                                        BHBot.logger.info("Making sure everyones ready..");
-                                        int j = 1;
-                                        while (j != 20) { //ready check for 10 seconds
-                                            seg = MarvinSegment.fromCue(BHBot.cues.get("Unready"), 2 * Misc.Durations.SECOND, bot.browser); //this checks all 4 ready statuses
-                                            bot.browser.readScreen();
-                                            if (seg == null) {// no red X's found
-                                                break;
-                                            } else { //red X's found
-                                                //BHBot.logger.info(Integer.toString(j));
-                                                j++;
-                                                Misc.sleep(500); //check every 500ms
-                                            }
-                                        }
-
-                                        if (j >= 20) {
-                                            BHBot.logger.error("Ready check not passed after 10 seconds, restarting");
-                                            restart();
-                                        }
-
-                                        Misc.sleep(500);
+                                        BHBot.logger.info("Lobby timed out, returning to main screen.");
+                                        // we say we checked (interval - 1) minutes ago, so we check again in a minute
+                                        timeLastEnergyCheck = Misc.getTime() - ((ENERGY_CHECK_INTERVAL) - Misc.Durations.MINUTE);
+                                        closeWorldBoss();
+                                    }
+                                } else {
+                                    bot.browser.readScreen();
+                                    MarvinSegment segStart = MarvinSegment.fromCue(BHBot.cues.get("Start"), 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(285, 435, 190, 65), bot.browser);
+                                    if (segStart != null) {
+                                        bot.browser.clickOnSeg(segStart); //start World Boss
                                         bot.browser.readScreen();
-                                        MarvinSegment segStart = MarvinSegment.fromCue(BHBot.cues.get("Start"), 5 * Misc.Durations.SECOND, bot.browser);
-                                        if (segStart != null) {
-                                            bot.browser.clickOnSeg(segStart); //start World Boss
-                                            bot.browser.readScreen();
-                                            seg = MarvinSegment.fromCue(BHBot.cues.get("TeamNotFull"), 2 * Misc.Durations.SECOND, bot.browser); //check if we have the team not full screen an clear it
-                                            if (seg != null) {
-                                                Misc.sleep(2 * Misc.Durations.SECOND); //wait for animation to finish
-                                                bot.browser.clickInGame(330, 360); //yesgreen cue has issues so we use XY to click on Yes
-                                            }
-                                            BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " started!");
-                                            bot.setState(BHBot.State.WorldBoss);
-                                        } else { //generic error / unknown action restart
-                                            BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
-                                            bot.saveGameScreen("wb-no-start-button", "errors");
-                                            restart();
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("TeamNotFull"), 2 * Misc.Durations.SECOND, bot.browser); //check if we have the team not full screen an clear it
+                                        if (seg != null) {
+                                            Misc.sleep(2 * Misc.Durations.SECOND); //wait for animation to finish
+                                            bot.browser.clickInGame(330, 360); //yesgreen cue has issues so we use XY to click on Yes
                                         }
-
+                                        BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " started!");
+                                        bot.setState(BHBot.State.WorldBoss);
+                                    } else { //generic error / unknown action restart
+                                        BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
+                                        bot.saveGameScreen("wb-no-start-button", "errors");
+                                        restart();
                                     }
                                 }
                             } else {
@@ -1901,26 +1895,6 @@ public class DungeonThread implements Runnable {
         } // main while loop
 
         BHBot.logger.info("Dungeon thread stopped.");
-    }
-
-    private Bounds inviteBounds(String wb) {
-        Bounds inviteButton;
-        switch (wb) {
-            // 3rd Invite button for Nether, 3xt3rmin4tion & Brimstone
-            case "m":
-                inviteButton = new Bounds(330, 330, 460, 380); // 4th Invite button for Melvin
-                break;
-            case "o":
-                inviteButton = new Bounds(336, 387, 452, 422); // 5th Invite button for Orlag
-                break;
-            case "n":
-            case "3":
-            case "b":
-            default:
-                inviteButton = new Bounds(334, 275, 456, 323); // on error return 3rd invite
-                break;
-        }
-        return inviteButton;
     }
 
     private String activitySelector() {
@@ -5985,6 +5959,8 @@ public class DungeonThread implements Runnable {
         int getMaxTier() {
             return maxTier;
         }
+
+        int getPartySize() {return partySize;}
 
         int[] getYScrollerPositions(){return yScrollerPositions;}
 
