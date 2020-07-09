@@ -1609,7 +1609,7 @@ public class DungeonThread implements Runnable {
                             String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
 
                             if (!bot.settings.worldBossSolo) {
-                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + ". Lobby timeout is " + bot.settings.worldBossTimer + "s.");
+                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + ". Lobby timeout is " + Misc.millisToHumanForm((long) bot.settings.worldBossTimer * 1000L) + ".");
                             } else {
                                 BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " Solo");
                             }
@@ -1689,7 +1689,7 @@ public class DungeonThread implements Runnable {
                                 continue;
                             }
 
-                            BHBot.logger.info("Starting lobby: " + wbType.getName() + " has " + wbType.getPartySize() + " members");
+                            BHBot.logger.info("Starting lobby: " + wbType.getName() + " has " + wbType.getPartySize() + " party members");
 
                             //wait for lobby to fill with a timer
                             if (!bot.settings.worldBossSolo) {
