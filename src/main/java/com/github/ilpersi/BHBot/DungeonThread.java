@@ -2521,7 +2521,7 @@ public class DungeonThread implements Runnable {
                 //return the stats for invasion (no victory possible so we skip the warning)
                 bot.browser.readScreen();
                 MarvinImage subm = new MarvinImage(bot.browser.getImg().getSubimage(375, 20, 55, 20));
-                makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255), 64);
+                subm.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 64);
                 BufferedImage subimagetestbw = subm.getBufferedImage();
                 int num = readNumFromImg(subimagetestbw, "small", new HashSet<>());
                 BHBot.logger.info(bot.getState().getName() + " #" + counters.get(bot.getState()).getTotal() + " completed. Level reached: " + num);
@@ -4433,40 +4433,6 @@ public class DungeonThread implements Runnable {
         return d;
     }
 
-    private void makeImageBlackWhite(MarvinImage input, Color black, Color white) {
-        makeImageBlackWhite(input, black, white, 254);
-    }
-
-    /**
-     * @param input  The input image that will be converted in black and white scale
-     * @param black  White color treshold
-     * @param white  Black color treshold
-     * @param custom Use the custom value to search for a specific RGB value if the numbers are not white
-     *               E.G for invasion defeat screen the number colour is 64,64,64 in the background
-     */
-    private void makeImageBlackWhite(MarvinImage input, Color black, Color white, int custom) {
-        int[] map = input.getIntColorArray();
-        int white_rgb = white.getRGB();
-        int black_rgb = black.getRGB();
-        for (int i = 0; i < map.length; i++) {
-            Color c = new Color(map[i], true);
-            int r = c.getRed();
-            int g = c.getGreen();
-            int b = c.getBlue();
-            int max = Misc.max(r, g, b);
-            int min = Misc.min(r, g, b);
-            //int diff = (max-r) + (max-g) + (max-b);
-            int diff = max - min;
-            if (diff >= 80 || (diff == 0 && max == custom)) { // it's a number color
-                map[i] = white_rgb;
-            } else { // it's a blackish background
-                map[i] = black_rgb;
-            }
-        }
-        input.setIntColorArray(map);
-        input.update(); // must be called! Or else things won't work...
-    }
-
     int detectDifficulty() {
         return detectDifficulty(BHBot.cues.get("Difficulty"));
     }
@@ -4497,7 +4463,7 @@ public class DungeonThread implements Runnable {
         MarvinImage im = new MarvinImage(bot.browser.getImg().getSubimage(seg.x1 + 35, seg.y1 + 30, 55, 19));
 
         // make it white-gray (to facilitate cue recognition):
-        makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
+        im.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
 
         BufferedImage imb = im.getBufferedImage();
 
@@ -4530,7 +4496,7 @@ public class DungeonThread implements Runnable {
         MarvinImage im = new MarvinImage(bot.browser.getImg().getSubimage(xOffset, yOffset, w, h));
 
         // make it white-gray (to facilitate cue recognition):
-        makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
+        im.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
 
         BufferedImage imb = im.getBufferedImage();
 
@@ -4705,7 +4671,7 @@ public class DungeonThread implements Runnable {
         MarvinSegment seg;
 
         MarvinImage subm = new MarvinImage(bot.browser.getImg().getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu. Note that every while a "tier x" is written bellow it, so text is higher up (hence we need to scan a larger area)
-        makeImageBlackWhite(subm, new Color(25, 25, 25), new Color(255, 255, 255));
+        subm.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
         BufferedImage sub = subm.getBufferedImage();
         int num = readNumFromImg(sub);
 //		BHBot.logger.info("num = " + Integer.toString(num));
@@ -4783,7 +4749,7 @@ public class DungeonThread implements Runnable {
         boolean success = true;
         while (true) {
             MarvinImage im = new MarvinImage(bot.browser.getImg().getSubimage(seg.x1 + 2, seg.y1 + 20, 35, 24));
-            makeImageBlackWhite(im, new Color(25, 25, 25), new Color(255, 255, 255));
+            im.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
             BufferedImage imb = im.getBufferedImage();
             d = readNumFromImg(imb);
             if (d != 0)

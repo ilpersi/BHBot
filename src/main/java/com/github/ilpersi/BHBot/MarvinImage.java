@@ -281,8 +281,8 @@ public class MarvinImage implements Cloneable {
     /**
      * Gets the integer color component 0  in the x and y position
      *
-     * @param int x
-     * @param int y
+     * @param int x x
+     * @param int y y
      * @return int        color component 0
      */
     public int getIntComponent0(int x, int y) {
@@ -841,5 +841,34 @@ public class MarvinImage implements Cloneable {
             }
         }
         return true;
+    }
+
+    /**
+     * @param black  White color treshold
+     * @param white  Black color treshold
+     * @param custom Use the custom value to search for a specific RGB value if the numbers are not white
+     *               E.G for invasion defeat screen the number colour is 64,64,64 in the background
+     */
+    void toBlackWhite(Color black, Color white, int custom) {
+        int[] map = getIntColorArray();
+        int white_rgb = white.getRGB();
+        int black_rgb = black.getRGB();
+        for (int i = 0; i < map.length; i++) {
+            Color c = new Color(map[i], true);
+            int r = c.getRed();
+            int g = c.getGreen();
+            int b = c.getBlue();
+            int max = Misc.max(r, g, b);
+            int min = Misc.min(r, g, b);
+            //int diff = (max-r) + (max-g) + (max-b);
+            int diff = max - min;
+            if (diff >= 80 || (diff == 0 && max == custom)) { // it's a number color
+                map[i] = white_rgb;
+            } else { // it's a blackish background
+                map[i] = black_rgb;
+            }
+        }
+        setIntColorArray(map);
+        update(); // must be called! Or else things won't work...
     }
 }
