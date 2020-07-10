@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
  *
  * @author Betalord
  */
+@SuppressWarnings("unused")
 public class MarvinImage implements Cloneable {
 
     public final static int COLOR_MODEL_RGB = 0;
@@ -259,9 +260,9 @@ public class MarvinImage implements Cloneable {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param alpha
+     * @param x x
+     * @param y y
+     * @param alpha alpha
      */
     public void setAlphaComponent(int x, int y, int alpha) {
         int color = arrIntColor[((y * width + x))];
@@ -270,8 +271,8 @@ public class MarvinImage implements Cloneable {
     }
 
     /**
-     * @param x
-     * @param y
+     * @param x x
+     * @param y y
      * @return alpha component
      */
     public int getAlphaComponent(int x, int y) {
@@ -281,8 +282,8 @@ public class MarvinImage implements Cloneable {
     /**
      * Gets the integer color component 0  in the x and y position
      *
-     * @param int x x
-     * @param int y y
+     * @param x x
+     * @param y y
      * @return int        color component 0
      */
     public int getIntComponent0(int x, int y) {
@@ -292,8 +293,8 @@ public class MarvinImage implements Cloneable {
     /**
      * Gets the integer color component 1 in the x and y position
      *
-     * @param int x
-     * @param int y
+     * @param x x
+     * @param y y
      * @return int color component 1
      */
     public int getIntComponent1(int x, int y) {
@@ -303,8 +304,8 @@ public class MarvinImage implements Cloneable {
     /**
      * Gets the integer color component 2 in the x and y position
      *
-     * @param int x
-     * @param int y
+     * @param x x
+     * @param y y
      * @return int blue color
      */
     public int getIntComponent2(int x, int y) {
@@ -388,7 +389,7 @@ public class MarvinImage implements Cloneable {
     /**
      * Sets a new image
      *
-     * @param BufferedImage imagem
+     * @param img img
      */
     public void setBufferedImage(BufferedImage img) {
         image = img;
@@ -454,6 +455,7 @@ public class MarvinImage implements Cloneable {
      *
      * @return int[]
      */
+    @SuppressWarnings("DuplicatedCode")
     public int[] Multi8p(int x, int y, int[][] masc) {
         //a b c
         //d e f
@@ -523,9 +525,9 @@ public class MarvinImage implements Cloneable {
     /**
      * Resize and return the image passing the new height and width
      *
-     * @param height
-     * @param width
-     * @return
+     * @param height height
+     * @param width width
+     * @return the bufffered Image
      */
     public BufferedImage getBufferedImage(int width, int height) {
         // using the new approach of Java 2D API
@@ -540,9 +542,9 @@ public class MarvinImage implements Cloneable {
     /**
      * Resize and return the image passing the new height and width, but maintains width/height factor
      *
-     * @param height
-     * @param width
-     * @return
+     * @param height height
+     * @param width width
+     * @return a BufferedImage
      */
     public BufferedImage getBufferedImage(int width, int height, int type) {
         int wDif,
@@ -558,18 +560,16 @@ public class MarvinImage implements Cloneable {
         imgHeight = image.getHeight();
 
 
-        switch (type) {
-            case PROPORTIONAL:
-                wDif = (int) imgWidth - width;
-                hDif = (int) imgHeight - height;
-                if (wDif > hDif) {
-                    factor = width / imgWidth;
-                } else {
-                    factor = height / imgHeight;
-                }
-                fWidth = (int) Math.floor(imgWidth * factor);
-                fHeight = (int) Math.floor(imgHeight * factor);
-                break;
+        if (type == PROPORTIONAL) {
+            wDif = (int) imgWidth - width;
+            hDif = (int) imgHeight - height;
+            if (wDif > hDif) {
+                factor = width / imgWidth;
+            } else {
+                factor = height / imgHeight;
+            }
+            fWidth = (int) Math.floor(imgWidth * factor);
+            fHeight = (int) Math.floor(imgHeight * factor);
         }
         return getBufferedImage(fWidth, fHeight);
     }
@@ -577,9 +577,8 @@ public class MarvinImage implements Cloneable {
     /**
      * Resize the image passing the new height and width
      *
-     * @param height
-     * @param width
-     * @return
+     * @param w width
+     * @param h height
      */
     public void resize(int w, int h) {
 
@@ -598,6 +597,7 @@ public class MarvinImage implements Cloneable {
     /**
      * Clones the {@link MarvinImage}
      */
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     public MarvinImage clone() {
         MarvinImage newMarvinImg = new MarvinImage(getWidth(), getHeight(), getColorModel());
         BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -612,6 +612,7 @@ public class MarvinImage implements Cloneable {
      *
      * @return int[]
      */
+    @SuppressWarnings("DuplicatedCode")
     public double multi8p(int x, int y, double masc) {
         int aR = getIntComponent0(x - 1, y - 1);
         int bR = getIntComponent0(x - 1, y);
@@ -645,13 +646,9 @@ public class MarvinImage implements Cloneable {
         int hB = getIntComponent1(x + 1, y);
         int iB = getIntComponent1(x + 1, y + 1);
 
-        double rgb = 0;
-
-        rgb = ((aR * masc) + (bR * masc) + (cR * masc) +
+        return (((aR * masc) + (bR * masc) + (cR * masc) +
                 (dR * masc) + (eR * masc) + (fR * masc) +
-                (gR * masc) + (hR * masc) + (iR * masc));
-
-        return (rgb);
+                (gR * masc) + (hR * masc) + (iR * masc)));
 
     }
 
@@ -672,6 +669,7 @@ public class MarvinImage implements Cloneable {
     /**
      * Bresenham's Line Drawing implementation
      */
+    @SuppressWarnings("DuplicatedCode")
     public void drawLine(int x0, int y0, int x1, int y1, Color c) {
         int colorRGB = c.getRGB();
         int dy = y1 - y0;
@@ -754,11 +752,11 @@ public class MarvinImage implements Cloneable {
     /**
      * Fills a rectangle in a binary image
      *
-     * @param x
-     * @param y
-     * @param w
-     * @param h
-     * @param value
+     * @param x x
+     * @param y y
+     * @param w width
+     * @param h height
+     * @param value binary color
      */
     public void fillRectBinaryt(int x, int y, int w, int h, boolean value) {
         if (colorModel == COLOR_MODEL_BINARY) {
@@ -810,7 +808,7 @@ public class MarvinImage implements Cloneable {
     /**
      * Set pixels having alpha == 0 to an a given color.
      *
-     * @param color
+     * @param color color
      */
     public void setAlphaToColor(int color) {
         for (int y = 0; y < height; y++) {
@@ -827,6 +825,7 @@ public class MarvinImage implements Cloneable {
      *
      * @param obj object to be compared. MarvinImage object is expected.
      */
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object obj) {
         MarvinImage img = (MarvinImage) obj;
         int[] l_arrColor = img.getIntColorArray();
