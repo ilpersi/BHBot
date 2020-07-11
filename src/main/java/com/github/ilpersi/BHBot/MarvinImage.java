@@ -843,12 +843,12 @@ public class MarvinImage implements Cloneable {
     }
 
     /**
-     * @param black  White color treshold
-     * @param white  Black color treshold
-     * @param custom Use the custom value to search for a specific RGB value if the numbers are not white
+     * @param black     White color treshold
+     * @param white     Black color treshold
+     * @param customMax Use the customMax value to search for a specific RGB value if the numbers are not white
      *               E.G for invasion defeat screen the number colour is 64,64,64 in the background
      */
-    void toBlackWhite(Color black, Color white, int custom) {
+    void toBlackWhite(Color black, Color white, int customMax) {
         int[] map = getIntColorArray();
         int white_rgb = white.getRGB();
         int black_rgb = black.getRGB();
@@ -861,7 +861,7 @@ public class MarvinImage implements Cloneable {
             int min = Misc.min(r, g, b);
             //int diff = (max-r) + (max-g) + (max-b);
             int diff = max - min;
-            if (diff >= 80 || (diff == 0 && max == custom)) { // it's a number color
+            if (diff >= 80 || (diff == 0 && max == customMax)) { // it's a number color
                 map[i] = white_rgb;
             } else { // it's a blackish background
                 map[i] = black_rgb;
