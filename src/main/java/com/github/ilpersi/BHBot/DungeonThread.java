@@ -1709,6 +1709,9 @@ public class DungeonThread implements Runnable {
                                 long cutOffTime = startTime + (bot.settings.worldBossTimer * Misc.Durations.SECOND);
                                 long nextUpdateTime = startTime + (15 * Misc.Durations.SECOND);
 
+                                // Array used to save party members TS
+                                int[] playersTS = new int[inviteCnt];
+
                                 while (Misc.getTime() < cutOffTime) {
 
                                     // We read the current total TS
@@ -1736,7 +1739,7 @@ public class DungeonThread implements Runnable {
                                                 // Player position one is you, the first party member is position two
                                                 BHBot.logger.debug("It was impossible to read WB player TS for player position " + partyMemberPos + 2);
                                             } else {
-                                                BHBot.logger.debug("TS for WB player position " + (partyMemberPos + 2) + " is " + playerTS);
+                                                playersTS[partyMemberPos] = playerTS;
                                             }
 
                                         }
@@ -1759,6 +1762,19 @@ public class DungeonThread implements Runnable {
                                         BHBot.logger.info("Waiting for full ready team. Time out in " + Misc.millisToHumanForm(cutOffTime - Misc.getTime()));
                                         nextUpdateTime = Misc.getTime() + (15 * Misc.Durations.SECOND);
                                         bot.scheduler.resetIdleTime(true);
+                                        if (bot.settings.debugWBTS) {
+                                            // To ease debug we put the TS values in the file name
+                                            StringBuilder fileNameTS = new StringBuilder();
+                                            fileNameTS.append("wb-")
+                                                    .append(counters.get(BHBot.State.WorldBoss).getTotal() + 1)
+                                                    .append("-T").append(totalTS);
+
+                                            for (int iPartyMember = 0; iPartyMember < playersTS.length; iPartyMember++) {
+                                                fileNameTS.append("-").append(iPartyMember + 1).append("P").append(playersTS[iPartyMember]);
+                                            }
+                                            
+                                            bot.saveGameScreen(fileNameTS.toString(), bot.browser.getImg());
+                                        }
                                     }
 
                                     // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
