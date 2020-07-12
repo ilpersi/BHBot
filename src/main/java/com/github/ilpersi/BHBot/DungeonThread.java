@@ -1711,6 +1711,10 @@ public class DungeonThread implements Runnable {
 
 
                                 while (Misc.getTime() < cutOffTime) {
+                                    // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
+                                    // at the same time we also wait 500ms so to easu CPU consumption
+                                    bot.browser.readScreen(500);
+
                                     // Array used to save party members TS
                                     int[] playersTS = new int[inviteCnt];
 
@@ -1765,10 +1769,6 @@ public class DungeonThread implements Runnable {
                                         bot.scheduler.resetIdleTime(true);
                                         saveDebugWBTSScreen(totalTS, playersTS);
                                     }
-
-                                    // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
-                                    // at the same time we also wait 500ms so to easu CPU consumption
-                                    bot.browser.readScreen(500);
                                 }
 
                                 if (lobbyTimeout) {
