@@ -350,16 +350,16 @@ class CueManager {
         addCue("9", "cues/numbers/cue9.png", null);
 
         // Invasion Level Numbers
-        addCue("wb_player_ts_0", "cues/worldboss/ts/wb_player_ts_0", null);
-        addCue("wb_player_ts_1", "cues/worldboss/ts/wb_player_ts_1", null);
-        addCue("wb_player_ts_2", "cues/worldboss/ts/wb_player_ts_2", null);
-        addCue("wb_player_ts_3", "cues/worldboss/ts/wb_player_ts_3", null);
-        addCue("wb_player_ts_4", "cues/worldboss/ts/wb_player_ts_4", null);
-        addCue("wb_player_ts_5", "cues/worldboss/ts/wb_player_ts_5", null);
-        addCue("wb_player_ts_6", "cues/worldboss/ts/wb_player_ts_6", null);
-        addCue("wb_player_ts_7", "cues/worldboss/ts/wb_player_ts_7", null);
-        addCue("wb_player_ts_8", "cues/worldboss/ts/wb_player_ts_8", null);
-        addCue("wb_player_ts_9", "cues/worldboss/ts/wb_player_ts_9", null);
+        addCue("wb_player_ts_0", "cues/worldboss/ts/wb_player_ts_0.png", null);
+        addCue("wb_player_ts_1", "cues/worldboss/ts/wb_player_ts_1.png", null);
+        addCue("wb_player_ts_2", "cues/worldboss/ts/wb_player_ts_2.png", null);
+        addCue("wb_player_ts_3", "cues/worldboss/ts/wb_player_ts_3.png", null);
+        addCue("wb_player_ts_4", "cues/worldboss/ts/wb_player_ts_4.png", null);
+        addCue("wb_player_ts_5", "cues/worldboss/ts/wb_player_ts_5.png", null);
+        addCue("wb_player_ts_6", "cues/worldboss/ts/wb_player_ts_6.png", null);
+        addCue("wb_player_ts_7", "cues/worldboss/ts/wb_player_ts_7.png", null);
+        addCue("wb_player_ts_8", "cues/worldboss/ts/wb_player_ts_8.png", null);
+        addCue("wb_player_ts_9", "cues/worldboss/ts/wb_player_ts_9.png", null);
 
         // WB player TS numbers
         addCue("small0", "cues/numbers/small0.png", null);
