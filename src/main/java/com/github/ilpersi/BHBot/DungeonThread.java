@@ -1729,7 +1729,7 @@ public class DungeonThread implements Runnable {
                                                 // Player position one is you, the first party member is position two
                                                 BHBot.logger.debug("It was impossible to read WB player TS for player position " + partyMemberPos + 2);
                                             } else {
-                                                BHBot.logger.debug("WB player position " + (partyMemberPos + 2) + " is " + playerTS);
+                                                BHBot.logger.debug("TS for WB player position " + (partyMemberPos + 2) + " is " + playerTS);
                                             }
 
                                         }
