@@ -3888,7 +3888,7 @@ public class DungeonThread implements Runnable {
         }
 
         //warn user if timer is over 5 minutes
-        if (bot.settings.worldBossTimer > 300) {
+        if (bot.settings.worldBossTimer > 600) {
             BHBot.logger.warn("Warning: Timer longer than 5 minutes");
             return false;
         }
