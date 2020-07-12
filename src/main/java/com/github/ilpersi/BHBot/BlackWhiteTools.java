@@ -19,11 +19,13 @@ public class BlackWhiteTools {
     public static void main(String[] args) {
 
         if (args.length > 0) {
-            folderToBlackWhite(args[0]);
+            //folderToBlackWhite(args[0]);
+            testWBPlayersTS(args[0]);
             //testInvasion(args[0]);
         }
     }
 
+    @SuppressWarnings("unused")
     static void folderToBlackWhite(String folderPath) {
         File imgFolder = new File(folderPath);
 
@@ -67,6 +69,35 @@ public class BlackWhiteTools {
         }
     }
 
+    static void testWBPlayersTS(String screenPath) {
+        File imgFile = new File(screenPath);
+        int invitesCnt = 4;
+
+        if (imgFile.exists()) {
+            BufferedImage screenImg;
+            try {
+                screenImg = ImageIO.read(imgFile);
+                Bounds TSBound = Bounds.fromWidthHeight(184, 241, 84, 18);
+
+                for (int partyMemberPos = 0; partyMemberPos < invitesCnt - 1; partyMemberPos++) {
+                    MarvinImage subImg = new MarvinImage(screenImg.getSubimage(TSBound.x1, TSBound.y1 + (54 * partyMemberPos), TSBound.width, TSBound.height));
+                    subImg.toBlackWhite(new Color(20, 20, 20), new Color(203, 203, 203), 203);
+                    BufferedImage subimagetestbw = subImg.getBufferedImage();
+
+                }
+
+            } catch (IOException e) {
+                System.out.println("Error when loading game screen ");
+            }
+
+
+        }
+    }
+
+    /**
+     * This method is used to test the B&W tools with the invasion final screen to read the level you reached
+     * @param screenPath Path to the screen to be used to check the invasion reading logic
+     */
     @SuppressWarnings("unused")
     static void testInvasion(String screenPath) {
         File imgFile = new File(screenPath);

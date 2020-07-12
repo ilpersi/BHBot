@@ -348,6 +348,20 @@ class CueManager {
         addCue("7", "cues/numbers/cue7.png", null);
         addCue("8", "cues/numbers/cue8.png", null);
         addCue("9", "cues/numbers/cue9.png", null);
+
+        // Invasion Level Numbers
+        addCue("wb_player_ts_0", "cues/worldboss/ts/wb_player_ts_0", null);
+        addCue("wb_player_ts_1", "cues/worldboss/ts/wb_player_ts_1", null);
+        addCue("wb_player_ts_2", "cues/worldboss/ts/wb_player_ts_2", null);
+        addCue("wb_player_ts_3", "cues/worldboss/ts/wb_player_ts_3", null);
+        addCue("wb_player_ts_4", "cues/worldboss/ts/wb_player_ts_4", null);
+        addCue("wb_player_ts_5", "cues/worldboss/ts/wb_player_ts_5", null);
+        addCue("wb_player_ts_6", "cues/worldboss/ts/wb_player_ts_6", null);
+        addCue("wb_player_ts_7", "cues/worldboss/ts/wb_player_ts_7", null);
+        addCue("wb_player_ts_8", "cues/worldboss/ts/wb_player_ts_8", null);
+        addCue("wb_player_ts_9", "cues/worldboss/ts/wb_player_ts_9", null);
+
+        // WB player TS numbers
         addCue("small0", "cues/numbers/small0.png", null);
         addCue("small1", "cues/numbers/small1.png", null);
         addCue("small2", "cues/numbers/small2.png", null);
@@ -358,6 +372,7 @@ class CueManager {
         addCue("small7", "cues/numbers/small7.png", null);
         addCue("small8", "cues/numbers/small8.png", null);
         addCue("small9", "cues/numbers/small9.png", null);
+
 
         // PvP strip related:
         addCue("StripScrollerTopPos", "cues/strip/cueStripScrollerTopPos.png", new Bounds(525, 140, 540, 370));
