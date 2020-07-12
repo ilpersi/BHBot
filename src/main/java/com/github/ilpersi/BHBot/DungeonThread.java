@@ -1748,6 +1748,7 @@ public class DungeonThread implements Runnable {
                                     if (Misc.getTime() >= nextUpdateTime) {
                                         BHBot.logger.info("Waiting for full ready team. Time out in " + Misc.millisToHumanForm(cutOffTime - Misc.getTime()));
                                         nextUpdateTime = Misc.getTime() + (15 * Misc.Durations.SECOND);
+                                        bot.scheduler.resetIdleTime(true);
                                     }
 
                                     // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
