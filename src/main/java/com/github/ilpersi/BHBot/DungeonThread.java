@@ -1699,6 +1699,7 @@ public class DungeonThread implements Runnable {
                                 // Invite and unready buttons bounds are dinamically calculated based on the WB party member
                                 Bounds inviteBounds = Bounds.fromWidthHeight(330, 217, 127, 54 * inviteCnt);
                                 Bounds unreadyBounds = Bounds.fromWidthHeight(177, 217, 24, 54 * inviteCnt);
+                                Bounds totalWBTS = Bounds.fromWidthHeight(595, 65, 100, 35);
 
                                 // we assume we did not start the WB
                                 boolean lobbyTimeout = true;
@@ -1709,6 +1710,12 @@ public class DungeonThread implements Runnable {
                                 long nextUpdateTime = startTime + (15 * Misc.Durations.SECOND);
 
                                 while (Misc.getTime() < cutOffTime) {
+
+                                    // We read the current total TS
+                                    MarvinImage totalTSImg = new MarvinImage(bot.browser.getImg().getSubimage(totalWBTS.x1, totalWBTS.y1, totalWBTS.width, totalWBTS.height));
+                                    totalTSImg.toBlackWhite(new Color(20, 20, 20), new Color(203, 203, 203), 203);
+                                    BufferedImage totalTSSubImg = totalTSImg.getBufferedImage();
+                                    int totalTS = readNumFromImg(totalTSSubImg, "wb_total_ts_", new HashSet<>());
 
                                     List<MarvinSegment> inviteSegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Invite").im, 1.0, true, false, inviteBounds.x1, inviteBounds.y1, inviteBounds.x2, inviteBounds.y2);
                                     // At least one person joined the lobby
@@ -1746,6 +1753,9 @@ public class DungeonThread implements Runnable {
                                     }
 
                                     if (Misc.getTime() >= nextUpdateTime) {
+                                        if (totalTS > 0) {
+                                            BHBot.logger.debug("Total lobby TS is " + totalTS);
+                                        }
                                         BHBot.logger.info("Waiting for full ready team. Time out in " + Misc.millisToHumanForm(cutOffTime - Misc.getTime()));
                                         nextUpdateTime = Misc.getTime() + (15 * Misc.Durations.SECOND);
                                         bot.scheduler.resetIdleTime(true);
