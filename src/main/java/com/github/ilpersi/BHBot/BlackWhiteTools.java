@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 
 /**
  * This is a stand-alone class to be used as an utility. The goal of this class is to provide a tool to work with
@@ -19,9 +20,10 @@ public class BlackWhiteTools {
     public static void main(String[] args) {
 
         if (args.length > 0) {
-            folderToBlackWhite(args[0]);
+//            folderToBlackWhite(args[0]);
             //testWBPlayersTS(args[0]);
             //testInvasion(args[0]);
+            testWBTotalTS(args[0]);
         }
     }
 
@@ -66,6 +68,28 @@ public class BlackWhiteTools {
                     }
                 }
             }
+        }
+    }
+
+    static void testWBTotalTS(String screenPath) {
+        File imgFile = new File(screenPath);
+        int invitesCnt = 4;
+
+        if (imgFile.exists()) {
+            BufferedImage screenImg;
+            try {
+                screenImg = ImageIO.read(imgFile);
+                Bounds totalWBTS = Bounds.fromWidthHeight(595, 65, 100, 35);
+
+                MarvinImage totalTSImg = new MarvinImage(screenImg.getSubimage(totalWBTS.x1, totalWBTS.y1, totalWBTS.width, totalWBTS.height));
+                totalTSImg.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
+                BufferedImage totalTSSubImg = totalTSImg.getBufferedImage();
+
+            } catch (IOException e) {
+                System.out.println("Error when loading game screen ");
+            }
+
+
         }
     }
 

@@ -1713,7 +1713,7 @@ public class DungeonThread implements Runnable {
 
                                     // We read the current total TS
                                     MarvinImage totalTSImg = new MarvinImage(bot.browser.getImg().getSubimage(totalWBTS.x1, totalWBTS.y1, totalWBTS.width, totalWBTS.height));
-                                    totalTSImg.toBlackWhite(new Color(20, 20, 20), new Color(203, 203, 203), 203);
+                                    totalTSImg.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
                                     BufferedImage totalTSSubImg = totalTSImg.getBufferedImage();
                                     int totalTS = readNumFromImg(totalTSSubImg, "wb_total_ts_", new HashSet<>());
 
