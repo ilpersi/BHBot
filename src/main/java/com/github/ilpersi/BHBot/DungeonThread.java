@@ -1711,6 +1711,30 @@ public class DungeonThread implements Runnable {
                                 while (Misc.getTime() < cutOffTime) {
 
                                     List<MarvinSegment> inviteSegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Invite").im, 1.0, true, false, inviteBounds.x1, inviteBounds.y1, inviteBounds.x2, inviteBounds.y2);
+                                    // At least one person joined the lobby
+                                    if (inviteSegs.size() < inviteCnt) {
+                                        Bounds TSBound = Bounds.fromWidthHeight(184, 241, 84, 18);
+
+                                        // If we are expecting 4 inviteCnt and inviteSegs size is 3 it means that one person joined the lobby
+                                        // Based on this logic, as the loop starts from zero the for check condition is (inviteCnt - inviteSegs.size)
+                                        // (4 - 3) that is equal to 1. As we start from 0, the condition operator is lesser than "<"
+                                        for (int partyMemberPos = 0; partyMemberPos < inviteCnt - inviteSegs.size(); partyMemberPos++) {
+                                            MarvinImage subImg = new MarvinImage(bot.browser.getImg().getSubimage(TSBound.x1, TSBound.y1 + (54 * partyMemberPos), TSBound.width, TSBound.height));
+                                            subImg.toBlackWhite(new Color(20, 20, 20), new Color(203, 203, 203), 203);
+                                            BufferedImage tsSubImg = subImg.getBufferedImage();
+
+                                            int playerTS = readNumFromImg(tsSubImg, "wb_player_ts_", new HashSet<>());
+
+                                            if (playerTS == 0) {
+                                                // Player position one is you, the first party member is position two
+                                                BHBot.logger.debug("It was impossible to read WB player TS for player position " + partyMemberPos + 2);
+                                            } else {
+                                                BHBot.logger.debug("WB player position " + (partyMemberPos + 2) + " is " + playerTS);
+                                            }
+
+                                        }
+                                    }
+
                                     if (inviteSegs.isEmpty()) {
                                         List<MarvinSegment> unreadySegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Unready").im, 1.0, true, false, unreadyBounds.x1, unreadyBounds.y1, unreadyBounds.x2, unreadyBounds.y2);
 
