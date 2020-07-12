@@ -146,6 +146,7 @@ public class Settings {
     List<String> worldBossSettings;
     int worldBossTimer = 0;
     boolean worldBossSolo = false;
+    boolean debugWBTS = false;
     /**
      * Autorevive Settings
      **/
@@ -1030,6 +1031,7 @@ public class Settings {
         worldBossTimer = Integer.parseInt(lastUsedMap.getOrDefault("worldBossTimer", "" + worldBossTimer));
         dungeonOnTimeout = lastUsedMap.getOrDefault("dungeonOnTimeout", dungeonOnTimeout ? "1" : "0").equals("1");
         worldBossSolo = lastUsedMap.getOrDefault("worldBossSolo", worldBossSolo ? "1" : "0").equals("1");
+        debugWBTS = lastUsedMap.getOrDefault("debugWBTS", debugWBTS ? "1" : "0").equals("1");
 
         setAutoReviveFromString(lastUsedMap.getOrDefault("autoRevive", getAutoReviveAsString()));
         setPoNotifyDropFromString(lastUsedMap.getOrDefault("poNotifyDrop", getPoNotifyDropAsString()));
