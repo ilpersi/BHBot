@@ -1709,6 +1709,8 @@ public class DungeonThread implements Runnable {
                                 long cutOffTime = startTime + (bot.settings.worldBossTimer * Misc.Durations.SECOND);
                                 long nextUpdateTime = startTime + (15 * Misc.Durations.SECOND);
 
+                                // Temporary string used to make sure we don't save 10000000s of screenshots when debugWBTS is enabled
+                                String lastSavedName = "";
 
                                 while (Misc.getTime() < cutOffTime) {
                                     // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
@@ -1755,7 +1757,7 @@ public class DungeonThread implements Runnable {
                                         if (unreadySegs.isEmpty()) {
                                             BHBot.logger.info("Lobby filled and ready in " + Misc.millisToHumanForm(Misc.getTime() - startTime));
                                             lobbyTimeout = false;
-                                            saveDebugWBTSScreen(totalTS, playersTS);
+                                            saveDebugWBTSScreen(totalTS, playersTS, lastSavedName);
                                             break;
                                         }
                                     }
@@ -1767,7 +1769,7 @@ public class DungeonThread implements Runnable {
                                         BHBot.logger.info("Waiting for full ready team. Time out in " + Misc.millisToHumanForm(cutOffTime - Misc.getTime()));
                                         nextUpdateTime = Misc.getTime() + (15 * Misc.Durations.SECOND);
                                         bot.scheduler.resetIdleTime(true);
-                                        saveDebugWBTSScreen(totalTS, playersTS);
+                                        lastSavedName = saveDebugWBTSScreen(totalTS, playersTS, lastSavedName);
                                     }
                                 }
 
@@ -6056,7 +6058,7 @@ public class DungeonThread implements Runnable {
         return false;
     }
 
-    void saveDebugWBTSScreen(int totalTS, int[] playersTS) {
+    String saveDebugWBTSScreen(int totalTS, int[] playersTS, String lastSavedName) {
         if (bot.settings.debugWBTS) {
             // To ease debug we put the TS values in the file name
             StringBuilder fileNameTS = new StringBuilder();
@@ -6068,8 +6070,14 @@ public class DungeonThread implements Runnable {
                 fileNameTS.append("-").append(iPartyMember + 1).append("P").append(playersTS[iPartyMember]);
             }
 
-            bot.saveGameScreen(fileNameTS.toString(), "wb-ts-debug", bot.browser.getImg());
+            String finalFileName = fileNameTS.toString();
+            if (!lastSavedName.equals(finalFileName)) {
+                bot.saveGameScreen(fileNameTS.toString(), "wb-ts-debug", bot.browser.getImg());
+            }
+            return  finalFileName;
         }
+
+        return "";
     }
 
 }
