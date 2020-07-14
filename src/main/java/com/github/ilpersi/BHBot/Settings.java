@@ -1112,6 +1112,25 @@ public class Settings {
         load(lines);
     }
 
+    boolean checkUnsupportedSettings() {
+        boolean result = true;
+
+        if (lastUsedMap.getOrDefault("worldBossTimer", null) != null) {
+            BHBot.logger.error("Unsupported 'worldBossTimer " + lastUsedMap.get("worldBossTimer") + "' setting detected: use the new World Boss setting format and restart the bot.");
+            result = false;
+        }
+        if (lastUsedMap.getOrDefault("dungeonOnTimeout", null) != null) {
+            BHBot.logger.error("Unsupported 'dungeonOnTimeout " + lastUsedMap.get("dungeonOnTimeout") + "' setting detected: use the new World Boss setting format and restart the bot.");
+            result = false;
+        }
+        if (lastUsedMap.getOrDefault("worldBossSolo", null) != null) {
+            BHBot.logger.error("Unsupported 'worldBossSolo " + lastUsedMap.get("worldBossSolo") + "' setting detected: use the new World Boss setting format and restart the bot.");
+            result = false;
+        }
+
+        return result;
+    }
+
     void checkDeprecatedSettings() {
         if (lastUsedMap.getOrDefault("autoBribe", null) != null) {
             BHBot.logger.warn("Deprecated setting detected: autoBribe. Ignoring it, use a combination of bribeLevel and familiars instead.");

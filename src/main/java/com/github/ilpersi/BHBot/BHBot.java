@@ -190,6 +190,9 @@ public class BHBot {
 
         logger.info("Settings loaded from file");
 
+        // We check for no longer supported settings
+        if (!bot.settings.checkUnsupportedSettings()) return;
+
         bot.settings.checkDeprecatedSettings();
         bot.settings.sanitizeSetting();
 
