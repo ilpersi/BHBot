@@ -3,6 +3,7 @@ package com.github.ilpersi.BHBot;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.Level;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,8 +13,53 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class Settings {
+
+    static class WorldBossSetting {
+        char type;
+        byte difficulty;
+        byte tier;
+        double chanceToRun;
+
+        // Optional fields can be nullable so we don't use Java primitives
+        Short timer;
+        Boolean dungeonOnTimeOut;
+        Boolean solo;
+        Integer minimumTotalTS;
+        Integer minimumPlayerTS;
+
+        WorldBossSetting(char type, byte difficulty, byte tier, double chanceToRun, @Nullable Short timer, @Nullable Boolean dungeonOnTimeOut,
+                                @Nullable Boolean solo, @Nullable Integer minimumTotalTS, @Nullable Integer minimumPlayerTS) {
+            this.type = type;
+            this.difficulty = difficulty;
+            this.tier = tier;
+            this.chanceToRun = chanceToRun;
+
+            // Optional fields
+            this.timer = Optional.ofNullable(timer).orElse((short) 300);
+            this.dungeonOnTimeOut = Optional.ofNullable(dungeonOnTimeOut).orElse(false);
+            this.solo = Optional.ofNullable(solo).orElse(false);
+            this.minimumTotalTS = Optional.ofNullable(minimumTotalTS).orElse(0);
+            this.minimumPlayerTS = Optional.ofNullable(minimumPlayerTS).orElse(0);
+        }
+
+        @Override
+        public String toString() {
+
+            return type +
+                    " " + difficulty +
+                    " " + tier +
+                    " " + (int) chanceToRun +
+                    " " + timer +
+                    " " + (dungeonOnTimeOut ? "1" : "0") +
+                    " " + (solo ? "1" : "0") +
+                    " " + minimumTotalTS +
+                    " " + minimumPlayerTS;
+        }
+    }
+
     static String configurationFile = "settings.ini";
 
     String username = "";
@@ -37,7 +83,6 @@ public class Settings {
     //Various settings
     int openSkeleton = 0;
     boolean contributeFamiliars = true;
-    boolean dungeonOnTimeout = true;
     LinkedHashSet<String> screenshots;
 
     //activity settings
@@ -143,10 +188,12 @@ public class Settings {
     /**
      * World Boss Settings
      **/
-    List<String> worldBossSettings;
-    int worldBossTimer = 0;
-    boolean worldBossSolo = false;
+    RandomCollection<WorldBossSetting> worldBossSettingsNew;
+//    List<String> worldBossSettings;
+//    int worldBossTimer = 0;
+//    boolean worldBossSolo = false;
     boolean debugWBTS = false;
+//    boolean dungeonOnTimeout = true;
     /**
      * Autorevive Settings
      **/
@@ -243,7 +290,7 @@ public class Settings {
         activitiesEnabled = new LinkedHashSet<>();
         screenshots = new LinkedHashSet<>();
         setScreenshotsFromString("w d f b dg wg fe"); // enabled all by default
-        worldBossSettings = new ArrayList<>();
+        worldBossSettingsNew = new RandomCollection<>();
         dungeons = new RandomCollection<>();
         setDungeons("z1d4 3 100"); // some default value
         wednesdayDungeons = new RandomCollection<>();
@@ -324,13 +371,124 @@ public class Settings {
         }
     }
 
-    private void setWorldBoss(String... types) {
-        this.worldBossSettings.clear();
-        for (String t : types) {
-            String add = t.trim();
-            if (add.equals(""))
+    private void setWorldBossNew(String... wbSettings) {
+        char type;
+        byte difficulty;
+        byte tier;
+        double chanceToRun;
+
+        // Optional fields can be nullable so we don't use Java primitives
+        Short timer;
+        Boolean dungeonOnTimeOut;
+        Boolean solo;
+        Integer minimumTotalTS;
+        Integer minimumPlayerTS;
+
+        // We dinamically build the letter matching pattern for the regex so that we don't have to modify it when
+        // a new world boss is released
+        StringBuilder wbTypeString = new StringBuilder();
+
+        wbTypeString.append("[");
+        for (DungeonThread.WorldBoss wbType : DungeonThread.WorldBoss.values()) {
+            // We skip the unknown boss letter
+            if ("?".equals(wbType.getLetter())) continue;
+
+            wbTypeString.append(wbType.getLetter());
+        }
+        wbTypeString.append("]");
+
+        // \s*(?<type>[onm3bt])\s+(?<difficulty>[123])\s+(?<tier>\d{1,2})\s+(?<chanceToRun>\d*)\s*(?<timer>\d*)\s*(?<dungeonOnTimeout>[01])*\s*(?<solo>[01])*\s*(?<minimumTotalTS>\d+)*\s*(?<minimumPlayerTS>\d+)*
+        //
+        // Options: Case sensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
+        //
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        // Match the regex below and capture its match into a backreference named “type” (also backreference number 1) «(?<type>[onm3bt])»
+        //    Match a single character from the list “onm3bt” (case sensitive) «[onm3bt]»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s+»
+        //    Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
+        // Match the regex below and capture its match into a backreference named “difficulty” (also backreference number 2) «(?<difficulty>[123])»
+        //    Match a single character from the list “123” «[123]»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s+»
+        //    Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
+        // Match the regex below and capture its match into a backreference named “tier” (also backreference number 3) «(?<tier>\d{1,2})»
+        //    Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+        //       Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s+»
+        //    Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
+        // Match the regex below and capture its match into a backreference named “chanceToRun” (also backreference number 4) «(?<chanceToRun>\d*)»
+        //    Match a single character that is a “digit” (ASCII 0–9 only) «\d*»
+        //       Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        // Match the regex below and capture its match into a backreference named “timer” (also backreference number 5) «(?<timer>\d*)»
+        //    Match a single character that is a “digit” (ASCII 0–9 only) «\d*»
+        //       Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        // Match the regex below and capture its match into a backreference named “dungeonOnTimeout” (also backreference number 6) «(?<dungeonOnTimeout>[01])*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        //       You repeated the capturing group itself.  The group will capture only the last iteration.  Put a capturing group around the repeated group to capture all iterations. «*»
+        //       Or, if you don’t want to capture anything, replace the capturing group with a non-capturing group to make your regex more efficient.
+        //    Match a single character from the list “01” «[01]»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        // Match the regex below and capture its match into a backreference named “solo” (also backreference number 7) «(?<solo>[01])*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        //       You repeated the capturing group itself.  The group will capture only the last iteration.  Put a capturing group around the repeated group to capture all iterations. «*»
+        //       Or, if you don’t want to capture anything, replace the capturing group with a non-capturing group to make your regex more efficient.
+        //    Match a single character from the list “01” «[01]»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        // Match the regex below and capture its match into a backreference named “minimumTotalTS” (also backreference number 8) «(?<minimumTotalTS>\d+)*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        //       You repeated the capturing group itself.  The group will capture only the last iteration.  Put a capturing group around the repeated group to capture all iterations. «*»
+        //       Or, if you don’t want to capture anything, replace the capturing group with a non-capturing group to make your regex more efficient.
+        //    Match a single character that is a “digit” (ASCII 0–9 only) «\d+»
+        //       Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        // Match the regex below and capture its match into a backreference named “minimumPlayerTS” (also backreference number 9) «(?<minimumPlayerTS>\d+)*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        //       You repeated the capturing group itself.  The group will capture only the last iteration.  Put a capturing group around the repeated group to capture all iterations. «*»
+        //       Or, if you don’t want to capture anything, replace the capturing group with a non-capturing group to make your regex more efficient.
+        //    Match a single character that is a “digit” (ASCII 0–9 only) «\d+»
+        //       Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
+
+        Pattern wbRegex = Pattern.compile("\\s*(?<type>" + wbTypeString.toString() + ")\\s+(?<difficulty>[123])\\s+" +
+                "(?<tier>\\d{1,2})\\s+(?<chanceToRun>\\d*)\\s*(?<timer>\\d*)\\s*(?<dungeonOnTimeout>[01])*\\s*" +
+                "(?<solo>[01])*\\s*(?<minimumTotalTS>\\d+)*\\s*(?<minimumPlayerTS>\\d+)*");
+
+        this.worldBossSettingsNew.clear();
+        for (String s : wbSettings) {
+            String add = s.trim();
+            if ("".equals(add))
                 continue;
-            this.worldBossSettings.add(add);
+
+            Matcher wbMatcher;
+            try {
+                wbMatcher = wbRegex.matcher(add);
+            } catch (PatternSyntaxException ex) {
+                continue;
+            }
+
+            if (wbMatcher.find()) {
+                type = wbMatcher.group("type").charAt(0);
+                difficulty = Byte.parseByte(wbMatcher.group("difficulty"));
+                tier = Byte.parseByte(wbMatcher.group("tier"));
+                chanceToRun = Double.parseDouble(wbMatcher.group("chanceToRun"));
+
+                // Nullable fields
+                timer = "".equals(wbMatcher.group("timer")) || wbMatcher.group("timer") == null ? null : Short.parseShort(wbMatcher.group("timer"));
+                dungeonOnTimeOut = "".equals(wbMatcher.group("dungeonOnTimeout")) || wbMatcher.group("dungeonOnTimeout") == null ? null : "1".equals(wbMatcher.group("dungeonOnTimeout"));
+                solo = "".equals(wbMatcher.group("solo"))  || wbMatcher.group("solo") == null ? null : "1".equals(wbMatcher.group("solo"));
+                minimumTotalTS = "".equals(wbMatcher.group("minimumTotalTS"))  || wbMatcher.group("minimumTotalTS") == null ? null : Integer.parseInt(wbMatcher.group("minimumTotalTS"));
+                minimumPlayerTS = "".equals(wbMatcher.group("minimumPlayerTS")) || wbMatcher.group("minimumPlayerTS") == null ? null :  Integer.parseInt(wbMatcher.group("minimumPlayerTS"));
+
+                // Adding to the Random collection
+                WorldBossSetting wbSetting = new WorldBossSetting(type, difficulty, tier, chanceToRun, timer, dungeonOnTimeOut, solo, minimumTotalTS, minimumPlayerTS);
+                worldBossSettingsNew.add(chanceToRun, wbSetting);
+            }
         }
     }
 
@@ -618,12 +776,14 @@ public class Settings {
         return result.toString();
     }
 
-    private String getWorldBossAsString() {
+    private String getWorldBossNewAsString() {
         StringBuilder result = new StringBuilder();
-        for (String s : worldBossSettings)
-            result.append(s).append(" ");
-        if (result.length() > 0)
-            result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last " " character
+
+        for (WorldBossSetting s : worldBossSettingsNew) {
+            if (result.length() > 0) result.append(";");
+
+            result.append(s.toString());
+        }
         return result.toString();
     }
 
@@ -803,14 +963,8 @@ public class Settings {
 
     private void setScreenshotsFromString(String s) { setScreenshots(s.split(" ")); }
 
-    private void setWorldBossFromString(String s) {
-        setWorldBoss(s.split(" "));
-        // clean up (trailing spaces and remove if empty):
-        for (int i = worldBossSettings.size() - 1; i >= 0; i--) {
-            worldBossSettings.set(i, worldBossSettings.get(i).trim());
-            if (worldBossSettings.get(i).equals(""))
-                worldBossSettings.remove(i);
-        }
+    private void setWorldBossNewFromString(String s) {
+        setWorldBossNew(s.split(";"));
     }
 
     private void setDungeonsFromString(String s) {
@@ -1027,10 +1181,7 @@ public class Settings {
         costInvasion = Integer.parseInt(lastUsedMap.getOrDefault("costInvasion", "" + costInvasion));
         costExpedition = Integer.parseInt(lastUsedMap.getOrDefault("costExpedition", "" + costExpedition));
 
-        setWorldBossFromString(lastUsedMap.getOrDefault("worldBoss", getWorldBossAsString()));
-        worldBossTimer = Integer.parseInt(lastUsedMap.getOrDefault("worldBossTimer", "" + worldBossTimer));
-        dungeonOnTimeout = lastUsedMap.getOrDefault("dungeonOnTimeout", dungeonOnTimeout ? "1" : "0").equals("1");
-        worldBossSolo = lastUsedMap.getOrDefault("worldBossSolo", worldBossSolo ? "1" : "0").equals("1");
+        setWorldBossNewFromString(lastUsedMap.getOrDefault("worldBoss", getWorldBossNewAsString()));
         debugWBTS = lastUsedMap.getOrDefault("debugWBTS", debugWBTS ? "1" : "0").equals("1");
 
         setAutoReviveFromString(lastUsedMap.getOrDefault("autoRevive", getAutoReviveAsString()));

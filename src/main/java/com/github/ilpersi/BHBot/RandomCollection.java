@@ -1,8 +1,6 @@
 package com.github.ilpersi.BHBot;
 
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -11,7 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @author ilpersi
  */
-public class RandomCollection<T> {
+public class RandomCollection<T> implements Iterable<T> {
     private final NavigableMap<Double, T> map = new TreeMap<>();
     private double total = 0;
 
@@ -53,5 +51,15 @@ public class RandomCollection<T> {
         if (result.length() > 0)
             result = new StringBuilder(result.substring(0, result.length() - 1)); // remove last ";" character
         return result.toString();
+    }
+
+    @SuppressWarnings("NullableProblems")
+    @Override
+    public Iterator<T> iterator() {
+        List<T> tmpList = new ArrayList<>();
+        for (Map.Entry<Double, T> entry : map.entrySet()) {
+            tmpList.add(entry.getValue());
+        }
+        return tmpList.iterator();
     }
 }

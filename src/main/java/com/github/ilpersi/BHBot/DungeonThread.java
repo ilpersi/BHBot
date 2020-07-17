@@ -1575,7 +1575,15 @@ public class DungeonThread implements Runnable {
                             if (bot.scheduler.doWorldBossImmediately)
                                 bot.scheduler.doWorldBossImmediately = false; // reset it
 
-                            if (!checkWorldBossInput()) {
+                           Settings.WorldBossSetting wbSetting = bot.settings.worldBossSettingsNew.next();
+                            if (wbSetting == null) {
+                                BHBot.logger.error("No World Boss setting found! Disabling World Boss");
+                                bot.settings.activitiesEnabled.remove("w");
+                                restart();
+                                continue;
+                            }
+
+                            if (!checkWorldBossInput(wbSetting)) {
                                 BHBot.logger.warn("Invalid world boss settings detected, World Boss will be skipped");
                                 continue;
                             }
@@ -1594,24 +1602,21 @@ public class DungeonThread implements Runnable {
                             bot.browser.readScreen();
                             detectCharacterDialogAndHandleIt(); //clear dialogue
 
-                            WorldBoss wbType = WorldBoss.fromLetter(bot.settings.worldBossSettings.get(0));
+                            WorldBoss wbType = WorldBoss.fromLetter(String.valueOf(wbSetting.type));
                             if (wbType == null) {
-                                BHBot.logger.error("Unkwon World Boss type: " + bot.settings.worldBossSettings.get(0) + ". Disabling World Boss");
+                                BHBot.logger.error("Unkwon World Boss type: " + wbSetting.type + ". Disabling World Boss");
                                 bot.settings.activitiesEnabled.remove("w");
                                 restart();
                                 continue;
                             }
 
-                            int worldBossDifficulty = Integer.parseInt(bot.settings.worldBossSettings.get(1));
-                            int worldBossTier = Integer.parseInt(bot.settings.worldBossSettings.get(2));
-
                             //new settings loading
-                            String worldBossDifficultyText = worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic";
+                            String worldBossDifficultyText = wbSetting.difficulty == 1 ? "Normal" : wbSetting.difficulty == 2 ? "Hard" : "Heroic";
 
-                            if (!bot.settings.worldBossSolo) {
-                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + ". Lobby timeout is " + Misc.millisToHumanForm((long) bot.settings.worldBossTimer * 1000L) + ".");
+                            if (!wbSetting.solo) {
+                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + ". Lobby timeout is " + Misc.millisToHumanForm((long) wbSetting.timer * 1000L) + ".");
                             } else {
-                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " Solo");
+                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + " Solo");
                             }
 
                             bot.browser.readScreen();
@@ -1643,7 +1648,7 @@ public class DungeonThread implements Runnable {
 
                             bot.browser.readScreen(Misc.Durations.SECOND);
                             seg = MarvinSegment.fromCue(BHBot.cues.get("Private"), Misc.Durations.SECOND, bot.browser);
-                            if (!bot.settings.worldBossSolo) {
+                            if (!wbSetting.solo) {
                                 if (seg != null) {
                                     BHBot.logger.info("Unchecking private lobby");
                                     bot.browser.clickOnSeg(seg);
@@ -1661,10 +1666,10 @@ public class DungeonThread implements Runnable {
 
                             int currentTier = detectWorldBossTier();
                             Misc.sleep(500);
-                            if (currentTier != worldBossTier) {
-                                BHBot.logger.info("T" + currentTier + " detected, changing to T" + worldBossTier);
+                            if (currentTier != wbSetting.tier) {
+                                BHBot.logger.info("T" + currentTier + " detected, changing to T" + wbSetting.tier);
                                 Misc.sleep(500);
-                                if (!changeWorldBossTier(worldBossTier, wbType)) {
+                                if (!changeWorldBossTier(wbSetting.tier, wbType)) {
                                     restart();
                                     continue;
                                 }
@@ -1674,10 +1679,10 @@ public class DungeonThread implements Runnable {
 
                             int currentDifficulty = detectWorldBossDifficulty();
                             String currentDifficultyName = (currentDifficulty == 1 ? "Normal" : currentDifficulty == 2 ? "Hard" : "Heroic");
-                            String settingsDifficultyName = (worldBossDifficulty == 1 ? "Normal" : worldBossDifficulty == 2 ? "Hard" : "Heroic");
-                            if (currentDifficulty != worldBossDifficulty) {
+                            String settingsDifficultyName = (wbSetting.difficulty == 1 ? "Normal" : wbSetting.difficulty == 2 ? "Hard" : "Heroic");
+                            if (currentDifficulty != wbSetting.difficulty) {
                                 BHBot.logger.info(currentDifficultyName + " detected, changing to " + settingsDifficultyName);
-                                changeWorldBossDifficulty(worldBossDifficulty);
+                                changeWorldBossDifficulty(wbSetting.difficulty);
                             }
 
                             bot.browser.readScreen(Misc.Durations.SECOND);
@@ -1692,7 +1697,7 @@ public class DungeonThread implements Runnable {
                             BHBot.logger.info("Starting lobby: " + wbType.getName() + " has " + wbType.getPartySize() + " party members");
 
                             //wait for lobby to fill with a timer
-                            if (!bot.settings.worldBossSolo) {
+                            if (!wbSetting.solo) {
                                 // How many invites do we expect for this WB?
                                 int inviteCnt = wbType.getPartySize() - 1;
 
@@ -1706,7 +1711,7 @@ public class DungeonThread implements Runnable {
 
                                 // Timings
                                 long startTime = Misc.getTime();
-                                long cutOffTime = startTime + (bot.settings.worldBossTimer * Misc.Durations.SECOND);
+                                long cutOffTime = startTime + (wbSetting.timer * Misc.Durations.SECOND);
                                 long nextUpdateTime = startTime + (15 * Misc.Durations.SECOND);
 
                                 // Temporary string used to make sure we don't save 10000000s of screenshots when debugWBTS is enabled
@@ -1774,7 +1779,7 @@ public class DungeonThread implements Runnable {
                                 }
 
                                 if (lobbyTimeout) {
-                                    if (bot.settings.dungeonOnTimeout) { //setting to run a dungeon if we cant fill a lobby
+                                    if (wbSetting.dungeonOnTimeOut) { //setting to run a dungeon if we cant fill a lobby
                                         BHBot.logger.info("Lobby timed out, running dungeon instead");
                                         closeWorldBoss();
                                         bot.browser.readScreen(4 * Misc.Durations.SECOND); //make sure we're stable on the main screen
@@ -1796,7 +1801,7 @@ public class DungeonThread implements Runnable {
                                             Misc.sleep(2 * Misc.Durations.SECOND); //wait for animation to finish
                                             bot.browser.clickInGame(330, 360); //yesgreen cue has issues so we use XY to click on Yes
                                         }
-                                        BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " started!");
+                                        BHBot.logger.info(worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + " started!");
                                         bot.setState(BHBot.State.WorldBoss);
                                     } else { //generic error / unknown action restart
                                         BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
@@ -1818,7 +1823,7 @@ public class DungeonThread implements Runnable {
                                         bot.browser.clickOnSeg(seg);
                                     }
                                     bot.browser.clickInGame(330, 360); //yesgreen cue has issues so we use pos to click on Yes as a backup
-                                    BHBot.logger.info(worldBossDifficultyText + " T" + worldBossTier + " " + wbType.getName() + " Solo started!");
+                                    BHBot.logger.info(worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + " Solo started!");
                                     bot.setState(BHBot.State.WorldBoss);
                                     continue;
                                 }
@@ -3888,10 +3893,8 @@ public class DungeonThread implements Runnable {
     /**
      * Check world boss inputs are valid
      **/
-    private boolean checkWorldBossInput() {
-        String worldBossType = bot.settings.worldBossSettings.get(0);
-        int worldBossTier = Integer.parseInt(bot.settings.worldBossSettings.get(2));
-        WorldBoss wb = WorldBoss.fromLetter(worldBossType);
+    private boolean checkWorldBossInput(Settings.WorldBossSetting wbSetting) {
+        WorldBoss wb = WorldBoss.fromLetter(String.valueOf(wbSetting.type));
 
         //check name
         if (wb == null) {
@@ -3900,13 +3903,13 @@ public class DungeonThread implements Runnable {
         }
 
         //check tier
-        if (worldBossTier < wb.minTier || worldBossTier > wb.maxTier) {
+        if (wbSetting.tier < wb.minTier || wbSetting.tier > wb.maxTier) {
             BHBot.logger.error("Invalid world boss tier for " + wb.getName() + ", must be between " + wb.getMinTier() + " and " + wb.getMaxTier());
             return false;
         }
 
         //warn user if timer is over 5 minutes
-        if (bot.settings.worldBossTimer > 600) {
+        if (wbSetting.timer > 600) {
             BHBot.logger.warn("Warning: Timer longer than 5 minutes");
             return false;
         }
@@ -5912,7 +5915,7 @@ public class DungeonThread implements Runnable {
      * This Enum is used to group together all the information related to the World Boss
      */
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
-    private enum WorldBoss {
+    enum WorldBoss {
         Orlag("o", "Orlag Clan", 1, 3, 12, 5, new int[] {147, 175, 204, 232, 261, 289}),
         Netherworld("n", "Netherworld", 2, 3, 9, 3, new int[] {146, 187, 227}),
         Melvin("m", "Melvin", 3, 10, 11, 4, new int[] {}),
