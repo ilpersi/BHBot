@@ -1717,6 +1717,7 @@ public class DungeonThread implements Runnable {
                                 // Temporary string used to make sure we don't save 10000000s of screenshots when debugWBTS is enabled
                                 String lastSavedName = "";
 
+                                cutOffLoop:
                                 while (Misc.getTime() < cutOffTime) {
                                     // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
                                     // at the same time we also wait 500ms so to easu CPU consumption
@@ -1759,32 +1760,33 @@ public class DungeonThread implements Runnable {
                                                 BufferedImage tsSubImg = subImg.getBufferedImage();
 
                                                 int playerTS = readNumFromImg(tsSubImg, "wb_player_ts_", new HashSet<>());
+                                                playersTS[partyMemberPos] = playerTS;
 
                                                 if (playerTS == 0) {
                                                     // Player position one is you, the first party member is position two
                                                     BHBot.logger.debug("It was impossible to read WB player TS for player position " + partyMemberPos + 2);
                                                 } else {
-                                                    playersTS[partyMemberPos] = playerTS;
                                                     if (playerTS < wbSetting.minimumPlayerTS) {
-                                                        Bounds kickBounds = Bounds.fromWidthHeight(411, 220 + (54 * partyMemberPos), 43, 42);
                                                         BHBot.logger.info("Player " + partyMemberPos + 2 + " TS is lower than required minimum: " + playerTS + "/" + wbSetting.minimumPlayerTS);
 
                                                         // We kick the player if we need to
+                                                        Bounds kickBounds = Bounds.fromWidthHeight(411, 220 + (54 * partyMemberPos), 43, 42);
                                                         seg = MarvinSegment.fromCue("WorldBossPlayerKick", 2 * Misc.Durations.SECOND, kickBounds, bot.browser);
                                                         if (seg == null) {
                                                             BHBot.logger.error("Impossible to find kick button for party member " + (partyMemberPos + 2) + ".");
-                                                            break;
+                                                            continue  cutOffLoop;
                                                         } else {
                                                             bot.browser.clickOnSeg(seg);
                                                             seg = MarvinSegment.fromCue("WorldBossPopupKick", 5 * Misc.Durations.SECOND, bot.browser);
                                                             if (seg == null) {
                                                                 BHBot.logger.error("Impossible to find player kick confirm popup");
-                                                                break;
+                                                                restart();
+                                                                break cutOffLoop;
                                                             } else {
                                                                 bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossPopupKick"), new Cue(BHBot.cues.get("YesGreen"), Bounds.fromWidthHeight(260, 340, 130, 40)) );
                                                             }
                                                         }
-                                                        break;
+                                                        continue cutOffLoop;
                                                     }
                                                 }
 
