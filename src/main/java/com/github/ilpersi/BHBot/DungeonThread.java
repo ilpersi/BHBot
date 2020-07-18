@@ -3894,6 +3894,8 @@ public class DungeonThread implements Runnable {
      * Check world boss inputs are valid
      **/
     private boolean checkWorldBossInput(Settings.WorldBossSetting wbSetting) {
+        final long MAX_TIMER = 600;
+
         WorldBoss wb = WorldBoss.fromLetter(String.valueOf(wbSetting.type));
 
         //check name
@@ -3909,8 +3911,8 @@ public class DungeonThread implements Runnable {
         }
 
         //warn user if timer is over 5 minutes
-        if (wbSetting.timer > 600) {
-            BHBot.logger.warn("Warning: Timer longer than 5 minutes");
+        if (wbSetting.timer > MAX_TIMER) {
+            BHBot.logger.warn("Warning: Timer longer than " + Misc.millisToHumanForm(MAX_TIMER * 1000));
             return false;
         }
         return true;
