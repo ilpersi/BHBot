@@ -46,7 +46,7 @@ public class BlackWhiteTools {
                              * ATTENTION IF YOU WANT THIS TO WORK CORRECTLY, REMEMBER TO CHECK THE PARAMETERS
                              * OF THE TOBLACKWHITE METHOD
                              */
-                            origImg.toBlackWhite(new Color(20, 20, 20), new Color(203, 203, 203), 203);
+                            origImg.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
                             BufferedImage bwImage = origImg.getBufferedImage();
 
                             String fileName = "BlackWhite_" + fileEntry.getName();
