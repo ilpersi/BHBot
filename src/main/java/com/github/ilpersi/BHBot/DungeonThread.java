@@ -1575,7 +1575,7 @@ public class DungeonThread implements Runnable {
                             if (bot.scheduler.doWorldBossImmediately)
                                 bot.scheduler.doWorldBossImmediately = false; // reset it
 
-                           Settings.WorldBossSetting wbSetting = bot.settings.worldBossSettingsNew.next();
+                           Settings.WorldBossSetting wbSetting = bot.settings.worldBossSettings.next();
                             if (wbSetting == null) {
                                 BHBot.logger.error("No World Boss setting found! Disabling World Boss");
                                 bot.settings.activitiesEnabled.remove("w");

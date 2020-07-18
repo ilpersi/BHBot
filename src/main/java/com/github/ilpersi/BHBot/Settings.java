@@ -188,7 +188,7 @@ public class Settings {
     /**
      * World Boss Settings
      **/
-    RandomCollection<WorldBossSetting> worldBossSettingsNew;
+    RandomCollection<WorldBossSetting> worldBossSettings;
 //    List<String> worldBossSettings;
 //    int worldBossTimer = 0;
 //    boolean worldBossSolo = false;
@@ -290,7 +290,7 @@ public class Settings {
         activitiesEnabled = new LinkedHashSet<>();
         screenshots = new LinkedHashSet<>();
         setScreenshotsFromString("w d f b dg wg fe"); // enabled all by default
-        worldBossSettingsNew = new RandomCollection<>();
+        worldBossSettings = new RandomCollection<>();
         dungeons = new RandomCollection<>();
         setDungeons("z1d4 3 100"); // some default value
         wednesdayDungeons = new RandomCollection<>();
@@ -459,7 +459,7 @@ public class Settings {
                 "(?<tier>\\d{1,2})\\s+(?<chanceToRun>\\d*)\\s*(?<timer>\\d*)\\s*(?<dungeonOnTimeout>[01])*\\s*" +
                 "(?<solo>[01])*\\s*(?<minimumTotalTS>\\d+)*\\s*(?<minimumPlayerTS>\\d+)*");
 
-        this.worldBossSettingsNew.clear();
+        this.worldBossSettings.clear();
         for (String s : wbSettings) {
             String add = s.trim();
             if ("".equals(add))
@@ -487,7 +487,7 @@ public class Settings {
 
                 // Adding to the Random collection
                 WorldBossSetting wbSetting = new WorldBossSetting(type, difficulty, tier, chanceToRun, timer, dungeonOnTimeOut, solo, minimumTotalTS, minimumPlayerTS);
-                worldBossSettingsNew.add(chanceToRun, wbSetting);
+                worldBossSettings.add(chanceToRun, wbSetting);
             }
         }
     }
@@ -779,7 +779,7 @@ public class Settings {
     private String getWorldBossNewAsString() {
         StringBuilder result = new StringBuilder();
 
-        for (WorldBossSetting s : worldBossSettingsNew) {
+        for (WorldBossSetting s : worldBossSettings) {
             if (result.length() > 0) result.append(";");
 
             result.append(s.toString());
