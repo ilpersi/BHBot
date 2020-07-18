@@ -286,6 +286,9 @@ public class Settings {
     // If any error happens during the settings loading, this arraylist is populated with the offending lines
     ArrayList<String> wrongSettingLines = new ArrayList<>();
 
+    //If any warning happens during the loading, this arraylist is used to keep track of it
+    ArrayList<String> warningSettingLInes = new ArrayList<>();
+
     public Settings() {
         activitiesEnabled = new LinkedHashSet<>();
         screenshots = new LinkedHashSet<>();
@@ -488,6 +491,8 @@ public class Settings {
                 // Adding to the Random collection
                 WorldBossSetting wbSetting = new WorldBossSetting(type, difficulty, tier, chanceToRun, timer, dungeonOnTimeOut, solo, minimumTotalTS, minimumPlayerTS);
                 worldBossSettings.add(chanceToRun, wbSetting);
+            } else {
+                warningSettingLInes.add("Wrong format for worldBoss setting: '" + add + "'. Ignoring it.");
             }
         }
     }

@@ -163,6 +163,13 @@ public class BHBot {
             }
             return;
         }
+
+        // If any warning is present during the setting parsing, we raise it
+        if (!bot.settings.warningSettingLInes.isEmpty()) {
+            for (String warningLine: bot.settings.warningSettingLInes) {
+                logger.warn(warningLine);
+            }
+        }
         
         Properties properties = new Properties();
         try {
