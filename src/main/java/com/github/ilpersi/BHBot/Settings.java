@@ -1279,6 +1279,35 @@ public class Settings {
             result = false;
         }
 
+        // We check if the worldBoss setting has the old format
+        if (lastUsedMap.getOrDefault("worldBoss", null) != null && !lastUsedMap.get("worldBoss").contains(";") ){
+            try {
+                // \s*[onm3bt]\s[123]\s\d{1,2}\s*$
+                //
+                // Options: Case sensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
+                //
+                // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
+                //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+                // Match a single character from the list “onm3bt” (case sensitive) «[onm3bt]»
+                // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s»
+                // Match a single character from the list “123” «[123]»
+                // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s»
+                // Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+                //    Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+                // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
+                //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+                // Assert position at the end of the string, or before the line break at the end of the string, if any (carriage return and line feed, next line, line separator, paragraph separator) «$»
+
+                boolean isOldFormat = lastUsedMap.get("worldBoss").matches("\\s*[onm3bt]\\s[123]\\s\\d{1,2}\\s*$");
+                if (isOldFormat) {
+                    BHBot.logger.error("Unsupported format setting 'worldBoss " + lastUsedMap.get("worldBoss") + "' Please review the documentation and update to the new format.");
+                    result = false;
+                }
+            } catch (PatternSyntaxException ex) {
+                BHBot.logger.warn("Error while checking the worldBoss setting format");
+            }
+        }
+
         return result;
     }
 
