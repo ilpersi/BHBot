@@ -478,6 +478,8 @@ class CueManager {
 
         addCue("WorldBossTitle", "cues/worldboss/cueWorldBossTitle.png", new Bounds(280, 90, 515, 140));
         addCue("WorldBossSummonTitle", "cues/worldboss/cueWorldBossSummonTitle.png", new Bounds(325, 100, 480, 150));
+        addCue("WorldBossPlayerKick", "cues/worldboss/ts/wb_player_kick.png", null);
+        addCue("WorldBossPopupKick", "cues/worldboss/ts/wb_popup_kick.png", Bounds.fromWidthHeight(355, 135, 85, 40));
 
 
         //fishing related

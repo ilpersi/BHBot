@@ -1726,33 +1726,69 @@ public class DungeonThread implements Runnable {
                                     int[] playersTS = new int[inviteCnt];
 
                                     // We read the current total TS
-                                    MarvinImage totalTSImg = new MarvinImage(bot.browser.getImg().getSubimage(totalWBTS.x1, totalWBTS.y1, totalWBTS.width, totalWBTS.height));
-                                    totalTSImg.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
-                                    BufferedImage totalTSSubImg = totalTSImg.getBufferedImage();
-                                    int totalTS = readNumFromImg(totalTSSubImg, "wb_total_ts_", new HashSet<>());
+                                    int totalTS = 0;
+                                    if (wbSetting.minimumTotalTS > 0) {
+                                        MarvinImage totalTSImg = new MarvinImage(bot.browser.getImg().getSubimage(totalWBTS.x1, totalWBTS.y1, totalWBTS.width, totalWBTS.height));
+                                        totalTSImg.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
+                                        BufferedImage totalTSSubImg = totalTSImg.getBufferedImage();
+                                        totalTS = readNumFromImg(totalTSSubImg, "wb_total_ts_", new HashSet<>());
+
+                                        // If readNumFromImg has errors it will return 0, so we make sure this is not the case
+                                        if (totalTS > 0 && totalTS >= wbSetting.minimumTotalTS) {
+                                            BHBot.logger.info("Minimum World Boss Total Skill of " + wbSetting.minimumTotalTS + " reached in " + Misc.millisToHumanForm(Misc.getTime() - startTime));
+                                            lobbyTimeout = false;
+                                            saveDebugWBTSScreen(totalTS, playersTS, lastSavedName);
+                                            break;
+                                        }
+
+                                    }
+
 
                                     List<MarvinSegment> inviteSegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Invite").im, 1.0, true, false, inviteBounds.x1, inviteBounds.y1, inviteBounds.x2, inviteBounds.y2);
                                     // At least one person joined the lobby
                                     if (inviteSegs.size() < inviteCnt) {
                                         Bounds TSBound = Bounds.fromWidthHeight(184, 241, 84, 18);
 
-                                        // If we are expecting 4 inviteCnt and inviteSegs size is 3 it means that one person joined the lobby
-                                        // Based on this logic, as the loop starts from zero the for check condition is (inviteCnt - inviteSegs.size)
-                                        // (4 - 3) that is equal to 1. As we start from 0, the condition operator is lesser than "<"
-                                        for (int partyMemberPos = 0; partyMemberPos < inviteCnt - inviteSegs.size(); partyMemberPos++) {
-                                            MarvinImage subImg = new MarvinImage(bot.browser.getImg().getSubimage(TSBound.x1, TSBound.y1 + (54 * partyMemberPos), TSBound.width, TSBound.height));
-                                            subImg.toBlackWhite(new Color(20, 20, 20), new Color(203, 203, 203), 203);
-                                            BufferedImage tsSubImg = subImg.getBufferedImage();
+                                        if (wbSetting.minimumPlayerTS > 0) {
+                                            // If we are expecting 4 inviteCnt and inviteSegs size is 3 it means that one person joined the lobby
+                                            // Based on this logic, as the loop starts from zero the for check condition is (inviteCnt - inviteSegs.size)
+                                            // (4 - 3) that is equal to 1. As we start from 0, the condition operator is lesser than "<"
+                                            for (int partyMemberPos = 0; partyMemberPos < inviteCnt - inviteSegs.size(); partyMemberPos++) {
+                                                MarvinImage subImg = new MarvinImage(bot.browser.getImg().getSubimage(TSBound.x1, TSBound.y1 + (54 * partyMemberPos), TSBound.width, TSBound.height));
+                                                subImg.toBlackWhite(new Color(20, 20, 20), new Color(203, 203, 203), 203);
+                                                BufferedImage tsSubImg = subImg.getBufferedImage();
 
-                                            int playerTS = readNumFromImg(tsSubImg, "wb_player_ts_", new HashSet<>());
+                                                int playerTS = readNumFromImg(tsSubImg, "wb_player_ts_", new HashSet<>());
 
-                                            if (playerTS == 0) {
-                                                // Player position one is you, the first party member is position two
-                                                BHBot.logger.debug("It was impossible to read WB player TS for player position " + partyMemberPos + 2);
-                                            } else {
-                                                playersTS[partyMemberPos] = playerTS;
+                                                if (playerTS == 0) {
+                                                    // Player position one is you, the first party member is position two
+                                                    BHBot.logger.debug("It was impossible to read WB player TS for player position " + partyMemberPos + 2);
+                                                } else {
+                                                    playersTS[partyMemberPos] = playerTS;
+                                                    if (playerTS < wbSetting.minimumPlayerTS) {
+                                                        Bounds kickBounds = Bounds.fromWidthHeight(411, 220 + (54 * partyMemberPos), 43, 42);
+                                                        BHBot.logger.info("Player " + partyMemberPos + 2 + " TS is lower than required minimum: " + playerTS + "/" + wbSetting.minimumPlayerTS);
+
+                                                        // We kick the player if we need to
+                                                        seg = MarvinSegment.fromCue("WorldBossPlayerKick", 2 * Misc.Durations.SECOND, kickBounds, bot.browser);
+                                                        if (seg == null) {
+                                                            BHBot.logger.error("Impossible to find kick button for party member " + (partyMemberPos + 2) + ".");
+                                                            break;
+                                                        } else {
+                                                            bot.browser.clickOnSeg(seg);
+                                                            seg = MarvinSegment.fromCue("WorldBossPopupKick", 5 * Misc.Durations.SECOND, bot.browser);
+                                                            if (seg == null) {
+                                                                BHBot.logger.error("Impossible to find player kick confirm popup");
+                                                                break;
+                                                            } else {
+                                                                bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossPopupKick"), new Cue(BHBot.cues.get("YesGreen"), Bounds.fromWidthHeight(260, 340, 130, 40)) );
+                                                            }
+                                                        }
+                                                        break;
+                                                    }
+                                                }
+
                                             }
-
                                         }
                                     }
 
@@ -1798,7 +1834,7 @@ public class DungeonThread implements Runnable {
                                         bot.browser.readScreen();
                                         seg = MarvinSegment.fromCue(BHBot.cues.get("TeamNotFull"), 2 * Misc.Durations.SECOND, bot.browser); //check if we have the team not full screen an clear it
                                         if (seg != null) {
-                                            Misc.sleep(2 * Misc.Durations.SECOND); //wait for animation to finish
+                                            bot.browser.readScreen(2 * Misc.Durations.SECOND); //wait for animation to finish
                                             bot.browser.clickInGame(330, 360); //yesgreen cue has issues so we use XY to click on Yes
                                         }
                                         BHBot.logger.info(worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + " started!");
