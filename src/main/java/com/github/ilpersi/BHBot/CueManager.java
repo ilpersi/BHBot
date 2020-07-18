@@ -475,11 +475,7 @@ class CueManager {
         addCue("cueWBSelectHard", "cues/worldboss/cueWBSelectHard.png", new Bounds(260, 140, 510, 320));
         addCue("cueWBSelectHeroic", "cues/worldboss/cueWBSelectHeroic.png", new Bounds(260, 140, 510, 320));
 
-        addCue("OrlagWB", "cues/worldboss/orlagclan.png", new Bounds(190, 355, 400, 390));
-        addCue("NetherWB", "cues/worldboss/netherworld.png", new Bounds(190, 355, 400, 390));
-        addCue("MelvinWB", "cues/worldboss/melvinfactory.png", new Bounds(190, 355, 400, 390));
-        addCue("3xt3rWB", "cues/worldboss/3xt3rmin4tion.png", new Bounds(190, 355, 400, 390));
-        addCue("BrimstoneWB", "cues/worldboss/brimstone.png", new Bounds(190, 355, 400, 390));
+
         addCue("WorldBossTitle", "cues/worldboss/cueWorldBossTitle.png", new Bounds(280, 90, 515, 140));
         addCue("WorldBossSummonTitle", "cues/worldboss/cueWorldBossSummonTitle.png", new Bounds(325, 100, 480, 150));
 
