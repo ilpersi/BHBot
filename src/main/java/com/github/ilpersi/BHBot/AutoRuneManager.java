@@ -1,5 +1,9 @@
 package com.github.ilpersi.BHBot;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -187,7 +191,8 @@ class AutoRuneManager {
     /**
      * Function to return the name of the runes for console output
      */
-    private String getRuneName(String runeName) {
+    @Contract(pure = true)
+    private @Nullable String getRuneName(@NotNull String runeName) {
 
         switch (runeName) {
             case "MinorRuneExperienceCommon":
@@ -311,7 +316,7 @@ class AutoRuneManager {
 
     }
 
-    private List<MinorRuneEffect> resolveDesiredRunes(List<String> desiredRunesAsStrs) {
+    private @NotNull List<MinorRuneEffect> resolveDesiredRunes(@NotNull List<String> desiredRunesAsStrs) {
         List<MinorRuneEffect> desiredRunes = new ArrayList<>();
 
         if (desiredRunesAsStrs.size() != 2) {
@@ -339,7 +344,7 @@ class AutoRuneManager {
         return desiredRunes;
     }
 
-    private boolean noRunesNeedSwitching(List<MinorRuneEffect> desiredRunes) {
+    private boolean noRunesNeedSwitching(@NotNull List<MinorRuneEffect> desiredRunes) {
         MinorRuneEffect desiredLeftRune = desiredRunes.get(0);
         MinorRuneEffect desiredRightRune = desiredRunes.get(1);
         MinorRuneEffect currentLeftRune = leftMinorRune.getRuneEffect();
@@ -361,7 +366,7 @@ class AutoRuneManager {
 
     }
 
-    private Boolean switchMinorRunes(List<MinorRuneEffect> desiredRunes) {
+    private Boolean switchMinorRunes(@NotNull List<MinorRuneEffect> desiredRunes) {
         MinorRuneEffect desiredLeftRune = desiredRunes.get(0);
         MinorRuneEffect desiredRightRune = desiredRunes.get(1);
 
@@ -411,6 +416,7 @@ class AutoRuneManager {
         return success;
     }
 
+    @NotNull
     private Boolean switchSingleMinorRune(MinorRuneEffect desiredRune) {
         bot.browser.readScreen(500); //sleep for window animation to finish
 
