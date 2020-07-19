@@ -594,7 +594,7 @@ public class BHBot {
                         notificationManager.sendTestNotification(notificationMessage);
                         break;
                     case "runes":
-                        dungeon.detectEquippedMinorRunes(true, true);
+                        dungeon.runeManager.detectEquippedMinorRunes(true, true);
                         break;
                     default:
                         break;
@@ -935,6 +935,7 @@ public class BHBot {
         // we make sure that the shrinemanager is resetted at restart time and we
         // skip the initialization if idleMode is true
         dungeon.shrineManager = new AutoShrineManager(this, settings.idleMode);
+        dungeon.runeManager = new AutoRuneManager(this, settings.idleMode);
         dungeon.reviveManager.reset();
     }
 
