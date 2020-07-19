@@ -146,7 +146,7 @@ public class AutoShrineManager {
                         (bot.getState() == BHBot.State.Expedition && bot.settings.autoBossRune.containsKey("e")) || (bot.getState() == BHBot.State.Dungeon && bot.settings.autoBossRune.containsKey("d"))) {
 
                     // TODO de-spagettify the boss rune feature
-                     bot.dungeon.handleMinorBossRunes();
+                     bot.dungeon.runeManager.handleMinorBossRunes();
                 }
 
                 while (Misc.getTime() < timeToWait) {

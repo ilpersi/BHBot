@@ -434,7 +434,7 @@ class CueManager {
         addCue("RunesSwitch", "cues/cueRunesSwitch.png", new Bounds(320, 260, 480, 295)); // rune picker
 
         // All minor rune cues
-        for (DungeonThread.MinorRune rune : DungeonThread.MinorRune.values()) {
+        for (AutoRuneManager.MinorRune rune : AutoRuneManager.MinorRune.values()) {
             addCue(rune.getRuneCueName(), rune.getRuneCueFileName(), null);
             addCue(rune.getRuneSelectCueName(), rune.getRuneSelectCueFileName(), new Bounds(235, 185, 540, 350));
         }
