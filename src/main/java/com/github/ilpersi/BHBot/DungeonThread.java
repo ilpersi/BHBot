@@ -1736,14 +1736,21 @@ public class DungeonThread implements Runnable {
 
                                         // If readNumFromImg has errors it will return 0, so we make sure this is not the case
                                         if (totalTS > 0 && totalTS >= wbSetting.minimumTotalTS) {
-                                            BHBot.logger.info("Minimum World Boss Total Skill of " + wbSetting.minimumTotalTS + " reached in " + Misc.millisToHumanForm(Misc.getTime() - startTime));
-                                            lobbyTimeout = false;
-                                            saveDebugWBTSScreen(totalTS, playersTS, lastSavedName);
-                                            break;
+
+                                            // We need to check that the current party members are ready
+                                            List<MarvinSegment> unreadySegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Unready").im, 1.0, true, false, unreadyBounds.x1, unreadyBounds.y1, unreadyBounds.x2, unreadyBounds.y2);
+
+                                            if (unreadySegs.isEmpty()) {
+                                                BHBot.logger.info("Minimum World Boss Total Skill of " + wbSetting.minimumTotalTS + " reached in " + Misc.millisToHumanForm(Misc.getTime() - startTime));
+                                                lobbyTimeout = false;
+                                                saveDebugWBTSScreen(totalTS, playersTS, lastSavedName);
+                                                break;
+                                            } else {
+                                                continue;
+                                            }
                                         }
 
                                     }
-
 
                                     List<MarvinSegment> inviteSegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Invite").im, 1.0, true, false, inviteBounds.x1, inviteBounds.y1, inviteBounds.x2, inviteBounds.y2);
                                     // At least one person joined the lobby
