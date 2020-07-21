@@ -97,7 +97,6 @@ public class DungeonThread implements Runnable {
     /**
      * global autorune vals
      */
-    private boolean autoBossRuned = false;
 
     BHBot bot;
     AutoShrineManager shrineManager;
@@ -451,7 +450,7 @@ public class DungeonThread implements Runnable {
                             }
 
                             //activity runes
-                            runeManager.handleMinorRunes("r");
+                            runeManager.processAutoRune("r");
 
                             bot.browser.readScreen(Misc.Durations.SECOND);
                             bot.browser.clickOnSeg(raidBTNSeg);
@@ -503,7 +502,7 @@ public class DungeonThread implements Runnable {
                             } else {
                                 bot.setState(BHBot.State.Raid);
                                 BHBot.logger.info("Raid initiated!");
-                                autoBossRuned = false;
+                                runeManager.reset();
                             }
                         }
                         continue;
@@ -613,12 +612,12 @@ public class DungeonThread implements Runnable {
                                 }
 
                                 //activity runes
-                                runeManager.handleMinorRunes("t");
+                                runeManager.processAutoRune("t");
 
                             } else {
 
                                 if (bot.settings.autoRune.containsKey("g")) {
-                                    runeManager.handleMinorRunes("g");
+                                    runeManager.processAutoRune("g");
                                     bot.browser.readScreen(Misc.Durations.SECOND);
                                 }
 
@@ -723,7 +722,7 @@ public class DungeonThread implements Runnable {
                             } else {
                                 bot.setState(trials ? BHBot.State.Trials : BHBot.State.Gauntlet);
                                 BHBot.logger.info((trials ? "Trials" : "Gauntlet") + " initiated!");
-                                autoBossRuned = false;
+                                runeManager.reset();
                             }
                         }
                         continue;
@@ -765,7 +764,7 @@ public class DungeonThread implements Runnable {
                                 bot.scheduler.doDungeonImmediately = false; // reset it
 
                             //configure activity runes
-                            runeManager.handleMinorRunes("d");
+                            runeManager.processAutoRune("d");
 
                             if (bot.settings.autoBossRune.containsKey("d") && !bot.settings.autoShrine.contains("d")) { //if autoshrine disabled but autorune enabled
 
@@ -898,7 +897,7 @@ public class DungeonThread implements Runnable {
                             }
 
                             bot.setState(BHBot.State.Dungeon);
-                            autoBossRuned = false;
+                            runeManager.reset();
 
                             BHBot.logger.info("Dungeon <z" + goalZone + "d" + goalDungeon + "> " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic") + " initiated!");
                         }
@@ -939,7 +938,7 @@ public class DungeonThread implements Runnable {
                                 bot.scheduler.doPVPImmediately = false; // reset it
 
                             //configure activity runes
-                            runeManager.handleMinorRunes("p");
+                            runeManager.processAutoRune("p");
 
                             BHBot.logger.info("Attempting PVP...");
                             stripDown(bot.settings.pvpstrip);
@@ -1102,7 +1101,7 @@ public class DungeonThread implements Runnable {
 
 
                                 //configure activity runes
-                                runeManager.handleMinorRunes("v");
+                                runeManager.processAutoRune("v");
                                 bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(badgeBtn);
 
@@ -1223,7 +1222,7 @@ public class DungeonThread implements Runnable {
                                     bot.scheduler.doInvasionImmediately = false; // reset it
 
                                 //configure activity runes
-                                runeManager.handleMinorRunes("i");
+                                runeManager.processAutoRune("i");
                                 bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(badgeBtn);
 
@@ -1339,7 +1338,7 @@ public class DungeonThread implements Runnable {
                                 }
 
                                 //activity runes
-                                runeManager.handleMinorRunes("e");
+                                runeManager.processAutoRune("e");
 
                                 bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(badgeBtn);
@@ -1502,7 +1501,7 @@ public class DungeonThread implements Runnable {
                                 } else {
                                     bot.setState(BHBot.State.Expedition);
                                     BHBot.logger.info(portalName + " portal initiated!");
-                                    autoBossRuned = false;
+                                    runeManager.reset();
                                 }
 
                                 if (handleGuildLeaveConfirm()) {
@@ -1567,7 +1566,7 @@ public class DungeonThread implements Runnable {
                             }
 
                             //configure activity runes
-                            runeManager.handleMinorRunes("w");
+                            runeManager.processAutoRune("w");
 
                             seg = MarvinSegment.fromCue(BHBot.cues.get("WorldBoss"), bot.browser);
                             if (seg != null) {
@@ -2293,7 +2292,7 @@ public class DungeonThread implements Runnable {
          * autoRune Code
          */
         if (bot.settings.autoBossRune.containsKey(bot.getState().getShortcut()) && !encounterStatus) {
-            handleAutoBossRune();
+            runeManager.handleAutoBossRune(outOfEncounterTimestamp, inEncounterTimestamp);
         }
 
         /*
@@ -2647,7 +2646,7 @@ public class DungeonThread implements Runnable {
                     restart();
                 }
 
-                autoBossRuned = false;
+                runeManager.reset();
                 bot.browser.readScreen(Misc.Durations.SECOND * 2);
             }
 
@@ -2659,42 +2658,7 @@ public class DungeonThread implements Runnable {
         bot.scheduler.restoreIdleTime();
     }
 
-    private void handleAutoBossRune() { //seperate function so we can run autoRune without autoShrine
-        MarvinSegment guildButtonSeg;
-        guildButtonSeg = MarvinSegment.fromCue(BHBot.cues.get("GuildButton"), bot.browser);
 
-        if ((bot.getState() == BHBot.State.Raid && !bot.settings.autoShrine.contains("r") && bot.settings.autoBossRune.containsKey("r")) ||
-                (bot.getState() == BHBot.State.Trials && !bot.settings.autoShrine.contains("t") && bot.settings.autoBossRune.containsKey("t")) ||
-                (bot.getState() == BHBot.State.Expedition && !bot.settings.autoShrine.contains("e") && bot.settings.autoBossRune.containsKey("e")) ||
-                (bot.getState() == BHBot.State.Dungeon && bot.settings.autoBossRune.containsKey("d")) ||
-                bot.getState() == BHBot.State.UnidentifiedDungeon) {
-            if (!autoBossRuned) {
-                if ((((outOfEncounterTimestamp - inEncounterTimestamp) >= bot.settings.battleDelay) && guildButtonSeg != null)) {
-                    BHBot.logger.autorune(bot.settings.battleDelay + "s since last encounter, changing runes for boss encounter");
-
-                    runeManager.handleMinorBossRunes();
-
-                    if (!shrineManager.updateShrineSettings(false, false)) {
-                        BHBot.logger.error("Impossible to disable Ignore Boss in handleAutoBossRune!");
-                        BHBot.logger.warn("Resetting encounter timer to try again in 30 seconds.");
-                        inEncounterTimestamp = Misc.getTime() / 1000;
-                        return;
-                    }
-
-                    // We disable and re-enable the auto feature
-                    while (MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), 500, bot.browser) != null) {
-                        bot.browser.clickInGame(780, 270); //auto off
-                        bot.browser.readScreen(500);
-                    }
-                    while (MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), 500, bot.browser) != null) {
-                        bot.browser.clickInGame(780, 270); //auto on again
-                        bot.browser.readScreen(500);
-                    }
-                    autoBossRuned = true;
-                }
-            }
-        }
-    }
 
     private boolean handleSkeletonKey() {
         MarvinSegment seg;

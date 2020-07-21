@@ -112,6 +112,8 @@ class AutoRuneManager {
     private MinorRune leftMinorRune;
     private MinorRune rightMinorRune;
 
+    private boolean autoBossRuned = false;
+
     AutoRuneManager(BHBot bot, boolean skipInitialization) {
         this.bot = bot;
 
@@ -258,7 +260,7 @@ class AutoRuneManager {
         return false;
     }
 
-    void handleMinorRunes(String activity) {
+    void processAutoRune(String activity) {
         List<String> desiredRunesAsStrs;
         String activityName = bot.getState().getNameFromShortcut(activity);
         if (bot.settings.autoRuneDefault.isEmpty()) {
@@ -314,6 +316,43 @@ class AutoRuneManager {
         if (!switchMinorRunes(desiredRunes))
             BHBot.logger.autorune("AutoBossRune failed!");
 
+    }
+
+    void handleAutoBossRune(long outOfEncounterTimestamp, long inEncounterTimestamp) { //seperate function so we can run autoRune without autoShrine
+        MarvinSegment guildButtonSeg;
+        guildButtonSeg = MarvinSegment.fromCue(BHBot.cues.get("GuildButton"), bot.browser);
+
+        if ((bot.getState() == BHBot.State.Raid && !bot.settings.autoShrine.contains("r") && bot.settings.autoBossRune.containsKey("r")) ||
+                (bot.getState() == BHBot.State.Trials && !bot.settings.autoShrine.contains("t") && bot.settings.autoBossRune.containsKey("t")) ||
+                (bot.getState() == BHBot.State.Expedition && !bot.settings.autoShrine.contains("e") && bot.settings.autoBossRune.containsKey("e")) ||
+                (bot.getState() == BHBot.State.Dungeon && bot.settings.autoBossRune.containsKey("d")) ||
+                bot.getState() == BHBot.State.UnidentifiedDungeon) {
+            if (!autoBossRuned) {
+                if ((((outOfEncounterTimestamp - inEncounterTimestamp) >= bot.settings.battleDelay) && guildButtonSeg != null)) {
+                    BHBot.logger.autorune(bot.settings.battleDelay + "s since last encounter, changing runes for boss encounter");
+
+                    handleMinorBossRunes();
+
+                    if (!bot.dungeon.shrineManager.updateShrineSettings(false, false)) {
+                        BHBot.logger.error("Impossible to disable Ignore Boss in handleAutoBossRune!");
+                        BHBot.logger.warn("Resetting encounter timer to try again in 30 seconds.");
+                        // inEncounterTimestamp = Misc.getTime() / 1000;
+                        return;
+                    }
+
+                    // We disable and re-enable the auto feature
+                    while (MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), 500, bot.browser) != null) {
+                        bot.browser.clickInGame(780, 270); //auto off
+                        bot.browser.readScreen(500);
+                    }
+                    while (MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), 500, bot.browser) != null) {
+                        bot.browser.clickInGame(780, 270); //auto on again
+                        bot.browser.readScreen(500);
+                    }
+                    autoBossRuned = true;
+                }
+            }
+        }
     }
 
     private @NotNull List<MinorRuneEffect> resolveDesiredRunes(@NotNull List<String> desiredRunesAsStrs) {
@@ -465,5 +504,9 @@ class AutoRuneManager {
         bot.browser.closePopupSecurely(BHBot.cues.get("RunesPicker"), BHBot.cues.get("X"));
         Misc.sleep(Misc.Durations.SECOND);
         return false;
+    }
+
+    void reset() {
+        autoBossRuned = false;
     }
 }
