@@ -60,11 +60,18 @@ public class Settings {
      * This is the minimum amount of badges that the bot must leave for the user. If badges get above this value, bot will play the gvg in case gvg is enabled of course.
      */
     int minBadges = 5;
+    /**
+     * This is the minimum amount of xeals that the bot must leave for the user. If xeals get above this value, bot will play the wb in case wb is enabled of course.
+     */
+    int minXeals = 1;
+
     // Max for various expendables for correct calculation if not default
     int maxShards = 4;
     int maxTokens = 10;
     int maxTickets = 10;
     int maxBadges = 10;
+    int maxXeals = 4;
+
     // costs (1..5) for various events:
     int costPVP = 1;
     int costGVG = 1;
@@ -861,12 +868,14 @@ public class Settings {
         maxTokens = Integer.parseInt(lastUsedMap.getOrDefault("maxTokens", "" + maxTokens));
         maxTickets = Integer.parseInt(lastUsedMap.getOrDefault("maxTickets", "" + maxTickets));
         maxBadges = Integer.parseInt(lastUsedMap.getOrDefault("maxBadges", "" + maxBadges));
+        maxXeals = Integer.parseInt(lastUsedMap.getOrDefault("maxXeals", "" + maxXeals));
 
         minShards = Integer.parseInt(lastUsedMap.getOrDefault("minShards", "" + minShards));
         minTokens = Integer.parseInt(lastUsedMap.getOrDefault("minTokens", "" + minTokens));
         minEnergyPercentage = Integer.parseInt(lastUsedMap.getOrDefault("minEnergyPercentage", "" + minEnergyPercentage));
         minTickets = Integer.parseInt(lastUsedMap.getOrDefault("minTickets", "" + minTickets));
         minBadges = Integer.parseInt(lastUsedMap.getOrDefault("minBadges", "" + minBadges));
+        minXeals = Integer.parseInt(lastUsedMap.getOrDefault("minXeals", "" + minXeals));
 
         poNotifyAlive = Integer.parseInt(lastUsedMap.getOrDefault("poNotifyAlive", "" + poNotifyAlive));
 
