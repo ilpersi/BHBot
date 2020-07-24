@@ -5558,7 +5558,8 @@ public class DungeonThread implements Runnable {
         Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11, 3, new int[]{}),
         BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 12, 3, new int[]{}),
         TitansAttack("t", "Titans Attack", 6, 11, 13, 3, new int[]{}),
-        Unknown("?", "Unknown", 7, 11, 100, 1, new int[]{});
+        IgnitedAbyss("i", "The Ignited Abyss", 7, 13, 13, 3, new int[]{}),
+        Unknown("?", "Unknown", 8, 13, 100, 1, new int[]{});
 
         private final String letter;
         private final String Name;
