@@ -330,7 +330,7 @@ public class DungeonThread implements Runnable {
                     // weekly gem screenshot every Sunday and after or after a week the bot is running.
                     if (bot.settings.screenshots.contains("wg")) {
                         // The option is enabled and more than a week has passed
-                        if (  (Misc.getTime() - timeLastWeeklyGem) > Misc.Durations.WEEK) {
+                        if ((Misc.getTime() - timeLastWeeklyGem) > Misc.Durations.WEEK) {
                             timeLastWeeklyGem = Misc.getTime();
 
                             BufferedImage gems = bot.browser.getImg().getSubimage(133, 16, 80, 14);
@@ -652,7 +652,7 @@ public class DungeonThread implements Runnable {
                                     bot.notificationManager.sendErrorNotification("T/G Error", "Unable to change " + (trials ? "trials" : "gauntlet") + " difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.");
 
                                     // We update the setting file with the old difficulty level
-                                    String settingName = trials ? "difficultyTrials": "difficultyGauntlet";
+                                    String settingName = trials ? "difficultyTrials" : "difficultyGauntlet";
                                     String original = settingName + " " + targetDifficulty;
                                     String updated = settingName + " " + difficulty;
                                     settingsUpdate(original, updated);
@@ -1525,37 +1525,60 @@ public class DungeonThread implements Runnable {
                     // Check worldBoss:
                     if ("w".equals(currentActivity)) {
                         timeLastXealsCheck = Misc.getTime();
-                        int energy = getEnergy();
-                        globalXeals = energy;
-                        BHBot.logger.readout("Energy: " + energy + "%, required: >" + bot.settings.minEnergyPercentage + "%");
 
-                        if (energy == -1) { // error
-                            if (bot.scheduler.doWorldBossImmediately)
-                                bot.scheduler.doWorldBossImmediately = false; // reset it
+                        bot.browser.readScreen();
+                        MarvinSegment wbBTNSeg = MarvinSegment.fromCue(BHBot.cues.get("WorldBoss"), bot.browser);
+                        if (wbBTNSeg == null) {
+                            bot.scheduler.resetIdleTime();
+                            BHBot.logger.error("World Boss button not found");
+                            continue;
+                        }
+                        bot.browser.clickOnSeg(wbBTNSeg);
+
+                        seg = MarvinSegment.fromCue("WorldBossPopup", 5 * Misc.Durations.SECOND, bot.browser); // wait until the raid window opens
+                        if (seg == null) {
+                            BHBot.logger.warn("Error: attempt at opening world boss window failed. No window cue detected. Ignoring...");
                             bot.scheduler.restoreIdleTime();
-
-
+                            // we make sure that everything that can be closed is actually closed to avoid idle timeout
+                            bot.browser.closePopupSecurely(BHBot.cues.get("X"), BHBot.cues.get("X"));
                             continue;
                         }
 
-                        if (!bot.scheduler.doWorldBossImmediately && (energy <= bot.settings.minEnergyPercentage)) {
+                        int xeals = getXeals();
+                        globalXeals = xeals;
+                        BHBot.logger.readout("Xeals: " + xeals + "%, required: >" + bot.settings.minXeals);
 
-                            //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
-                            int energyDifference = bot.settings.minEnergyPercentage - energy; //difference between needed and current resource
-                            if (energyDifference > 1) {
-                                int increase = (energyDifference - 1) * 4;
-                                ENERGY_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
-                            } else
-                                ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
-
-                            Misc.sleep(Misc.Durations.SECOND);
+                        if (xeals == -1) { // error
+                            if (bot.scheduler.doWorldBossImmediately)
+                                bot.scheduler.doWorldBossImmediately = false; // reset it
+                            bot.scheduler.restoreIdleTime();
                             continue;
+                        }
+
+                        if ((xeals == 0) || (!bot.scheduler.doWorldBossImmediately && (xeals <= bot.settings.minXeals || bot.settings.worldBossSettings.size() == 0))) {
+                            if (bot.scheduler.doWorldBossImmediately)
+                                bot.scheduler.doWorldBossImmediately = false; // reset it
+
+                            /*int xealDifference = bot.settings.minEnergyPercentage - xeals; //difference between needed and current resource
+                            if (xealDifference > 1) {
+                                int increase = (xealDifference - 1) * 4;
+                                XEALS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
+                            } else
+                                XEALS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+*/
+                            bot.browser.readScreen();
+                            seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                            bot.browser.clickOnSeg(seg);
+                            Misc.sleep(Misc.Durations.SECOND);
+
+                            continue;
+
                         } else {
                             // do the WorldBoss!
                             if (bot.scheduler.doWorldBossImmediately)
                                 bot.scheduler.doWorldBossImmediately = false; // reset it
 
-                           Settings.WorldBossSetting wbSetting = bot.settings.worldBossSettings.next();
+                            Settings.WorldBossSetting wbSetting = bot.settings.worldBossSettings.next();
                             if (wbSetting == null) {
                                 BHBot.logger.error("No World Boss setting found! Disabling World Boss");
                                 bot.settings.activitiesEnabled.remove("w");
@@ -1571,13 +1594,6 @@ public class DungeonThread implements Runnable {
                             //configure activity runes
                             runeManager.processAutoRune("w");
 
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("WorldBoss"), bot.browser);
-                            if (seg != null) {
-                                bot.browser.clickOnSeg(seg);
-                            } else {
-                                BHBot.logger.error("World Boss button not found");
-                                continue;
-                            }
 
                             bot.browser.readScreen();
                             detectCharacterDialogAndHandleIt(); //clear dialogue
@@ -1761,7 +1777,7 @@ public class DungeonThread implements Runnable {
                                                         seg = MarvinSegment.fromCue("WorldBossPlayerKick", 2 * Misc.Durations.SECOND, kickBounds, bot.browser);
                                                         if (seg == null) {
                                                             BHBot.logger.error("Impossible to find kick button for party member " + (partyMemberPos + 2) + ".");
-                                                            continue  cutOffLoop;
+                                                            continue cutOffLoop;
                                                         } else {
                                                             bot.browser.clickOnSeg(seg);
                                                             seg = MarvinSegment.fromCue("WorldBossPopupKick", 5 * Misc.Durations.SECOND, bot.browser);
@@ -1770,7 +1786,7 @@ public class DungeonThread implements Runnable {
                                                                 restart();
                                                                 break cutOffLoop;
                                                             } else {
-                                                                bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossPopupKick"), new Cue(BHBot.cues.get("YesGreen"), Bounds.fromWidthHeight(260, 340, 130, 40)) );
+                                                                bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossPopupKick"), new Cue(BHBot.cues.get("YesGreen"), Bounds.fromWidthHeight(260, 340, 130, 40)));
                                                             }
                                                         }
                                                         continue cutOffLoop;
@@ -2474,7 +2490,8 @@ public class DungeonThread implements Runnable {
             if (seg != null) {
 
                 Bounds closeBounds = null;
-                if (BHBot.State.Gauntlet.equals(bot.getState())) closeBounds = Bounds.fromWidthHeight(320, 420, 160, 65);
+                if (BHBot.State.Gauntlet.equals(bot.getState()))
+                    closeBounds = Bounds.fromWidthHeight(320, 420, 160, 65);
                 // Sometime the victory pop-up is show without the close button, this check is there to ignore it
                 seg = MarvinSegment.fromCue(BHBot.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, closeBounds, bot.browser);
                 if (seg == null) {
@@ -2691,7 +2708,6 @@ public class DungeonThread implements Runnable {
         // at the end of processDungeon, we revert idle time change (in order for idle detection to function properly):
         bot.scheduler.restoreIdleTime();
     }
-
 
 
     private boolean handleSkeletonKey() {
@@ -4264,7 +4280,7 @@ public class DungeonThread implements Runnable {
         int yOffset; // If the bot needs to click on a tier that is not the top most, what is the offset of it?
 
         // If the world boss has scrollbar positions, it means that we must check if we need to scroll the bar
-        if ( wbType.getYScrollerPositions().length > 0) {
+        if (wbType.getYScrollerPositions().length > 0) {
 
             seg = MarvinSegment.fromCue(BHBot.cues.get("StripScrollerTopPos"), 2 * Misc.Durations.SECOND, bot.browser);
 
@@ -4283,7 +4299,7 @@ public class DungeonThread implements Runnable {
             // Do we need to scroll down?
             if (targetTier < minTierAvailable) {
                 while (targetTier < minTierAvailable) {
-                    seg = MarvinSegment.fromCue("DropDownDown", 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(515, 415, 50, 50),  bot.browser);
+                    seg = MarvinSegment.fromCue("DropDownDown", 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(515, 415, 50, 50), bot.browser);
                     if (seg == null) {
                         BHBot.logger.error("Error: unable to scroll dowon in changeWorldBossTier!");
                         bot.saveGameScreen("scroll_down_wb_error", "errors");
@@ -4299,7 +4315,7 @@ public class DungeonThread implements Runnable {
             // Do we need to scroll up?
             if (targetTier > maxTierAvailable) {
                 while (targetTier > maxTierAvailable) {
-                    seg = MarvinSegment.fromCue("DropDownUp", 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(515, 115, 50, 50),  bot.browser);
+                    seg = MarvinSegment.fromCue("DropDownUp", 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(515, 115, 50, 50), bot.browser);
                     if (seg == null) {
                         BHBot.logger.error("Error: unable to scroll up in changeWorldBossTier!");
                         bot.saveGameScreen("scroll_up_wb_error", "errors");
@@ -5515,13 +5531,13 @@ public class DungeonThread implements Runnable {
      */
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
     enum WorldBoss {
-        Orlag("o", "Orlag Clan", 1, 3, 12, 5, new int[] {147, 175, 204, 232, 261, 289}),
-        Netherworld("n", "Netherworld", 2, 3, 9, 3, new int[] {146, 187, 227}),
-        Melvin("m", "Melvin", 3, 10, 11, 4, new int[] {}),
-        Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11, 3, new int[] {}),
-        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 12, 3, new int[] {}),
-        TitansAttack("t", "Titans Attack", 6, 11, 13, 3, new int[] {}),
-        Unknown("?", "Unknown", 7, 11, 100, 1, new int[] {});
+        Orlag("o", "Orlag Clan", 1, 3, 12, 5, new int[]{147, 175, 204, 232, 261, 289}),
+        Netherworld("n", "Netherworld", 2, 3, 9, 3, new int[]{146, 187, 227}),
+        Melvin("m", "Melvin", 3, 10, 11, 4, new int[]{}),
+        Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11, 3, new int[]{}),
+        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 12, 3, new int[]{}),
+        TitansAttack("t", "Titans Attack", 6, 11, 13, 3, new int[]{}),
+        Unknown("?", "Unknown", 7, 11, 100, 1, new int[]{});
 
         private final String letter;
         private final String Name;
@@ -5532,12 +5548,12 @@ public class DungeonThread implements Runnable {
         private final int[] yScrollerPositions;
 
         /**
-         * @param letter the shortcut letter used in settings.ini
-         * @param Name the real name of the World Boss
-         * @param number the World Boss number counting from left to right starting at 1
-         * @param minTier the minimum tier required to join the World Boss
-         * @param maxTier the maximum tier you are allowed to join for the World Boss
-         * @param partySize the party size of the World Boss
+         * @param letter             the shortcut letter used in settings.ini
+         * @param Name               the real name of the World Boss
+         * @param number             the World Boss number counting from left to right starting at 1
+         * @param minTier            the minimum tier required to join the World Boss
+         * @param maxTier            the maximum tier you are allowed to join for the World Boss
+         * @param partySize          the party size of the World Boss
          * @param yScrollerPositions the positions of the scroller bar in the tier selection window
          */
         WorldBoss(String letter, String Name, int number, int minTier, int maxTier, int partySize, int[] yScrollerPositions) {
@@ -5570,9 +5586,13 @@ public class DungeonThread implements Runnable {
             return maxTier;
         }
 
-        int getPartySize() {return partySize;}
+        int getPartySize() {
+            return partySize;
+        }
 
-        int[] getYScrollerPositions(){return yScrollerPositions;}
+        int[] getYScrollerPositions() {
+            return yScrollerPositions;
+        }
 
         static WorldBoss fromLetter(String Letter) {
             for (WorldBoss wb : WorldBoss.values()) {
@@ -5676,7 +5696,7 @@ public class DungeonThread implements Runnable {
             if (!lastSavedName.equals(finalFileName)) {
                 bot.saveGameScreen(fileNameTS.toString(), "wb-ts-debug", bot.browser.getImg());
             }
-            return  finalFileName;
+            return finalFileName;
         }
 
         return "";
