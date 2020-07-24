@@ -25,12 +25,11 @@ public class Settings {
 
         // Optional fields can be nullable so we don't use Java primitives
         Short timer;
-        Boolean dungeonOnTimeOut;
         Boolean solo;
         Integer minimumTotalTS;
         Integer minimumPlayerTS;
 
-        WorldBossSetting(char type, byte difficulty, byte tier, double chanceToRun, @Nullable Short timer, @Nullable Boolean dungeonOnTimeOut,
+        WorldBossSetting(char type, byte difficulty, byte tier, double chanceToRun, @Nullable Short timer,
                                 @Nullable Boolean solo, @Nullable Integer minimumTotalTS, @Nullable Integer minimumPlayerTS) {
             this.type = type;
             this.difficulty = difficulty;
@@ -39,7 +38,6 @@ public class Settings {
 
             // Optional fields
             this.timer = Optional.ofNullable(timer).orElse((short) 300);
-            this.dungeonOnTimeOut = Optional.ofNullable(dungeonOnTimeOut).orElse(false);
             this.solo = Optional.ofNullable(solo).orElse(false);
             this.minimumTotalTS = Optional.ofNullable(minimumTotalTS).orElse(0);
             this.minimumPlayerTS = Optional.ofNullable(minimumPlayerTS).orElse(0);
@@ -53,7 +51,6 @@ public class Settings {
                     " " + tier +
                     " " + (int) chanceToRun +
                     " " + timer +
-                    " " + (dungeonOnTimeOut ? "1" : "0") +
                     " " + (solo ? "1" : "0") +
                     " " + minimumTotalTS +
                     " " + minimumPlayerTS;
@@ -389,7 +386,6 @@ public class Settings {
 
         // Optional fields can be nullable so we don't use Java primitives
         Short timer;
-        Boolean dungeonOnTimeOut;
         Boolean solo;
         Integer minimumTotalTS;
         Integer minimumPlayerTS;
@@ -466,7 +462,7 @@ public class Settings {
         //       Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
 
         Pattern wbRegex = Pattern.compile("\\s*(?<type>" + wbTypeString.toString() + ")\\s+(?<difficulty>[123])\\s+" +
-                "(?<tier>\\d{1,2})\\s+(?<chanceToRun>\\d*)\\s*(?<timer>\\d*)\\s*(?<dungeonOnTimeout>[01])*\\s*" +
+                "(?<tier>\\d{1,2})\\s+(?<chanceToRun>\\d*)\\s*(?<timer>\\d*)\\s*" +
                 "(?<solo>[01])*\\s*(?<minimumTotalTS>\\d+)*\\s*(?<minimumPlayerTS>\\d+)*");
 
         this.worldBossSettings.clear();
@@ -490,13 +486,12 @@ public class Settings {
 
                 // Nullable fields
                 timer = "".equals(wbMatcher.group("timer")) || wbMatcher.group("timer") == null ? null : Short.parseShort(wbMatcher.group("timer"));
-                dungeonOnTimeOut = "".equals(wbMatcher.group("dungeonOnTimeout")) || wbMatcher.group("dungeonOnTimeout") == null ? null : "1".equals(wbMatcher.group("dungeonOnTimeout"));
                 solo = "".equals(wbMatcher.group("solo"))  || wbMatcher.group("solo") == null ? null : "1".equals(wbMatcher.group("solo"));
                 minimumTotalTS = "".equals(wbMatcher.group("minimumTotalTS"))  || wbMatcher.group("minimumTotalTS") == null ? null : Integer.parseInt(wbMatcher.group("minimumTotalTS"));
                 minimumPlayerTS = "".equals(wbMatcher.group("minimumPlayerTS")) || wbMatcher.group("minimumPlayerTS") == null ? null :  Integer.parseInt(wbMatcher.group("minimumPlayerTS"));
 
                 // Adding to the Random collection
-                WorldBossSetting wbSetting = new WorldBossSetting(type, difficulty, tier, chanceToRun, timer, dungeonOnTimeOut, solo, minimumTotalTS, minimumPlayerTS);
+                WorldBossSetting wbSetting = new WorldBossSetting(type, difficulty, tier, chanceToRun, timer, solo, minimumTotalTS, minimumPlayerTS);
                 worldBossSettings.add(chanceToRun, wbSetting);
             } else {
                 warningSettingLInes.add("Wrong format for worldBoss setting: '" + add + "'. Ignoring it.");

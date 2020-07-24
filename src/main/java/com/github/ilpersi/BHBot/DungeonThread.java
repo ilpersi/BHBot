@@ -1838,17 +1838,10 @@ public class DungeonThread implements Runnable {
                                 }
 
                                 if (lobbyTimeout) {
-                                    if (wbSetting.dungeonOnTimeOut) { //setting to run a dungeon if we cant fill a lobby
-                                        BHBot.logger.info("Lobby timed out, running dungeon instead");
-                                        closeWorldBoss();
-                                        bot.browser.readScreen(4 * Misc.Durations.SECOND); //make sure we're stable on the main screen
-                                        bot.scheduler.doDungeonImmediately = true;
-                                    } else {
-                                        BHBot.logger.info("Lobby timed out, returning to main screen.");
-                                        // we say we checked (interval - 1) minutes ago, so we check again in a minute
-                                        timeLastXealsCheck = Misc.getTime() - ((XEALS_CHECK_INTERVAL) - Misc.Durations.MINUTE);
-                                        closeWorldBoss();
-                                    }
+                                    BHBot.logger.info("Lobby timed out, returning to main screen.");
+                                    // we say we checked (interval - 1) minutes ago, so we check again in a minute
+                                    timeLastXealsCheck = Misc.getTime() - ((XEALS_CHECK_INTERVAL) - Misc.Durations.MINUTE);
+                                    closeWorldBoss();
                                 } else {
                                     bot.browser.readScreen();
                                     MarvinSegment segStart = MarvinSegment.fromCue(BHBot.cues.get("DarkBlueStart"), 5 * Misc.Durations.SECOND, bot.browser);
