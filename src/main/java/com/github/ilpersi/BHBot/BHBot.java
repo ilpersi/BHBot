@@ -922,11 +922,6 @@ public class BHBot {
 
         logger.info("Game element found. Starting to run bot..");
 
-        if ((settings.activitiesEnabled.contains("d")) && (settings.activitiesEnabled.contains("w"))) {
-            logger.info("Both Dungeons and World Boss selected, disabling World Boss.");
-            logger.info("To run a mixture of both use a low lobby timer and enable dungeonOnTimeout");
-            settings.activitiesEnabled.remove("w");
-        }
         setState(State.Loading);
         scheduler.resetIdleTime();
         scheduler.resume(); // in case it was paused
