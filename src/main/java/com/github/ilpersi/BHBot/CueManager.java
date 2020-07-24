@@ -455,11 +455,12 @@ class CueManager {
         //WorldBoss Related
         addCue("WorldBoss", "cues/cueWorldBoss.png", null);
         addCue("WorldBossSelector", "cues/cueWorldBossSelector.png", null);
-        addCue("BlueSummon", "cues/cueBlueSummon.png", null);
-        addCue("LargeGreenSummon", "cues/cueLargeGreenSummon.png", null);
-        addCue("SmallGreenSummon", "cues/cueSmallGreenSummon.png", null);
-        addCue("Invite", "cues/cueInvite.png", null);
+        addCue("DarkBlueSummon", "cues/worldboss/cueDarkBlueSummon.png", Bounds.fromWidthHeight(453, 449, 99, 28));
+        addCue("LargeDarkBlueSummon", "cues/worldboss/cueLargeDarkBlueSummon.png", Bounds.fromWidthHeight(492, 363, 99, 28));
+        addCue("SmallDarkBlueSummon", "cues/worldboss/cueSmallDarkBlueSummon.png", Bounds.fromWidthHeight(430, 388, 95, 28));
+        addCue("Invite", "cues/worldboss/cueDarkBlueInvite.png", null);
         addCue("Start", "cues/cueStart.png", null);
+        addCue("DarkBlueStart", "cues/worldboss/cueDarkBlueStart.png", Bounds.fromWidthHeight(285, 435, 190, 65));
         addCue("VictoryLarge", "cues/Victory_Large.png", new Bounds(324, 128, 476, 157));
         addCue("OrlagSelected", "cues/cueOrlagSelected.png", new Bounds(360, 430, 440, 460));
         addCue("NetherSelected", "cues/cueNetherSelected.png", null);

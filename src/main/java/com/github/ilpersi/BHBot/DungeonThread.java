@@ -1549,7 +1549,7 @@ public class DungeonThread implements Runnable {
 
                         int xeals = getXeals();
                         globalXeals = xeals;
-                        BHBot.logger.readout("Xeals: " + xeals + "%, required: >" + bot.settings.minXeals);
+                        BHBot.logger.readout("Xeals: " + xeals + ", required: >" + bot.settings.minXeals);
 
                         if (xeals == -1) { // error
                             if (bot.scheduler.doWorldBossImmediately)
@@ -1562,13 +1562,12 @@ public class DungeonThread implements Runnable {
                             if (bot.scheduler.doWorldBossImmediately)
                                 bot.scheduler.doWorldBossImmediately = false; // reset it
 
-                            /*int xealDifference = bot.settings.minEnergyPercentage - xeals; //difference between needed and current resource
+                            int xealDifference = bot.settings.minXeals - xeals; //difference between needed and current resource
                             if (xealDifference > 1) {
-                                int increase = (xealDifference - 1) * 4;
-                                XEALS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 4 minutes to the check interval for each energy % needed above 1
+                                int increase = (xealDifference - 1) * 45;
+                                XEALS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each xeal needed above 1
                             } else
                                 XEALS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
-*/
                             bot.browser.readScreen();
                             seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                             bot.browser.clickOnSeg(seg);
@@ -1616,9 +1615,6 @@ public class DungeonThread implements Runnable {
                                 bot.browser.clickOnSeg(wbBTNSeg);
                             }
 
-                            bot.browser.readScreen();
-                            detectCharacterDialogAndHandleIt(); //clear dialogue
-
                             WorldBoss wbType = WorldBoss.fromLetter(String.valueOf(wbSetting.type));
                             if (wbType == null) {
                                 BHBot.logger.error("Unkwon World Boss type: " + wbSetting.type + ". Disabling World Boss");
@@ -1637,13 +1633,13 @@ public class DungeonThread implements Runnable {
                             }
 
                             bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("BlueSummon"), Misc.Durations.SECOND, bot.browser);
+                            seg = MarvinSegment.fromCue("DarkBlueSummon", Misc.Durations.SECOND, bot.browser);
                             if (seg != null) {
                                 bot.browser.clickOnSeg(seg);
                             } else {
-                                BHBot.logger.error("Impossible to find blue summon in world boss.");
+                                BHBot.logger.error("Impossible to find dark blue summon in world boss.");
 
-                                bot.saveGameScreen("wb-no-blue-summon", "errors");
+                                bot.saveGameScreen("wb-no-dark-blue-summon", "errors");
                                 bot.notificationManager.sendErrorNotification("World Boss error", "Impossible to find blue summon.");
 
                                 bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossTitle"), BHBot.cues.get("X"));
@@ -1660,7 +1656,7 @@ public class DungeonThread implements Runnable {
 
 //							Misc.sleep(SECOND); //more stabilising if we changed world boss type
                             bot.browser.readScreen(Misc.Durations.SECOND);
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("LargeGreenSummon"), 2 * Misc.Durations.SECOND, bot.browser);
+                            seg = MarvinSegment.fromCue("LargeDarkBlueSummon", 2 * Misc.Durations.SECOND, bot.browser);
                             bot.browser.clickOnSeg(seg); //selected world boss
 
                             bot.browser.readScreen(Misc.Durations.SECOND);
@@ -1703,9 +1699,10 @@ public class DungeonThread implements Runnable {
                             }
 
                             bot.browser.readScreen(Misc.Durations.SECOND);
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("SmallGreenSummon"), Misc.Durations.SECOND * 2, bot.browser);
+                            seg = MarvinSegment.fromCue("SmallDarkBlueSummon", Misc.Durations.SECOND * 2, bot.browser);
                             bot.browser.clickOnSeg(seg); //accept current settings
 
+                            // TODO: handle not enough Xeals
                             boolean insufficientEnergy = handleNotEnoughEnergyPopup(Misc.Durations.SECOND * 3, BHBot.State.WorldBoss);
                             if (insufficientEnergy) {
                                 continue;
@@ -1854,7 +1851,7 @@ public class DungeonThread implements Runnable {
                                     }
                                 } else {
                                     bot.browser.readScreen();
-                                    MarvinSegment segStart = MarvinSegment.fromCue(BHBot.cues.get("Start"), 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(285, 435, 190, 65), bot.browser);
+                                    MarvinSegment segStart = MarvinSegment.fromCue(BHBot.cues.get("DarkBlueStart"), 5 * Misc.Durations.SECOND, bot.browser);
                                     if (segStart != null) {
                                         bot.browser.clickOnSeg(segStart); //start World Boss
                                         bot.browser.readScreen();
@@ -1873,7 +1870,7 @@ public class DungeonThread implements Runnable {
                                 }
                             } else {
                                 bot.browser.readScreen();
-                                MarvinSegment segStart = MarvinSegment.fromCue(BHBot.cues.get("Start"), 2 * Misc.Durations.SECOND, bot.browser);
+                                MarvinSegment segStart = MarvinSegment.fromCue(BHBot.cues.get("DarkBlueStart"), 5 * Misc.Durations.SECOND, bot.browser);
                                 if (segStart != null) {
                                     bot.browser.clickOnSeg(segStart); //start World Boss
                                     Misc.sleep(2 * Misc.Durations.SECOND); //wait for dropdown animation to finish
