@@ -2246,7 +2246,7 @@ public class DungeonThread implements Runnable {
     private int getXeals() {
         MarvinSegment seg;
 
-        seg = MarvinSegment.fromCue(BHBot.cues.get("RaidPopup"), bot.browser);
+        seg = MarvinSegment.fromCue("WorldBossPopup", bot.browser);
 
         if (seg == null) // this should probably not happen
             return -1;
@@ -2254,10 +2254,10 @@ public class DungeonThread implements Runnable {
         int left = seg.x2 + 1;
         int top = seg.y1 + 9;
 
-        final Color full = new Color(199, 79, 175);
+        final Color full = new Color(12, 137, 255);
 
         int value = 0;
-        int maxShards = bot.settings.maxShards;
+        int maxXeals = bot.settings.maxXeals;
 
         for (int i = 0; i < 76; i++) {
             value = i;
@@ -2268,7 +2268,7 @@ public class DungeonThread implements Runnable {
         }
 
         value = value + 2; //add the last 2 pixels to get an accurate count
-        return Math.round(value * (maxShards / 75.0f)); // round to nearest whole number
+        return Math.round(value * (maxXeals / 75.0f)); // round to nearest whole number
     }
 
     /**
