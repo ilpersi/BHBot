@@ -895,7 +895,7 @@ public class DungeonThread implements Runnable {
                                 }
                             }
 
-                            if (handleNotEnoughEnergyPopup(3 * Misc.Durations.SECOND, BHBot.State.Dungeon)) {
+                            if (handleNotEnoughEnergyPopup()) {
                                 continue;
                             }
 
@@ -1702,9 +1702,8 @@ public class DungeonThread implements Runnable {
                             seg = MarvinSegment.fromCue("SmallDarkBlueSummon", Misc.Durations.SECOND * 2, bot.browser);
                             bot.browser.clickOnSeg(seg); //accept current settings
 
-                            // TODO: handle not enough Xeals
-                            boolean insufficientEnergy = handleNotEnoughEnergyPopup(Misc.Durations.SECOND * 3, BHBot.State.WorldBoss);
-                            if (insufficientEnergy) {
+                            boolean insufficientXeals = handleNotEnoughXealsPopup();
+                            if (insufficientXeals) {
                                 continue;
                             }
 
@@ -3776,7 +3775,7 @@ public class DungeonThread implements Runnable {
 
         if (selectedWB != desiredWB) {
             // we need to change the raid type!
-            BHBot.logger.info("Changing from WB" + wbSelected.getName() + " to WB" + desiredWorldBoss.getName());
+            BHBot.logger.info("Changing from WB " + wbSelected.getName() + " to WB " + desiredWorldBoss.getName());
             // we click on the desired cue
             bot.browser.clickOnSeg(wbDotsList.get(desiredWB - 1));
         }
@@ -4057,35 +4056,51 @@ public class DungeonThread implements Runnable {
      *
      * @return true in case popup was detected and closed.
      */
-    private boolean handleNotEnoughEnergyPopup(@SuppressWarnings("SameParameterValue") int delay, BHBot.State state) {
-        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("NotEnoughEnergy"), delay, bot.browser);
+    private boolean handleNotEnoughEnergyPopup() {
+        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("NotEnoughEnergy"), Misc.Durations.SECOND * 3, bot.browser);
         if (seg != null) {
             // we don't have enough energy!
-            BHBot.logger.warn("Problem detected: insufficient energy to attempt " + state + ". Cancelling...");
+            BHBot.logger.warn("Problem detected: insufficient energy to attempt dungeon. Cancelling...");
             bot.browser.closePopupSecurely(BHBot.cues.get("NotEnoughEnergy"), BHBot.cues.get("No"));
 
+            bot.browser.closePopupSecurely(BHBot.cues.get("AutoTeam"), BHBot.cues.get("X"));
 
-            if (state.equals(BHBot.State.WorldBoss)) {
-                bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossSummonTitle"), BHBot.cues.get("X"));
-
-                bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossTitle"), BHBot.cues.get("X"));
+            // if D4 close the dungeon info window, else close the char selection screen
+            if (specialDungeon) {
+                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
+                if (seg != null)
+                    bot.browser.clickOnSeg(seg);
+                specialDungeon = false;
             } else {
-                bot.browser.closePopupSecurely(BHBot.cues.get("AutoTeam"), BHBot.cues.get("X"));
-
-                // if D4 close the dungeon info window, else close the char selection screen
-                if (specialDungeon) {
-                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
-                    if (seg != null)
-                        bot.browser.clickOnSeg(seg);
-                    specialDungeon = false;
-                } else {
-                    // close difficulty selection screen:
-                    bot.browser.closePopupSecurely(BHBot.cues.get("Normal"), BHBot.cues.get("X"));
-                }
-
-                // close zone view window:
-                bot.browser.closePopupSecurely(BHBot.cues.get("ZonesButton"), BHBot.cues.get("X"));
+                // close difficulty selection screen:
+                bot.browser.closePopupSecurely(BHBot.cues.get("Normal"), BHBot.cues.get("X"));
             }
+
+            // close zone view window:
+            bot.browser.closePopupSecurely(BHBot.cues.get("ZonesButton"), BHBot.cues.get("X"));
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Will check if "Not enough xeals" popup is open. If it is, it will automatically close it and close all other windows
+     * until it returns to the main screen.
+     *
+     * @return true in case popup was detected and closed.
+     */
+    private boolean handleNotEnoughXealsPopup() {
+        MarvinSegment seg = MarvinSegment.fromCue("NotEnoughXeals", Misc.Durations.SECOND * 3, bot.browser);
+        if (seg != null) {
+            // we don't have enough xeals!
+            BHBot.logger.warn("Problem detected: insufficient energy to attempt Wold Boss. Cancelling...");
+            bot.browser.closePopupSecurely(BHBot.cues.get("NotEnoughXeals"), BHBot.cues.get("No"));
+
+            bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossSummonTitle"), BHBot.cues.get("X"));
+
+            bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossTitle"), BHBot.cues.get("X"));
 
             return true;
         } else {

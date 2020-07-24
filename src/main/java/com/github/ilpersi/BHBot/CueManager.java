@@ -472,6 +472,7 @@ class CueManager {
         addCue("WorldBossDifficultyHard", "cues/cueWorldBossDifficultyHard.png", new Bounds(300, 275, 500, 325));
         addCue("WorldBossDifficultyHeroic", "cues/cueWorldBossDifficultyHeroic.png", new Bounds(300, 275, 500, 325));
         addCue("WorldBossPopup", "cues/worldboss/cueWorldBossPopup.png", Bounds.fromWidthHeight(305, 29, 67, 53));
+        addCue("NotEnoughXeals", "cues/worldboss/cueNotEnoughXeals.png", Bounds.fromWidthHeight(270, 220, 260, 90));
 
         addCue("cueWBSelectNormal", "cues/worldboss/cueWBSelectNormal.png", new Bounds(260, 140, 510, 320));
         addCue("cueWBSelectHard", "cues/worldboss/cueWBSelectHard.png", new Bounds(260, 140, 510, 320));
