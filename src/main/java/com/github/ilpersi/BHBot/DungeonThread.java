@@ -4095,7 +4095,7 @@ public class DungeonThread implements Runnable {
         MarvinSegment seg = MarvinSegment.fromCue("NotEnoughXeals", Misc.Durations.SECOND * 3, bot.browser);
         if (seg != null) {
             // we don't have enough xeals!
-            BHBot.logger.warn("Problem detected: insufficient energy to attempt Wold Boss. Cancelling...");
+            BHBot.logger.warn("Problem detected: insufficient xeals to attempt Wold Boss. Cancelling...");
             bot.browser.closePopupSecurely(BHBot.cues.get("NotEnoughXeals"), BHBot.cues.get("No"));
 
             bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossSummonTitle"), BHBot.cues.get("X"));
