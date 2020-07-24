@@ -35,6 +35,7 @@ public class DungeonThread implements Runnable {
     private static int globalShards;
     private static int globalBadges;
     private static int globalEnergy;
+    private static int globalXeals;
     private static int globalTickets;
     private static int globalTokens;
 
@@ -73,6 +74,7 @@ public class DungeonThread implements Runnable {
     private boolean noGemsToBribe = false;
 
     private long ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
+    private long XEALS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
     private long TICKETS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
     private long TOKENS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
     private long BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
@@ -80,6 +82,7 @@ public class DungeonThread implements Runnable {
     private final long BONUS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
 
     private long timeLastEnergyCheck = 0; // when did we check for Energy the last time?
+    private long timeLastXealsCheck = 0; // when did we check for Xeals the last time?
     private long timeLastShardsCheck = 0; // when did we check for Shards the last time?
     private long timeLastTicketsCheck = 0; // when did we check for Tickets the last time?
     private long timeLastTrialsTokensCheck = 0; // when did we check for trials Tokens the last time?
@@ -1521,9 +1524,9 @@ public class DungeonThread implements Runnable {
 
                     // Check worldBoss:
                     if ("w".equals(currentActivity)) {
-                        timeLastEnergyCheck = Misc.getTime();
+                        timeLastXealsCheck = Misc.getTime();
                         int energy = getEnergy();
-                        globalEnergy = energy;
+                        globalXeals = energy;
                         BHBot.logger.readout("Energy: " + energy + "%, required: >" + bot.settings.minEnergyPercentage + "%");
 
                         if (energy == -1) { // error
@@ -1809,7 +1812,7 @@ public class DungeonThread implements Runnable {
                                     } else {
                                         BHBot.logger.info("Lobby timed out, returning to main screen.");
                                         // we say we checked (interval - 1) minutes ago, so we check again in a minute
-                                        timeLastEnergyCheck = Misc.getTime() - ((ENERGY_CHECK_INTERVAL) - Misc.Durations.MINUTE);
+                                        timeLastXealsCheck = Misc.getTime() - ((XEALS_CHECK_INTERVAL) - Misc.Durations.MINUTE);
                                         closeWorldBoss();
                                     }
                                 } else {
@@ -2018,7 +2021,7 @@ public class DungeonThread implements Runnable {
                     return "r";
                 } else if ("d".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL)) {
                     return "d";
-                } else if ("w".equals(activity) && ((Misc.getTime() - timeLastEnergyCheck) > ENERGY_CHECK_INTERVAL)) {
+                } else if ("w".equals(activity) && ((Misc.getTime() - timeLastXealsCheck) > XEALS_CHECK_INTERVAL)) {
                     return "w";
                 } else if ("t".equals(activity) && ((Misc.getTime() - timeLastTrialsTokensCheck) > TOKENS_CHECK_INTERVAL)) {
                     return "t";
@@ -2235,6 +2238,37 @@ public class DungeonThread implements Runnable {
 
         value = value + 2; //add the last 2 pixels to get an accurate count
         return Math.round(value * (maxBadges / 75.0f)); // scale it to interval [0..10]
+    }
+
+    /**
+     * Returns number of xeals that we have. Works only if wb popup is open. Returns -1 in case it cannot read number of shards for some reason.
+     */
+    private int getXeals() {
+        MarvinSegment seg;
+
+        seg = MarvinSegment.fromCue(BHBot.cues.get("RaidPopup"), bot.browser);
+
+        if (seg == null) // this should probably not happen
+            return -1;
+
+        int left = seg.x2 + 1;
+        int top = seg.y1 + 9;
+
+        final Color full = new Color(199, 79, 175);
+
+        int value = 0;
+        int maxShards = bot.settings.maxShards;
+
+        for (int i = 0; i < 76; i++) {
+            value = i;
+            Color col = new Color(bot.browser.getImg().getRGB(left + i, top));
+
+            if (!col.equals(full))
+                break;
+        }
+
+        value = value + 2; //add the last 2 pixels to get an accurate count
+        return Math.round(value * (maxShards / 75.0f)); // round to nearest whole number
     }
 
     /**
@@ -5009,6 +5043,7 @@ public class DungeonThread implements Runnable {
         timeLastInvBadgesCheck = 0;
         timeLastGVGBadgesCheck = 0;
         timeLastEnergyCheck = 0;
+        timeLastXealsCheck = 0;
         timeLastShardsCheck = 0;
         timeLastTicketsCheck = 0;
         timeLastTrialsTokensCheck = 0;
@@ -5050,8 +5085,8 @@ public class DungeonThread implements Runnable {
             timeLastEnergyCheck = 0;
         }
 
-        if (((globalEnergy - 10) >= bot.settings.minEnergyPercentage) && bot.getState() == BHBot.State.WorldBoss) {
-            timeLastEnergyCheck = 0;
+        if (((globalXeals - 1) >= bot.settings.minXeals) && bot.getState() == BHBot.State.WorldBoss) {
+            timeLastXealsCheck = 0;
         }
 
         if (((globalTickets - bot.settings.costPVP) >= bot.settings.costPVP) && bot.getState() == BHBot.State.PVP) {
