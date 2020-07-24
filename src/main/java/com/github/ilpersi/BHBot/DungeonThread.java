@@ -1535,6 +1535,9 @@ public class DungeonThread implements Runnable {
                         }
                         bot.browser.clickOnSeg(wbBTNSeg);
 
+                        bot.browser.readScreen();
+                        detectCharacterDialogAndHandleIt(); //clear dialogue
+
                         seg = MarvinSegment.fromCue("WorldBossPopup", 5 * Misc.Durations.SECOND, bot.browser); // wait until the raid window opens
                         if (seg == null) {
                             BHBot.logger.warn("Error: attempt at opening world boss window failed. No window cue detected. Ignoring...");
@@ -1582,18 +1585,36 @@ public class DungeonThread implements Runnable {
                             if (wbSetting == null) {
                                 BHBot.logger.error("No World Boss setting found! Disabling World Boss");
                                 bot.settings.activitiesEnabled.remove("w");
-                                restart();
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                                bot.browser.clickOnSeg(seg);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
                                 continue;
                             }
 
                             if (!checkWorldBossInput(wbSetting)) {
                                 BHBot.logger.warn("Invalid world boss settings detected, World Boss will be skipped");
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                                bot.browser.clickOnSeg(seg);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
                                 continue;
+                            }
+
+                            //if we need to configure runes/settings we close the window first
+                            if (bot.settings.autoRune.containsKey("w")) {
+                                bot.browser.readScreen();
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                                bot.browser.clickOnSeg(seg);
+                                bot.browser.readScreen(Misc.Durations.SECOND);
                             }
 
                             //configure activity runes
                             runeManager.processAutoRune("w");
 
+                            //We re-open the wb window
+                            if (bot.settings.autoRune.containsKey("w")) {
+                                bot.browser.readScreen(Misc.Durations.SECOND);
+                                bot.browser.clickOnSeg(wbBTNSeg);
+                            }
 
                             bot.browser.readScreen();
                             detectCharacterDialogAndHandleIt(); //clear dialogue
