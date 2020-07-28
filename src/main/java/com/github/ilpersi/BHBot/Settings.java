@@ -2,6 +2,7 @@ package com.github.ilpersi.BHBot;
 
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,6 +59,88 @@ public class Settings {
         }
     }
 
+    /**
+     * This class holds the scheduling settings. It is basically composed of two attributes startTime and endTime
+     */
+    static class ActivitiesScheduleSetting {
+        LocalTime startTime;
+        LocalTime endTime;
+
+        ActivitiesScheduleSetting(LocalTime startTime, LocalTime endTime) {
+            this.startTime = startTime;
+            this.endTime = endTime;
+        }
+
+        /**
+         * @return true if the the current time is >= of the startTime and <= of the endTime
+         */
+        boolean isActive() {
+            return (this.startTime.compareTo(LocalTime.now()) <= 0) && (this.endTime.compareTo(LocalTime.now()) >= 0);
+        }
+    }
+
+    /**
+     * This class is a wrapper around List<ActivitiesScheduleSetting> that adds some helper methods to
+     * correctly manage the scheduling list
+     */
+    static class ActivitiesScheduleList implements Iterable<ActivitiesScheduleSetting> {
+        private final List<ActivitiesScheduleSetting> scheduleList;
+
+        ActivitiesScheduleList () {
+            // We initialize the array list and override the toString method
+            this.scheduleList = new ArrayList<>(){
+                private static final long serialVersionUID = 1L;
+
+                @Override public @NotNull String toString()
+                {
+                    StringBuilder result = new StringBuilder();
+                    for (ActivitiesScheduleSetting s : this) {
+                        if (result.length() > 0) result.append(";");
+                        result.append(s.startTime.toString())
+                                .append("-")
+                                .append(s.endTime.toString());
+                    }
+                    return result.toString();
+                }
+            };
+        }
+
+        @SuppressWarnings("UnusedReturnValue")
+        boolean add(ActivitiesScheduleSetting schedule) {
+            return this.scheduleList.add(schedule);
+        }
+
+        void clear() {
+            this.scheduleList.clear();
+        }
+
+        /**
+         * @return true if any of the scheduling settings in the wrapped list is active
+         */
+        boolean canRun() {
+            // No schedule is present so we assume the bot should always run
+            if (this.scheduleList.isEmpty()) return true;
+
+            for (Settings.ActivitiesScheduleSetting s: this.scheduleList){
+                if (s.isActive()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @NotNull
+        @Override
+        public Iterator<ActivitiesScheduleSetting> iterator() {
+            return this.scheduleList.iterator();
+        }
+
+        @Override
+        public String toString() {
+            return this.scheduleList.toString();
+        }
+    }
+
     static String configurationFile = "settings.ini";
 
     String username = "";
@@ -85,6 +169,8 @@ public class Settings {
     //activity settings
     LinkedHashSet<String> activitiesEnabled;
     boolean activitiesRoundRobin = true;
+    // We extend the ArrayList class with a couple of helper methods
+    ActivitiesScheduleList activitiesSchedule = new ActivitiesScheduleList();
 
     // Pushover settings
     boolean enablePushover = false;
@@ -295,6 +381,7 @@ public class Settings {
 
     public Settings() {
         activitiesEnabled = new LinkedHashSet<>();
+//        activitiesSchedule = new ArrayList<>();
         screenshots = new LinkedHashSet<>();
         setScreenshotsFromString("w d f b dg wg fe"); // enabled all by default
         worldBossSettings = new RandomCollection<>();
@@ -352,6 +439,7 @@ public class Settings {
         autoConsume = false;
         setAutoRuneDefaultFromString("");
         setactivitiesEnabledFromString("");
+        setActivitiesScheduleFromString("");
         setScreenshotsFromString("w d f b dg wg fe"); //so we dont miss any if we are in idle
         idleMode = true;
     }
@@ -365,6 +453,88 @@ public class Settings {
             if ("".equals(add))
                 continue;
             this.activitiesEnabled.add(add);
+        }
+    }
+
+    private void setActivitiesSchedule(String... schedules) {
+        // (?<hours>\d{1,2}):(?<minutes>\d{1,2})(:(?<seconds>\d{1,2}))*
+        //
+        // Options: Case sensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
+        //
+        // Match the regex below and capture its match into a backreference named “hours” (also backreference number 1) «(?<hours>\d{1,2})»
+        //    Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+        //       Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+        // Match the colon character «:»
+        // Match the regex below and capture its match into a backreference named “minutes” (also backreference number 2) «(?<minutes>\d{1,2})»
+        //    Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+        //       Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+        // Match the regex below and capture its match into backreference number 3 «(:(?<seconds>\d{1,2}))*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        //    Match the colon character «:»
+        //    Match the regex below and capture its match into a backreference named “seconds” (also backreference number 4) «(?<seconds>\d{1,2})»
+        //       Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+        //          Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+
+        Pattern scheduleRegex = Pattern.compile("(?<hours>\\d{1,2}):(?<minutes>\\d{1,2})(:(?<seconds>\\d{1,2}))*");
+
+        this.activitiesSchedule.clear();
+
+        for (String s: schedules) {
+            String add = s.trim();
+            if ("".equals(add)) continue;
+
+            String[] times = add.split("-");
+            if (times.length != 2) {
+                warningSettingLInes.add("Impossible to find start time and end time for scheduling: " + add);
+                continue;
+            }
+
+            // We match the start time
+            LocalTime startTime = null;
+            try {
+                Matcher startMatcher = scheduleRegex.matcher(times[0]);
+                if (startMatcher.find()) {
+                    int hours = Integer.parseInt(startMatcher.group("hours"));
+                    int minutes = Integer.parseInt(startMatcher.group("minutes"));
+                    int seconds = "".equals(startMatcher.group("seconds")) || startMatcher.group("seconds") == null ? 0 : Integer.parseInt(startMatcher.group("seconds"));
+                    startTime = LocalTime.of(hours, minutes, seconds);
+                } else {
+                    warningSettingLInes.add("Impossible to match start time format for scheduling: " + add);
+                    continue;
+                }
+            } catch (PatternSyntaxException ex) {
+                // Syntax error in the regular expression
+                warningSettingLInes.add("Error when matching start time format for scheduling: " + add);
+            }
+
+            // We match the end time
+            LocalTime endTime = null;
+            try {
+                Matcher endMatcher = scheduleRegex.matcher(times[1]);
+                if (endMatcher.find()) {
+                    int hours = Integer.parseInt(endMatcher.group("hours"));
+                    int minutes = Integer.parseInt(endMatcher.group("minutes"));
+                    int seconds = "".equals(endMatcher.group("seconds")) || endMatcher.group("seconds") == null ? 0 : Integer.parseInt(endMatcher.group("seconds"));
+                    endTime = LocalTime.of(hours, minutes, seconds);
+                } else {
+                    warningSettingLInes.add("Impossible to match end time format for scheduling: " + add);
+                    continue;
+                }
+            } catch (PatternSyntaxException ex) {
+                // Syntax error in the regular expression
+                warningSettingLInes.add("Error when matching end time format for scheduling: " + add);
+            }
+
+            if (startTime != null && endTime != null) {
+                if (endTime.compareTo(startTime) < 0) {
+                    warningSettingLInes.add("End time is before start time for schedule setting: " + add);
+                    continue;
+                }
+
+                activitiesSchedule.add(new ActivitiesScheduleSetting(startTime, endTime));
+            } else {
+                warningSettingLInes.add("Null startTime or endTime for setting: " + add);
+            }
         }
     }
 
@@ -968,6 +1138,10 @@ public class Settings {
         setactivitiesEnabled(s.split(" "));
     }
 
+    private void setActivitiesScheduleFromString(String s) {
+        setActivitiesSchedule(s.split(";"));
+    }
+
     private void setScreenshotsFromString(String s) { setScreenshots(s.split(" ")); }
 
     private void setWorldBossNewFromString(String s) {
@@ -1153,6 +1327,7 @@ public class Settings {
         setScreenshotsFromString(lastUsedMap.getOrDefault("screenshots", getScreenshotsAsString()));
 
         setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()));
+        setActivitiesScheduleFromString(lastUsedMap.getOrDefault("activitiesSchedule", activitiesSchedule.toString()));
         activitiesRoundRobin = lastUsedMap.getOrDefault("activitiesRoundRobin", activitiesRoundRobin ? "1" : "0").equals("1");
 
         enablePushover = lastUsedMap.getOrDefault("enablePushover", enablePushover ? "1" : "0").equals("1");
