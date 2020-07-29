@@ -55,6 +55,7 @@ public class BHBot {
      * Set it to true to end main loop and end program gracefully
      */
     boolean finished = false;
+    boolean running = false;
     BrowserManager browser;
 
     long botStartTime;
@@ -107,8 +108,6 @@ public class BHBot {
                     i++;
             }
         }
-
-        bot.browser = new BrowserManager(bot, userDataDir);
 
         if ("LOAD_IDLE_SETTINGS".equals(Settings.configurationFile)) {
             bot.settings.setIdle();
@@ -210,7 +209,6 @@ public class BHBot {
         if (!bot.checkPaths()) return;
 
         bot.botStartTime = Misc.getTime();
-        bot.processCommand("start");
 
         Scanner scanner = new Scanner(System.in);
         while (!bot.finished) {
@@ -231,51 +229,72 @@ public class BHBot {
                 }
             }
 
+            // When no scheduling is present, we stop the bot
+            if (bot.running && State.Main.equals(bot.getState())) {
+                if (!bot.settings.activitiesSchedule.canRun()) {
+                    bot.running = false;
+                    bot.stop();
+                }
+            }
+
+            // When the bot is not running, we check if an active schedule is available
+            if (!bot.running && bot.settings.activitiesSchedule.canRun()) {
+                bot.browser = new BrowserManager(bot, userDataDir);
+                bot.running = true;
+                bot.scheduler.resetIdleTime(true);
+                bot.processCommand("start");
+            }
+
             Misc.sleep(500);
+
         }
 
-        if (bot.dungeonThread.isAlive()) {
+        bot.stop();
+        logger.info(PROGRAM_NAME + " has finished.");
+    }
+
+    private void stop() {
+        if (dungeonThread.isAlive()) {
             try {
                 // wait for 10 seconds for the main thread to terminate
                 logger.info("Waiting for dungeon thread to finish... (timeout=10s)");
-                bot.dungeonThread.join(10 * Misc.Durations.SECOND);
+                dungeonThread.join(10 * Misc.Durations.SECOND);
             } catch (InterruptedException e) {
                 logger.error("Error when joining Main Thread", e);
             }
 
-            if (bot.dungeonThread.isAlive()) {
+            if (dungeonThread.isAlive()) {
                 logger.warn("Dungeon thread is still alive. Force stopping it now...");
-                bot.dungeonThread.interrupt();
+                dungeonThread.interrupt();
                 try {
-                    bot.dungeonThread.join(); // until thread stops
+                    dungeonThread.join(); // until thread stops
                 } catch (InterruptedException e) {
                     logger.error("Error while force stopping", e);
                 }
             }
         }
 
-        if (bot.blockerThread.isAlive()) {
+        if (blockerThread.isAlive()) {
             try {
                 // wait for 10 seconds for the main thread to terminate
                 logger.info("Waiting for blocker thread to finish... (timeout=10s)");
-                bot.blockerThread.join(10 * Misc.Durations.SECOND);
+                blockerThread.join(10 * Misc.Durations.SECOND);
             } catch (InterruptedException e) {
                 logger.error("Error when joining Blocker Thread", e);
             }
 
-            if (bot.blockerThread.isAlive()) {
+            if (blockerThread.isAlive()) {
                 logger.warn("Blocker thread is still alive. Force stopping it now...");
-                bot.blockerThread.interrupt();
+                blockerThread.interrupt();
                 try {
-                    bot.blockerThread.join(); // until thread stops
+                    blockerThread.join(); // until thread stops
                 } catch (InterruptedException e) {
                     logger.error("Error while force stopping", e);
                 }
             }
         }
 
-        bot.browser.close();
-        logger.info(PROGRAM_NAME + " has finished.");
+        browser.close();
     }
 
     private void processCommand(String c) {

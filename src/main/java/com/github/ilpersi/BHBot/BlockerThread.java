@@ -206,8 +206,11 @@ public class BlockerThread implements Runnable {
             bot.excManager.numConsecutiveException = 0; // reset exception counter
             bot.scheduler.restoreIdleTime(); // revert changes to idle time
             if (bot.finished) break; // skip sleeping if finished flag has been set!
+            if (!bot.running && BHBot.State.Main.equals(bot.getState())) break;
             Misc.sleep(250);
         }
+
+        BHBot.logger.info("Blocker thread stopped.");
     }
 
     /**

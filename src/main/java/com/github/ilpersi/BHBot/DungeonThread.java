@@ -1989,7 +1989,11 @@ public class DungeonThread implements Runnable {
             bot.excManager.numConsecutiveException = 0; // reset exception counter
             bot.scheduler.restoreIdleTime(); // revert changes to idle time
             if (bot.finished) break; // skip sleeping if finished flag has been set!
-            Misc.sleep(Misc.Durations.SECOND);
+            if (!bot.running && BHBot.State.Main.equals(bot.getState())) {
+                break;
+            }
+
+            Misc.sleep(Misc.Durations.SECOND / 2);
         } // main while loop
 
         BHBot.logger.info("Dungeon thread stopped.");
