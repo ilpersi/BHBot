@@ -161,8 +161,10 @@ public class BrowserManager {
     }
 
     synchronized void close() {
-        driver.close();
-        driver.quit();
+        if (driver != null) {
+            driver.close();
+            driver.quit();
+        }
     }
 
     synchronized void hideBrowser() {
