@@ -155,9 +155,9 @@ public class BHBot {
         cues = new CueManager();
 
         // If any error is present after parsing the config file, we stop the bot
-        if (bot.settings.wrongSettingLines.size() > 0 ) {
-            for (String wrongLine: bot.settings.wrongSettingLines) {
-                logger.fatal("It was impossible to parse the following setting line and it has been skipped: '" +  wrongLine  + "!" +
+        if (bot.settings.wrongSettingLines.size() > 0) {
+            for (String wrongLine : bot.settings.wrongSettingLines) {
+                logger.fatal("It was impossible to parse the following setting line and it has been skipped: '" + wrongLine + "!" +
                         "Please review your settings.ini file'");
             }
             return;
@@ -165,11 +165,11 @@ public class BHBot {
 
         // If any warning is present during the setting parsing, we raise it
         if (!bot.settings.warningSettingLInes.isEmpty()) {
-            for (String warningLine: bot.settings.warningSettingLInes) {
+            for (String warningLine : bot.settings.warningSettingLInes) {
                 logger.warn(warningLine);
             }
         }
-        
+
         Properties properties = new Properties();
         try {
             properties.load(BHBot.class.getResourceAsStream("/pom.properties"));
@@ -210,9 +210,11 @@ public class BHBot {
 
         bot.botStartTime = Misc.getTime();
 
-        Scanner scanner = new Scanner(System.in);
+        // Scanner scanner = new Scanner(System.in);
+        logger.debug("Opening InputThread on stdin ...");
+        InputThread reader = new InputThread(System.in, logger);
         while (!bot.finished) {
-            String s;
+            /*String s;
             try {
                 s = scanner.nextLine();
             } catch (IllegalStateException | NoSuchElementException e) {
@@ -227,6 +229,14 @@ public class BHBot {
                 } catch (Exception e) {
                     logger.error("Impossible to process user command: " + s, e);
                 }
+            }*/
+            String line;
+            try {
+                while ((line = reader.readLine()) != null) {
+                    bot.processCommand((line));
+                }
+            } catch (java.io.IOException e) {
+                logger.error("Impossible to read user input", e);
             }
 
             // When no scheduling is present, we stop the bot
@@ -250,11 +260,12 @@ public class BHBot {
         }
 
         bot.stop();
+        reader.close();
         logger.info(PROGRAM_NAME + " has finished.");
     }
 
     private void stop() {
-        if (dungeonThread.isAlive()) {
+        if (dungeonThread != null && dungeonThread.isAlive()) {
             try {
                 // wait for 10 seconds for the main thread to terminate
                 logger.info("Waiting for dungeon thread to finish... (timeout=10s)");
@@ -274,7 +285,7 @@ public class BHBot {
             }
         }
 
-        if (blockerThread.isAlive()) {
+        if (blockerThread != null && blockerThread.isAlive()) {
             try {
                 // wait for 10 seconds for the main thread to terminate
                 logger.info("Waiting for blocker thread to finish... (timeout=10s)");
@@ -294,7 +305,7 @@ public class BHBot {
             }
         }
 
-        browser.close();
+        if (browser != null) browser.close();
     }
 
     private void processCommand(String c) {
@@ -868,7 +879,7 @@ public class BHBot {
     }
 
     /**
-     * @param emergency true in case something bad happened (some kind of an error for which we had to do a restart)
+     * @param emergency         true in case something bad happened (some kind of an error for which we had to do a restart)
      * @param useDoNotShareLink is the bot running with do_not_share link enabled?
      */
     void restart(boolean emergency, boolean useDoNotShareLink) {
