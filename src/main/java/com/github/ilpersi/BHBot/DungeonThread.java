@@ -374,224 +374,57 @@ public class DungeonThread implements Runnable {
                     String currentActivity = activitySelector(); //else select the activity to attempt
                     if (currentActivity != null) {
                         BHBot.logger.debug("Checking activity: " + currentActivity);
-                    } else {
-                        // If we don't have any activity to perform, we reset the idle timer check
-                        bot.scheduler.resetIdleTime(true);
-                        continue;
-                    }
 
-                    // check for shards:
-                    if ("r".equals(currentActivity)) {
-                        timeLastShardsCheck = Misc.getTime();
-
-                        bot.browser.readScreen();
-                        MarvinSegment raidBTNSeg = MarvinSegment.fromCue(BHBot.cues.get("RaidButton"), bot.browser);
-
-                        if (raidBTNSeg == null) { // if null, then raid button is transparent meaning that raiding is not enabled (we have not achieved it yet, for example)
-                            bot.scheduler.restoreIdleTime();
-                            continue;
-                        }
-                        bot.browser.clickOnSeg(raidBTNSeg);
-
-                        seg = MarvinSegment.fromCue("RaidPopup", 5 * Misc.Durations.SECOND, bot.browser); // wait until the raid window opens
-                        if (seg == null) {
-                            BHBot.logger.warn("Error: attempt at opening raid window failed. No window cue detected. Ignoring...");
-                            bot.scheduler.restoreIdleTime();
-                            // we make sure that everything that can be closed is actually closed to avoid idle timeout
-                            bot.browser.closePopupSecurely(BHBot.cues.get("X"), BHBot.cues.get("X"));
-                            continue;
-                        }
-
-
-                        int shards = getShards();
-                        globalShards = shards;
-                        BHBot.logger.readout("Shards: " + shards + ", required: >" + bot.settings.minShards);
-
-                        if (shards == -1) { // error
-                            bot.scheduler.restoreIdleTime();
-                            continue;
-                        }
-
-                        if ((shards == 0) || (!bot.scheduler.doRaidImmediately && (shards <= bot.settings.minShards || bot.settings.raids.size() == 0))) {
-                            if (bot.scheduler.doRaidImmediately)
-                                bot.scheduler.doRaidImmediately = false; // reset it
+                        // check for shards:
+                        if ("r".equals(currentActivity)) {
+                            timeLastShardsCheck = Misc.getTime();
 
                             bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                            bot.browser.clickOnSeg(seg);
-                            Misc.sleep(Misc.Durations.SECOND);
+                            MarvinSegment raidBTNSeg = MarvinSegment.fromCue(BHBot.cues.get("RaidButton"), bot.browser);
 
-                            continue;
-
-                        } else { // do the raiding!
-
-                            if (bot.scheduler.doRaidImmediately)
-                                bot.scheduler.doRaidImmediately = false; // reset it
-
-                            //if we need to configure runes/settings we close the window first
-                            if (bot.settings.autoShrine.contains("r") || bot.settings.autoRune.containsKey("r") || bot.settings.autoBossRune.containsKey("r")) {
-                                bot.browser.readScreen();
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                                bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(Misc.Durations.SECOND);
+                            if (raidBTNSeg == null) { // if null, then raid button is transparent meaning that raiding is not enabled (we have not achieved it yet, for example)
+                                bot.scheduler.restoreIdleTime();
+                                continue;
                             }
-
-                            //autoshrine
-                            if (bot.settings.autoShrine.contains("r")) {
-                                BHBot.logger.info("Configuring autoShrine for Raid");
-                                if (!shrineManager.updateShrineSettings(true, true)) {
-                                    BHBot.logger.error("Impossible to configure autoShrine for Raid!");
-                                }
-                            }
-
-                            //autoBossRune
-                            if (bot.settings.autoBossRune.containsKey("r") && !bot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autobossrune enabled
-                                BHBot.logger.info("Configuring autoBossRune for Raid");
-                                if (!shrineManager.updateShrineSettings(true, false)) {
-                                    BHBot.logger.error("Impossible to configure autoBossRune for Raid!");
-                                }
-                            }
-
-                            //activity runes
-                            runeManager.processAutoRune("r");
-
-                            bot.browser.readScreen(Misc.Durations.SECOND);
                             bot.browser.clickOnSeg(raidBTNSeg);
 
-                            String raid = decideRaidRandomly();
-                            if (raid == null) {
-                                bot.settings.activitiesEnabled.remove("r");
-                                BHBot.logger.error("It was impossible to choose a raid randomly, raids are disabled!");
-                                bot.notificationManager.sendErrorNotification("Raid Error", "It was impossible to choose a raid randomly, raids are disabled!");
-
-                                continue;
-                            }
-
-                            int difficulty = Integer.parseInt(raid.split(" ")[1]);
-                            int desiredRaid = Integer.parseInt(raid.split(" ")[0]);
-
-                            if (!handleRaidSelection(desiredRaid, difficulty)) {
-                                restart();
-                                continue;
-                            }
-
-                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("RaidSummon"), 2 * Misc.Durations.SECOND, bot.browser);
+                            seg = MarvinSegment.fromCue("RaidPopup", 5 * Misc.Durations.SECOND, bot.browser); // wait until the raid window opens
                             if (seg == null) {
-                                BHBot.logger.error("Raid Summon button not found");
-                                restart();
+                                BHBot.logger.warn("Error: attempt at opening raid window failed. No window cue detected. Ignoring...");
+                                bot.scheduler.restoreIdleTime();
+                                // we make sure that everything that can be closed is actually closed to avoid idle timeout
+                                bot.browser.closePopupSecurely(BHBot.cues.get("X"), BHBot.cues.get("X"));
                                 continue;
                             }
-                            bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
-                            // dismiss character dialog if it pops up:
-                            bot.browser.readScreen();
-                            detectCharacterDialogAndHandleIt();
 
-                            seg = MarvinSegment.fromCue(BHBot.cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), bot.browser);
-                            bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
+                            int shards = getShards();
+                            globalShards = shards;
+                            BHBot.logger.readout("Shards: " + shards + ", required: >" + bot.settings.minShards);
 
-                            //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
-                            //bot.browser.clickOnSeg(seg);
-                            bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
-                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
-
-                            if (handleTeamMalformedWarning()) {
-                                BHBot.logger.error("Team incomplete, doing emergency restart..");
-                                restart();
+                            if (shards == -1) { // error
+                                bot.scheduler.restoreIdleTime();
                                 continue;
-                            } else {
-                                bot.setState(BHBot.State.Raid);
-                                BHBot.logger.info("Raid initiated!");
-                                runeManager.reset();
-                            }
-                        }
-                        continue;
-                    } // shards
-
-                    // check for tokens (trials and gauntlet):
-                    if (bot.scheduler.doTrialsImmediately || bot.scheduler.doGauntletImmediately ||
-                            ("t".equals(currentActivity)) || ("g".equals(currentActivity))) {
-                        if ("t".equals(currentActivity)) timeLastTrialsTokensCheck = Misc.getTime();
-                        if ("g".equals(currentActivity)) timeLastGauntletTokensCheck = Misc.getTime();
-
-                        bot.browser.readScreen();
-
-                        boolean trials;
-                        seg = MarvinSegment.fromCue(BHBot.cues.get("Trials"), bot.browser);
-                        if (seg == null) seg = MarvinSegment.fromCue(BHBot.cues.get("Trials2"), bot.browser);
-                        trials = seg != null; // if false, then we will do gauntlet instead of trials
-
-                        if (seg == null)
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("Gauntlet"), bot.browser);
-                        if (seg == null) {
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("Gauntlet2"), bot.browser);
-                        }
-                        if (seg == null) {// trials/gauntlet button not visible (perhaps it is disabled?)
-                            BHBot.logger.warn("Gauntlet/Trials button not found");
-                            bot.scheduler.restoreIdleTime();
-                            continue;
-                        }
-
-                        if (("g".equals(currentActivity) && trials) || ("t".equals(currentActivity) && !trials))
-                            continue;
-
-
-                        bot.browser.clickOnSeg(seg);
-                        MarvinSegment trialBTNSeg = seg;
-
-                        // dismiss character dialog if it pops up:
-                        bot.browser.readScreen(2 * Misc.Durations.SECOND);
-                        detectCharacterDialogAndHandleIt();
-
-                        bot.browser.readScreen();
-                        int tokens = getTokens();
-                        globalTokens = tokens;
-                        BHBot.logger.readout("Tokens: " + tokens + ", required: >" + bot.settings.minTokens + ", " +
-                                (trials ? "Trials" : "Gauntlet") + " cost: " + (trials ? bot.settings.costTrials : bot.settings.costGauntlet));
-
-                        if (tokens == -1) { // error
-                            bot.scheduler.restoreIdleTime();
-                            continue;
-                        }
-
-                        if (((!bot.scheduler.doTrialsImmediately && !bot.scheduler.doGauntletImmediately) && (tokens <= bot.settings.minTokens)) || (tokens < (trials ? bot.settings.costTrials : bot.settings.costGauntlet))) {
-                            bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                            bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(Misc.Durations.SECOND);
-
-                            //if we have 1 token and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one token short
-                            int tokenDifference = (trials ? bot.settings.costTrials : bot.settings.costGauntlet) - tokens; //difference between needed and current resource
-                            if (tokenDifference > 1) {
-                                int increase = (tokenDifference - 1) * 45;
-                                TOKENS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
-                            } else
-                                TOKENS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 token check every 10 minutes
-
-                            if (bot.scheduler.doTrialsImmediately) {
-                                bot.scheduler.doTrialsImmediately = false; // if we don't have resources to run we need to disable force it
-                            } else if (bot.scheduler.doGauntletImmediately) {
-                                bot.scheduler.doGauntletImmediately = false;
                             }
 
-                            continue;
-                        } else {
-                            // do the trials/gauntlet!
+                            if ((shards == 0) || (!bot.scheduler.doRaidImmediately && (shards <= bot.settings.minShards || bot.settings.raids.size() == 0))) {
+                                if (bot.scheduler.doRaidImmediately)
+                                    bot.scheduler.doRaidImmediately = false; // reset it
 
-                            if (bot.scheduler.doTrialsImmediately) {
-                                bot.scheduler.doTrialsImmediately = false; // reset it
-                            } else if (bot.scheduler.doGauntletImmediately) {
-                                bot.scheduler.doGauntletImmediately = false;
-                            }
+                                bot.browser.readScreen();
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                                bot.browser.clickOnSeg(seg);
+                                Misc.sleep(Misc.Durations.SECOND);
 
-                            // One time check for Autoshrine
-                            //wait for window animation
-                            if (trials) {
+                                continue;
+
+                            } else { // do the raiding!
+
+                                if (bot.scheduler.doRaidImmediately)
+                                    bot.scheduler.doRaidImmediately = false; // reset it
+
                                 //if we need to configure runes/settings we close the window first
-                                if (bot.settings.autoShrine.contains("t") || bot.settings.autoRune.containsKey("t") || bot.settings.autoBossRune.containsKey("t")) {
+                                if (bot.settings.autoShrine.contains("r") || bot.settings.autoRune.containsKey("r") || bot.settings.autoBossRune.containsKey("r")) {
                                     bot.browser.readScreen();
                                     seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                                     bot.browser.clickOnSeg(seg);
@@ -599,1383 +432,1550 @@ public class DungeonThread implements Runnable {
                                 }
 
                                 //autoshrine
-                                if (bot.settings.autoShrine.contains("t")) {
-                                    BHBot.logger.info("Configuring autoShrine for Trials");
+                                if (bot.settings.autoShrine.contains("r")) {
+                                    BHBot.logger.info("Configuring autoShrine for Raid");
                                     if (!shrineManager.updateShrineSettings(true, true)) {
-                                        BHBot.logger.error("Impossible to configure autoShrine for Trials!");
+                                        BHBot.logger.error("Impossible to configure autoShrine for Raid!");
                                     }
                                 }
 
                                 //autoBossRune
-                                if (bot.settings.autoBossRune.containsKey("t") && !bot.settings.autoShrine.contains("t")) { //if autoshrine disabled but autobossrune enabled
-                                    BHBot.logger.info("Configuring autoBossRune for Trials");
+                                if (bot.settings.autoBossRune.containsKey("r") && !bot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autobossrune enabled
+                                    BHBot.logger.info("Configuring autoBossRune for Raid");
                                     if (!shrineManager.updateShrineSettings(true, false)) {
-                                        BHBot.logger.error("Impossible to configure autoBossRune for Trials!");
+                                        BHBot.logger.error("Impossible to configure autoBossRune for Raid!");
                                     }
                                 }
 
                                 //activity runes
-                                runeManager.processAutoRune("t");
+                                runeManager.processAutoRune("r");
 
-                            } else {
+                                bot.browser.readScreen(Misc.Durations.SECOND);
+                                bot.browser.clickOnSeg(raidBTNSeg);
 
-                                if (bot.settings.autoRune.containsKey("g")) {
-                                    runeManager.processAutoRune("g");
-                                    bot.browser.readScreen(Misc.Durations.SECOND);
-                                }
+                                String raid = decideRaidRandomly();
+                                if (raid == null) {
+                                    bot.settings.activitiesEnabled.remove("r");
+                                    BHBot.logger.error("It was impossible to choose a raid randomly, raids are disabled!");
+                                    bot.notificationManager.sendErrorNotification("Raid Error", "It was impossible to choose a raid randomly, raids are disabled!");
 
-                            }
-                            bot.browser.readScreen(Misc.Durations.SECOND);
-                            bot.browser.clickOnSeg(trialBTNSeg);
-                            bot.browser.readScreen(Misc.Durations.SECOND); //wait for window animation
-
-                            // apply the correct difficulty
-                            int targetDifficulty = trials ? bot.settings.difficultyTrials : bot.settings.difficultyGauntlet;
-
-                            BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + targetDifficulty + "...");
-
-                            int difficulty = detectDifficulty();
-                            if (difficulty == 0) { // error!
-                                BHBot.logger.error("Due to an error#1 in difficulty detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
-                                bot.browser.closePopupSecurely(BHBot.cues.get("TrialsOrGauntletWindow"), BHBot.cues.get("X"));
-                                continue;
-                            }
-                            if (difficulty != targetDifficulty) {
-                                BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + targetDifficulty + ". Changing..");
-                                boolean result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficulty"), 1);
-                                if (!result) { // error!
-                                    // see if drop down menu is still open and close it:
-                                    bot.browser.readScreen(Misc.Durations.SECOND);
-                                    tryClosingWindow(BHBot.cues.get("DifficultyDropDown"));
-                                    bot.browser.readScreen(5 * Misc.Durations.SECOND);
-                                    BHBot.logger.warn("Unable to change difficulty, usually because desired level is not unlocked. Running " + (trials ? "trials" : "gauntlet") + " at " + difficulty + ".");
-                                    bot.notificationManager.sendErrorNotification("T/G Error", "Unable to change " + (trials ? "trials" : "gauntlet") + " difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.");
-
-                                    // We update the setting file with the old difficulty level
-                                    String settingName = trials ? "difficultyTrials" : "difficultyGauntlet";
-                                    String original = settingName + " " + targetDifficulty;
-                                    String updated = settingName + " " + difficulty;
-                                    settingsUpdate(original, updated);
-
-                                }
-                            }
-
-                            // select cost if needed:
-                            bot.browser.readScreen(2 * Misc.Durations.SECOND); // wait for the popup to stabilize a bit
-                            int cost = detectCost();
-                            if (cost == 0) { // error!
-                                BHBot.logger.error("Due to an error#1 in cost detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
-                                bot.browser.closePopupSecurely(BHBot.cues.get("TrialsOrGauntletWindow"), BHBot.cues.get("X"));
-                                continue;
-                            }
-                            if (cost != (trials ? bot.settings.costTrials : bot.settings.costGauntlet)) {
-                                BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " cost: " + cost + ", settings cost is " + (trials ? bot.settings.costTrials : bot.settings.costGauntlet) + ". Changing it...");
-                                boolean result = selectCost(cost, (trials ? bot.settings.costTrials : bot.settings.costGauntlet));
-                                if (!result) { // error!
-                                    // see if drop down menu is still open and close it:
-                                    bot.browser.readScreen(Misc.Durations.SECOND);
-                                    tryClosingWindow(BHBot.cues.get("CostDropDown"));
-                                    bot.browser.readScreen(5 * Misc.Durations.SECOND);
-                                    tryClosingWindow(BHBot.cues.get("TrialsOrGauntletWindow"));
-                                    BHBot.logger.error("Due to an error#2 in cost selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
                                     continue;
                                 }
 
-                                // We wait for the cost selector window to close
-                                MarvinSegment.fromCue("TrialsOrGauntletWindow", Misc.Durations.SECOND * 2, bot.browser);
-                                bot.browser.readScreen();
-                            }
+                                int difficulty = Integer.parseInt(raid.split(" ")[1]);
+                                int desiredRaid = Integer.parseInt(raid.split(" ")[0]);
 
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("Play"), 2 * Misc.Durations.SECOND, bot.browser);
-                            if (seg == null) {
-                                BHBot.logger.error("Error: Play button not found while trying to do " + (trials ? "trials" : "gauntlet") + ". Ignoring...");
-                                tryClosingWindow(BHBot.cues.get("TrialsOrGauntletWindow"));
-                                continue;
-                            }
-                            bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
-
-                            if (!handleNotEnoughTokensPopup(false)) {
-                                restart();
-                                continue;
-                            }
-
-                            // dismiss character dialog if it pops up:
-                            detectCharacterDialogAndHandleIt();
-
-                            //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
-                            //bot.browser.clickOnSeg(seg);
-                            bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
-                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
-
-                            // This is a Bit Heroes bug!
-                            // On t/g main screen the token bar is wrongly full so it goes trough the "Play" button and
-                            // then it fails on the team "Accept" button
-                            if (!handleNotEnoughTokensPopup(true)) {
-                                restart();
-                                continue;
-                            }
-
-                            Misc.sleep(3 * Misc.Durations.SECOND);
-
-                            if (handleTeamMalformedWarning()) {
-                                BHBot.logger.error("Team incomplete, doing emergency restart..");
-                                restart();
-                                continue;
-                            } else {
-                                bot.setState(trials ? BHBot.State.Trials : BHBot.State.Gauntlet);
-                                BHBot.logger.info((trials ? "Trials" : "Gauntlet") + " initiated!");
-                                runeManager.reset();
-                            }
-                        }
-                        continue;
-                    } // tokens (trials and gauntlet)
-
-                    // check for energy:
-                    if ("d".equals(currentActivity)) {
-                        timeLastEnergyCheck = Misc.getTime();
-
-                        bot.browser.readScreen();
-
-                        int energy = getEnergy();
-                        globalEnergy = energy;
-                        BHBot.logger.readout("Energy: " + energy + "%, required: >" + bot.settings.minEnergyPercentage + "%");
-
-                        if (energy == -1) { // error
-                            bot.scheduler.restoreIdleTime();
-                            if (bot.scheduler.doDungeonImmediately)
-                                bot.scheduler.doDungeonImmediately = false; // reset it
-                            continue;
-                        }
-
-                        if (!bot.scheduler.doDungeonImmediately && (energy <= bot.settings.minEnergyPercentage || bot.settings.dungeons.size() == 0)) {
-                            Misc.sleep(Misc.Durations.SECOND);
-
-                            //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
-                            int energyDifference = bot.settings.minEnergyPercentage - energy; //difference between needed and current resource
-                            if (energyDifference > 1) {
-                                int increase = (energyDifference - 1) * 8;
-                                ENERGY_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 8 minutes to the check interval for each energy % needed above 1
-                            } else
-                                ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
-
-                            continue;
-                        } else {
-                            // do the dungeon!
-
-                            if (bot.scheduler.doDungeonImmediately)
-                                bot.scheduler.doDungeonImmediately = false; // reset it
-
-                            //configure activity runes
-                            runeManager.processAutoRune("d");
-
-                            if (bot.settings.autoBossRune.containsKey("d") && !bot.settings.autoShrine.contains("d")) { //if autoshrine disabled but autorune enabled
-
-                                BHBot.logger.info("Configuring autoBossRune for Dungeons");
-                                if (!shrineManager.updateShrineSettings(true, false)) {
-                                    BHBot.logger.error("Impossible to configure autoBossRune for Dungeons!");
-                                }
-
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                Misc.sleep(2 * Misc.Durations.SECOND);
-                            }
-
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("Quest"), bot.browser);
-                            if (seg == null) {
-                                bot.saveGameScreen("no-quest-btn", "errors", bot.browser.getImg());
-                                BHBot.logger.error("Impposible to find the quest button!");
-                                continue;
-                            }
-
-                            bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(5 * Misc.Durations.SECOND);
-
-                            String dungeon = decideDungeonRandomly();
-                            if (dungeon == null) {
-                                bot.settings.activitiesEnabled.remove("d");
-                                BHBot.logger.error("It was impossible to choose a dungeon randomly, dungeons are disabled!");
-                                bot.notificationManager.sendErrorNotification("Dungeon error", "It was impossible to choose a dungeon randomly, dungeons are disabled!");
-                                continue;
-                            }
-
-                            Matcher dungeonMatcher = dungeonRegex.matcher(dungeon.toLowerCase());
-                            if (!dungeonMatcher.find()) {
-                                BHBot.logger.error("Wrong format in dungeon detected: " + dungeon + "! It will be skipped...");
-                                bot.notificationManager.sendErrorNotification("Dungeon error", "Wrong dungeon format detected: " + dungeon);
-                                continue;
-                            }
-
-                            int goalZone = Integer.parseInt(dungeonMatcher.group("zone"));
-                            int goalDungeon = Integer.parseInt(dungeonMatcher.group("dungeon"));
-                            int difficulty = Integer.parseInt(dungeonMatcher.group("difficulty"));
-
-                            String difficultyName = (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic");
-
-                            BHBot.logger.info("Attempting " + difficultyName + " z" + goalZone + "d" + goalDungeon);
-
-                            int currentZone = readCurrentZone();
-                            int vec = goalZone - currentZone; // movement vector
-//							BHBot.logger.info("Current zone: " + Integer.toString(currentZone) + " Target Zone: " + Integer.toString(goalZone));
-                            while (vec != 0) { // move to the correct zone
-                                if (vec > 0) {
-                                    // note that moving to the right will fail in case player has not unlocked the zone yet!
-                                    bot.browser.readScreen(Misc.Durations.SECOND); // wait for screen to stabilise
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("RightArrow"), bot.browser);
-                                    if (seg == null) {
-                                        BHBot.logger.error("Right button not found, zone unlocked?");
-                                        break; // happens for example when player hasn't unlock the zone yet
-                                    }
-                                    //coords are used as moving multiple screens would crash the bot when using the arrow cues
-                                    bot.browser.clickInGame(740, 275);
-                                    vec--;
-                                } else {
-                                    Misc.sleep(500);
-                                    //coords are used as moving multiple screens would crash the bot when using the arrow cues
-                                    bot.browser.clickInGame(55, 275);
-                                    vec++;
-                                }
-                            }
-
-                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
-
-                            // click on the dungeon:
-                            Point p = getDungeonIconPos(goalZone, goalDungeon);
-                            if (p == null) {
-                                bot.settings.activitiesEnabled.remove("d");
-                                BHBot.logger.error("It was impossible to get icon position of dungeon z" + goalZone + "d" + goalDungeon + ". Dungeons are now disabled!");
-                                bot.notificationManager.sendErrorNotification("Dungeon error", "It was impossible to get icon position of dungeon z" + goalZone + "d" + goalDungeon + ". Dungeons are now disabled!");
-                                continue;
-                            }
-
-                            bot.browser.clickInGame(p.x, p.y);
-
-                            bot.browser.readScreen(3 * Misc.Durations.SECOND);
-                            // select difficulty (If D4 just hit enter):
-                            if ((goalDungeon == 4) || (goalZone == 7 && goalDungeon == 3) || (goalZone == 8 && goalDungeon == 3)) { // D4, or Z7D3/Z8D3
-                                specialDungeon = true;
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Enter"), 5 * Misc.Durations.SECOND, bot.browser);
-                            } else { //else select appropriate difficulty
-                                seg = MarvinSegment.fromCue(BHBot.cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), 5 * Misc.Durations.SECOND, bot.browser);
-                            }
-                            bot.browser.clickOnSeg(seg);
-
-                            //team selection screen
-                            /* Solo-for-bounty code */
-                            if (goalZone <= bot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Clear"), Misc.Durations.SECOND * 2, bot.browser);
-                                if (seg != null) {
-                                    BHBot.logger.info("Selected zone under dungeon solo threshold, attempting solo");
-                                    bot.browser.clickOnSeg(seg);
-                                } else {
-                                    BHBot.logger.error("Impossible to find clear button in Dungeon Team!");
+                                if (!handleRaidSelection(desiredRaid, difficulty)) {
                                     restart();
                                     continue;
                                 }
-                            }
 
-                            bot.browser.readScreen();
-                            //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), Misc.Durations.SECOND * 2, bot.browser);
-                            //bot.browser.clickOnSeg(seg);
-                            bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
-
-                            if (goalZone <= bot.settings.minSolo) {
-                                bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for dropdown animation to finish
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser);
-                                if (seg != null) {
-                                    bot.browser.clickOnSeg(seg);
-                                } else {
-                                    BHBot.logger.error("Impossible to find Yes button in Dungeon Team!");
-                                    restart();
-                                }
-                            } else {
-                                if (handleTeamMalformedWarning()) {
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("RaidSummon"), 2 * Misc.Durations.SECOND, bot.browser);
+                                if (seg == null) {
+                                    BHBot.logger.error("Raid Summon button not found");
                                     restart();
                                     continue;
                                 }
-                            }
-
-                            if (handleNotEnoughEnergyPopup()) {
-                                continue;
-                            }
-
-                            bot.setState(BHBot.State.Dungeon);
-                            runeManager.reset();
-
-                            BHBot.logger.info("Dungeon <z" + goalZone + "d" + goalDungeon + "> " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic") + " initiated!");
-                        }
-                        continue;
-                    } // energy
-
-                    // check for Tickets (PvP):
-                    if ("p".equals(currentActivity)) {
-                        timeLastTicketsCheck = Misc.getTime();
-
-                        bot.browser.readScreen();
-
-                        int tickets = getTickets();
-                        globalTickets = tickets;
-                        BHBot.logger.readout("Tickets: " + tickets + ", required: >" + bot.settings.minTickets + ", PVP cost: " + bot.settings.costPVP);
-
-                        if (tickets == -1) { // error
-                            bot.scheduler.restoreIdleTime();
-                            continue;
-                        }
-
-                        if ((!bot.scheduler.doPVPImmediately && (tickets <= bot.settings.minTickets)) || (tickets < bot.settings.costPVP)) {
-                            Misc.sleep(Misc.Durations.SECOND);
-
-                            //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
-                            int ticketDifference = bot.settings.costPVP - tickets; //difference between needed and current resource
-                            if (ticketDifference > 1) {
-                                int increase = (ticketDifference - 1) * 45;
-                                TICKETS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-                            } else
-                                TICKETS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
-
-                            continue;
-                        } else {
-                            // do the pvp!
-
-                            if (bot.scheduler.doPVPImmediately)
-                                bot.scheduler.doPVPImmediately = false; // reset it
-
-                            //configure activity runes
-                            runeManager.processAutoRune("p");
-
-                            BHBot.logger.info("Attempting PVP...");
-                            stripDown(bot.settings.pvpstrip);
-
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("PVP"), bot.browser);
-                            if (seg == null) {
-                                BHBot.logger.warn("PVP button not found. Skipping PVP...");
-                                dressUp(bot.settings.pvpstrip);
-                                continue; // should not happen though
-                            }
-                            bot.browser.clickOnSeg(seg);
-
-                            // select cost if needed:
-                            bot.browser.readScreen(2 * Misc.Durations.SECOND); // wait for the popup to stabilize a bit
-                            int cost = detectCost();
-                            if (cost == 0) { // error!
-                                BHBot.logger.error("Due to an error#1 in cost detection, PVP will be skipped.");
-                                bot.browser.closePopupSecurely(BHBot.cues.get("PVPWindow"), BHBot.cues.get("X"));
-                                dressUp(bot.settings.pvpstrip);
-                                continue;
-                            }
-                            if (cost != bot.settings.costPVP) {
-                                BHBot.logger.info("Detected PVP cost: " + cost + ", settings cost is " + bot.settings.costPVP + ". Changing..");
-                                boolean result = selectCost(cost, bot.settings.costPVP);
-                                if (!result) { // error!
-                                    // see if drop down menu is still open and close it:
-                                    bot.browser.readScreen(Misc.Durations.SECOND);
-                                    tryClosingWindow(BHBot.cues.get("CostDropDown"));
-                                    bot.browser.readScreen(5 * Misc.Durations.SECOND);
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("PVPWindow"), 15 * Misc.Durations.SECOND, bot.browser);
-                                    if (seg != null)
-                                        bot.browser.closePopupSecurely(BHBot.cues.get("PVPWindow"), BHBot.cues.get("X"));
-                                    BHBot.logger.error("Due to an error#2 in cost selection, PVP will be skipped.");
-                                    dressUp(bot.settings.pvpstrip);
-                                    continue;
-                                }
-                            }
-
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("Play"), 5 * Misc.Durations.SECOND, bot.browser);
-                            bot.browser.clickOnSeg(seg);
-                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
-
-                            // dismiss character dialog if it pops up:
-                            detectCharacterDialogAndHandleIt();
-
-                            Bounds pvpOpponentBounds = opponentSelector(bot.settings.pvpOpponent);
-                            String opponentName = (bot.settings.pvpOpponent == 1 ? "1st" : bot.settings.pvpOpponent == 2 ? "2nd" : bot.settings.pvpOpponent == 3 ? "3rd" : "4th");
-                            BHBot.logger.info("Selecting " + opponentName + " opponent");
-                            seg = MarvinSegment.fromCue("Fight", 5 * Misc.Durations.SECOND, pvpOpponentBounds, bot.browser);
-                            if (seg == null) {
-                                BHBot.logger.error("Imppossible to find the Fight button in the PVP screen, restarting!");
-                                restart();
-                                continue;
-                            }
-                            bot.browser.clickOnSeg(seg);
-
-                            bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue("Accept", 5 * Misc.Durations.SECOND, new Bounds(430, 430, 630, 500), bot.browser);
-                            if (seg == null) {
-                                BHBot.logger.error("Impossible to find the Accept button in the PVP screen, restarting");
-                                restart();
-                                continue;
-                            }
-                            bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
-                            //bot.browser.clickOnSeg(seg);
-
-                            if (handleTeamMalformedWarning()) {
-                                BHBot.logger.error("Team incomplete, doing emergency restart..");
-                                restart();
-                                continue;
-                            } else {
-                                bot.setState(BHBot.State.PVP);
-                                BHBot.logger.info("PVP initiated!");
-                            }
-                        }
-                        continue;
-                    } // PvP
-
-                    // check for badges (for GVG/Invasion/Expedition):
-                    if (("v".equals(currentActivity)) || ("i".equals(currentActivity)) || ("e".equals(currentActivity))) {
-
-                        String checkedActivity = currentActivity;
-
-                        if ("v".equals(currentActivity)) timeLastGVGBadgesCheck = Misc.getTime();
-                        if ("i".equals(currentActivity)) timeLastInvBadgesCheck = Misc.getTime();
-                        if ("e".equals(currentActivity)) timeLastExpBadgesCheck = Misc.getTime();
-
-                        bot.browser.readScreen();
-
-                        BadgeEvent badgeEvent = BadgeEvent.None;
-                        MarvinSegment badgeBtn = null;
-
-                        HashMap<Cue, BadgeEvent> badgeEvents = new HashMap<>();
-                        badgeEvents.put(BHBot.cues.get("ExpeditionButton"), BadgeEvent.Expedition);
-                        badgeEvents.put(BHBot.cues.get("GVG"), BadgeEvent.GVG);
-                        badgeEvents.put(BHBot.cues.get("Invasion"), BadgeEvent.Invasion);
-
-                        for (Map.Entry<Cue, BadgeEvent> event : badgeEvents.entrySet()) {
-                            badgeBtn = MarvinSegment.fromCue(event.getKey(), bot.browser);
-                            if (badgeBtn != null) {
-                                badgeEvent = event.getValue();
-                                seg = badgeBtn;
-                                break;
-                            }
-                        }
-
-
-                        if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion/Expedition event?)
-                            bot.scheduler.restoreIdleTime();
-                            BHBot.logger.debug("No badge event found, skipping");
-                            continue;
-                        }
-
-                        if (badgeEvent == BadgeEvent.Expedition) currentActivity = "e";
-                        if (badgeEvent == BadgeEvent.Invasion) currentActivity = "i";
-                        if (badgeEvent == BadgeEvent.GVG) currentActivity = "v";
-
-                        if (!currentActivity.equals(checkedActivity)) { //if checked activity and chosen activity don't match we skip
-                            continue;
-                        }
-
-                        bot.browser.clickOnSeg(seg);
-                        Misc.sleep(2 * Misc.Durations.SECOND);
-
-                        detectCharacterDialogAndHandleIt(); // needed for invasion
-
-                        bot.browser.readScreen();
-                        int badges = getBadges();
-                        globalBadges = badges;
-                        BHBot.logger.readout("Badges: " + badges + ", required: >" + bot.settings.minBadges + ", " + badgeEvent.toString() + " cost: " +
-                                (badgeEvent == BadgeEvent.GVG ? bot.settings.costGVG : badgeEvent == BadgeEvent.Invasion ? bot.settings.costInvasion : bot.settings.costExpedition));
-
-                        if (badges == -1) { // error
-                            bot.scheduler.restoreIdleTime();
-                            continue;
-                        }
-
-                        // check GVG:
-                        if (badgeEvent == BadgeEvent.GVG) {
-                            if ((!bot.scheduler.doGVGImmediately && (badges <= bot.settings.minBadges)) || (badges < bot.settings.costGVG)) {
-
-                                //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
-                                int badgeDifference = bot.settings.costGVG - badges; //difference between needed and current resource
-                                if (badgeDifference > 1) {
-                                    int increase = (badgeDifference - 1) * 45;
-                                    BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-                                } else
-                                    BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
-
-                                bot.browser.readScreen();
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                                bot.browser.clickOnSeg(seg);
-                                Misc.sleep(Misc.Durations.SECOND);
-                                continue;
-                            } else {
-                                // do the GVG!
-
-                                if (bot.scheduler.doGVGImmediately)
-                                    bot.scheduler.doGVGImmediately = false; // reset it
-
-
-                                //configure activity runes
-                                runeManager.processAutoRune("v");
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                bot.browser.clickOnSeg(badgeBtn);
-
-                                BHBot.logger.info("Attempting GVG...");
-
-                                if (bot.settings.gvgstrip.size() > 0) {
-                                    // If we need to strip down for GVG, we need to close the GVG gump and open it again
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND * 2, bot.browser);
-                                    bot.browser.clickOnSeg(seg);
-                                    bot.browser.readScreen(2 * Misc.Durations.SECOND);
-                                    stripDown(bot.settings.gvgstrip);
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("GVG"), Misc.Durations.SECOND * 3, bot.browser);
-                                    bot.browser.clickOnSeg(seg);
-                                }
-
-                                // select cost if needed:
-                                bot.browser.readScreen(2 * Misc.Durations.SECOND); // wait for the popup to stabilize a bit
-                                int cost = detectCost();
-                                if (cost == 0) { // error!
-                                    BHBot.logger.error("Due to an error#1 in cost detection, GVG will be skipped.");
-                                    bot.browser.closePopupSecurely(BHBot.cues.get("GVGWindow"), BHBot.cues.get("X"));
-                                    continue;
-                                }
-                                if (cost != bot.settings.costGVG) {
-                                    BHBot.logger.info("Detected GVG cost: " + cost + ", settings cost is " + bot.settings.costGVG + ". Changing..");
-                                    boolean result = selectCost(cost, bot.settings.costGVG);
-                                    if (!result) { // error!
-                                        // see if drop down menu is still open and close it:
-                                        bot.browser.readScreen(Misc.Durations.SECOND);
-                                        tryClosingWindow(BHBot.cues.get("CostDropDown"));
-                                        bot.browser.readScreen(5 * Misc.Durations.SECOND);
-                                        seg = MarvinSegment.fromCue(BHBot.cues.get("GVGWindow"), 15 * Misc.Durations.SECOND, bot.browser);
-                                        if (seg != null)
-                                            bot.browser.closePopupSecurely(BHBot.cues.get("GVGWindow"), BHBot.cues.get("X"));
-                                        BHBot.logger.error("Due to an error#2 in cost selection, GVG will be skipped.");
-                                        dressUp(bot.settings.gvgstrip);
-                                        continue;
-                                    }
-                                }
-
-
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Play"), 5 * Misc.Durations.SECOND, bot.browser);
                                 bot.browser.clickOnSeg(seg);
                                 bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
-                                // Sometimes, before the reset, battles are disabled
-                                Boolean disabledBattles = handleDisabledBattles();
-                                if (disabledBattles == null) {
-                                    restart();
-                                    continue;
-                                } else if (disabledBattles) {
-                                    bot.browser.readScreen();
-                                    bot.browser.closePopupSecurely(BHBot.cues.get("GVGWindow"), BHBot.cues.get("X"));
-                                    continue;
-                                }
-
-                                //On initial GvG run you'll get a warning about not being able to leave guild, this will close that
-                                if (handleGuildLeaveConfirm()) {
-                                    restart();
-                                    continue;
-                                }
-
-                                Bounds gvgOpponentBounds = opponentSelector(bot.settings.gvgOpponent);
-                                String opponentName = (bot.settings.gvgOpponent == 1 ? "1st" : bot.settings.gvgOpponent == 2 ? "2nd" : bot.settings.gvgOpponent == 3 ? "3rd" : "4th");
-                                BHBot.logger.info("Selecting " + opponentName + " opponent");
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Fight"), 5 * Misc.Durations.SECOND, gvgOpponentBounds, bot.browser);
-                                if (seg == null) {
-                                    BHBot.logger.error("Imppossible to find the Fight button in the GvG screen, restarting!");
-                                    restart();
-                                    continue;
-                                }
-                                bot.browser.clickOnSeg(seg);
+                                // dismiss character dialog if it pops up:
                                 bot.browser.readScreen();
-                                Misc.sleep(Misc.Durations.SECOND);
+                                detectCharacterDialogAndHandleIt();
 
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(470, 445, 100, 40), bot.browser);
-                                if (seg == null) {
-                                    BHBot.logger.error("Imppossible to find the Accept button in the GvG screen, restarting!");
-                                    restart();
-                                    continue;
-                                }
+                                seg = MarvinSegment.fromCue(BHBot.cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), bot.browser);
+                                bot.browser.clickOnSeg(seg);
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
+
+                                //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
                                 //bot.browser.clickOnSeg(seg);
                                 bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
-                                Misc.sleep(Misc.Durations.SECOND);
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                                 if (handleTeamMalformedWarning()) {
                                     BHBot.logger.error("Team incomplete, doing emergency restart..");
                                     restart();
                                     continue;
                                 } else {
-                                    bot.setState(BHBot.State.GVG);
-                                    BHBot.logger.info("GVG initiated!");
+                                    bot.setState(BHBot.State.Raid);
+                                    BHBot.logger.info("Raid initiated!");
+                                    runeManager.reset();
                                 }
                             }
                             continue;
-                        } // GvG
-                        // check invasion:
-                        else if (badgeEvent == BadgeEvent.Invasion) {
-                            if ((!bot.scheduler.doInvasionImmediately && (badges <= bot.settings.minBadges)) || (badges < bot.settings.costInvasion)) {
+                        } // shards
 
-                                //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
-                                int badgeDifference = bot.settings.costGVG - badges; //difference between needed and current resource
-                                if (badgeDifference > 1) {
-                                    int increase = (badgeDifference - 1) * 45;
-                                    BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
-                                } else
-                                    BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+                        // check for tokens (trials and gauntlet):
+                        if (bot.scheduler.doTrialsImmediately || bot.scheduler.doGauntletImmediately ||
+                                ("t".equals(currentActivity)) || ("g".equals(currentActivity))) {
+                            if ("t".equals(currentActivity)) timeLastTrialsTokensCheck = Misc.getTime();
+                            if ("g".equals(currentActivity)) timeLastGauntletTokensCheck = Misc.getTime();
 
+                            bot.browser.readScreen();
+
+                            boolean trials;
+                            seg = MarvinSegment.fromCue(BHBot.cues.get("Trials"), bot.browser);
+                            if (seg == null) seg = MarvinSegment.fromCue(BHBot.cues.get("Trials2"), bot.browser);
+                            trials = seg != null; // if false, then we will do gauntlet instead of trials
+
+                            if (seg == null)
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("Gauntlet"), bot.browser);
+                            if (seg == null) {
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("Gauntlet2"), bot.browser);
+                            }
+                            if (seg == null) {// trials/gauntlet button not visible (perhaps it is disabled?)
+                                BHBot.logger.warn("Gauntlet/Trials button not found");
+                                bot.scheduler.restoreIdleTime();
+                                continue;
+                            }
+
+                            if (("g".equals(currentActivity) && trials) || ("t".equals(currentActivity) && !trials))
+                                continue;
+
+
+                            bot.browser.clickOnSeg(seg);
+                            MarvinSegment trialBTNSeg = seg;
+
+                            // dismiss character dialog if it pops up:
+                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
+                            detectCharacterDialogAndHandleIt();
+
+                            bot.browser.readScreen();
+                            int tokens = getTokens();
+                            globalTokens = tokens;
+                            BHBot.logger.readout("Tokens: " + tokens + ", required: >" + bot.settings.minTokens + ", " +
+                                    (trials ? "Trials" : "Gauntlet") + " cost: " + (trials ? bot.settings.costTrials : bot.settings.costGauntlet));
+
+                            if (tokens == -1) { // error
+                                bot.scheduler.restoreIdleTime();
+                                continue;
+                            }
+
+                            if (((!bot.scheduler.doTrialsImmediately && !bot.scheduler.doGauntletImmediately) && (tokens <= bot.settings.minTokens)) || (tokens < (trials ? bot.settings.costTrials : bot.settings.costGauntlet))) {
                                 bot.browser.readScreen();
                                 seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                                 bot.browser.clickOnSeg(seg);
-                                Misc.sleep(Misc.Durations.SECOND);
-                                continue;
-                            } else {
-                                // do the invasion!
-
-                                if (bot.scheduler.doInvasionImmediately)
-                                    bot.scheduler.doInvasionImmediately = false; // reset it
-
-                                //configure activity runes
-                                runeManager.processAutoRune("i");
                                 bot.browser.readScreen(Misc.Durations.SECOND);
-                                bot.browser.clickOnSeg(badgeBtn);
 
-                                BHBot.logger.info("Attempting invasion...");
-
-                                // select cost if needed:
-                                bot.browser.readScreen(2 * Misc.Durations.SECOND); // wait for the popup to stabilize a bit
-                                int cost = detectCost();
-                                if (cost == 0) { // error!
-                                    BHBot.logger.error("Due to an error#1 in cost detection, invasion will be skipped.");
-                                    bot.browser.closePopupSecurely(BHBot.cues.get("InvasionWindow"), BHBot.cues.get("X"));
-                                    continue;
-                                }
-                                if (cost != bot.settings.costInvasion) {
-                                    BHBot.logger.info("Detected invasion cost: " + cost + ", settings cost is " + bot.settings.costInvasion + ". Changing..");
-                                    boolean result = selectCost(cost, bot.settings.costInvasion);
-                                    if (!result) { // error!
-                                        // see if drop down menu is still open and close it:
-                                        bot.browser.readScreen(Misc.Durations.SECOND);
-                                        tryClosingWindow(BHBot.cues.get("CostDropDown"));
-                                        bot.browser.readScreen(5 * Misc.Durations.SECOND);
-                                        seg = MarvinSegment.fromCue(BHBot.cues.get("InvasionWindow"), 15 * Misc.Durations.SECOND, bot.browser);
-                                        if (seg != null)
-                                            bot.browser.closePopupSecurely(BHBot.cues.get("InvasionWindow"), BHBot.cues.get("X"));
-                                        BHBot.logger.error("Due to an error#2 in cost selection, invasion will be skipped.");
-                                        continue;
-                                    }
-                                }
-
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Play"), 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(505, 255, 90, 45), bot.browser);
-                                if (seg == null) {
-                                    BHBot.logger.error("Unable to find the Play button in the Invasion screen, restarting!");
-                                    restart();
-                                    continue;
-                                }
-                                bot.browser.clickOnSeg(seg);
-
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 10 * Misc.Durations.SECOND, Bounds.fromWidthHeight(470, 450, 100, 30), bot.browser);
-                                if (seg == null) {
-                                    BHBot.logger.error("Unable to find the Accept button in the Invasion screen, restarting!");
-                                    restart();
-                                    continue;
-                                }
-                                //bot.browser.clickOnSeg(seg);
-                                bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
-                                Misc.sleep(2 * Misc.Durations.SECOND);
-
-                                if (handleTeamMalformedWarning()) {
-                                    BHBot.logger.error("Team incomplete, doing emergency restart..");
-                                    restart();
-                                    continue;
-                                } else {
-                                    bot.setState(BHBot.State.Invasion);
-                                    BHBot.logger.info("Invasion initiated!");
-                                }
-                            }
-                            continue;
-                        } // invasion
-
-                        // check Expedition
-                        else if (badgeEvent == BadgeEvent.Expedition) {
-
-                            if ((!bot.scheduler.doExpeditionImmediately && (badges <= bot.settings.minBadges)) || (badges < bot.settings.costExpedition)) {
-
-                                //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
-                                int badgeDifference = bot.settings.costGVG - badges; //difference between needed and current resource
-                                if (badgeDifference > 1) {
-                                    int increase = (badgeDifference - 1) * 45;
-                                    BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                //if we have 1 token and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one token short
+                                int tokenDifference = (trials ? bot.settings.costTrials : bot.settings.costGauntlet) - tokens; //difference between needed and current resource
+                                if (tokenDifference > 1) {
+                                    int increase = (tokenDifference - 1) * 45;
+                                    TOKENS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
                                 } else
-                                    BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+                                    TOKENS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 token check every 10 minutes
 
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
-                                bot.browser.clickOnSeg(seg);
-                                Misc.sleep(2 * Misc.Durations.SECOND);
+                                if (bot.scheduler.doTrialsImmediately) {
+                                    bot.scheduler.doTrialsImmediately = false; // if we don't have resources to run we need to disable force it
+                                } else if (bot.scheduler.doGauntletImmediately) {
+                                    bot.scheduler.doGauntletImmediately = false;
+                                }
+
                                 continue;
                             } else {
-                                // do the expedition!
+                                // do the trials/gauntlet!
 
-                                if (bot.scheduler.doExpeditionImmediately)
-                                    bot.scheduler.doExpeditionImmediately = false; // reset it
-
-                                if (bot.settings.costExpedition > badges) {
-                                    BHBot.logger.info("Target cost " + bot.settings.costExpedition + " is higher than available badges " + badges + ". Expedition will be skipped.");
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
-                                    bot.browser.clickOnSeg(seg);
-                                    Misc.sleep(2 * Misc.Durations.SECOND);
-                                    continue;
+                                if (bot.scheduler.doTrialsImmediately) {
+                                    bot.scheduler.doTrialsImmediately = false; // reset it
+                                } else if (bot.scheduler.doGauntletImmediately) {
+                                    bot.scheduler.doGauntletImmediately = false;
                                 }
 
-                                //if we need to configure runes/settings we close the window first
-                                if (bot.settings.autoShrine.contains("e") || bot.settings.autoRune.containsKey("e") || bot.settings.autoBossRune.containsKey("e")) {
-                                    bot.browser.readScreen();
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                                    bot.browser.clickOnSeg(seg);
-                                    bot.browser.readScreen(Misc.Durations.SECOND);
-                                }
-
-                                //autoshrine
-                                if (bot.settings.autoShrine.contains("e")) {
-                                    BHBot.logger.info("Configuring autoShrine for Expedition");
-                                    if (!shrineManager.updateShrineSettings(true, true)) {
-                                        BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
-                                    }
-                                }
-
-                                //autoBossRune
-                                if (bot.settings.autoBossRune.containsKey("e") && !bot.settings.autoShrine.contains("e")) { //if autoshrine disabled but autobossrune enabled
-                                    BHBot.logger.info("Configuring autoBossRune for Expedition");
-                                    if (!shrineManager.updateShrineSettings(true, false)) {
-                                        BHBot.logger.error("Impossible to configure autoBossRune for Expedition!");
-                                    }
-                                }
-
-                                //activity runes
-                                runeManager.processAutoRune("e");
-
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                bot.browser.clickOnSeg(badgeBtn);
-                                bot.browser.readScreen(Misc.Durations.SECOND * 2);
-
-                                BHBot.logger.info("Attempting expedition...");
-
-                                bot.browser.readScreen(Misc.Durations.SECOND * 2);
-                                int cost = detectCost();
-                                if (cost == 0) { // error!
-                                    BHBot.logger.error("Due to an error#1 in cost detection, Expedition cost will be skipped.");
-                                    bot.browser.closePopupSecurely(BHBot.cues.get("ExpeditionWindow"), BHBot.cues.get("X"));
-                                    continue;
-                                }
-
-                                if (cost != bot.settings.costExpedition) {
-                                    BHBot.logger.info("Detected Expedition cost: " + cost + ", settings cost is " + bot.settings.costExpedition + ". Changing..");
-                                    boolean result = selectCost(cost, bot.settings.costExpedition);
-                                    if (!result) { // error!
-                                        // see if drop down menu is still open and close it:
-                                        bot.browser.readScreen(Misc.Durations.SECOND);
-                                        tryClosingWindow(BHBot.cues.get("CostDropDown"));
-                                        bot.browser.readScreen(5 * Misc.Durations.SECOND);
-                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
+                                // One time check for Autoshrine
+                                //wait for window animation
+                                if (trials) {
+                                    //if we need to configure runes/settings we close the window first
+                                    if (bot.settings.autoShrine.contains("t") || bot.settings.autoRune.containsKey("t") || bot.settings.autoBossRune.containsKey("t")) {
+                                        bot.browser.readScreen();
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                                         bot.browser.clickOnSeg(seg);
-                                        Misc.sleep(2 * Misc.Durations.SECOND);
-                                        BHBot.logger.error("Due to an error in cost selection, Expedition will be skipped.");
-                                        continue;
+                                        bot.browser.readScreen(Misc.Durations.SECOND);
                                     }
-                                    bot.browser.readScreen(Misc.Durations.SECOND * 2);
-                                }
 
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Play"), 2 * Misc.Durations.SECOND, bot.browser);
-                                bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
+                                    //autoshrine
+                                    if (bot.settings.autoShrine.contains("t")) {
+                                        BHBot.logger.info("Configuring autoShrine for Trials");
+                                        if (!shrineManager.updateShrineSettings(true, true)) {
+                                            BHBot.logger.error("Impossible to configure autoShrine for Trials!");
+                                        }
+                                    }
 
-                                //Select Expedition and write portal to a variable
-                                String randomExpedition = bot.settings.expeditions.next();
-                                if (randomExpedition == null) {
-                                    bot.settings.activitiesEnabled.remove("e");
-                                    BHBot.logger.error("It was impossible to randomly choose an expedition. Expeditions are disabled.");
-                                    bot.notificationManager.sendErrorNotification("Expedition error", "It was impossible to randomly choose an expedition. Expeditions are disabled.");
-                                    continue;
-                                }
+                                    //autoBossRune
+                                    if (bot.settings.autoBossRune.containsKey("t") && !bot.settings.autoShrine.contains("t")) { //if autoshrine disabled but autobossrune enabled
+                                        BHBot.logger.info("Configuring autoBossRune for Trials");
+                                        if (!shrineManager.updateShrineSettings(true, false)) {
+                                            BHBot.logger.error("Impossible to configure autoBossRune for Trials!");
+                                        }
+                                    }
 
-                                String[] expedition = randomExpedition.split(" ");
-                                String targetPortal = expedition[0];
-                                int targetDifficulty = Integer.parseInt(expedition[1]);
+                                    //activity runes
+                                    runeManager.processAutoRune("t");
 
-                                // if exped difficulty isn't a multiple of 5 we reduce it
-                                int difficultyModule = targetDifficulty % 5;
-                                if (difficultyModule != 0) {
-                                    BHBot.logger.warn(targetDifficulty + " is not a multiplier of 5! Rounding it to " + (targetDifficulty - difficultyModule) + "...");
-                                    targetDifficulty -= difficultyModule;
-                                }
-                                // If difficulty is lesser that 5, we round it
-                                if (targetDifficulty < 5) {
-                                    BHBot.logger.warn("Expedition difficulty can not be smaller than 5, rounding it to 5.");
-                                    targetDifficulty = 5;
-                                }
-
-                                bot.browser.readScreen();
-                                int currentExpedition;
-                                if (MarvinSegment.fromCue(BHBot.cues.get("Expedition1"), bot.browser) != null) {
-                                    currentExpedition = 1;
-                                } else if (MarvinSegment.fromCue(BHBot.cues.get("Expedition2"), bot.browser) != null) {
-                                    currentExpedition = 2;
-                                } else if (MarvinSegment.fromCue(BHBot.cues.get("Expedition3"), bot.browser) != null) {
-                                    currentExpedition = 3;
-                                } else if (MarvinSegment.fromCue(BHBot.cues.get("Expedition4"), bot.browser) != null) {
-                                    currentExpedition = 4;
-                                } else if (MarvinSegment.fromCue("Expedition5", bot.browser) != null) {
-                                    currentExpedition = 5;
                                 } else {
-                                    bot.settings.activitiesEnabled.remove("e");
-                                    BHBot.logger.error("It was impossible to get the current expedition type!");
-                                    bot.notificationManager.sendErrorNotification("Expedition error", "It was impossible to get the current expedition type. Expeditions are now disabled!");
 
-                                    bot.browser.readScreen();
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                                    if (seg != null) bot.browser.clickOnSeg(seg);
-                                    bot.browser.readScreen(2 * Misc.Durations.SECOND);
-                                    continue;
+                                    if (bot.settings.autoRune.containsKey("g")) {
+                                        runeManager.processAutoRune("g");
+                                        bot.browser.readScreen(Misc.Durations.SECOND);
+                                    }
+
                                 }
+                                bot.browser.readScreen(Misc.Durations.SECOND);
+                                bot.browser.clickOnSeg(trialBTNSeg);
+                                bot.browser.readScreen(Misc.Durations.SECOND); //wait for window animation
 
-                                String portalName = getExpeditionPortalName(currentExpedition, targetPortal);
-                                BHBot.logger.info("Attempting " + portalName + " Portal at difficulty " + targetDifficulty);
+                                // apply the correct difficulty
+                                int targetDifficulty = trials ? bot.settings.difficultyTrials : bot.settings.difficultyGauntlet;
 
-                                //write current portal and difficulty to global values for difficultyFailsafe
-                                expeditionFailsafePortal = targetPortal;
-                                expeditionFailsafeDifficulty = targetDifficulty;
+                                BHBot.logger.info("Attempting " + (trials ? "trials" : "gauntlet") + " at level " + targetDifficulty + "...");
 
-                                // click on the chosen portal:
-                                Point p = getExpeditionIconPos(currentExpedition, targetPortal);
-                                if (p == null) {
-                                    bot.settings.activitiesEnabled.remove("e");
-                                    BHBot.logger.error("It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!");
-                                    bot.notificationManager.sendErrorNotification("Expedition error", "It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!");
-
-                                    bot.browser.readScreen();
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                                    if (seg != null) bot.browser.clickOnSeg(seg);
-                                    bot.browser.readScreen(2 * Misc.Durations.SECOND);
-                                    continue;
-                                }
-
-                                bot.browser.clickInGame(p.x, p.y);
-
-                                // select difficulty if needed:
-                                int difficulty = detectDifficulty(BHBot.cues.get("DifficultyExpedition"));
+                                int difficulty = detectDifficulty();
                                 if (difficulty == 0) { // error!
-                                    BHBot.logger.warn("Due to an error in difficulty detection, Expedition will be skipped.");
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
-                                    while (seg != null) {
-                                        bot.browser.clickOnSeg(seg);
-                                        bot.browser.readScreen(2 * Misc.Durations.SECOND);
-                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
-                                    }
+                                    BHBot.logger.error("Due to an error#1 in difficulty detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
+                                    bot.browser.closePopupSecurely(BHBot.cues.get("TrialsOrGauntletWindow"), BHBot.cues.get("X"));
                                     continue;
                                 }
-
                                 if (difficulty != targetDifficulty) {
-                                    BHBot.logger.info("Detected Expedition difficulty level: " + difficulty + ", settings level is " + targetDifficulty + ". Changing..");
-                                    boolean result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficultyExpedition"), 5);
+                                    BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + targetDifficulty + ". Changing..");
+                                    boolean result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficulty"), 1);
                                     if (!result) { // error!
                                         // see if drop down menu is still open and close it:
                                         bot.browser.readScreen(Misc.Durations.SECOND);
                                         tryClosingWindow(BHBot.cues.get("DifficultyDropDown"));
                                         bot.browser.readScreen(5 * Misc.Durations.SECOND);
-                                        BHBot.logger.warn("Unable to change difficulty, usually because desired level is not unlocked. Running Expedition at " + difficulty + ".");
-                                        bot.notificationManager.sendErrorNotification("Expedition Error", "Unable to change expedtion difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.");
+                                        BHBot.logger.warn("Unable to change difficulty, usually because desired level is not unlocked. Running " + (trials ? "trials" : "gauntlet") + " at " + difficulty + ".");
+                                        bot.notificationManager.sendErrorNotification("T/G Error", "Unable to change " + (trials ? "trials" : "gauntlet") + " difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.");
 
-                                        // We update the file with the old difficulty level
-                                        String original = expeditionFailsafePortal + " " + targetDifficulty;
-                                        String updated = expeditionFailsafePortal + " " + difficulty;
+                                        // We update the setting file with the old difficulty level
+                                        String settingName = trials ? "difficultyTrials" : "difficultyGauntlet";
+                                        String original = settingName + " " + targetDifficulty;
+                                        String updated = settingName + " " + difficulty;
                                         settingsUpdate(original, updated);
 
                                     }
                                 }
 
-                                //click enter
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Enter"), 2 * Misc.Durations.SECOND, bot.browser);
-                                bot.browser.clickOnSeg(seg);
-
-                                //click enter
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 3 * Misc.Durations.SECOND, bot.browser);
-                                if (seg != null) {
-                                    //bot.browser.clickOnSeg(seg);
-                                    bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
-                                } else {
-                                    BHBot.logger.error("No accept button for expedition team!");
-                                    bot.saveGameScreen("expedtion-no-accept", "errors");
-                                    restart();
+                                // select cost if needed:
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND); // wait for the popup to stabilize a bit
+                                int cost = detectCost();
+                                if (cost == 0) { // error!
+                                    BHBot.logger.error("Due to an error#1 in cost detection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
+                                    bot.browser.closePopupSecurely(BHBot.cues.get("TrialsOrGauntletWindow"), BHBot.cues.get("X"));
+                                    continue;
                                 }
+                                if (cost != (trials ? bot.settings.costTrials : bot.settings.costGauntlet)) {
+                                    BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " cost: " + cost + ", settings cost is " + (trials ? bot.settings.costTrials : bot.settings.costGauntlet) + ". Changing it...");
+                                    boolean result = selectCost(cost, (trials ? bot.settings.costTrials : bot.settings.costGauntlet));
+                                    if (!result) { // error!
+                                        // see if drop down menu is still open and close it:
+                                        bot.browser.readScreen(Misc.Durations.SECOND);
+                                        tryClosingWindow(BHBot.cues.get("CostDropDown"));
+                                        bot.browser.readScreen(5 * Misc.Durations.SECOND);
+                                        tryClosingWindow(BHBot.cues.get("TrialsOrGauntletWindow"));
+                                        BHBot.logger.error("Due to an error#2 in cost selection, " + (trials ? "trials" : "gauntlet") + " will be skipped.");
+                                        continue;
+                                    }
+
+                                    // We wait for the cost selector window to close
+                                    MarvinSegment.fromCue("TrialsOrGauntletWindow", Misc.Durations.SECOND * 2, bot.browser);
+                                    bot.browser.readScreen();
+                                }
+
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("Play"), 2 * Misc.Durations.SECOND, bot.browser);
+                                if (seg == null) {
+                                    BHBot.logger.error("Error: Play button not found while trying to do " + (trials ? "trials" : "gauntlet") + ". Ignoring...");
+                                    tryClosingWindow(BHBot.cues.get("TrialsOrGauntletWindow"));
+                                    continue;
+                                }
+                                bot.browser.clickOnSeg(seg);
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
+
+                                if (!handleNotEnoughTokensPopup(false)) {
+                                    restart();
+                                    continue;
+                                }
+
+                                // dismiss character dialog if it pops up:
+                                detectCharacterDialogAndHandleIt();
+
+                                //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
+                                //bot.browser.clickOnSeg(seg);
+                                bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
+
+                                // This is a Bit Heroes bug!
+                                // On t/g main screen the token bar is wrongly full so it goes trough the "Play" button and
+                                // then it fails on the team "Accept" button
+                                if (!handleNotEnoughTokensPopup(true)) {
+                                    restart();
+                                    continue;
+                                }
+
+                                Misc.sleep(3 * Misc.Durations.SECOND);
 
                                 if (handleTeamMalformedWarning()) {
                                     BHBot.logger.error("Team incomplete, doing emergency restart..");
                                     restart();
                                     continue;
                                 } else {
-                                    bot.setState(BHBot.State.Expedition);
-                                    BHBot.logger.info(portalName + " portal initiated!");
+                                    bot.setState(trials ? BHBot.State.Trials : BHBot.State.Gauntlet);
+                                    BHBot.logger.info((trials ? "Trials" : "Gauntlet") + " initiated!");
                                     runeManager.reset();
                                 }
+                            }
+                            continue;
+                        } // tokens (trials and gauntlet)
 
-                                if (handleGuildLeaveConfirm()) {
+                        // check for energy:
+                        if ("d".equals(currentActivity)) {
+                            timeLastEnergyCheck = Misc.getTime();
+
+                            bot.browser.readScreen();
+
+                            int energy = getEnergy();
+                            globalEnergy = energy;
+                            BHBot.logger.readout("Energy: " + energy + "%, required: >" + bot.settings.minEnergyPercentage + "%");
+
+                            if (energy == -1) { // error
+                                bot.scheduler.restoreIdleTime();
+                                if (bot.scheduler.doDungeonImmediately)
+                                    bot.scheduler.doDungeonImmediately = false; // reset it
+                                continue;
+                            }
+
+                            if (!bot.scheduler.doDungeonImmediately && (energy <= bot.settings.minEnergyPercentage || bot.settings.dungeons.size() == 0)) {
+                                Misc.sleep(Misc.Durations.SECOND);
+
+                                //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+                                int energyDifference = bot.settings.minEnergyPercentage - energy; //difference between needed and current resource
+                                if (energyDifference > 1) {
+                                    int increase = (energyDifference - 1) * 8;
+                                    ENERGY_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 8 minutes to the check interval for each energy % needed above 1
+                                } else
+                                    ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+
+                                continue;
+                            } else {
+                                // do the dungeon!
+
+                                if (bot.scheduler.doDungeonImmediately)
+                                    bot.scheduler.doDungeonImmediately = false; // reset it
+
+                                //configure activity runes
+                                runeManager.processAutoRune("d");
+
+                                if (bot.settings.autoBossRune.containsKey("d") && !bot.settings.autoShrine.contains("d")) { //if autoshrine disabled but autorune enabled
+
+                                    BHBot.logger.info("Configuring autoBossRune for Dungeons");
+                                    if (!shrineManager.updateShrineSettings(true, false)) {
+                                        BHBot.logger.error("Impossible to configure autoBossRune for Dungeons!");
+                                    }
+
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
+                                    Misc.sleep(2 * Misc.Durations.SECOND);
+                                }
+
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("Quest"), bot.browser);
+                                if (seg == null) {
+                                    bot.saveGameScreen("no-quest-btn", "errors", bot.browser.getImg());
+                                    BHBot.logger.error("Impposible to find the quest button!");
+                                    continue;
+                                }
+
+                                bot.browser.clickOnSeg(seg);
+                                bot.browser.readScreen(5 * Misc.Durations.SECOND);
+
+                                String dungeon = decideDungeonRandomly();
+                                if (dungeon == null) {
+                                    bot.settings.activitiesEnabled.remove("d");
+                                    BHBot.logger.error("It was impossible to choose a dungeon randomly, dungeons are disabled!");
+                                    bot.notificationManager.sendErrorNotification("Dungeon error", "It was impossible to choose a dungeon randomly, dungeons are disabled!");
+                                    continue;
+                                }
+
+                                Matcher dungeonMatcher = dungeonRegex.matcher(dungeon.toLowerCase());
+                                if (!dungeonMatcher.find()) {
+                                    BHBot.logger.error("Wrong format in dungeon detected: " + dungeon + "! It will be skipped...");
+                                    bot.notificationManager.sendErrorNotification("Dungeon error", "Wrong dungeon format detected: " + dungeon);
+                                    continue;
+                                }
+
+                                int goalZone = Integer.parseInt(dungeonMatcher.group("zone"));
+                                int goalDungeon = Integer.parseInt(dungeonMatcher.group("dungeon"));
+                                int difficulty = Integer.parseInt(dungeonMatcher.group("difficulty"));
+
+                                String difficultyName = (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic");
+
+                                BHBot.logger.info("Attempting " + difficultyName + " z" + goalZone + "d" + goalDungeon);
+
+                                int currentZone = readCurrentZone();
+                                int vec = goalZone - currentZone; // movement vector
+//							BHBot.logger.info("Current zone: " + Integer.toString(currentZone) + " Target Zone: " + Integer.toString(goalZone));
+                                while (vec != 0) { // move to the correct zone
+                                    if (vec > 0) {
+                                        // note that moving to the right will fail in case player has not unlocked the zone yet!
+                                        bot.browser.readScreen(Misc.Durations.SECOND); // wait for screen to stabilise
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("RightArrow"), bot.browser);
+                                        if (seg == null) {
+                                            BHBot.logger.error("Right button not found, zone unlocked?");
+                                            break; // happens for example when player hasn't unlock the zone yet
+                                        }
+                                        //coords are used as moving multiple screens would crash the bot when using the arrow cues
+                                        bot.browser.clickInGame(740, 275);
+                                        vec--;
+                                    } else {
+                                        Misc.sleep(500);
+                                        //coords are used as moving multiple screens would crash the bot when using the arrow cues
+                                        bot.browser.clickInGame(55, 275);
+                                        vec++;
+                                    }
+                                }
+
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
+
+                                // click on the dungeon:
+                                Point p = getDungeonIconPos(goalZone, goalDungeon);
+                                if (p == null) {
+                                    bot.settings.activitiesEnabled.remove("d");
+                                    BHBot.logger.error("It was impossible to get icon position of dungeon z" + goalZone + "d" + goalDungeon + ". Dungeons are now disabled!");
+                                    bot.notificationManager.sendErrorNotification("Dungeon error", "It was impossible to get icon position of dungeon z" + goalZone + "d" + goalDungeon + ". Dungeons are now disabled!");
+                                    continue;
+                                }
+
+                                bot.browser.clickInGame(p.x, p.y);
+
+                                bot.browser.readScreen(3 * Misc.Durations.SECOND);
+                                // select difficulty (If D4 just hit enter):
+                                if ((goalDungeon == 4) || (goalZone == 7 && goalDungeon == 3) || (goalZone == 8 && goalDungeon == 3)) { // D4, or Z7D3/Z8D3
+                                    specialDungeon = true;
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Enter"), 5 * Misc.Durations.SECOND, bot.browser);
+                                } else { //else select appropriate difficulty
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), 5 * Misc.Durations.SECOND, bot.browser);
+                                }
+                                bot.browser.clickOnSeg(seg);
+
+                                //team selection screen
+                                /* Solo-for-bounty code */
+                                if (goalZone <= bot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Clear"), Misc.Durations.SECOND * 2, bot.browser);
+                                    if (seg != null) {
+                                        BHBot.logger.info("Selected zone under dungeon solo threshold, attempting solo");
+                                        bot.browser.clickOnSeg(seg);
+                                    } else {
+                                        BHBot.logger.error("Impossible to find clear button in Dungeon Team!");
+                                        restart();
+                                        continue;
+                                    }
+                                }
+
+                                bot.browser.readScreen();
+                                //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), Misc.Durations.SECOND * 2, bot.browser);
+                                //bot.browser.clickOnSeg(seg);
+                                bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
+
+                                if (goalZone <= bot.settings.minSolo) {
+                                    bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for dropdown animation to finish
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser);
+                                    if (seg != null) {
+                                        bot.browser.clickOnSeg(seg);
+                                    } else {
+                                        BHBot.logger.error("Impossible to find Yes button in Dungeon Team!");
+                                        restart();
+                                    }
+                                } else {
+                                    if (handleTeamMalformedWarning()) {
+                                        restart();
+                                        continue;
+                                    }
+                                }
+
+                                if (handleNotEnoughEnergyPopup()) {
+                                    continue;
+                                }
+
+                                bot.setState(BHBot.State.Dungeon);
+                                runeManager.reset();
+
+                                BHBot.logger.info("Dungeon <z" + goalZone + "d" + goalDungeon + "> " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic") + " initiated!");
+                            }
+                            continue;
+                        } // energy
+
+                        // check for Tickets (PvP):
+                        if ("p".equals(currentActivity)) {
+                            timeLastTicketsCheck = Misc.getTime();
+
+                            bot.browser.readScreen();
+
+                            int tickets = getTickets();
+                            globalTickets = tickets;
+                            BHBot.logger.readout("Tickets: " + tickets + ", required: >" + bot.settings.minTickets + ", PVP cost: " + bot.settings.costPVP);
+
+                            if (tickets == -1) { // error
+                                bot.scheduler.restoreIdleTime();
+                                continue;
+                            }
+
+                            if ((!bot.scheduler.doPVPImmediately && (tickets <= bot.settings.minTickets)) || (tickets < bot.settings.costPVP)) {
+                                Misc.sleep(Misc.Durations.SECOND);
+
+                                //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+                                int ticketDifference = bot.settings.costPVP - tickets; //difference between needed and current resource
+                                if (ticketDifference > 1) {
+                                    int increase = (ticketDifference - 1) * 45;
+                                    TICKETS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                } else
+                                    TICKETS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+
+                                continue;
+                            } else {
+                                // do the pvp!
+
+                                if (bot.scheduler.doPVPImmediately)
+                                    bot.scheduler.doPVPImmediately = false; // reset it
+
+                                //configure activity runes
+                                runeManager.processAutoRune("p");
+
+                                BHBot.logger.info("Attempting PVP...");
+                                stripDown(bot.settings.pvpstrip);
+
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("PVP"), bot.browser);
+                                if (seg == null) {
+                                    BHBot.logger.warn("PVP button not found. Skipping PVP...");
+                                    dressUp(bot.settings.pvpstrip);
+                                    continue; // should not happen though
+                                }
+                                bot.browser.clickOnSeg(seg);
+
+                                // select cost if needed:
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND); // wait for the popup to stabilize a bit
+                                int cost = detectCost();
+                                if (cost == 0) { // error!
+                                    BHBot.logger.error("Due to an error#1 in cost detection, PVP will be skipped.");
+                                    bot.browser.closePopupSecurely(BHBot.cues.get("PVPWindow"), BHBot.cues.get("X"));
+                                    dressUp(bot.settings.pvpstrip);
+                                    continue;
+                                }
+                                if (cost != bot.settings.costPVP) {
+                                    BHBot.logger.info("Detected PVP cost: " + cost + ", settings cost is " + bot.settings.costPVP + ". Changing..");
+                                    boolean result = selectCost(cost, bot.settings.costPVP);
+                                    if (!result) { // error!
+                                        // see if drop down menu is still open and close it:
+                                        bot.browser.readScreen(Misc.Durations.SECOND);
+                                        tryClosingWindow(BHBot.cues.get("CostDropDown"));
+                                        bot.browser.readScreen(5 * Misc.Durations.SECOND);
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("PVPWindow"), 15 * Misc.Durations.SECOND, bot.browser);
+                                        if (seg != null)
+                                            bot.browser.closePopupSecurely(BHBot.cues.get("PVPWindow"), BHBot.cues.get("X"));
+                                        BHBot.logger.error("Due to an error#2 in cost selection, PVP will be skipped.");
+                                        dressUp(bot.settings.pvpstrip);
+                                        continue;
+                                    }
+                                }
+
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("Play"), 5 * Misc.Durations.SECOND, bot.browser);
+                                bot.browser.clickOnSeg(seg);
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
+
+                                // dismiss character dialog if it pops up:
+                                detectCharacterDialogAndHandleIt();
+
+                                Bounds pvpOpponentBounds = opponentSelector(bot.settings.pvpOpponent);
+                                String opponentName = (bot.settings.pvpOpponent == 1 ? "1st" : bot.settings.pvpOpponent == 2 ? "2nd" : bot.settings.pvpOpponent == 3 ? "3rd" : "4th");
+                                BHBot.logger.info("Selecting " + opponentName + " opponent");
+                                seg = MarvinSegment.fromCue("Fight", 5 * Misc.Durations.SECOND, pvpOpponentBounds, bot.browser);
+                                if (seg == null) {
+                                    BHBot.logger.error("Imppossible to find the Fight button in the PVP screen, restarting!");
                                     restart();
                                     continue;
                                 }
+                                bot.browser.clickOnSeg(seg);
+
+                                bot.browser.readScreen();
+                                seg = MarvinSegment.fromCue("Accept", 5 * Misc.Durations.SECOND, new Bounds(430, 430, 630, 500), bot.browser);
+                                if (seg == null) {
+                                    BHBot.logger.error("Impossible to find the Accept button in the PVP screen, restarting");
+                                    restart();
+                                    continue;
+                                }
+                                bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
+                                //bot.browser.clickOnSeg(seg);
+
+                                if (handleTeamMalformedWarning()) {
+                                    BHBot.logger.error("Team incomplete, doing emergency restart..");
+                                    restart();
+                                    continue;
+                                } else {
+                                    bot.setState(BHBot.State.PVP);
+                                    BHBot.logger.info("PVP initiated!");
+                                }
                             }
                             continue;
-                        } else {
-                            // do neither gvg nor invasion
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
+                        } // PvP
+
+                        // check for badges (for GVG/Invasion/Expedition):
+                        if (("v".equals(currentActivity)) || ("i".equals(currentActivity)) || ("e".equals(currentActivity))) {
+
+                            String checkedActivity = currentActivity;
+
+                            if ("v".equals(currentActivity)) timeLastGVGBadgesCheck = Misc.getTime();
+                            if ("i".equals(currentActivity)) timeLastInvBadgesCheck = Misc.getTime();
+                            if ("e".equals(currentActivity)) timeLastExpBadgesCheck = Misc.getTime();
+
+                            bot.browser.readScreen();
+
+                            BadgeEvent badgeEvent = BadgeEvent.None;
+                            MarvinSegment badgeBtn = null;
+
+                            HashMap<Cue, BadgeEvent> badgeEvents = new HashMap<>();
+                            badgeEvents.put(BHBot.cues.get("ExpeditionButton"), BadgeEvent.Expedition);
+                            badgeEvents.put(BHBot.cues.get("GVG"), BadgeEvent.GVG);
+                            badgeEvents.put(BHBot.cues.get("Invasion"), BadgeEvent.Invasion);
+
+                            for (Map.Entry<Cue, BadgeEvent> event : badgeEvents.entrySet()) {
+                                badgeBtn = MarvinSegment.fromCue(event.getKey(), bot.browser);
+                                if (badgeBtn != null) {
+                                    badgeEvent = event.getValue();
+                                    seg = badgeBtn;
+                                    break;
+                                }
+                            }
+
+
+                            if (badgeEvent == BadgeEvent.None) { // GvG/invasion button not visible (perhaps this week there is no GvG/Invasion/Expedition event?)
+                                bot.scheduler.restoreIdleTime();
+                                BHBot.logger.debug("No badge event found, skipping");
+                                continue;
+                            }
+
+                            if (badgeEvent == BadgeEvent.Expedition) currentActivity = "e";
+                            if (badgeEvent == BadgeEvent.Invasion) currentActivity = "i";
+                            if (badgeEvent == BadgeEvent.GVG) currentActivity = "v";
+
+                            if (!currentActivity.equals(checkedActivity)) { //if checked activity and chosen activity don't match we skip
+                                continue;
+                            }
+
                             bot.browser.clickOnSeg(seg);
                             Misc.sleep(2 * Misc.Durations.SECOND);
-                            continue;
-                        }
-                    } // badges
 
-                    // Check worldBoss:
-                    if ("w".equals(currentActivity)) {
-                        timeLastXealsCheck = Misc.getTime();
+                            detectCharacterDialogAndHandleIt(); // needed for invasion
 
-                        bot.browser.readScreen();
-                        MarvinSegment wbBTNSeg = MarvinSegment.fromCue(BHBot.cues.get("WorldBoss"), bot.browser);
-                        if (wbBTNSeg == null) {
-                            bot.scheduler.resetIdleTime();
-                            BHBot.logger.error("World Boss button not found");
-                            continue;
-                        }
-                        bot.browser.clickOnSeg(wbBTNSeg);
-
-                        bot.browser.readScreen();
-                        detectCharacterDialogAndHandleIt(); //clear dialogue
-
-                        seg = MarvinSegment.fromCue("WorldBossPopup", 5 * Misc.Durations.SECOND, bot.browser); // wait until the raid window opens
-                        if (seg == null) {
-                            BHBot.logger.warn("Error: attempt at opening world boss window failed. No window cue detected. Ignoring...");
-                            bot.scheduler.restoreIdleTime();
-                            // we make sure that everything that can be closed is actually closed to avoid idle timeout
-                            bot.browser.closePopupSecurely(BHBot.cues.get("X"), BHBot.cues.get("X"));
-                            continue;
-                        }
-
-                        int xeals = getXeals();
-                        globalXeals = xeals;
-                        BHBot.logger.readout("Xeals: " + xeals + ", required: >" + bot.settings.minXeals);
-
-                        if (xeals == -1) { // error
-                            if (bot.scheduler.doWorldBossImmediately)
-                                bot.scheduler.doWorldBossImmediately = false; // reset it
-                            bot.scheduler.restoreIdleTime();
-                            continue;
-                        }
-
-                        if ((xeals == 0) || (!bot.scheduler.doWorldBossImmediately && (xeals <= bot.settings.minXeals || bot.settings.worldBossSettings.size() == 0))) {
-                            if (bot.scheduler.doWorldBossImmediately)
-                                bot.scheduler.doWorldBossImmediately = false; // reset it
-
-                            int xealDifference = bot.settings.minXeals - xeals; //difference between needed and current resource
-                            if (xealDifference > 1) {
-                                int increase = (xealDifference - 1) * 45;
-                                XEALS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each xeal needed above 1
-                            } else
-                                XEALS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
                             bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                            bot.browser.clickOnSeg(seg);
-                            Misc.sleep(Misc.Durations.SECOND);
+                            int badges = getBadges();
+                            globalBadges = badges;
+                            BHBot.logger.readout("Badges: " + badges + ", required: >" + bot.settings.minBadges + ", " + badgeEvent.toString() + " cost: " +
+                                    (badgeEvent == BadgeEvent.GVG ? bot.settings.costGVG : badgeEvent == BadgeEvent.Invasion ? bot.settings.costInvasion : bot.settings.costExpedition));
 
-                            continue;
-
-                        } else {
-                            // do the WorldBoss!
-                            if (bot.scheduler.doWorldBossImmediately)
-                                bot.scheduler.doWorldBossImmediately = false; // reset it
-
-                            Settings.WorldBossSetting wbSetting = bot.settings.worldBossSettings.next();
-                            if (wbSetting == null) {
-                                BHBot.logger.error("No World Boss setting found! Disabling World Boss");
-                                bot.settings.activitiesEnabled.remove("w");
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                                bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(Misc.Durations.SECOND);
+                            if (badges == -1) { // error
+                                bot.scheduler.restoreIdleTime();
                                 continue;
                             }
 
-                            if (!checkWorldBossInput(wbSetting)) {
-                                BHBot.logger.warn("Invalid world boss settings detected, World Boss will be skipped");
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                            // check GVG:
+                            if (badgeEvent == BadgeEvent.GVG) {
+                                if ((!bot.scheduler.doGVGImmediately && (badges <= bot.settings.minBadges)) || (badges < bot.settings.costGVG)) {
+
+                                    //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+                                    int badgeDifference = bot.settings.costGVG - badges; //difference between needed and current resource
+                                    if (badgeDifference > 1) {
+                                        int increase = (badgeDifference - 1) * 45;
+                                        BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                    } else
+                                        BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+
+                                    bot.browser.readScreen();
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                                    bot.browser.clickOnSeg(seg);
+                                    Misc.sleep(Misc.Durations.SECOND);
+                                    continue;
+                                } else {
+                                    // do the GVG!
+
+                                    if (bot.scheduler.doGVGImmediately)
+                                        bot.scheduler.doGVGImmediately = false; // reset it
+
+
+                                    //configure activity runes
+                                    runeManager.processAutoRune("v");
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
+                                    bot.browser.clickOnSeg(badgeBtn);
+
+                                    BHBot.logger.info("Attempting GVG...");
+
+                                    if (bot.settings.gvgstrip.size() > 0) {
+                                        // If we need to strip down for GVG, we need to close the GVG gump and open it again
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND * 2, bot.browser);
+                                        bot.browser.clickOnSeg(seg);
+                                        bot.browser.readScreen(2 * Misc.Durations.SECOND);
+                                        stripDown(bot.settings.gvgstrip);
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("GVG"), Misc.Durations.SECOND * 3, bot.browser);
+                                        bot.browser.clickOnSeg(seg);
+                                    }
+
+                                    // select cost if needed:
+                                    bot.browser.readScreen(2 * Misc.Durations.SECOND); // wait for the popup to stabilize a bit
+                                    int cost = detectCost();
+                                    if (cost == 0) { // error!
+                                        BHBot.logger.error("Due to an error#1 in cost detection, GVG will be skipped.");
+                                        bot.browser.closePopupSecurely(BHBot.cues.get("GVGWindow"), BHBot.cues.get("X"));
+                                        continue;
+                                    }
+                                    if (cost != bot.settings.costGVG) {
+                                        BHBot.logger.info("Detected GVG cost: " + cost + ", settings cost is " + bot.settings.costGVG + ". Changing..");
+                                        boolean result = selectCost(cost, bot.settings.costGVG);
+                                        if (!result) { // error!
+                                            // see if drop down menu is still open and close it:
+                                            bot.browser.readScreen(Misc.Durations.SECOND);
+                                            tryClosingWindow(BHBot.cues.get("CostDropDown"));
+                                            bot.browser.readScreen(5 * Misc.Durations.SECOND);
+                                            seg = MarvinSegment.fromCue(BHBot.cues.get("GVGWindow"), 15 * Misc.Durations.SECOND, bot.browser);
+                                            if (seg != null)
+                                                bot.browser.closePopupSecurely(BHBot.cues.get("GVGWindow"), BHBot.cues.get("X"));
+                                            BHBot.logger.error("Due to an error#2 in cost selection, GVG will be skipped.");
+                                            dressUp(bot.settings.gvgstrip);
+                                            continue;
+                                        }
+                                    }
+
+
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Play"), 5 * Misc.Durations.SECOND, bot.browser);
+                                    bot.browser.clickOnSeg(seg);
+                                    bot.browser.readScreen(2 * Misc.Durations.SECOND);
+
+                                    // Sometimes, before the reset, battles are disabled
+                                    Boolean disabledBattles = handleDisabledBattles();
+                                    if (disabledBattles == null) {
+                                        restart();
+                                        continue;
+                                    } else if (disabledBattles) {
+                                        bot.browser.readScreen();
+                                        bot.browser.closePopupSecurely(BHBot.cues.get("GVGWindow"), BHBot.cues.get("X"));
+                                        continue;
+                                    }
+
+                                    //On initial GvG run you'll get a warning about not being able to leave guild, this will close that
+                                    if (handleGuildLeaveConfirm()) {
+                                        restart();
+                                        continue;
+                                    }
+
+                                    Bounds gvgOpponentBounds = opponentSelector(bot.settings.gvgOpponent);
+                                    String opponentName = (bot.settings.gvgOpponent == 1 ? "1st" : bot.settings.gvgOpponent == 2 ? "2nd" : bot.settings.gvgOpponent == 3 ? "3rd" : "4th");
+                                    BHBot.logger.info("Selecting " + opponentName + " opponent");
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Fight"), 5 * Misc.Durations.SECOND, gvgOpponentBounds, bot.browser);
+                                    if (seg == null) {
+                                        BHBot.logger.error("Imppossible to find the Fight button in the GvG screen, restarting!");
+                                        restart();
+                                        continue;
+                                    }
+                                    bot.browser.clickOnSeg(seg);
+                                    bot.browser.readScreen();
+                                    Misc.sleep(Misc.Durations.SECOND);
+
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(470, 445, 100, 40), bot.browser);
+                                    if (seg == null) {
+                                        BHBot.logger.error("Imppossible to find the Accept button in the GvG screen, restarting!");
+                                        restart();
+                                        continue;
+                                    }
+                                    //bot.browser.clickOnSeg(seg);
+                                    bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
+                                    Misc.sleep(Misc.Durations.SECOND);
+
+                                    if (handleTeamMalformedWarning()) {
+                                        BHBot.logger.error("Team incomplete, doing emergency restart..");
+                                        restart();
+                                        continue;
+                                    } else {
+                                        bot.setState(BHBot.State.GVG);
+                                        BHBot.logger.info("GVG initiated!");
+                                    }
+                                }
+                                continue;
+                            } // GvG
+                            // check invasion:
+                            else if (badgeEvent == BadgeEvent.Invasion) {
+                                if ((!bot.scheduler.doInvasionImmediately && (badges <= bot.settings.minBadges)) || (badges < bot.settings.costInvasion)) {
+
+                                    //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+                                    int badgeDifference = bot.settings.costGVG - badges; //difference between needed and current resource
+                                    if (badgeDifference > 1) {
+                                        int increase = (badgeDifference - 1) * 45;
+                                        BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                    } else
+                                        BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+
+                                    bot.browser.readScreen();
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                                    bot.browser.clickOnSeg(seg);
+                                    Misc.sleep(Misc.Durations.SECOND);
+                                    continue;
+                                } else {
+                                    // do the invasion!
+
+                                    if (bot.scheduler.doInvasionImmediately)
+                                        bot.scheduler.doInvasionImmediately = false; // reset it
+
+                                    //configure activity runes
+                                    runeManager.processAutoRune("i");
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
+                                    bot.browser.clickOnSeg(badgeBtn);
+
+                                    BHBot.logger.info("Attempting invasion...");
+
+                                    // select cost if needed:
+                                    bot.browser.readScreen(2 * Misc.Durations.SECOND); // wait for the popup to stabilize a bit
+                                    int cost = detectCost();
+                                    if (cost == 0) { // error!
+                                        BHBot.logger.error("Due to an error#1 in cost detection, invasion will be skipped.");
+                                        bot.browser.closePopupSecurely(BHBot.cues.get("InvasionWindow"), BHBot.cues.get("X"));
+                                        continue;
+                                    }
+                                    if (cost != bot.settings.costInvasion) {
+                                        BHBot.logger.info("Detected invasion cost: " + cost + ", settings cost is " + bot.settings.costInvasion + ". Changing..");
+                                        boolean result = selectCost(cost, bot.settings.costInvasion);
+                                        if (!result) { // error!
+                                            // see if drop down menu is still open and close it:
+                                            bot.browser.readScreen(Misc.Durations.SECOND);
+                                            tryClosingWindow(BHBot.cues.get("CostDropDown"));
+                                            bot.browser.readScreen(5 * Misc.Durations.SECOND);
+                                            seg = MarvinSegment.fromCue(BHBot.cues.get("InvasionWindow"), 15 * Misc.Durations.SECOND, bot.browser);
+                                            if (seg != null)
+                                                bot.browser.closePopupSecurely(BHBot.cues.get("InvasionWindow"), BHBot.cues.get("X"));
+                                            BHBot.logger.error("Due to an error#2 in cost selection, invasion will be skipped.");
+                                            continue;
+                                        }
+                                    }
+
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Play"), 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(505, 255, 90, 45), bot.browser);
+                                    if (seg == null) {
+                                        BHBot.logger.error("Unable to find the Play button in the Invasion screen, restarting!");
+                                        restart();
+                                        continue;
+                                    }
+                                    bot.browser.clickOnSeg(seg);
+
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 10 * Misc.Durations.SECOND, Bounds.fromWidthHeight(470, 450, 100, 30), bot.browser);
+                                    if (seg == null) {
+                                        BHBot.logger.error("Unable to find the Accept button in the Invasion screen, restarting!");
+                                        restart();
+                                        continue;
+                                    }
+                                    //bot.browser.clickOnSeg(seg);
+                                    bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
+                                    Misc.sleep(2 * Misc.Durations.SECOND);
+
+                                    if (handleTeamMalformedWarning()) {
+                                        BHBot.logger.error("Team incomplete, doing emergency restart..");
+                                        restart();
+                                        continue;
+                                    } else {
+                                        bot.setState(BHBot.State.Invasion);
+                                        BHBot.logger.info("Invasion initiated!");
+                                    }
+                                }
+                                continue;
+                            } // invasion
+
+                            // check Expedition
+                            else if (badgeEvent == BadgeEvent.Expedition) {
+
+                                if ((!bot.scheduler.doExpeditionImmediately && (badges <= bot.settings.minBadges)) || (badges < bot.settings.costExpedition)) {
+
+                                    //if we have 1 resource and need 5 we don't need to check every 10 minutes, this increases the timer so we start checking again when we are one under the check limit
+                                    int badgeDifference = bot.settings.costGVG - badges; //difference between needed and current resource
+                                    if (badgeDifference > 1) {
+                                        int increase = (badgeDifference - 1) * 45;
+                                        BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                    } else
+                                        BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
+
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
+                                    bot.browser.clickOnSeg(seg);
+                                    Misc.sleep(2 * Misc.Durations.SECOND);
+                                    continue;
+                                } else {
+                                    // do the expedition!
+
+                                    if (bot.scheduler.doExpeditionImmediately)
+                                        bot.scheduler.doExpeditionImmediately = false; // reset it
+
+                                    if (bot.settings.costExpedition > badges) {
+                                        BHBot.logger.info("Target cost " + bot.settings.costExpedition + " is higher than available badges " + badges + ". Expedition will be skipped.");
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
+                                        bot.browser.clickOnSeg(seg);
+                                        Misc.sleep(2 * Misc.Durations.SECOND);
+                                        continue;
+                                    }
+
+                                    //if we need to configure runes/settings we close the window first
+                                    if (bot.settings.autoShrine.contains("e") || bot.settings.autoRune.containsKey("e") || bot.settings.autoBossRune.containsKey("e")) {
+                                        bot.browser.readScreen();
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                                        bot.browser.clickOnSeg(seg);
+                                        bot.browser.readScreen(Misc.Durations.SECOND);
+                                    }
+
+                                    //autoshrine
+                                    if (bot.settings.autoShrine.contains("e")) {
+                                        BHBot.logger.info("Configuring autoShrine for Expedition");
+                                        if (!shrineManager.updateShrineSettings(true, true)) {
+                                            BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
+                                        }
+                                    }
+
+                                    //autoBossRune
+                                    if (bot.settings.autoBossRune.containsKey("e") && !bot.settings.autoShrine.contains("e")) { //if autoshrine disabled but autobossrune enabled
+                                        BHBot.logger.info("Configuring autoBossRune for Expedition");
+                                        if (!shrineManager.updateShrineSettings(true, false)) {
+                                            BHBot.logger.error("Impossible to configure autoBossRune for Expedition!");
+                                        }
+                                    }
+
+                                    //activity runes
+                                    runeManager.processAutoRune("e");
+
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
+                                    bot.browser.clickOnSeg(badgeBtn);
+                                    bot.browser.readScreen(Misc.Durations.SECOND * 2);
+
+                                    BHBot.logger.info("Attempting expedition...");
+
+                                    bot.browser.readScreen(Misc.Durations.SECOND * 2);
+                                    int cost = detectCost();
+                                    if (cost == 0) { // error!
+                                        BHBot.logger.error("Due to an error#1 in cost detection, Expedition cost will be skipped.");
+                                        bot.browser.closePopupSecurely(BHBot.cues.get("ExpeditionWindow"), BHBot.cues.get("X"));
+                                        continue;
+                                    }
+
+                                    if (cost != bot.settings.costExpedition) {
+                                        BHBot.logger.info("Detected Expedition cost: " + cost + ", settings cost is " + bot.settings.costExpedition + ". Changing..");
+                                        boolean result = selectCost(cost, bot.settings.costExpedition);
+                                        if (!result) { // error!
+                                            // see if drop down menu is still open and close it:
+                                            bot.browser.readScreen(Misc.Durations.SECOND);
+                                            tryClosingWindow(BHBot.cues.get("CostDropDown"));
+                                            bot.browser.readScreen(5 * Misc.Durations.SECOND);
+                                            seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
+                                            bot.browser.clickOnSeg(seg);
+                                            Misc.sleep(2 * Misc.Durations.SECOND);
+                                            BHBot.logger.error("Due to an error in cost selection, Expedition will be skipped.");
+                                            continue;
+                                        }
+                                        bot.browser.readScreen(Misc.Durations.SECOND * 2);
+                                    }
+
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Play"), 2 * Misc.Durations.SECOND, bot.browser);
+                                    bot.browser.clickOnSeg(seg);
+                                    bot.browser.readScreen(2 * Misc.Durations.SECOND);
+
+                                    //Select Expedition and write portal to a variable
+                                    String randomExpedition = bot.settings.expeditions.next();
+                                    if (randomExpedition == null) {
+                                        bot.settings.activitiesEnabled.remove("e");
+                                        BHBot.logger.error("It was impossible to randomly choose an expedition. Expeditions are disabled.");
+                                        bot.notificationManager.sendErrorNotification("Expedition error", "It was impossible to randomly choose an expedition. Expeditions are disabled.");
+                                        continue;
+                                    }
+
+                                    String[] expedition = randomExpedition.split(" ");
+                                    String targetPortal = expedition[0];
+                                    int targetDifficulty = Integer.parseInt(expedition[1]);
+
+                                    // if exped difficulty isn't a multiple of 5 we reduce it
+                                    int difficultyModule = targetDifficulty % 5;
+                                    if (difficultyModule != 0) {
+                                        BHBot.logger.warn(targetDifficulty + " is not a multiplier of 5! Rounding it to " + (targetDifficulty - difficultyModule) + "...");
+                                        targetDifficulty -= difficultyModule;
+                                    }
+                                    // If difficulty is lesser that 5, we round it
+                                    if (targetDifficulty < 5) {
+                                        BHBot.logger.warn("Expedition difficulty can not be smaller than 5, rounding it to 5.");
+                                        targetDifficulty = 5;
+                                    }
+
+                                    bot.browser.readScreen();
+                                    int currentExpedition;
+                                    if (MarvinSegment.fromCue(BHBot.cues.get("Expedition1"), bot.browser) != null) {
+                                        currentExpedition = 1;
+                                    } else if (MarvinSegment.fromCue(BHBot.cues.get("Expedition2"), bot.browser) != null) {
+                                        currentExpedition = 2;
+                                    } else if (MarvinSegment.fromCue(BHBot.cues.get("Expedition3"), bot.browser) != null) {
+                                        currentExpedition = 3;
+                                    } else if (MarvinSegment.fromCue(BHBot.cues.get("Expedition4"), bot.browser) != null) {
+                                        currentExpedition = 4;
+                                    } else if (MarvinSegment.fromCue("Expedition5", bot.browser) != null) {
+                                        currentExpedition = 5;
+                                    } else {
+                                        bot.settings.activitiesEnabled.remove("e");
+                                        BHBot.logger.error("It was impossible to get the current expedition type!");
+                                        bot.notificationManager.sendErrorNotification("Expedition error", "It was impossible to get the current expedition type. Expeditions are now disabled!");
+
+                                        bot.browser.readScreen();
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                                        if (seg != null) bot.browser.clickOnSeg(seg);
+                                        bot.browser.readScreen(2 * Misc.Durations.SECOND);
+                                        continue;
+                                    }
+
+                                    String portalName = getExpeditionPortalName(currentExpedition, targetPortal);
+                                    BHBot.logger.info("Attempting " + portalName + " Portal at difficulty " + targetDifficulty);
+
+                                    //write current portal and difficulty to global values for difficultyFailsafe
+                                    expeditionFailsafePortal = targetPortal;
+                                    expeditionFailsafeDifficulty = targetDifficulty;
+
+                                    // click on the chosen portal:
+                                    Point p = getExpeditionIconPos(currentExpedition, targetPortal);
+                                    if (p == null) {
+                                        bot.settings.activitiesEnabled.remove("e");
+                                        BHBot.logger.error("It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!");
+                                        bot.notificationManager.sendErrorNotification("Expedition error", "It was impossible to get portal position for " + portalName + ". Expeditions are now disabled!");
+
+                                        bot.browser.readScreen();
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                                        if (seg != null) bot.browser.clickOnSeg(seg);
+                                        bot.browser.readScreen(2 * Misc.Durations.SECOND);
+                                        continue;
+                                    }
+
+                                    bot.browser.clickInGame(p.x, p.y);
+
+                                    // select difficulty if needed:
+                                    int difficulty = detectDifficulty(BHBot.cues.get("DifficultyExpedition"));
+                                    if (difficulty == 0) { // error!
+                                        BHBot.logger.warn("Due to an error in difficulty detection, Expedition will be skipped.");
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
+                                        while (seg != null) {
+                                            bot.browser.clickOnSeg(seg);
+                                            bot.browser.readScreen(2 * Misc.Durations.SECOND);
+                                            seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
+                                        }
+                                        continue;
+                                    }
+
+                                    if (difficulty != targetDifficulty) {
+                                        BHBot.logger.info("Detected Expedition difficulty level: " + difficulty + ", settings level is " + targetDifficulty + ". Changing..");
+                                        boolean result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficultyExpedition"), 5);
+                                        if (!result) { // error!
+                                            // see if drop down menu is still open and close it:
+                                            bot.browser.readScreen(Misc.Durations.SECOND);
+                                            tryClosingWindow(BHBot.cues.get("DifficultyDropDown"));
+                                            bot.browser.readScreen(5 * Misc.Durations.SECOND);
+                                            BHBot.logger.warn("Unable to change difficulty, usually because desired level is not unlocked. Running Expedition at " + difficulty + ".");
+                                            bot.notificationManager.sendErrorNotification("Expedition Error", "Unable to change expedtion difficulty to : " + targetDifficulty + " Running: " + difficulty + " instead.");
+
+                                            // We update the file with the old difficulty level
+                                            String original = expeditionFailsafePortal + " " + targetDifficulty;
+                                            String updated = expeditionFailsafePortal + " " + difficulty;
+                                            settingsUpdate(original, updated);
+
+                                        }
+                                    }
+
+                                    //click enter
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Enter"), 2 * Misc.Durations.SECOND, bot.browser);
+                                    bot.browser.clickOnSeg(seg);
+
+                                    //click enter
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 3 * Misc.Durations.SECOND, bot.browser);
+                                    if (seg != null) {
+                                        //bot.browser.clickOnSeg(seg);
+                                        bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
+                                    } else {
+                                        BHBot.logger.error("No accept button for expedition team!");
+                                        bot.saveGameScreen("expedtion-no-accept", "errors");
+                                        restart();
+                                    }
+
+                                    if (handleTeamMalformedWarning()) {
+                                        BHBot.logger.error("Team incomplete, doing emergency restart..");
+                                        restart();
+                                        continue;
+                                    } else {
+                                        bot.setState(BHBot.State.Expedition);
+                                        BHBot.logger.info(portalName + " portal initiated!");
+                                        runeManager.reset();
+                                    }
+
+                                    if (handleGuildLeaveConfirm()) {
+                                        restart();
+                                        continue;
+                                    }
+                                }
+                                continue;
+                            } else {
+                                // do neither gvg nor invasion
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), bot.browser);
                                 bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(Misc.Durations.SECOND);
+                                Misc.sleep(2 * Misc.Durations.SECOND);
+                                continue;
+                            }
+                        } // badges
+
+                        // Check worldBoss:
+                        if ("w".equals(currentActivity)) {
+                            timeLastXealsCheck = Misc.getTime();
+
+                            bot.browser.readScreen();
+                            MarvinSegment wbBTNSeg = MarvinSegment.fromCue(BHBot.cues.get("WorldBoss"), bot.browser);
+                            if (wbBTNSeg == null) {
+                                bot.scheduler.resetIdleTime();
+                                BHBot.logger.error("World Boss button not found");
+                                continue;
+                            }
+                            bot.browser.clickOnSeg(wbBTNSeg);
+
+                            bot.browser.readScreen();
+                            detectCharacterDialogAndHandleIt(); //clear dialogue
+
+                            seg = MarvinSegment.fromCue("WorldBossPopup", 5 * Misc.Durations.SECOND, bot.browser); // wait until the raid window opens
+                            if (seg == null) {
+                                BHBot.logger.warn("Error: attempt at opening world boss window failed. No window cue detected. Ignoring...");
+                                bot.scheduler.restoreIdleTime();
+                                // we make sure that everything that can be closed is actually closed to avoid idle timeout
+                                bot.browser.closePopupSecurely(BHBot.cues.get("X"), BHBot.cues.get("X"));
                                 continue;
                             }
 
-                            //if we need to configure runes/settings we close the window first
-                            if (bot.settings.autoRune.containsKey("w")) {
+                            int xeals = getXeals();
+                            globalXeals = xeals;
+                            BHBot.logger.readout("Xeals: " + xeals + ", required: >" + bot.settings.minXeals);
+
+                            if (xeals == -1) { // error
+                                if (bot.scheduler.doWorldBossImmediately)
+                                    bot.scheduler.doWorldBossImmediately = false; // reset it
+                                bot.scheduler.restoreIdleTime();
+                                continue;
+                            }
+
+                            if ((xeals == 0) || (!bot.scheduler.doWorldBossImmediately && (xeals <= bot.settings.minXeals || bot.settings.worldBossSettings.size() == 0))) {
+                                if (bot.scheduler.doWorldBossImmediately)
+                                    bot.scheduler.doWorldBossImmediately = false; // reset it
+
+                                int xealDifference = bot.settings.minXeals - xeals; //difference between needed and current resource
+                                if (xealDifference > 1) {
+                                    int increase = (xealDifference - 1) * 45;
+                                    XEALS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each xeal needed above 1
+                                } else
+                                    XEALS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
                                 bot.browser.readScreen();
                                 seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                                 bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                            }
+                                Misc.sleep(Misc.Durations.SECOND);
 
-                            //configure activity runes
-                            runeManager.processAutoRune("w");
-
-                            //We re-open the wb window
-                            if (bot.settings.autoRune.containsKey("w")) {
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                bot.browser.clickOnSeg(wbBTNSeg);
-                            }
-
-                            WorldBoss wbType = WorldBoss.fromLetter(String.valueOf(wbSetting.type));
-                            if (wbType == null) {
-                                BHBot.logger.error("Unkwon World Boss type: " + wbSetting.type + ". Disabling World Boss");
-                                bot.settings.activitiesEnabled.remove("w");
-                                restart();
                                 continue;
-                            }
 
-                            //new settings loading
-                            String worldBossDifficultyText = wbSetting.difficulty == 1 ? "Normal" : wbSetting.difficulty == 2 ? "Hard" : "Heroic";
-
-                            if (!wbSetting.solo) {
-                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + ". Lobby timeout is " + Misc.millisToHumanForm((long) wbSetting.timer * 1000L) + ".");
                             } else {
-                                BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + " Solo");
-                            }
+                                // do the WorldBoss!
+                                if (bot.scheduler.doWorldBossImmediately)
+                                    bot.scheduler.doWorldBossImmediately = false; // reset it
 
-                            bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue("DarkBlueSummon", Misc.Durations.SECOND, bot.browser);
-                            if (seg != null) {
-                                bot.browser.clickOnSeg(seg);
-                            } else {
-                                BHBot.logger.error("Impossible to find dark blue summon in world boss.");
-
-                                bot.saveGameScreen("wb-no-dark-blue-summon", "errors");
-                                bot.notificationManager.sendErrorNotification("World Boss error", "Impossible to find blue summon.");
-
-                                bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossTitle"), BHBot.cues.get("X"));
-                                continue;
-                            }
-                            bot.browser.readScreen(2 * Misc.Durations.SECOND); //wait for screen to stablise
-
-                            //world boss type selection
-                            if (!handleWorldBossSelection(wbType)) {
-                                BHBot.logger.error("Impossible to change select the desired World Boss. Restarting...");
-                                restart();
-                                continue;
-                            }
-
-//							Misc.sleep(SECOND); //more stabilising if we changed world boss type
-                            bot.browser.readScreen(Misc.Durations.SECOND);
-                            seg = MarvinSegment.fromCue("LargeDarkBlueSummon", 2 * Misc.Durations.SECOND, bot.browser);
-                            bot.browser.clickOnSeg(seg); //selected world boss
-
-                            bot.browser.readScreen(Misc.Durations.SECOND);
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("Private"), Misc.Durations.SECOND, bot.browser);
-                            if (!wbSetting.solo) {
-                                if (seg != null) {
-                                    BHBot.logger.info("Unchecking private lobby");
+                                Settings.WorldBossSetting wbSetting = bot.settings.worldBossSettings.next();
+                                if (wbSetting == null) {
+                                    BHBot.logger.error("No World Boss setting found! Disabling World Boss");
+                                    bot.settings.activitiesEnabled.remove("w");
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
                                     bot.browser.clickOnSeg(seg);
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
+                                    continue;
                                 }
-                            } else {
-                                if (seg == null) {
-                                    BHBot.logger.info("Enabling private lobby for solo World Boss");
-                                    Misc.sleep(500);
-                                    bot.browser.clickInGame(340, 350);
-                                    bot.browser.readScreen(500);
+
+                                if (!checkWorldBossInput(wbSetting)) {
+                                    BHBot.logger.warn("Invalid world boss settings detected, World Boss will be skipped");
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                                    bot.browser.clickOnSeg(seg);
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
+                                    continue;
                                 }
-                            }
 
-                            //world boss tier selection
+                                //if we need to configure runes/settings we close the window first
+                                if (bot.settings.autoRune.containsKey("w")) {
+                                    bot.browser.readScreen();
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                                    bot.browser.clickOnSeg(seg);
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
+                                }
 
-                            int currentTier = detectWorldBossTier();
-                            Misc.sleep(500);
-                            if (currentTier != wbSetting.tier) {
-                                BHBot.logger.info("T" + currentTier + " detected, changing to T" + wbSetting.tier);
-                                Misc.sleep(500);
-                                if (!changeWorldBossTier(wbSetting.tier, wbType)) {
+                                //configure activity runes
+                                runeManager.processAutoRune("w");
+
+                                //We re-open the wb window
+                                if (bot.settings.autoRune.containsKey("w")) {
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
+                                    bot.browser.clickOnSeg(wbBTNSeg);
+                                }
+
+                                WorldBoss wbType = WorldBoss.fromLetter(String.valueOf(wbSetting.type));
+                                if (wbType == null) {
+                                    BHBot.logger.error("Unkwon World Boss type: " + wbSetting.type + ". Disabling World Boss");
+                                    bot.settings.activitiesEnabled.remove("w");
                                     restart();
                                     continue;
                                 }
-                            }
 
-                            //world boss difficulty selection
+                                //new settings loading
+                                String worldBossDifficultyText = wbSetting.difficulty == 1 ? "Normal" : wbSetting.difficulty == 2 ? "Hard" : "Heroic";
 
-                            int currentDifficulty = detectWorldBossDifficulty();
-                            String currentDifficultyName = (currentDifficulty == 1 ? "Normal" : currentDifficulty == 2 ? "Hard" : "Heroic");
-                            String settingsDifficultyName = (wbSetting.difficulty == 1 ? "Normal" : wbSetting.difficulty == 2 ? "Hard" : "Heroic");
-                            if (currentDifficulty != wbSetting.difficulty) {
-                                BHBot.logger.info(currentDifficultyName + " detected, changing to " + settingsDifficultyName);
-                                changeWorldBossDifficulty(wbSetting.difficulty);
-                            }
+                                if (!wbSetting.solo) {
+                                    BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + ". Lobby timeout is " + Misc.millisToHumanForm((long) wbSetting.timer * 1000L) + ".");
+                                } else {
+                                    BHBot.logger.info("Attempting " + worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + " Solo");
+                                }
 
-                            bot.browser.readScreen(Misc.Durations.SECOND);
-                            seg = MarvinSegment.fromCue("SmallDarkBlueSummon", Misc.Durations.SECOND * 2, bot.browser);
-                            bot.browser.clickOnSeg(seg); //accept current settings
+                                bot.browser.readScreen();
+                                seg = MarvinSegment.fromCue("DarkBlueSummon", Misc.Durations.SECOND, bot.browser);
+                                if (seg != null) {
+                                    bot.browser.clickOnSeg(seg);
+                                } else {
+                                    BHBot.logger.error("Impossible to find dark blue summon in world boss.");
 
-                            boolean insufficientXeals = handleNotEnoughXealsPopup();
-                            if (insufficientXeals) {
-                                continue;
-                            }
+                                    bot.saveGameScreen("wb-no-dark-blue-summon", "errors");
+                                    bot.notificationManager.sendErrorNotification("World Boss error", "Impossible to find blue summon.");
 
-                            BHBot.logger.info("Starting lobby: " + wbType.getName() + " has " + wbType.getPartySize() + " party members");
+                                    bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossTitle"), BHBot.cues.get("X"));
+                                    continue;
+                                }
+                                bot.browser.readScreen(2 * Misc.Durations.SECOND); //wait for screen to stablise
 
-                            //wait for lobby to fill with a timer
-                            if (!wbSetting.solo) {
-                                // How many invites do we expect for this WB?
-                                int inviteCnt = wbType.getPartySize() - 1;
+                                //world boss type selection
+                                if (!handleWorldBossSelection(wbType)) {
+                                    BHBot.logger.error("Impossible to change select the desired World Boss. Restarting...");
+                                    restart();
+                                    continue;
+                                }
 
-                                // Invite and unready buttons bounds are dinamically calculated based on the WB party member
-                                Bounds inviteBounds = Bounds.fromWidthHeight(330, 217, 127, 54 * inviteCnt);
-                                Bounds unreadyBounds = Bounds.fromWidthHeight(177, 217, 24, 54 * inviteCnt);
-                                Bounds totalWBTS = Bounds.fromWidthHeight(604, 70, 81, 25);
+//							Misc.sleep(SECOND); //more stabilising if we changed world boss type
+                                bot.browser.readScreen(Misc.Durations.SECOND);
+                                seg = MarvinSegment.fromCue("LargeDarkBlueSummon", 2 * Misc.Durations.SECOND, bot.browser);
+                                bot.browser.clickOnSeg(seg); //selected world boss
 
-                                // we assume we did not start the WB
-                                boolean lobbyTimeout = true;
-
-                                // Timings
-                                long startTime = Misc.getTime();
-                                long cutOffTime = startTime + (wbSetting.timer * Misc.Durations.SECOND);
-                                long nextUpdateTime = startTime + (15 * Misc.Durations.SECOND);
-
-                                // Temporary string used to make sure we don't save 10000000s of screenshots when debugWBTS is enabled
-                                String lastSavedName = "";
-
-                                cutOffLoop:
-                                while (Misc.getTime() < cutOffTime) {
-                                    // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
-                                    // at the same time we also wait 500ms so to easu CPU consumption
-                                    bot.browser.readScreen(500);
-
-                                    // Array used to save party members TS
-                                    int[] playersTS = new int[inviteCnt];
-
-                                    // We read the current total TS
-                                    int totalTS = 0;
-                                    if (wbSetting.minimumTotalTS > 0) {
-                                        MarvinImage totalTSImg = new MarvinImage(bot.browser.getImg().getSubimage(totalWBTS.x1, totalWBTS.y1, totalWBTS.width, totalWBTS.height));
-                                        totalTSImg.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
-                                        BufferedImage totalTSSubImg = totalTSImg.getBufferedImage();
-                                        totalTS = readNumFromImg(totalTSSubImg, "wb_total_ts_", new HashSet<>());
-
-                                        // If readNumFromImg has errors it will return 0, so we make sure this is not the case
-                                        if (totalTS > 0 && totalTS >= wbSetting.minimumTotalTS) {
-
-                                            // We need to check that the current party members are ready
-                                            List<MarvinSegment> unreadySegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Unready").im, 1.0, true, false, unreadyBounds.x1, unreadyBounds.y1, unreadyBounds.x2, unreadyBounds.y2);
-
-                                            if (unreadySegs.isEmpty()) {
-                                                BHBot.logger.info("Minimum World Boss Total Skill of " + wbSetting.minimumTotalTS + " reached in " + Misc.millisToHumanForm(Misc.getTime() - startTime));
-                                                lobbyTimeout = false;
-                                                saveDebugWBTSScreen(totalTS, playersTS, lastSavedName);
-                                                break;
-                                            } else {
-                                                continue;
-                                            }
-                                        }
-
+                                bot.browser.readScreen(Misc.Durations.SECOND);
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("Private"), Misc.Durations.SECOND, bot.browser);
+                                if (!wbSetting.solo) {
+                                    if (seg != null) {
+                                        BHBot.logger.info("Unchecking private lobby");
+                                        bot.browser.clickOnSeg(seg);
                                     }
-
-                                    List<MarvinSegment> inviteSegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Invite").im, 1.0, true, false, inviteBounds.x1, inviteBounds.y1, inviteBounds.x2, inviteBounds.y2);
-                                    // At least one person joined the lobby
-                                    if (inviteSegs.size() < inviteCnt) {
-                                        Bounds TSBound = Bounds.fromWidthHeight(184, 241, 84, 18);
-
-                                        if (wbSetting.minimumPlayerTS > 0) {
-                                            // If we are expecting 4 inviteCnt and inviteSegs size is 3 it means that one person joined the lobby
-                                            // Based on this logic, as the loop starts from zero the for check condition is (inviteCnt - inviteSegs.size)
-                                            // (4 - 3) that is equal to 1. As we start from 0, the condition operator is lesser than "<"
-                                            for (int partyMemberPos = 0; partyMemberPos < inviteCnt - inviteSegs.size(); partyMemberPos++) {
-                                                MarvinImage subImg = new MarvinImage(bot.browser.getImg().getSubimage(TSBound.x1, TSBound.y1 + (54 * partyMemberPos), TSBound.width, TSBound.height));
-                                                subImg.toBlackWhite(new Color(20, 20, 20), new Color(203, 203, 203), 203);
-                                                BufferedImage tsSubImg = subImg.getBufferedImage();
-
-                                                int playerTS = readNumFromImg(tsSubImg, "wb_player_ts_", new HashSet<>());
-                                                playersTS[partyMemberPos] = playerTS;
-
-                                                if (playerTS == 0) {
-                                                    // Player position one is you, the first party member is position two
-                                                    BHBot.logger.debug("It was impossible to read WB player TS for player position " + partyMemberPos + 2);
-                                                } else {
-                                                    if (playerTS < wbSetting.minimumPlayerTS) {
-                                                        BHBot.logger.info("Player " + partyMemberPos + 2 + " TS is lower than required minimum: " + playerTS + "/" + wbSetting.minimumPlayerTS);
-
-                                                        // We kick the player if we need to
-                                                        Bounds kickBounds = Bounds.fromWidthHeight(411, 220 + (54 * partyMemberPos), 43, 42);
-                                                        seg = MarvinSegment.fromCue("WorldBossPlayerKick", 2 * Misc.Durations.SECOND, kickBounds, bot.browser);
-                                                        if (seg == null) {
-                                                            BHBot.logger.error("Impossible to find kick button for party member " + (partyMemberPos + 2) + ".");
-                                                            continue cutOffLoop;
-                                                        } else {
-                                                            bot.browser.clickOnSeg(seg);
-                                                            seg = MarvinSegment.fromCue("WorldBossPopupKick", 5 * Misc.Durations.SECOND, bot.browser);
-                                                            if (seg == null) {
-                                                                BHBot.logger.error("Impossible to find player kick confirm popup");
-                                                                restart();
-                                                                break cutOffLoop;
-                                                            } else {
-                                                                bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossPopupKick"), new Cue(BHBot.cues.get("YesGreen"), Bounds.fromWidthHeight(260, 340, 130, 40)));
-                                                            }
-                                                        }
-                                                        continue cutOffLoop;
-                                                    }
-                                                }
-
-                                            }
-                                        }
-                                    }
-
-                                    if (inviteSegs.isEmpty()) {
-                                        List<MarvinSegment> unreadySegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Unready").im, 1.0, true, false, unreadyBounds.x1, unreadyBounds.y1, unreadyBounds.x2, unreadyBounds.y2);
-
-                                        if (unreadySegs.isEmpty()) {
-                                            BHBot.logger.info("Lobby filled and ready in " + Misc.millisToHumanForm(Misc.getTime() - startTime));
-                                            lobbyTimeout = false;
-                                            saveDebugWBTSScreen(totalTS, playersTS, lastSavedName);
-                                            break;
-                                        }
-                                    }
-
-                                    if (Misc.getTime() >= nextUpdateTime) {
-                                        if (totalTS > 0) {
-                                            BHBot.logger.debug("Total lobby TS is " + totalTS);
-                                        }
-                                        BHBot.logger.info("Waiting for full ready team. Time out in " + Misc.millisToHumanForm(cutOffTime - Misc.getTime()));
-                                        nextUpdateTime = Misc.getTime() + (15 * Misc.Durations.SECOND);
-                                        bot.scheduler.resetIdleTime(true);
-                                        lastSavedName = saveDebugWBTSScreen(totalTS, playersTS, lastSavedName);
+                                } else {
+                                    if (seg == null) {
+                                        BHBot.logger.info("Enabling private lobby for solo World Boss");
+                                        Misc.sleep(500);
+                                        bot.browser.clickInGame(340, 350);
+                                        bot.browser.readScreen(500);
                                     }
                                 }
 
-                                if (lobbyTimeout) {
-                                    BHBot.logger.info("Lobby timed out, returning to main screen.");
-                                    // we say we checked (interval - 1) minutes ago, so we check again in a minute
-                                    timeLastXealsCheck = Misc.getTime() - ((XEALS_CHECK_INTERVAL) - Misc.Durations.MINUTE);
-                                    closeWorldBoss();
+                                //world boss tier selection
+
+                                int currentTier = detectWorldBossTier();
+                                Misc.sleep(500);
+                                if (currentTier != wbSetting.tier) {
+                                    BHBot.logger.info("T" + currentTier + " detected, changing to T" + wbSetting.tier);
+                                    Misc.sleep(500);
+                                    if (!changeWorldBossTier(wbSetting.tier, wbType)) {
+                                        restart();
+                                        continue;
+                                    }
+                                }
+
+                                //world boss difficulty selection
+
+                                int currentDifficulty = detectWorldBossDifficulty();
+                                String currentDifficultyName = (currentDifficulty == 1 ? "Normal" : currentDifficulty == 2 ? "Hard" : "Heroic");
+                                String settingsDifficultyName = (wbSetting.difficulty == 1 ? "Normal" : wbSetting.difficulty == 2 ? "Hard" : "Heroic");
+                                if (currentDifficulty != wbSetting.difficulty) {
+                                    BHBot.logger.info(currentDifficultyName + " detected, changing to " + settingsDifficultyName);
+                                    changeWorldBossDifficulty(wbSetting.difficulty);
+                                }
+
+                                bot.browser.readScreen(Misc.Durations.SECOND);
+                                seg = MarvinSegment.fromCue("SmallDarkBlueSummon", Misc.Durations.SECOND * 2, bot.browser);
+                                bot.browser.clickOnSeg(seg); //accept current settings
+
+                                boolean insufficientXeals = handleNotEnoughXealsPopup();
+                                if (insufficientXeals) {
+                                    continue;
+                                }
+
+                                BHBot.logger.info("Starting lobby: " + wbType.getName() + " has " + wbType.getPartySize() + " party members");
+
+                                //wait for lobby to fill with a timer
+                                if (!wbSetting.solo) {
+                                    // How many invites do we expect for this WB?
+                                    int inviteCnt = wbType.getPartySize() - 1;
+
+                                    // Invite and unready buttons bounds are dinamically calculated based on the WB party member
+                                    Bounds inviteBounds = Bounds.fromWidthHeight(330, 217, 127, 54 * inviteCnt);
+                                    Bounds unreadyBounds = Bounds.fromWidthHeight(177, 217, 24, 54 * inviteCnt);
+                                    Bounds totalWBTS = Bounds.fromWidthHeight(604, 70, 81, 25);
+
+                                    // we assume we did not start the WB
+                                    boolean lobbyTimeout = true;
+
+                                    // Timings
+                                    long startTime = Misc.getTime();
+                                    long cutOffTime = startTime + (wbSetting.timer * Misc.Durations.SECOND);
+                                    long nextUpdateTime = startTime + (15 * Misc.Durations.SECOND);
+
+                                    // Temporary string used to make sure we don't save 10000000s of screenshots when debugWBTS is enabled
+                                    String lastSavedName = "";
+
+                                    cutOffLoop:
+                                    while (Misc.getTime() < cutOffTime) {
+                                        // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
+                                        // at the same time we also wait 500ms so to easu CPU consumption
+                                        bot.browser.readScreen(500);
+
+                                        // Array used to save party members TS
+                                        int[] playersTS = new int[inviteCnt];
+
+                                        // We read the current total TS
+                                        int totalTS = 0;
+                                        if (wbSetting.minimumTotalTS > 0) {
+                                            MarvinImage totalTSImg = new MarvinImage(bot.browser.getImg().getSubimage(totalWBTS.x1, totalWBTS.y1, totalWBTS.width, totalWBTS.height));
+                                            totalTSImg.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
+                                            BufferedImage totalTSSubImg = totalTSImg.getBufferedImage();
+                                            totalTS = readNumFromImg(totalTSSubImg, "wb_total_ts_", new HashSet<>());
+
+                                            // If readNumFromImg has errors it will return 0, so we make sure this is not the case
+                                            if (totalTS > 0 && totalTS >= wbSetting.minimumTotalTS) {
+
+                                                // We need to check that the current party members are ready
+                                                List<MarvinSegment> unreadySegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Unready").im, 1.0, true, false, unreadyBounds.x1, unreadyBounds.y1, unreadyBounds.x2, unreadyBounds.y2);
+
+                                                if (unreadySegs.isEmpty()) {
+                                                    BHBot.logger.info("Minimum World Boss Total Skill of " + wbSetting.minimumTotalTS + " reached in " + Misc.millisToHumanForm(Misc.getTime() - startTime));
+                                                    lobbyTimeout = false;
+                                                    saveDebugWBTSScreen(totalTS, playersTS, lastSavedName);
+                                                    break;
+                                                } else {
+                                                    continue;
+                                                }
+                                            }
+
+                                        }
+
+                                        List<MarvinSegment> inviteSegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Invite").im, 1.0, true, false, inviteBounds.x1, inviteBounds.y1, inviteBounds.x2, inviteBounds.y2);
+                                        // At least one person joined the lobby
+                                        if (inviteSegs.size() < inviteCnt) {
+                                            Bounds TSBound = Bounds.fromWidthHeight(184, 241, 84, 18);
+
+                                            if (wbSetting.minimumPlayerTS > 0) {
+                                                // If we are expecting 4 inviteCnt and inviteSegs size is 3 it means that one person joined the lobby
+                                                // Based on this logic, as the loop starts from zero the for check condition is (inviteCnt - inviteSegs.size)
+                                                // (4 - 3) that is equal to 1. As we start from 0, the condition operator is lesser than "<"
+                                                for (int partyMemberPos = 0; partyMemberPos < inviteCnt - inviteSegs.size(); partyMemberPos++) {
+                                                    MarvinImage subImg = new MarvinImage(bot.browser.getImg().getSubimage(TSBound.x1, TSBound.y1 + (54 * partyMemberPos), TSBound.width, TSBound.height));
+                                                    subImg.toBlackWhite(new Color(20, 20, 20), new Color(203, 203, 203), 203);
+                                                    BufferedImage tsSubImg = subImg.getBufferedImage();
+
+                                                    int playerTS = readNumFromImg(tsSubImg, "wb_player_ts_", new HashSet<>());
+                                                    playersTS[partyMemberPos] = playerTS;
+
+                                                    if (playerTS == 0) {
+                                                        // Player position one is you, the first party member is position two
+                                                        BHBot.logger.debug("It was impossible to read WB player TS for player position " + partyMemberPos + 2);
+                                                    } else {
+                                                        if (playerTS < wbSetting.minimumPlayerTS) {
+                                                            BHBot.logger.info("Player " + partyMemberPos + 2 + " TS is lower than required minimum: " + playerTS + "/" + wbSetting.minimumPlayerTS);
+
+                                                            // We kick the player if we need to
+                                                            Bounds kickBounds = Bounds.fromWidthHeight(411, 220 + (54 * partyMemberPos), 43, 42);
+                                                            seg = MarvinSegment.fromCue("WorldBossPlayerKick", 2 * Misc.Durations.SECOND, kickBounds, bot.browser);
+                                                            if (seg == null) {
+                                                                BHBot.logger.error("Impossible to find kick button for party member " + (partyMemberPos + 2) + ".");
+                                                                continue cutOffLoop;
+                                                            } else {
+                                                                bot.browser.clickOnSeg(seg);
+                                                                seg = MarvinSegment.fromCue("WorldBossPopupKick", 5 * Misc.Durations.SECOND, bot.browser);
+                                                                if (seg == null) {
+                                                                    BHBot.logger.error("Impossible to find player kick confirm popup");
+                                                                    restart();
+                                                                    break cutOffLoop;
+                                                                } else {
+                                                                    bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossPopupKick"), new Cue(BHBot.cues.get("YesGreen"), Bounds.fromWidthHeight(260, 340, 130, 40)));
+                                                                }
+                                                            }
+                                                            continue cutOffLoop;
+                                                        }
+                                                    }
+
+                                                }
+                                            }
+                                        }
+
+                                        if (inviteSegs.isEmpty()) {
+                                            List<MarvinSegment> unreadySegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Unready").im, 1.0, true, false, unreadyBounds.x1, unreadyBounds.y1, unreadyBounds.x2, unreadyBounds.y2);
+
+                                            if (unreadySegs.isEmpty()) {
+                                                BHBot.logger.info("Lobby filled and ready in " + Misc.millisToHumanForm(Misc.getTime() - startTime));
+                                                lobbyTimeout = false;
+                                                saveDebugWBTSScreen(totalTS, playersTS, lastSavedName);
+                                                break;
+                                            }
+                                        }
+
+                                        if (Misc.getTime() >= nextUpdateTime) {
+                                            if (totalTS > 0) {
+                                                BHBot.logger.debug("Total lobby TS is " + totalTS);
+                                            }
+                                            BHBot.logger.info("Waiting for full ready team. Time out in " + Misc.millisToHumanForm(cutOffTime - Misc.getTime()));
+                                            nextUpdateTime = Misc.getTime() + (15 * Misc.Durations.SECOND);
+                                            bot.scheduler.resetIdleTime(true);
+                                            lastSavedName = saveDebugWBTSScreen(totalTS, playersTS, lastSavedName);
+                                        }
+                                    }
+
+                                    if (lobbyTimeout) {
+                                        BHBot.logger.info("Lobby timed out, returning to main screen.");
+                                        // we say we checked (interval - 1) minutes ago, so we check again in a minute
+                                        timeLastXealsCheck = Misc.getTime() - ((XEALS_CHECK_INTERVAL) - Misc.Durations.MINUTE);
+                                        closeWorldBoss();
+                                    } else {
+                                        bot.browser.readScreen();
+                                        MarvinSegment segStart = MarvinSegment.fromCue(BHBot.cues.get("DarkBlueStart"), 5 * Misc.Durations.SECOND, bot.browser);
+                                        if (segStart != null) {
+                                            bot.browser.clickOnSeg(segStart); //start World Boss
+                                            bot.browser.readScreen();
+                                            seg = MarvinSegment.fromCue(BHBot.cues.get("TeamNotFull"), 2 * Misc.Durations.SECOND, bot.browser); //check if we have the team not full screen an clear it
+                                            if (seg != null) {
+                                                bot.browser.readScreen(2 * Misc.Durations.SECOND); //wait for animation to finish
+                                                bot.browser.clickInGame(330, 360); //yesgreen cue has issues so we use XY to click on Yes
+                                            }
+                                            BHBot.logger.info(worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + " started!");
+                                            bot.setState(BHBot.State.WorldBoss);
+                                        } else { //generic error / unknown action restart
+                                            BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
+                                            bot.saveGameScreen("wb-no-start-button", "errors");
+                                            restart();
+                                        }
+                                    }
                                 } else {
                                     bot.browser.readScreen();
                                     MarvinSegment segStart = MarvinSegment.fromCue(BHBot.cues.get("DarkBlueStart"), 5 * Misc.Durations.SECOND, bot.browser);
                                     if (segStart != null) {
                                         bot.browser.clickOnSeg(segStart); //start World Boss
-                                        bot.browser.readScreen();
-                                        seg = MarvinSegment.fromCue(BHBot.cues.get("TeamNotFull"), 2 * Misc.Durations.SECOND, bot.browser); //check if we have the team not full screen an clear it
-                                        if (seg != null) {
-                                            bot.browser.readScreen(2 * Misc.Durations.SECOND); //wait for animation to finish
-                                            bot.browser.clickInGame(330, 360); //yesgreen cue has issues so we use XY to click on Yes
+                                        Misc.sleep(2 * Misc.Durations.SECOND); //wait for dropdown animation to finish
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser); //clear empty team prompt
+                                        //click anyway this cue has issues
+                                        if (seg == null) {
+                                            Misc.sleep(500);
+                                        } else {
+                                            bot.browser.clickOnSeg(seg);
                                         }
-                                        BHBot.logger.info(worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + " started!");
+                                        bot.browser.clickInGame(330, 360); //yesgreen cue has issues so we use pos to click on Yes as a backup
+                                        BHBot.logger.info(worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + " Solo started!");
                                         bot.setState(BHBot.State.WorldBoss);
-                                    } else { //generic error / unknown action restart
-                                        BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
-                                        bot.saveGameScreen("wb-no-start-button", "errors");
-                                        restart();
+                                        continue;
                                     }
-                                }
-                            } else {
-                                bot.browser.readScreen();
-                                MarvinSegment segStart = MarvinSegment.fromCue(BHBot.cues.get("DarkBlueStart"), 5 * Misc.Durations.SECOND, bot.browser);
-                                if (segStart != null) {
-                                    bot.browser.clickOnSeg(segStart); //start World Boss
-                                    Misc.sleep(2 * Misc.Durations.SECOND); //wait for dropdown animation to finish
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser); //clear empty team prompt
-                                    //click anyway this cue has issues
-                                    if (seg == null) {
-                                        Misc.sleep(500);
-                                    } else {
-                                        bot.browser.clickOnSeg(seg);
-                                    }
-                                    bot.browser.clickInGame(330, 360); //yesgreen cue has issues so we use pos to click on Yes as a backup
-                                    BHBot.logger.info(worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + " Solo started!");
-                                    bot.setState(BHBot.State.WorldBoss);
                                     continue;
                                 }
-                                continue;
                             }
-                        }
-                        continue;
-                    } // World Boss
+                            continue;
+                        } // World Boss
 
-                    //bounties activity
-                    if ("b".equals(currentActivity)) {
-                        timeLastBountyCheck = Misc.getTime();
+                        //bounties activity
+                        if ("b".equals(currentActivity)) {
+                            timeLastBountyCheck = Misc.getTime();
 
-                        if (bot.scheduler.collectBountiesImmediately) {
-                            bot.scheduler.collectBountiesImmediately = false; //disable collectImmediately again if its been activated
-                        }
-                        BHBot.logger.info("Checking for completed bounties");
+                            if (bot.scheduler.collectBountiesImmediately) {
+                                bot.scheduler.collectBountiesImmediately = false; //disable collectImmediately again if its been activated
+                            }
+                            BHBot.logger.info("Checking for completed bounties");
 
-                        bot.browser.clickInGame(130, 440);
+                            bot.browser.clickInGame(130, 440);
 
-                        seg = MarvinSegment.fromCue(BHBot.cues.get("Bounties"), Misc.Durations.SECOND * 5, bot.browser);
-                        if (seg != null) {
-                            bot.browser.readScreen();
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("Loot"), Misc.Durations.SECOND * 5, new Bounds(505, 245, 585, 275), bot.browser);
-                            while (seg != null) {
-                                bot.browser.clickOnSeg(seg);
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("WeeklyRewards"), Misc.Durations.SECOND * 5, new Bounds(190, 100, 615, 400), bot.browser);
-                                if (seg != null) {
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
+                            seg = MarvinSegment.fromCue(BHBot.cues.get("Bounties"), Misc.Durations.SECOND * 5, bot.browser);
+                            if (seg != null) {
+                                bot.browser.readScreen();
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("Loot"), Misc.Durations.SECOND * 5, new Bounds(505, 245, 585, 275), bot.browser);
+                                while (seg != null) {
+                                    bot.browser.clickOnSeg(seg);
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("WeeklyRewards"), Misc.Durations.SECOND * 5, new Bounds(190, 100, 615, 400), bot.browser);
                                     if (seg != null) {
-                                        if ((bot.settings.screenshots.contains("b"))) {
-                                            bot.saveGameScreen("bounty-loot", "rewards");
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
+                                        if (seg != null) {
+                                            if ((bot.settings.screenshots.contains("b"))) {
+                                                bot.saveGameScreen("bounty-loot", "rewards");
+                                            }
+                                            bot.browser.clickOnSeg(seg);
+                                            BHBot.logger.info("Collected bounties");
+                                            Misc.sleep(Misc.Durations.SECOND * 2);
+                                        } else {
+                                            BHBot.logger.error("Error when collecting bounty items, restarting...");
+                                            bot.saveGameScreen("bounties-error-collect", "errors");
+                                            restart();
                                         }
-                                        bot.browser.clickOnSeg(seg);
-                                        BHBot.logger.info("Collected bounties");
-                                        Misc.sleep(Misc.Durations.SECOND * 2);
                                     } else {
-                                        BHBot.logger.error("Error when collecting bounty items, restarting...");
-                                        bot.saveGameScreen("bounties-error-collect", "errors");
+                                        BHBot.logger.error("Error finding bounty item dialog, restarting...");
+                                        bot.saveGameScreen("bounties-error-item", "errors");
                                         restart();
                                     }
-                                } else {
-                                    BHBot.logger.error("Error finding bounty item dialog, restarting...");
-                                    bot.saveGameScreen("bounties-error-item", "errors");
-                                    restart();
+
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Loot"), Misc.Durations.SECOND * 5, new Bounds(505, 245, 585, 275), bot.browser);
                                 }
 
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Loot"), Misc.Durations.SECOND * 5, new Bounds(505, 245, 585, 275), bot.browser);
-                            }
-
-                            seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
-                            if (seg != null) {
-                                bot.browser.clickOnSeg(seg);
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
+                                if (seg != null) {
+                                    bot.browser.clickOnSeg(seg);
+                                } else {
+                                    BHBot.logger.error("Impossible to close the bounties dialog, restarting...");
+                                    bot.saveGameScreen("bounties-error-closing", "errors");
+                                    restart();
+                                }
                             } else {
-                                BHBot.logger.error("Impossible to close the bounties dialog, restarting...");
-                                bot.saveGameScreen("bounties-error-closing", "errors");
+                                BHBot.logger.error("Impossible to detect the Bounties dialog, restarting...");
+                                bot.saveGameScreen("bounties-error-dialog", "errors");
                                 restart();
                             }
-                        } else {
-                            BHBot.logger.error("Impossible to detect the Bounties dialog, restarting...");
-                            bot.saveGameScreen("bounties-error-dialog", "errors");
-                            restart();
-                        }
-                        bot.browser.readScreen(Misc.Durations.SECOND * 2);
-                        continue;
-                    }
-
-                    //fishing baits
-                    if ("a".equals(currentActivity)) {
-                        timeLastFishingBaitsCheck = Misc.getTime();
-
-                        if (bot.scheduler.doFishingBaitsImmediately) {
-                            bot.scheduler.doFishingBaitsImmediately = false; //disable collectImmediately again if its been activated
+                            bot.browser.readScreen(Misc.Durations.SECOND * 2);
+                            continue;
                         }
 
-                        handleFishingBaits();
-                        continue;
-                    }
+                        //fishing baits
+                        if ("a".equals(currentActivity)) {
+                            timeLastFishingBaitsCheck = Misc.getTime();
 
-                    //fishing
-                    if ("f".equals(currentActivity)) {
-                        timeLastFishingCheck = Misc.getTime();
+                            if (bot.scheduler.doFishingBaitsImmediately) {
+                                bot.scheduler.doFishingBaitsImmediately = false; //disable collectImmediately again if its been activated
+                            }
 
-                        if (bot.scheduler.doFishingImmediately) {
-                            bot.scheduler.doFishingImmediately = false; //disable collectImmediately again if its been activated
-                        }
-
-                        if ((Misc.getTime() - timeLastFishingBaitsCheck) > Misc.Durations.DAY) { //if we haven't collected bait today we need to do that first
                             handleFishingBaits();
+                            continue;
                         }
 
-                        boolean botPresent = new File("bh-fisher.jar").exists();
-                        if (!botPresent) {
-                            BHBot.logger.warn("bh-fisher.jar not found in root directory, fishing disabled.");
-                            BHBot.logger.warn("For information on configuring fishing check the wiki page on github");
-                            bot.settings.activitiesEnabled.remove("f");
-                            return;
-                        } else {
-                            handleFishing();
+                        //fishing
+                        if ("f".equals(currentActivity)) {
+                            timeLastFishingCheck = Misc.getTime();
+
+                            if (bot.scheduler.doFishingImmediately) {
+                                bot.scheduler.doFishingImmediately = false; //disable collectImmediately again if its been activated
+                            }
+
+                            if ((Misc.getTime() - timeLastFishingBaitsCheck) > Misc.Durations.DAY) { //if we haven't collected bait today we need to do that first
+                                handleFishingBaits();
+                            }
+
+                            boolean botPresent = new File("bh-fisher.jar").exists();
+                            if (!botPresent) {
+                                BHBot.logger.warn("bh-fisher.jar not found in root directory, fishing disabled.");
+                                BHBot.logger.warn("For information on configuring fishing check the wiki page on github");
+                                bot.settings.activitiesEnabled.remove("f");
+                                return;
+                            } else {
+                                handleFishing();
+                            }
+                            continue;
                         }
-                        continue;
+
+                    } else {
+                        // If we don't have any activity to perform, we reset the idle timer check
+                        bot.scheduler.resetIdleTime(true);
                     }
 
                 } // main screen processing
