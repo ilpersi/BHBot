@@ -1725,10 +1725,9 @@ public class DungeonThread implements Runnable {
                                     // Temporary string used to make sure we don't save 10000000s of screenshots when debugWBTS is enabled
                                     String lastSavedName = "";
 
+                                    // this is long running loop and we want to be sure that it is interrupted when the bot needs to quit
                                     cutOffLoop:
-                                    while (Misc.getTime() < cutOffTime) {
-                                        // this is long running loop and we want to be sure that it is interrupted when the bot needs to qui
-                                        if (bot.finished || !bot.running) break;
+                                    while (Misc.getTime() < cutOffTime && bot.running) {
 
                                         // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
                                         // at the same time we also wait 500ms so to easu CPU consumption
