@@ -257,7 +257,7 @@ public class DungeonThread implements Runnable {
             counters.put(state, new DungeonCounter(0, 0));
         }
 
-        while (!bot.finished) {
+        while (!bot.finished && bot.running) {
             bot.scheduler.backupIdleTime();
             try {
                 bot.scheduler.process();
@@ -1727,6 +1727,9 @@ public class DungeonThread implements Runnable {
 
                                     cutOffLoop:
                                     while (Misc.getTime() < cutOffTime) {
+                                        // this is long running loop and we want to be sure that it is interrupted when the bot needs to qui
+                                        if (bot.finished || !bot.running) break;
+
                                         // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
                                         // at the same time we also wait 500ms so to easu CPU consumption
                                         bot.browser.readScreen(500);
