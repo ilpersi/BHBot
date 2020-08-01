@@ -1993,7 +1993,8 @@ public class DungeonThread implements Runnable {
                 break;
             }
 
-            Misc.sleep(Misc.Durations.SECOND / 2);
+            BHBot.logger.trace("Dungeon Thread Sleeping");
+            Misc.sleep(500);
         } // main while loop
 
         BHBot.logger.info("Dungeon thread stopped.");
@@ -4193,7 +4194,7 @@ public class DungeonThread implements Runnable {
         return readNumFromImg(im, "", new HashSet<>());
     }
 
-    private int readNumFromImg(BufferedImage im, @SuppressWarnings("SameParameterValue") String numberPrefix, HashSet<Integer> intToSkip) {
+    private int readNumFromImg(BufferedImage im, String numberPrefix, HashSet<Integer> intToSkip) {
         List<ScreenNum> nums = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
