@@ -214,26 +214,11 @@ public class BHBot {
         logger.debug("Opening InputThread on stdin ...");
         InputThread reader = new InputThread(System.in, logger);
         while (!bot.finished) {
-            /*String s;
-            try {
-                s = scanner.nextLine();
-            } catch (IllegalStateException | NoSuchElementException e) {
-                logger.error("Impossible to read user input", e);
-                return;
-            }
-
-            if (s != null) {
-                try {
-                    logger.info("User command: <" + s + ">");
-                    bot.processCommand(s);
-                } catch (Exception e) {
-                    logger.error("Impossible to process user command: " + s, e);
-                }
-            }*/
             String line;
             try {
                 while ((line = reader.readLine()) != null) {
                     bot.processCommand((line));
+                    Misc.sleep(500);
                 }
             } catch (java.io.IOException e) {
                 logger.error("Impossible to read user input", e);
@@ -255,6 +240,7 @@ public class BHBot {
                 bot.processCommand("start");
             }
 
+            BHBot.logger.trace("Main Thread Sleeping");
             Misc.sleep(500);
 
         }
