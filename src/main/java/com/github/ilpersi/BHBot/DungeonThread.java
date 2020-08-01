@@ -1768,10 +1768,7 @@ public class DungeonThread implements Runnable {
                                             Bounds TSBound = Bounds.fromWidthHeight(184, 241, 84, 18);
 
                                             if (wbSetting.minimumPlayerTS > 0) {
-                                                // If we are expecting 4 inviteCnt and inviteSegs size is 3 it means that one person joined the lobby
-                                                // Based on this logic, as the loop starts from zero the for check condition is (inviteCnt - inviteSegs.size)
-                                                // (4 - 3) that is equal to 1. As we start from 0, the condition operator is lesser than "<"
-                                                for (int partyMemberPos = 0; partyMemberPos < inviteCnt - inviteSegs.size(); partyMemberPos++) {
+                                                for (int partyMemberPos = 0; partyMemberPos < inviteCnt; partyMemberPos++) {
                                                     MarvinImage subImg = new MarvinImage(bot.browser.getImg().getSubimage(TSBound.x1, TSBound.y1 + (54 * partyMemberPos), TSBound.width, TSBound.height));
                                                     subImg.toBlackWhite(new Color(20, 20, 20), new Color(203, 203, 203), 203);
                                                     BufferedImage tsSubImg = subImg.getBufferedImage();
@@ -1779,12 +1776,12 @@ public class DungeonThread implements Runnable {
                                                     int playerTS = readNumFromImg(tsSubImg, "wb_player_ts_", new HashSet<>());
                                                     playersTS[partyMemberPos] = playerTS;
 
-                                                    if (playerTS == 0) {
+                                                    if (playerTS < 1) {
                                                         // Player position one is you, the first party member is position two
-                                                        BHBot.logger.debug("It was impossible to read WB player TS for player position " + partyMemberPos + 2);
+                                                        BHBot.logger.trace("It was impossible to read WB player TS for player position " + partyMemberPos + 2);
                                                     } else {
                                                         if (playerTS < wbSetting.minimumPlayerTS) {
-                                                            BHBot.logger.info("Player " + partyMemberPos + 2 + " TS is lower than required minimum: " + playerTS + "/" + wbSetting.minimumPlayerTS);
+                                                            BHBot.logger.info("Player " + (partyMemberPos + 2) + " TS is lower than required minimum: " + playerTS + "/" + wbSetting.minimumPlayerTS);
 
                                                             // We kick the player if we need to
                                                             Bounds kickBounds = Bounds.fromWidthHeight(411, 220 + (54 * partyMemberPos), 43, 42);
@@ -1796,6 +1793,7 @@ public class DungeonThread implements Runnable {
                                                                 bot.browser.clickOnSeg(seg);
                                                                 seg = MarvinSegment.fromCue("WorldBossPopupKick", 5 * Misc.Durations.SECOND, bot.browser);
                                                                 if (seg == null) {
+                                                                    bot.saveGameScreen("wb-no-player-kick", "wb-ts-error");
                                                                     BHBot.logger.error("Impossible to find player kick confirm popup");
                                                                     restart();
                                                                     break cutOffLoop;
