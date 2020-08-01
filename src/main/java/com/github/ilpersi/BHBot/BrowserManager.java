@@ -162,8 +162,12 @@ public class BrowserManager {
 
     synchronized void close() {
         if (driver != null) {
-            driver.close();
-            driver.quit();
+            try {
+                driver.close();
+                driver.quit();
+            } catch (org.openqa.selenium.NoSuchSessionException e) {
+                BHBot.logger.debug("Error while closing driver in BrowserManager.");
+            }
         }
     }
 
