@@ -39,6 +39,9 @@ public class InputThread
                         break;
                     }
                     lines.add(line);
+
+                    BHBot.logger.trace("Input Thread Sleeping");
+                    Misc.sleep(500);
                 }
             } catch (IOException e) {
                 logger.warn("Error while reading from standard input: ", e);
