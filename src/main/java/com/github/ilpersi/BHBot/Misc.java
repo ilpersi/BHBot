@@ -225,7 +225,8 @@ public class Misc {
         try {
             Thread.sleep(milliseconds);
         } catch (InterruptedException e) {
-            BHBot.logger.error("Error while attempting to sleep", e);
+            BHBot.logger.debug("Interrupting sleep");
+            Thread.currentThread().interrupt();
         }
     }
 
