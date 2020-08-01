@@ -207,6 +207,8 @@ public class BlockerThread implements Runnable {
             bot.scheduler.restoreIdleTime(); // revert changes to idle time
             if (bot.finished) break; // skip sleeping if finished flag has been set!
             if (!bot.running && BHBot.State.Main.equals(bot.getState())) break;
+
+            BHBot.logger.trace("Bocker Thread Sleeping");
             Misc.sleep(250);
         }
 
