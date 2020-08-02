@@ -68,12 +68,17 @@ public class NotificationManager {
                         .append(Misc.millisToHumanForm(Misc.getTime() - bot.botStartTime))
                         .append("!\n\n");
 
-                for (BHBot.State state : BHBot.State.values()) {
-                    if (bot.dungeon.counters.get(state).getTotal() > 0) {
-                        aliveMsg.append(state.getName()).append(" ")
-                                .append(bot.dungeon.counters.get(state).successRateDesc())
-                                .append("\n");
+                // When using scheduling, it may be possible that notifications are sent when counters has not been initialized yet
+                if (bot.dungeon.counters != null) {
+                    for (BHBot.State state : BHBot.State.values()) {
+                        if (bot.dungeon.counters.get(state).getTotal() > 0) {
+                            aliveMsg.append(state.getName()).append(" ")
+                                    .append(bot.dungeon.counters.get(state).successRateDesc())
+                                    .append("\n");
+                        }
                     }
+                } else {
+                    return;
                 }
 
                 // We notify the used potions
