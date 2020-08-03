@@ -19,7 +19,7 @@ public class BlockerThread implements Runnable {
             try {
                 bot.scheduler.process();
                 if (bot.scheduler.isPaused()) {
-                    bot.browser.readScreen(500);
+                    Misc.sleep(500);
                     continue;
                 }
 
