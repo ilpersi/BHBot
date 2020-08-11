@@ -1727,7 +1727,7 @@ public class DungeonThread implements Runnable {
 
                                     // this is long running loop and we want to be sure that it is interrupted when the bot needs to quit
                                     cutOffLoop:
-                                    while (Misc.getTime() < cutOffTime && bot.running) {
+                                    while (Misc.getTime() < cutOffTime && bot.running && !bot.finished) {
 
                                         // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
                                         // at the same time we also wait 500ms so to easu CPU consumption
