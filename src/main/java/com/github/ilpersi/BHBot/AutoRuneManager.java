@@ -191,6 +191,10 @@ class AutoRuneManager {
             BHBot.logger.debug(rightMinorRune + " equipped in right slot.");
         }
 
+        if (!success) {
+            bot.saveGameScreen("wrong-rune-detection", "errors");
+        }
+
         return success;
     }
 
