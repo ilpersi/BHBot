@@ -5527,10 +5527,8 @@ public class DungeonThread implements Runnable {
         COMMON("Common", 1),
         RARE("Rare", 2),
         EPIC("Epic", 3),
-        LEGENDARY("Legendary", 4);
-		/*SET("Set", 5),
-		MYTHIC("Mythic", 6),
-		ANCIENT("Ancient", 6);*/
+        LEGENDARY("Legendary", 4),
+        MYTHIC("Mythic", 5);
 
         private final String name;
         private final int value;

@@ -39,23 +39,27 @@ class AutoRuneManager {
         EXP_RARE(MinorRuneEffect.EXPERIENCE, DungeonThread.ItemGrade.RARE),
         EXP_EPIC(MinorRuneEffect.EXPERIENCE, DungeonThread.ItemGrade.EPIC),
         EXP_LEGENDARY(MinorRuneEffect.EXPERIENCE, DungeonThread.ItemGrade.LEGENDARY),
+        EXP_MYTHIC(MinorRuneEffect.EXPERIENCE, DungeonThread.ItemGrade.MYTHIC),
 
         ITEM_COMMON(MinorRuneEffect.ITEM_FIND, DungeonThread.ItemGrade.COMMON),
         ITEM_RARE(MinorRuneEffect.ITEM_FIND, DungeonThread.ItemGrade.RARE),
         ITEM_EPIC(MinorRuneEffect.ITEM_FIND, DungeonThread.ItemGrade.EPIC),
         ITEM_LEGENDARY(MinorRuneEffect.ITEM_FIND, DungeonThread.ItemGrade.LEGENDARY),
+        ITEM_MYTHIC(MinorRuneEffect.ITEM_FIND, DungeonThread.ItemGrade.MYTHIC),
 
         GOLD_COMMON(MinorRuneEffect.GOLD, DungeonThread.ItemGrade.COMMON),
         //		GOLD_RARE(MinorRuneEffect.GOLD, ItemGrade.RARE),
 //		GOLD_EPIC(MinorRuneEffect.GOLD, ItemGrade.EPIC),
         GOLD_LEGENDARY(MinorRuneEffect.GOLD, DungeonThread.ItemGrade.LEGENDARY),
+//        GOLD_MYTHIC(MinorRuneEffect.GOLD, DungeonThread.ItemGrade.MYTHIC),
 
         CAPTURE_COMMON(MinorRuneEffect.CAPTURE, DungeonThread.ItemGrade.COMMON),
         CAPTURE_RARE(MinorRuneEffect.CAPTURE, DungeonThread.ItemGrade.RARE),
         CAPTURE_EPIC(MinorRuneEffect.CAPTURE, DungeonThread.ItemGrade.EPIC),
         CAPTURE_LEGENDARY(MinorRuneEffect.CAPTURE, DungeonThread.ItemGrade.LEGENDARY);
+//        CAPTURE_MYTHIC(MinorRuneEffect.CAPTURE, DungeonThread.ItemGrade.MYTHIC);
 
-        public static DungeonThread.ItemGrade maxGrade = DungeonThread.ItemGrade.LEGENDARY;
+        public static DungeonThread.ItemGrade maxGrade = DungeonThread.ItemGrade.MYTHIC;
         private final MinorRuneEffect effect;
         private final DungeonThread.ItemGrade grade;
 
@@ -229,6 +233,14 @@ class AutoRuneManager {
                 return "Epic Capture";
             case "MinorRuneCaptureLegendary":
                 return "Legendary Capture";
+            case "MinorRuneItem_FindMythic":
+                return "Mythic Item Find";
+            case "MinorRuneGoldMythic":
+                return "Mythic Gold";
+            case "MinorRuneCaptureMythic":
+                return "Mythic Capture";
+            case "MinorRuneExperienceMythic":
+                return "Mythic Experience";
             default:
                 return null;
         }
