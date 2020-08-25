@@ -5561,7 +5561,7 @@ public class DungeonThread implements Runnable {
     @SuppressWarnings({"unused", "FieldCanBeLocal"})
     enum WorldBoss {
         Orlag("o", "Orlag Clan", 1, 3, 12, 5, new int[]{147, 175, 204, 232, 261, 289}),
-        Netherworld("n", "Netherworld", 2, 3, 9, 3, new int[]{146, 187, 227}),
+        Netherworld("n", "Netherworld", 2, 3, 13, 3, new int[]{147, 173, 199, 225, 250, 276, 302}),
         Melvin("m", "Melvin", 3, 10, 11, 4, new int[]{}),
         Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11, 3, new int[]{}),
         BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 12, 3, new int[]{}),
