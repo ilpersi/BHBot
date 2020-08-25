@@ -474,7 +474,7 @@ public class BHBot {
                             cnt += 1;
 
                             Rectangle screenRect = new Rectangle(minx, miny, maxx-minx, maxy-miny);
-                            BHBot.logger.info("[Screen " + cnt + "] =>" + screenRect.toString() + " Scale => " + scale);
+                            BHBot.logger.info("[Screen " + cnt + "] =>" + screenRect.toString() + " Scale => " + String.format("%.02f%%", scale));
                         }
                         break;
                     case "stats":
