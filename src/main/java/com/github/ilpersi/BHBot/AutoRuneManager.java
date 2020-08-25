@@ -170,6 +170,10 @@ class AutoRuneManager {
 
         }
 
+        if (leftMinorRune == null || rightMinorRune == null) {
+            bot.saveGameScreen("wrong-rune-detection", "errors");
+        }
+
         if (exitRunesMenu) {
             Misc.sleep(500);
             bot.browser.closePopupSecurely(BHBot.cues.get("RunesLayout"), BHBot.cues.get("X"));
@@ -189,10 +193,6 @@ class AutoRuneManager {
             success = false;
         } else {
             BHBot.logger.debug(rightMinorRune + " equipped in right slot.");
-        }
-
-        if (!success) {
-            bot.saveGameScreen("wrong-rune-detection", "errors");
         }
 
         return success;
