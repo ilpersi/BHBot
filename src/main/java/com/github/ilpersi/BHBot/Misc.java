@@ -18,7 +18,7 @@ import java.util.Properties;
  */
 public class Misc {
 
-    private static Class<Misc> miscClass = Misc.class;
+    private static final Class<Misc> miscClass = Misc.class;
 
     static final class Durations {
         static final int SECOND = 1000;
@@ -228,6 +228,55 @@ public class Misc {
             BHBot.logger.debug("Interrupting sleep");
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * This method is intended to be used by developers to fastly get all the positions of a scrolling bar.
+     * This can be used when new content is released and there is the need to re-calculate bar positions
+     *
+     * @author ilpersi
+     * @param bot An initialized BHBot instance
+     */
+    @SuppressWarnings("unused")
+    static void findScrollBarPositions(BHBot bot) {
+        int lastPosition = -1;
+        ArrayList<Integer> positions = new ArrayList<>();
+
+        while (true) {
+            MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("StripScrollerTopPos"), 2 * Misc.Durations.SECOND, bot.browser);
+
+            if (seg == null) {
+                BHBot.logger.error("Error: unable to find scroller in findScrollBarPositions!");
+                return;
+            }
+
+            if (seg.y1 == lastPosition) {
+                break;
+            } else {
+                lastPosition = seg.y1;
+                positions.add(seg.y1);
+
+                seg = MarvinSegment.fromCue("DropDownDown", 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(515, 415, 50, 50), bot.browser);
+                if (seg == null) {
+                    BHBot.logger.error("Error: unable to scroll down in findScrollBarPositions!");
+                    return;
+                }
+
+                bot.browser.clickOnSeg(seg);
+                bot.browser.moveMouseAway();
+                bot.browser.readScreen(Durations.SECOND);
+            }
+        }
+
+        StringBuilder posOutput = new StringBuilder("{");
+        for (Integer pos: positions) {
+            if (posOutput.length() > 1) posOutput.append(", ");
+
+            posOutput.append(pos);
+        }
+        posOutput.append("}");
+        BHBot.logger.info(posOutput.toString());
+
     }
 
 }
