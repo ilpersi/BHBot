@@ -341,15 +341,15 @@ public class BHBot {
                         logger.info("Forcing Bounty collection...");
                         scheduler.collectBountiesImmediately = true;
                         break;
-                    case "expedition":
-                        // force dungeon (regardless of energy)
-                        logger.info("Forcing expedition...");
-                        scheduler.doExpeditionImmediately = true;
-                        break;
                     case "dungeon":
                         // force dungeon (regardless of energy)
                         logger.info("Forcing dungeon...");
                         scheduler.doDungeonImmediately = true;
+                        break;
+                    case "expedition":
+                        // force dungeon (regardless of energy)
+                        logger.info("Forcing expedition...");
+                        scheduler.doExpeditionImmediately = true;
                         break;
                     case "fishing":
                         // force fishing
@@ -516,13 +516,13 @@ public class BHBot {
                 blockerThread = new Thread(blocker, "BlockerThread");
                 blockerThread.start();
                 break;
+            case "softreset":
+                dungeon.softReset();
+                break;
             case "readouts":
             case "resettimers":
                 dungeon.resetTimers();
                 logger.info("Readout timers reset.");
-                break;
-            case "softreset":
-                dungeon.softReset();
                 break;
             case "reload":
                 settings.load();
@@ -611,6 +611,9 @@ public class BHBot {
                         break;
                     case "runes":
                         dungeon.runeManager.detectEquippedMinorRunes(true, true);
+                        break;
+                    case "scrollbar":
+                        Misc.findScrollBarPositions(dungeon.bot);
                         break;
                     default:
                         break;
