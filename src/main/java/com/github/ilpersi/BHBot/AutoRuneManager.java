@@ -493,10 +493,16 @@ class AutoRuneManager {
         DungeonThread.ItemGrade maxRuneGrade = MinorRune.maxGrade;
         for (int runeGradeVal = maxRuneGrade.getValue(); runeGradeVal > 0; runeGradeVal--) {
             DungeonThread.ItemGrade runeGrade = DungeonThread.ItemGrade.getGradeFromValue(runeGradeVal);
+
+            if (runeGrade == null) {
+                BHBot.logger.error(runeGradeVal + " produced null runeGrade in switchSingleMinorRune");
+                return false;
+            }
+
             MinorRune thisRune = MinorRune.getRune(desiredRune, runeGrade);
 
             if (thisRune == null) {
-                BHBot.logger.error("Unable to getRune in switchSingleMinorRune");
+                BHBot.logger.debug(desiredRune.toString() + " " + runeGrade.toString() + "not defined in switchSingleMinorRune");
                 continue;
             }
 
