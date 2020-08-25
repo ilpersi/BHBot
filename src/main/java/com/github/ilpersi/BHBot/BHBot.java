@@ -10,6 +10,7 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
@@ -19,6 +20,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 
 
 public class BHBot {
@@ -455,6 +457,21 @@ public class BHBot {
                     case "familiar":
                     case "fam":
                         DungeonThread.printFamiliars();
+                        break;
+                    case "screen-rect":
+                        int minx = 0, miny = 0, maxx = 0, maxy = 0, cnt = 0;
+                        GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+                        for(GraphicsDevice device : environment.getScreenDevices()){
+                            Rectangle bounds = device.getDefaultConfiguration().getBounds();
+                            minx = Math.min(minx, bounds.x);
+                            miny = Math.min(miny, bounds.y);
+                            maxx = Math.max(maxx,  bounds.x+bounds.width);
+                            maxy = Math.max(maxy, bounds.y+bounds.height);
+                            cnt += 1;
+
+                            Rectangle screenRect = new Rectangle(minx, miny, maxx-minx, maxy-miny);
+                            BHBot.logger.info("[Screen " + cnt + "] =>" + screenRect.toString());
+                        }
                         break;
                     case "stats":
                     case "stat":
