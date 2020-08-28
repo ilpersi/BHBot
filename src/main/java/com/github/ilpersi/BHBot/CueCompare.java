@@ -56,62 +56,74 @@ public class CueCompare {
     }
 
     public static void main(String[] args) {
-        if (args.length != 3) {
-            System.out.println("USAGE: CueCompare <inputImg1Path> <inputImg2Path> <outputImgPath>");
+        if (args.length < 3) {
+            System.out.println("USAGE: CueCompare <inputImg1Path> <inputImg2Path> [... <inputImgNPath>] <outputImgPath>");
             return;
         }
 
-        // Images paths
-        String img1Path = args[0];
-        String img2Path = args[1];
-        String imgOutPath = args[2];
+        // We start to compare from image #2 (position # in args)
+        for (int imgCnt = 1; imgCnt <= (args.length - 2); imgCnt++) {
 
-        // Buffered images
-        BufferedImage img1 = null;
-        BufferedImage img2 = null;
-        BufferedImage img3;
+            // After the first for iteration the source image is the output of the previous comparison
+            String img1Path;
+            if (imgCnt == 1) {
+                img1Path = args[imgCnt - 1];
+            } else {
+                img1Path = args[args.length - 1];
+            }
 
-        try {
-            img1 = ImageIO.read(new File(img1Path));
-            img2 = ImageIO.read(new File(img2Path));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            // current image
+            String img2Path = args[imgCnt];
+            String imgOutPath = args[args.length - 1];
 
-        // If both the input cues are ok, we go on with the processing
-        if (img1 != null && img2 != null) {
-            // To allow the comparison, image cues need to be of the same size
-            if (img1.getWidth() == img2.getWidth() && img1.getHeight() == img2.getHeight()) {
+            // Buffered images
+            BufferedImage img1 = null;
+            BufferedImage img2 = null;
+            BufferedImage img3;
 
-                // Buffered image to handle the output
-                img3 = new BufferedImage(img1.getWidth(), img1.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            try {
+                img1 = ImageIO.read(new File(img1Path));
+                img2 = ImageIO.read(new File(img2Path));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-                int[][] pixelMatrix1 = Misc.convertTo2D(img1);
-                int[][] pixelMatrix2 = Misc.convertTo2D(img2);
+            // If both the input cues are ok, we go on with the processing
+            if (img1 != null && img2 != null) {
+                // To allow the comparison, image cues need to be of the same size
+                if (img1.getWidth() == img2.getWidth() && img1.getHeight() == img2.getHeight()) {
 
-                for (int y = 0; y < img1.getHeight(); y++) {
-                    for (int x = 0; x < img1.getWidth(); x++) {
-                        if (pixelMatrix1[x][y] == pixelMatrix2[x][y]) {
-                            // If both images have the same color in the same pixel, this is copied to the output image
-                            img3.setRGB(x, y, pixelMatrix1[x][y]);
-                        } else {
-                            // If color of the same pixel is different, a transparent pixel is created in the destination image
-                            img3.setRGB(x, y, 0);
+                    // Buffered image to handle the output
+                    img3 = new BufferedImage(img1.getWidth(), img1.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+                    int[][] pixelMatrix1 = Misc.convertTo2D(img1);
+                    int[][] pixelMatrix2 = Misc.convertTo2D(img2);
+
+                    for (int y = 0; y < img1.getHeight(); y++) {
+                        for (int x = 0; x < img1.getWidth(); x++) {
+                            if (pixelMatrix1[x][y] == pixelMatrix2[x][y]) {
+                                // If both images have the same color in the same pixel, this is copied to the output image
+                                img3.setRGB(x, y, pixelMatrix1[x][y]);
+                            } else {
+                                // If color of the same pixel is different, a transparent pixel is created in the destination image
+                                img3.setRGB(x, y, 0);
+                            }
                         }
+
                     }
 
-                }
+                    File nameImgFile = new File(imgOutPath);
+                    try {
+                        ImageIO.write(img3, "png", nameImgFile);
+                    } catch (IOException e) {
+                        BHBot.logger.error("Error while creating comparison file", e);
+                    }
 
-                File nameImgFile = new File(imgOutPath);
-                try {
-                    ImageIO.write(img3, "png", nameImgFile);
-                } catch (IOException e) {
-                    BHBot.logger.error("Error while creating comparison file", e);
+                } else {
+                    System.out.printf("Img 1 W:%d H:%d -- Img 2 W:%d H:%d", img1.getWidth(), img1.getHeight(), img2.getWidth(), img2.getHeight());
                 }
-
-            } else {
-                System.out.printf("Img 1 W:%d H:%d -- Img 2 W:%d H:%d", img1.getWidth(), img1.getHeight(), img2.getWidth(), img2.getHeight());
             }
+
         }
     }
 }
