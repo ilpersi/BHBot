@@ -179,7 +179,7 @@ public class BlockerThread implements Runnable {
                     bot.browser.clickOnSeg(seg);
                     if (bot.getState() == BHBot.State.Main || bot.getState() == BHBot.State.Loading) {
                         // we set this when we are not sure of what type of dungeon we are doing
-                        bot.setState(BHBot.State.UnidentifiedDungeon);
+                        bot.setState(bot.getLastJoinedState());
                     } else {
                         BHBot.logger.debug("RecentlyDisconnected status is: " + bot.getState());
                     }

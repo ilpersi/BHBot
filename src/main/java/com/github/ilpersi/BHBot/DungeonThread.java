@@ -296,7 +296,7 @@ public class DungeonThread implements Runnable {
                     MarvinSegment autoOn = MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), bot.browser);
                     MarvinSegment autoOff = MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), bot.browser);
                     if (autoOn != null || autoOff != null) { //if we're in Loading state, with auto button visible, then we need to change state
-                        bot.setState(BHBot.State.UnidentifiedDungeon); // we are not sure what type of dungeon we are doing
+                        bot.setState(bot.getLastJoinedState()); // we are not sure what type of dungeon we are doing
                         BHBot.logger.warn("Possible dungeon crash, activating failsafe");
                         bot.saveGameScreen("dungeon-crash-failsafe", "errors");
                         shrineManager.updateShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
@@ -499,6 +499,7 @@ public class DungeonThread implements Runnable {
                                     continue;
                                 } else {
                                     bot.setState(BHBot.State.Raid);
+                                    bot.setLastJoinedState(BHBot.State.Raid);
                                     BHBot.logger.info("Raid initiated!");
                                     runeManager.reset();
                                 }
@@ -719,6 +720,7 @@ public class DungeonThread implements Runnable {
                                     continue;
                                 } else {
                                     bot.setState(trials ? BHBot.State.Trials : BHBot.State.Gauntlet);
+                                    bot.setLastJoinedState(trials ? BHBot.State.Trials : BHBot.State.Gauntlet);
                                     BHBot.logger.info((trials ? "Trials" : "Gauntlet") + " initiated!");
                                     runeManager.reset();
                                 }
@@ -895,6 +897,7 @@ public class DungeonThread implements Runnable {
                                 }
 
                                 bot.setState(BHBot.State.Dungeon);
+                                bot.setLastJoinedState(BHBot.State.Dungeon);
                                 runeManager.reset();
 
                                 BHBot.logger.info("Dungeon <z" + goalZone + "d" + goalDungeon + "> " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic") + " initiated!");
@@ -1009,6 +1012,7 @@ public class DungeonThread implements Runnable {
                                     continue;
                                 } else {
                                     bot.setState(BHBot.State.PVP);
+                                    bot.setLastJoinedState(BHBot.State.PVP);
                                     BHBot.logger.info("PVP initiated!");
                                 }
                             }
@@ -1191,6 +1195,7 @@ public class DungeonThread implements Runnable {
                                         continue;
                                     } else {
                                         bot.setState(BHBot.State.GVG);
+                                        bot.setLastJoinedState(BHBot.State.GVG);
                                         BHBot.logger.info("GVG initiated!");
                                     }
                                 }
@@ -1274,6 +1279,7 @@ public class DungeonThread implements Runnable {
                                         continue;
                                     } else {
                                         bot.setState(BHBot.State.Invasion);
+                                        bot.setLastJoinedState(BHBot.State.Invasion);
                                         BHBot.logger.info("Invasion initiated!");
                                     }
                                 }
@@ -1498,6 +1504,7 @@ public class DungeonThread implements Runnable {
                                         continue;
                                     } else {
                                         bot.setState(BHBot.State.Expedition);
+                                        bot.setLastJoinedState(BHBot.State.Expedition);
                                         BHBot.logger.info(portalName + " portal initiated!");
                                         runeManager.reset();
                                     }
@@ -1849,6 +1856,7 @@ public class DungeonThread implements Runnable {
                                             }
                                             BHBot.logger.info(worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + " started!");
                                             bot.setState(BHBot.State.WorldBoss);
+                                            bot.setLastJoinedState(BHBot.State.WorldBoss);
                                         } else { //generic error / unknown action restart
                                             BHBot.logger.error("Something went wrong while attempting to start the World Boss, restarting");
                                             bot.saveGameScreen("wb-no-start-button", "errors");
@@ -1871,6 +1879,7 @@ public class DungeonThread implements Runnable {
                                         bot.browser.clickInGame(330, 360); //yesgreen cue has issues so we use pos to click on Yes as a backup
                                         BHBot.logger.info(worldBossDifficultyText + " T" + wbSetting.tier + " " + wbType.getName() + " Solo started!");
                                         bot.setState(BHBot.State.WorldBoss);
+                                        bot.setLastJoinedState(BHBot.State.WorldBoss);
                                         continue;
                                     }
                                     continue;

@@ -53,6 +53,7 @@ public class BHBot {
     private Thread blockerThread;
 
     private BHBot.State state; // at which stage of the game/menu are we currently?
+    private BHBot.State lastJoinedState;
     /**
      * Set it to true to end main loop and end program gracefully
      */
@@ -796,8 +797,16 @@ public class BHBot {
         return state;
     }
 
+    synchronized State getLastJoinedState() {
+        return lastJoinedState;
+    }
+
     synchronized void setState(State state) {
         this.state = state;
+    }
+
+    synchronized void setLastJoinedState(State state) {
+        this.lastJoinedState = state;
     }
 
     /**
