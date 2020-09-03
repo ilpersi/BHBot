@@ -51,13 +51,13 @@ class AutoRuneManager {
         //		GOLD_RARE(MinorRuneEffect.GOLD, ItemGrade.RARE),
 //		GOLD_EPIC(MinorRuneEffect.GOLD, ItemGrade.EPIC),
         GOLD_LEGENDARY(MinorRuneEffect.GOLD, DungeonThread.ItemGrade.LEGENDARY),
-//        GOLD_MYTHIC(MinorRuneEffect.GOLD, DungeonThread.ItemGrade.MYTHIC),
+        GOLD_MYTHIC(MinorRuneEffect.GOLD, DungeonThread.ItemGrade.MYTHIC),
 
         CAPTURE_COMMON(MinorRuneEffect.CAPTURE, DungeonThread.ItemGrade.COMMON),
         CAPTURE_RARE(MinorRuneEffect.CAPTURE, DungeonThread.ItemGrade.RARE),
         CAPTURE_EPIC(MinorRuneEffect.CAPTURE, DungeonThread.ItemGrade.EPIC),
-        CAPTURE_LEGENDARY(MinorRuneEffect.CAPTURE, DungeonThread.ItemGrade.LEGENDARY);
-//        CAPTURE_MYTHIC(MinorRuneEffect.CAPTURE, DungeonThread.ItemGrade.MYTHIC);
+        CAPTURE_LEGENDARY(MinorRuneEffect.CAPTURE, DungeonThread.ItemGrade.LEGENDARY),
+        CAPTURE_MYTHIC(MinorRuneEffect.CAPTURE, DungeonThread.ItemGrade.MYTHIC);
 
         public static DungeonThread.ItemGrade maxGrade = DungeonThread.ItemGrade.MYTHIC;
         private final MinorRuneEffect effect;
