@@ -2,7 +2,16 @@ package com.github.ilpersi.BHBot;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 
+import javax.activation.MimetypesFileTypeMap;
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URISyntaxException;
@@ -276,6 +285,48 @@ public class Misc {
         }
         posOutput.append("}");
         BHBot.logger.info(posOutput.toString());
+
+    }
+
+    static void contributeImage(BufferedImage img, String runeName, Bounds subArea) {
+
+        HttpClient httpClient = HttpClients.custom().useSystemProperties().build();
+
+        final HttpPost post = new HttpPost("https://script.google.com/macros/s/AKfycby-tCXZ6MHt_ZSUixCcNbYFjDuri6WvljomLgGy_m5lLZw1y5fZ/exec");
+
+        // we generate a sub image based on the bounds
+        BufferedImage nameImg = img.getSubimage(subArea.x1, subArea.y1, subArea.width, subArea.height);
+
+        File nameImgFile = new File(runeName + "-ctb.png");
+        try {
+            ImageIO.write(nameImg, "png", nameImgFile);
+        } catch (IOException e) {
+            BHBot.logger.error("Error while creating rune contribution file", e);
+        }
+
+        MimetypesFileTypeMap ftm = new MimetypesFileTypeMap();
+        ContentType ct = ContentType.create(ftm.getContentType(nameImgFile));
+
+        List<NameValuePair> params = new ArrayList<>(3);
+        params.add(new BasicNameValuePair("mimeType", ct.toString()));
+        params.add(new BasicNameValuePair("name", nameImgFile.getName()));
+        params.add(new BasicNameValuePair("data", Misc.encodeFileToBase64Binary(nameImgFile)));
+
+        try {
+            post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            BHBot.logger.error("Error while encoding POST request in rune contribution", e);
+        }
+
+        try {
+            httpClient.execute(post);
+        } catch (IOException e) {
+            BHBot.logger.error("Error while executing HTTP request in rune contribution", e);
+        }
+
+        if (!nameImgFile.delete()) {
+            BHBot.logger.warn("Impossible to delete " + nameImgFile.getAbsolutePath());
+        }
 
     }
 
