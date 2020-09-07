@@ -3124,29 +3124,18 @@ public class DungeonThread implements Runnable {
     }
 
     private void closeWorldBoss() {
-        MarvinSegment seg;
-
-        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 3 * Misc.Durations.SECOND, Bounds.fromWidthHeight(700, 50, 55, 60), bot.browser);
-        if (seg != null) {
-            bot.browser.clickOnSeg(seg);
-        } else {
+        if (!bot.browser.closePopupSecurely(BHBot.cues.get("DarkBlueStart"), new Cue(BHBot.cues.get("X"), Bounds.fromWidthHeight(700, 50, 55, 60)))) {
             BHBot.logger.error("first x Error returning to main screen from World Boss, restarting");
         }
 
-        seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 3 * Misc.Durations.SECOND, Bounds.fromWidthHeight(295, 345, 60, 35), bot.browser);
-        if (seg != null) {
-            bot.browser.clickOnSeg(seg);
-        } else {
+        Cue yesGreenWB = new Cue(BHBot.cues.get("YesGreen"), Bounds.fromWidthHeight(295, 345, 60, 35));
+        if (!bot.browser.closePopupSecurely(yesGreenWB, yesGreenWB)) {
             BHBot.logger.error("yesgreen Error returning to main screen from World Boss, restarting");
         }
 
-        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 3 * Misc.Durations.SECOND, Bounds.fromWidthHeight(640, 75, 55, 55), bot.browser);
-        if (seg != null) {
-            bot.browser.clickOnSeg(seg);
-        } else {
+        if (!bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossTitle"), new Cue(BHBot.cues.get("X"), Bounds.fromWidthHeight(640, 75, 55, 55)))) {
             BHBot.logger.error("second x Error returning to main screen from World Boss, restarting");
         }
-
     }
 
     private void updateFamiliarCounter(String fam) {
@@ -5567,7 +5556,6 @@ public class DungeonThread implements Runnable {
     /**
      * This Enum is used to group together all the information related to the World Boss
      */
-    @SuppressWarnings({"unused", "FieldCanBeLocal"})
     enum WorldBoss {
         Orlag("o", "Orlag Clan", 1, 3, 12, 5, new int[]{147, 175, 204, 232, 261, 289}),
         Netherworld("n", "Netherworld", 2, 3, 13, 3, new int[]{147, 173, 199, 225, 250, 276, 302}),
