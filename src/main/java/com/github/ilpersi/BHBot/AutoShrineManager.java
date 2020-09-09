@@ -121,8 +121,7 @@ public class AutoShrineManager {
 
         if ((bot.getState() == BHBot.State.Raid && bot.settings.autoShrine.contains("r")) ||
                 (bot.getState() == BHBot.State.Trials && bot.settings.autoShrine.contains("t")) ||
-                (bot.getState() == BHBot.State.Expedition && bot.settings.autoShrine.contains("e")) ||
-                (bot.getState() == BHBot.State.UnidentifiedDungeon)) {
+                (bot.getState() == BHBot.State.Expedition && bot.settings.autoShrine.contains("e"))) {
 
             guildButtonSeg = MarvinSegment.fromCue(BHBot.cues.get("GuildButton"), bot.browser);
 

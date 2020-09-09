@@ -305,7 +305,7 @@ public class DungeonThread implements Runnable {
                 }
 
                 // process dungeons of any kind (if we are in any):
-                if (bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Trials || bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.Dungeon || bot.getState() == BHBot.State.PVP || bot.getState() == BHBot.State.GVG || bot.getState() == BHBot.State.Invasion || bot.getState() == BHBot.State.UnidentifiedDungeon || bot.getState() == BHBot.State.Expedition || bot.getState() == BHBot.State.WorldBoss) {
+                if (bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Trials || bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.Dungeon || bot.getState() == BHBot.State.PVP || bot.getState() == BHBot.State.GVG || bot.getState() == BHBot.State.Invasion || bot.getState() == BHBot.State.Expedition || bot.getState() == BHBot.State.WorldBoss) {
                     processDungeon();
                     continue;
                 }
@@ -2388,7 +2388,7 @@ public class DungeonThread implements Runnable {
         /*
          * autoBribe/Persuasion code
          */
-        if ((bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Dungeon || bot.getState() == BHBot.State.UnidentifiedDungeon) && (activityDuration % 5 == 0) && encounterStatus) {
+        if ((bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Dungeon) && (activityDuration % 5 == 0) && encounterStatus) {
             seg = MarvinSegment.fromCue(BHBot.cues.get("Persuade"), bot.browser);
             if (seg != null) {
                 handleFamiliarEncounter();
@@ -2460,7 +2460,7 @@ public class DungeonThread implements Runnable {
         /*
          *  Check for the 'Cleared' dialogue and handle post-activity tasks
          */
-        if (bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Dungeon || bot.getState() == BHBot.State.Expedition || bot.getState() == BHBot.State.Trials || bot.getState() == BHBot.State.UnidentifiedDungeon) {
+        if (bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Dungeon || bot.getState() == BHBot.State.Expedition || bot.getState() == BHBot.State.Trials) {
             seg = MarvinSegment.fromCue(BHBot.cues.get("Cleared"), bot.browser);
             if (seg != null) {
 

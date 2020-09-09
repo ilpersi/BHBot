@@ -994,7 +994,6 @@ public class BHBot {
         PVP("PVP", "p"),
         Raid("Raid", "r"),
         Trials("Trials", "t"),
-        UnidentifiedDungeon("Unidentified dungeon", "ud"), // this one is used when we log in and we get a "You were recently disconnected from a dungeon. Do you want to continue the dungeon?" window
         WorldBoss("World Boss", "w");
 
         private final String name;

@@ -317,9 +317,6 @@ class AutoRuneManager {
         }
 
         String activity = bot.getState().getShortcut();
-        // Hack to work around unknown dungeons
-        if (activity.equals("ud"))
-            activity = "d";
         if (!bot.settings.autoBossRune.containsKey(activity)) {
             BHBot.logger.info("No autoBossRunes assigned for " + bot.getState().getName() + ", skipping.");
             return;
@@ -342,8 +339,7 @@ class AutoRuneManager {
         if ((bot.getState() == BHBot.State.Raid && !bot.settings.autoShrine.contains("r") && bot.settings.autoBossRune.containsKey("r")) ||
                 (bot.getState() == BHBot.State.Trials && !bot.settings.autoShrine.contains("t") && bot.settings.autoBossRune.containsKey("t")) ||
                 (bot.getState() == BHBot.State.Expedition && !bot.settings.autoShrine.contains("e") && bot.settings.autoBossRune.containsKey("e")) ||
-                (bot.getState() == BHBot.State.Dungeon && bot.settings.autoBossRune.containsKey("d")) ||
-                bot.getState() == BHBot.State.UnidentifiedDungeon) {
+                (bot.getState() == BHBot.State.Dungeon && bot.settings.autoBossRune.containsKey("d")) ) {
             if (!autoBossRuned) {
                 if ((((outOfEncounterTimestamp - inEncounterTimestamp) >= bot.settings.battleDelay) && guildButtonSeg != null)) {
                     BHBot.logger.autorune(bot.settings.battleDelay + "s since last encounter, changing runes for boss encounter");
