@@ -75,5 +75,6 @@ public class InputThread
             backgroundReaderThread.interrupt();
             backgroundReaderThread = null;
         }
+        logger.info("Input thread stopped");
     }
 }
