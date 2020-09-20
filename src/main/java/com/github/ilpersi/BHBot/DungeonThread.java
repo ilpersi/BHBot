@@ -2003,7 +2003,12 @@ public class DungeonThread implements Runnable {
             }
 
             BHBot.logger.trace("Dungeon Thread Sleeping");
-            Misc.sleep(500);
+            if (BHBot.State.Main.equals(bot.getState()) || BHBot.State.Loading.equals(bot.getState())) {
+                Misc.sleep(500);
+            } else {
+                // While we are in a dungeon we want a faster main loop
+                Misc.sleep(50);
+            }
         } // main while loop
 
         BHBot.logger.info("Dungeon thread stopped.");
