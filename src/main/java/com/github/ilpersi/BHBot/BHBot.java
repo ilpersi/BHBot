@@ -981,6 +981,7 @@ public class BHBot {
         dungeon.shrineManager = new AutoShrineManager(this, settings.idleMode);
         dungeon.runeManager = new AutoRuneManager(this, settings.idleMode);
         dungeon.reviveManager.reset();
+        dungeon.positionChecker = new DungeonPositionChecker();
     }
 
     enum State {

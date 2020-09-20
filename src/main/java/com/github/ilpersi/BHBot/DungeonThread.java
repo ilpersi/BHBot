@@ -105,6 +105,7 @@ public class DungeonThread implements Runnable {
     AutoShrineManager shrineManager;
     AutoReviveManager reviveManager;
     AutoRuneManager runeManager;
+    DungeonPositionChecker positionChecker;
 
     private Iterator<String> activitysIterator;
 
