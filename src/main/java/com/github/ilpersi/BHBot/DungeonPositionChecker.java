@@ -32,12 +32,8 @@ public class DungeonPositionChecker {
     // Should we reset the previous position samples?
     private boolean resetStartPos;
 
-    // How many checks before we confirm that the position has not changed^
-    @SuppressWarnings("FieldCanBeLocal")
-    private final int REQUIRED_CNT = 5;
-
-    // Temporary int to save the number of successful position checks
-    private int currentCnt = 0;
+    // Timestamp for the last position samples
+    private long lastPositionTime;
 
     DungeonPositionChecker() {
         subImgTopLef = null;
@@ -52,7 +48,7 @@ public class DungeonPositionChecker {
      * @param img a Buffered img to check if the position has changed
      * @return true if the position has not changes for a number of times specified in REQUIRED_CNT
      */
-    boolean isSamePosition(BufferedImage img) {
+    boolean isSamePosition(BufferedImage img, int minPosDelay) {
         // When we have to reset the original position, we updated the internal sub images containing the samples
         if (resetStartPos) {
             subImgTopLef = img.getSubimage(topLeftImg.x1, topLeftImg.y1, topLeftImg.width, topLeftImg.height);
@@ -61,6 +57,7 @@ public class DungeonPositionChecker {
             subImgBottomRight = img.getSubimage(bottomRightImg.x1, bottomRightImg.y1, bottomRightImg.width, bottomRightImg.height);
 
             resetStartPos = false;
+            lastPositionTime = Misc.getTime();
             return false;
         }
 
@@ -72,15 +69,14 @@ public class DungeonPositionChecker {
 
         if (MD5Compare(tmpImgTopLef, subImgTopLef) && MD5Compare(tmpImgBottomLeft, subImgBottomLeft) &&
                 MD5Compare(tmpImgTopRight, subImgTopRight) && MD5Compare(tmpImgBottomRight, subImgBottomRight)) {
-            currentCnt++;
-            BHBot.logger.debug("PositionChecker: position has not changed for "  + currentCnt + " time(s).");
+            BHBot.logger.debug("PositionChecker: position has not changed for "  + Misc.millisToHumanForm(Misc.getTime() - lastPositionTime) + ".");
         } else {
-            currentCnt = 0;
             resetStartPos = true;
+            lastPositionTime = Misc.getTime();
             BHBot.logger.debug("PositionChecker: new position detected.");
         }
 
-        return currentCnt >= REQUIRED_CNT;
+        return (Misc.getTime() - lastPositionTime) >= (minPosDelay * Misc.Durations.SECOND);
     }
 
     /**

@@ -249,7 +249,6 @@ public class Misc {
      * @author ilpersi
      * @param bot An initialized BHBot instance
      */
-    @SuppressWarnings("unused")
     static void findScrollBarPositions(BHBot bot) {
         int lastPosition = -1;
         ArrayList<Integer> positions = new ArrayList<>();

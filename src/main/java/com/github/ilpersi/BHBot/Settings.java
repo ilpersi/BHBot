@@ -298,6 +298,8 @@ public class Settings {
     List<String> autoShrine;
     int battleDelay = 60;
     int shrineDelay = 20;
+    int positionDelay = 5;
+
     /**
      * Autorune settings
      **/
@@ -1403,6 +1405,7 @@ public class Settings {
         setAutoShrineFromString(lastUsedMap.getOrDefault("autoShrine", getAutoShrineAsString()));
         battleDelay = Integer.parseInt(lastUsedMap.getOrDefault("battleDelay", "" + battleDelay));
         shrineDelay = Integer.parseInt(lastUsedMap.getOrDefault("shrineDelay", "" + shrineDelay));
+        positionDelay = Integer.parseInt(lastUsedMap.getOrDefault("positionDelay", "" + positionDelay));
 
         setAutoRuneDefaultFromString(lastUsedMap.getOrDefault("autoRuneDefault", getAutoRuneDefaultAsString()));
         setAutoRuneFromString(lastUsedMap.getOrDefault("autoRune", getAutoRuneAsString()));
