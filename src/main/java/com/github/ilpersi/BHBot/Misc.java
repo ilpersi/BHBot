@@ -105,6 +105,8 @@ public class Misc {
 
     static String millisToHumanForm(Long millis) {
 
+        //millisecs
+        long millisecs = millis % 1000;
         // seconds
         long seconds = millis / 1000;
         // minutes
@@ -117,7 +119,7 @@ public class Misc {
         long days = hours / 24;
         hours = hours % 24;
 
-        if (seconds == 0 && minutes == 0 && hours == 0 && days == 0)
+        if (millisecs == 0 && seconds == 0 && minutes == 0 && hours == 0 && days == 0)
             return "0s";
 
         StringBuilder humanStringBuilder = new StringBuilder();
@@ -125,6 +127,7 @@ public class Misc {
         if (hours > 0) humanStringBuilder.append(String.format(" %dh", hours));
         if (minutes > 0) humanStringBuilder.append(String.format(" %dm", minutes));
         if (seconds > 0) humanStringBuilder.append(String.format(" %ds", seconds));
+        if (millisecs > 0) humanStringBuilder.append(String.format(".%dms", millisecs));
 
         return humanStringBuilder.toString().trim();
     }
