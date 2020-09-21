@@ -298,7 +298,7 @@ public class Settings {
     List<String> autoShrine;
     int battleDelay = 60;
     int shrineDelay = 20;
-    int positionDelay = 5;
+    int positionDelay = 0;
 
     /**
      * Autorune settings
