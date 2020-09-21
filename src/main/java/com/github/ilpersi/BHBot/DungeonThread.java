@@ -1759,7 +1759,7 @@ public class DungeonThread implements Runnable {
                                                 List<MarvinSegment> unreadySegs = FindSubimage.findSubimage(bot.browser.getImg(), BHBot.cues.get("Unready").im, 1.0, true, false, unreadyBounds.x1, unreadyBounds.y1, unreadyBounds.x2, unreadyBounds.y2);
 
                                                 if (unreadySegs.isEmpty()) {
-                                                    BHBot.logger.info("Minimum World Boss Total Skill of " + wbSetting.minimumTotalTS + " reached in " + Misc.millisToHumanForm(Misc.getTime() - startTime));
+                                                    BHBot.logger.info("TS for lobby is " + totalTS + ". " + wbSetting.minimumTotalTS + " requirement reached in " + Misc.millisToHumanForm(Misc.getTime() - startTime));
                                                     lobbyTimeout = false;
                                                     saveDebugWBTSScreen(totalTS, playersTS, lastSavedName);
                                                     break;
