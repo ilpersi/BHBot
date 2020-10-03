@@ -4214,12 +4214,12 @@ public class DungeonThread implements Runnable {
     private int readNumFromImg(BufferedImage im, String numberPrefix, HashSet<Integer> intToSkip) {
         List<ScreenNum> nums = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
+        for (Integer i = 0; i < 10; i++) {
             if (intToSkip.contains(i)) continue;
             List<MarvinSegment> list = FindSubimage.findSubimage(im, BHBot.cues.get(numberPrefix + "" + i).im, 1.0, true, false, 0, 0, 0, 0);
             //BHBot.logger.info("DEBUG difficulty detection: " + i + " - " + list.size());
             for (MarvinSegment s : list) {
-                nums.add(new ScreenNum(i, s.x1));
+                nums.add(new ScreenNum(i.toString(), s.x1));
             }
         }
 
@@ -4229,14 +4229,12 @@ public class DungeonThread implements Runnable {
         if (nums.size() == 0)
             return 0; // error
 
-        int d = 0; // difficulty
-        int f = 1; // factor
-        for (int i = nums.size() - 1; i >= 0; i--) {
-            d += nums.get(i).value * f;
-            f *= 10;
+        StringBuilder result = new StringBuilder();
+        for (ScreenNum sn: nums) {
+            result.append(sn.value);
         }
 
-        return d;
+        return Integer.parseInt(result.toString());
     }
 
     int detectDifficulty() {
