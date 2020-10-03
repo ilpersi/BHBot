@@ -123,6 +123,8 @@ public class AutoShrineManager {
                 (bot.getState() == BHBot.State.Trials && bot.settings.autoShrine.contains("t")) ||
                 (bot.getState() == BHBot.State.Expedition && bot.settings.autoShrine.contains("e"))) {
 
+            BHBot.logger.debug("Autoshrine battle delay: " + battleDelay);
+
             guildButtonSeg = MarvinSegment.fromCue(BHBot.cues.get("GuildButton"), bot.browser);
 
             String ignoreShrineMsg = "";

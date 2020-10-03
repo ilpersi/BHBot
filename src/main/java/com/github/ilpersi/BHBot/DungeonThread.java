@@ -1430,7 +1430,7 @@ public class DungeonThread implements Runnable {
                                     }
 
                                     String portalName = getExpeditionPortalName(currentExpedition, targetPortal);
-                                    BHBot.logger.info("Attempting " + portalName + " Portal at difficulty " + targetDifficulty);
+                                    BHBot.logger.info("Attempting " + targetPortal + " " + portalName + " Portal at difficulty " + targetDifficulty);
 
                                     //write current portal and difficulty to global values for difficultyFailsafe
                                     expeditionFailsafePortal = targetPortal;
