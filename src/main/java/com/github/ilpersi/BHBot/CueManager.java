@@ -302,6 +302,7 @@ class CueManager {
         addCue("Zone10", "cues/cueZone10.png", null);
         addCue("Zone11", "cues/cueZone11.png", null);
         addCue("Zone12", "cues/cueZone12.png", null);
+        addCue("Zone13", "cues/cueZone13.png", Bounds.fromWidthHeight(250, 50, 300, 40));
         addCue("RightArrow", "cues/cueRightArrow.png", null); // arrow used in quest screen to change zone
         addCue("LeftArrow", "cues/cueLeftArrow.png", null); // arrow used in quest screen to change zone
         addCue("Enter", "cues/cueEnter.png", null); // "Enter" button found on d4 window
