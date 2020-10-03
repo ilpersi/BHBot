@@ -3229,7 +3229,7 @@ public class DungeonThread implements Runnable {
      * @return null in case dungeon parameter is malformed (can even throw an exception)
      */
     private Point getDungeonIconPos(int z, int d) {
-        if (z < 1 || z > 12) return null;
+        if (z < 1 || z > 13) return null;
         if (d < 1 || d > 4) return null;
 
         switch (z) {
@@ -3378,6 +3378,17 @@ public class DungeonThread implements Runnable {
                         return new Point(560, 400);
                     case 4:
                         return new Point(405, 290);
+                }
+            case 13:
+                switch (d) {
+                    case 1:
+                        return new Point(610, 346);
+                    case 2:
+                        return new Point(445, 202);
+                    case 3:
+                        return new Point(255, 295);
+                    case 4:
+                        return new Point(160, 145);
                 }
         }
 
@@ -3702,6 +3713,8 @@ public class DungeonThread implements Runnable {
             return 11;
         else if (MarvinSegment.fromCue("Zone12", bot.browser) != null)
             return 12;
+        else if (MarvinSegment.fromCue("Zone13", bot.browser) != null)
+            return 13;
         else
             return 0;
     }
