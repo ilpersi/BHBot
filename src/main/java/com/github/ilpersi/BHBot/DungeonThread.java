@@ -4619,8 +4619,8 @@ public class DungeonThread implements Runnable {
             // new difficulty out of range, we only check it on the first iteration
             if (rangeCnt == 0) {
                 if (newDifficulty > rangeMaxDifficulty) {
-                    BHBot.logger.error("New difficulty " + newDifficulty + " is bigger than maximum available difficulty: " + rangeMaxDifficulty);
-                    return 0;
+                    BHBot.logger.warn("New difficulty " + newDifficulty + " is bigger than maximum available difficulty: " + rangeMaxDifficulty + ". Using maximum difficulty.");
+                    newDifficulty = rangeMaxDifficulty;
                 }
             }
 
