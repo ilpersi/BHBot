@@ -639,7 +639,7 @@ public class DungeonThread implements Runnable {
                                 }
                                 if (difficulty != targetDifficulty) {
                                     BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + targetDifficulty + ". Changing..");
-                                    boolean result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficulty"), 1);
+                                    boolean result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficulty"), 1, true);
                                     if (!result) { // error!
                                         // see if drop down menu is still open and close it:
                                         bot.browser.readScreen(Misc.Durations.SECOND);
@@ -1467,7 +1467,7 @@ public class DungeonThread implements Runnable {
 
                                     if (difficulty != targetDifficulty) {
                                         BHBot.logger.info("Detected Expedition difficulty level: " + difficulty + ", settings level is " + targetDifficulty + ". Changing..");
-                                        boolean result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficultyExpedition"), 5);
+                                        boolean result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficultyExpedition"), 5, false);
                                         if (!result) { // error!
                                             // see if drop down menu is still open and close it:
                                             bot.browser.readScreen(Misc.Durations.SECOND);
@@ -4214,12 +4214,12 @@ public class DungeonThread implements Runnable {
     private int readNumFromImg(BufferedImage im, String numberPrefix, HashSet<Integer> intToSkip) {
         List<ScreenNum> nums = new ArrayList<>();
 
-        for (Integer i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
             if (intToSkip.contains(i)) continue;
             List<MarvinSegment> list = FindSubimage.findSubimage(im, BHBot.cues.get(numberPrefix + "" + i).im, 1.0, true, false, 0, 0, 0, 0);
             //BHBot.logger.info("DEBUG difficulty detection: " + i + " - " + list.size());
             for (MarvinSegment s : list) {
-                nums.add(new ScreenNum(i.toString(), s.x1));
+                nums.add(new ScreenNum(Integer.toString(i), s.x1));
             }
         }
 
@@ -4235,6 +4235,64 @@ public class DungeonThread implements Runnable {
         }
 
         return Integer.parseInt(result.toString());
+    }
+
+    /**
+     * Given a image containing a range of values in this format <value1><separator><value2>, this method will
+     * read the image and return the integer representation of <value1> and <value2>.
+     *
+     * @param im a BufferedImage containing the range. The image must be converted in Black & White scale.
+     * @param numberPrefix The prefix used to read number cues. This depends on how cues have been defined
+     * @param intToSkip Should we skip any number from the range read?
+     * @param rangeSeparatorName The name of the separator cue
+     * @param rangeSeparatorValue What character will be used to represent the separator internally in the method?
+     * @return An integer array of two values containing the minimum and maximum values for the range.
+     * In case of error an empty array is returned and you have to check this in your own code.
+     */
+    @SuppressWarnings("SameParameterValue")
+    private int[] readNumRangeFromImg(BufferedImage im, String numberPrefix, HashSet<Integer> intToSkip, String rangeSeparatorName, String rangeSeparatorValue) {
+        List<ScreenNum> nums = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            if (intToSkip.contains(i)) continue;
+            List<MarvinSegment> list = FindSubimage.findSubimage(im, BHBot.cues.get(numberPrefix + "" + i).im, 1.0, true, false, 0, 0, 0, 0);
+            //BHBot.logger.info("DEBUG difficulty detection: " + i + " - " + list.size());
+            for (MarvinSegment s : list) {
+                nums.add(new ScreenNum(Integer.toString(i), s.x1));
+            }
+        }
+
+        // No numbers have been found
+        if (nums.size() == 0)
+            return new int[]{}; // error
+
+        // We take care of the separator
+        List<MarvinSegment> list = FindSubimage.findSubimage(im, BHBot.cues.get(numberPrefix + "" + rangeSeparatorName).im, 1.0, true, false, 0, 0, 0, 0);
+        //BHBot.logger.info("DEBUG difficulty detection: " + i + " - " + list.size());
+
+        if (list.size() == 0) {
+            BHBot.logger.error("No separator character found in readNumRangeFromImg!");
+            return new int[]{};
+        } else if (list.size() > 1) {
+            BHBot.logger.error("More than one separator character found in readNumRangeFromImg!");
+            return new int[]{};
+        }
+
+        for (MarvinSegment s : list) {
+            nums.add(new ScreenNum(rangeSeparatorValue, s.x1));
+        }
+
+        // order list horizontally:
+        Collections.sort(nums);
+
+        StringBuilder result = new StringBuilder();
+        for (ScreenNum sn: nums) {
+            result.append(sn.value);
+        }
+
+        String[] rangesStr = result.toString().split(rangeSeparatorValue);
+
+        return new int[]{Integer.parseInt(rangesStr[0]), Integer.parseInt(rangesStr[1])};
     }
 
     int detectDifficulty() {
@@ -4432,10 +4490,10 @@ public class DungeonThread implements Runnable {
      * @return false in case of an error (unable to change difficulty).
      */
     boolean selectDifficulty(int oldDifficulty, int newDifficulty) {
-        return selectDifficulty(oldDifficulty, newDifficulty, BHBot.cues.get("SelectDifficulty"), 1);
+        return selectDifficulty(oldDifficulty, newDifficulty, BHBot.cues.get("SelectDifficulty"), 1, false);
     }
 
-    private boolean selectDifficulty(int oldDifficulty, int newDifficulty, Cue difficulty, int step) {
+    private boolean selectDifficulty(int oldDifficulty, int newDifficulty, Cue difficulty, int step, boolean useDifficultyRanges) {
         if (oldDifficulty == newDifficulty)
             return true; // no change
 
@@ -4449,7 +4507,204 @@ public class DungeonThread implements Runnable {
 
         bot.browser.readScreen(5 * Misc.Durations.SECOND);
 
+        if (useDifficultyRanges) {
+            return selectDifficultyFromRange(newDifficulty);
+        }
+
         return selectDifficultyFromDropDown(newDifficulty, 0, step);
+    }
+
+    private boolean selectDifficultyFromRange(int newDifficulty) {
+
+        // Bounds for difficulty range
+        Bounds difficultyRangeBounds = Bounds.fromWidthHeight(305, 140, 160, 35);
+        // offset to read different ranges
+        final int yOffset = 60;
+
+        // Color definition for B&W conversion
+        Color difficultyBlack = new Color(25, 25, 25);
+        Color difficultyWhite = new Color(255, 255, 255);
+        final int customMax = 254;
+
+        // Scroller cues
+        Cue scrollerAtTop = new Cue(BHBot.cues.get("ScrollerAtTop"), Bounds.fromWidthHeight(520, 115, 35, 90) );
+//        Cue scrollerAtBottom = new Cue(BHBot.cues.get("ScrollerAtBottom"), Bounds.fromWidthHeight(520, 360, 35, 90) );
+        // Scroller max clicks
+        final int MAX_CLICKS = 30;
+
+        // We make sure the scroll is at the top position. This is just failsafe in all the tests this was always the default behavior
+        MarvinSegment seg = MarvinSegment.fromCue(scrollerAtTop, Misc.Durations.SECOND / 2, bot.browser);
+        int cntAttempt = 0;
+        while (seg == null) {
+            if (cntAttempt > MAX_CLICKS) {
+                BHBot.logger.error("It was impossible to move the scroller to the top position for the difficulty range tier.");
+                return false;
+            }
+            bot.browser.clickInGame(540, 133);
+
+            seg = MarvinSegment.fromCue(scrollerAtTop, Misc.Durations.SECOND / 2, bot.browser);
+            cntAttempt++;
+        }
+
+        bot.browser.readScreen(Misc.Durations.SECOND / 2);
+
+        cntAttempt = 0;
+        int tierCnt = 0;
+        int minDifficulty;
+        do {
+            // we could not move the scroller at the bottom position
+            if (cntAttempt > MAX_CLICKS) {
+                BHBot.logger.error("It was impossible to move the scroller to the bottom position for the difficulty tier.");
+                return false;
+            }
+
+            // We read ranges five at time, so we scroll down when we are done.
+            // We also use this to calculate the right difficulty range to read
+            int tierPos = tierCnt % 5;
+
+            // we need to click on the bottom arrow to have new tiers on monitor
+            if (tierPos == 0 && tierCnt > 0) {
+                seg = MarvinSegment.fromCue(BHBot.cues.get("DropDownDown"), bot.browser);
+                if (seg == null) {
+                    BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty range drop-down menu!");
+                    bot.saveGameScreen("select_difficulty_range_arrow_down", "errors");
+                    return false;
+                }
+
+                for (int barPos = 0; barPos < 5; barPos++) {
+                    bot.browser.clickOnSeg(seg);
+                }
+                bot.browser.readScreen(Misc.Durations.SECOND / 2);
+            }
+
+            // We use tierPos to read the right difficulty range
+            int posOffset = tierPos * yOffset;
+            BufferedImage topTierImg = bot.browser.getImg().getSubimage(difficultyRangeBounds.x1, difficultyRangeBounds.y1 + posOffset, difficultyRangeBounds.width, difficultyRangeBounds.height);
+            MarvinImage im = new MarvinImage(topTierImg);
+            im.toBlackWhite(difficultyBlack, difficultyWhite, customMax);
+
+            int[] diffRange = readNumRangeFromImg(im.getBufferedImage(), "", new HashSet<>(), "hyphen", "-");
+            BHBot.logger.debug("Detected difficulty range: " + Arrays.toString(diffRange));
+            if (diffRange.length != 2) {
+                BHBot.logger.error("It was impossible to read the top difficulty tier range");
+                return false;
+            }
+
+            // We save difficulty bounds for readability sake
+            int rangeMinDifficulty = diffRange[0], rangeMaxDifficulty = diffRange[1];
+            minDifficulty = rangeMinDifficulty;
+
+            // new difficulty out of range, we only check it on the first iteration
+            if (tierCnt == 0) {
+                if (newDifficulty > rangeMaxDifficulty) {
+                    BHBot.logger.error("New difficulty " + newDifficulty + " is bigger than maximum available difficulty: " + rangeMaxDifficulty);
+                    return false;
+                }
+            }
+
+            // we've found the right range and we click it!
+            if (newDifficulty >= rangeMinDifficulty && newDifficulty <= rangeMaxDifficulty) {
+                bot.browser.clickInGame((difficultyRangeBounds.x1 + difficultyRangeBounds.width / 2),  (difficultyRangeBounds.y1 + posOffset + difficultyRangeBounds.height / 2));
+
+                // We wait for the difficulty selection to come out
+                bot.browser.readScreen(Misc.Durations.SECOND);
+
+                // Bounds of the top difficulty value
+                Bounds topLvlBounds = Bounds.fromWidthHeight(350, 150, 70, 35);
+
+                /*
+                 * In higher tiers difficulty ranges are non continuous and the difference between the values increase.
+                 * Low difficulties have steps of 1, then this increase to 5 and finally also to 10. As this appear to be
+                 * dynamic, the step between the difficulties is calculated everytime reading from screen the two top
+                 * most values in the difficulty popup
+                 * */
+
+                // Top most difficulty value
+                BufferedImage topLvlBImg = bot.browser.getImg().getSubimage(topLvlBounds.x1, topLvlBounds.y1, topLvlBounds.width, topLvlBounds.height);
+                MarvinImage topLvlMImg = new MarvinImage(topLvlBImg);
+                topLvlMImg.toBlackWhite(difficultyBlack, difficultyWhite, customMax);
+                int topLvl = readNumFromImg(topLvlMImg.getBufferedImage());
+                if (topLvl == 0) {
+                    BHBot.logger.error("Impossible to read difficulty range top level.");
+                    return false;
+                }
+
+                // Second difficulty value
+                BufferedImage secondLvlBImg = bot.browser.getImg().getSubimage(topLvlBounds.x1, topLvlBounds.y1 + yOffset, topLvlBounds.width, topLvlBounds.height);
+                MarvinImage secondLvlMImg = new MarvinImage(secondLvlBImg);
+                secondLvlMImg.toBlackWhite(difficultyBlack, difficultyWhite, customMax);
+                int secondLvl = readNumFromImg(secondLvlMImg.getBufferedImage());
+                if (secondLvl == 0) {
+                    BHBot.logger.error("Impossible to read difficulty range second level.");
+                    return false;
+                }
+
+                // Difficulty step value
+                int lvlStep = topLvl - secondLvl;
+                BHBot.logger.debug("Difficulty tier step is: " + lvlStep);
+
+                // We calculate all the possible values and back-fill them in an array list so that we can use them later
+                List<Integer> possibleDifficulties = new ArrayList<>();
+                int startDifficulty = rangeMaxDifficulty;
+                while (startDifficulty >= rangeMinDifficulty) {
+                    possibleDifficulties.add(startDifficulty);
+
+                    startDifficulty -= lvlStep;
+                }
+
+                // It is not always possible to get to the exact desired difficulty, so the best match is chosen
+                // The absolute value of the difference is used to check the closest match
+                int distance = Math.abs(possibleDifficulties.get(0) - newDifficulty);
+                int idx = 0;
+                for(int i = 1; i < possibleDifficulties.size(); i++){
+                    int cdistance = Math.abs(possibleDifficulties.get(i) - newDifficulty);
+                    if(cdistance < distance){
+                        idx = i;
+                        distance = cdistance;
+                    }
+                }
+
+                int matchedDifficulty = possibleDifficulties.get(idx);
+                if (matchedDifficulty - newDifficulty != 0) {
+                    BHBot.logger.info("The closest match to " + newDifficulty + " is " + matchedDifficulty);
+                }
+
+                // We have it on screen, so we can click on it!
+                if (idx < 5) {
+                    bot.browser.clickInGame(topLvlBounds.x1 + topLvlBounds.width / 2, topLvlBounds.y1 + (yOffset * idx) + topLvlBounds.height / 2);
+                } else {
+                    // We check that the arrow down on the scroller is there
+                    seg = MarvinSegment.fromCue(BHBot.cues.get("DropDownDown"), bot.browser);
+                    if (seg == null) {
+                        BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet second step difficulty range drop-down menu!");
+                        bot.saveGameScreen("select_difficulty_range_2nd_step_arrow_down", "errors");
+                        return false;
+                    }
+
+                    /*
+                     * First five difficulty tiers are on screen, we start to scroll down and we use the possibleDifficulties
+                     * ArrayList that we created before to check that the position we currently are at is the one of the
+                     * matched difficulty we found earlier
+                     * */
+                    for (int idxI = 5; idxI < possibleDifficulties.size(); idxI++) {
+                        bot.browser.clickOnSeg(seg);
+
+                        if (possibleDifficulties.get(idxI) == matchedDifficulty) {
+                            // We can finally click on the difficulty value!!
+                            bot.browser.clickInGame(topLvlBounds.x1 + topLvlBounds.width / 2, topLvlBounds.y1 + (yOffset * 4) + topLvlBounds.height / 2);
+                            return true;
+                        }
+                    }
+
+                }
+
+            }
+
+            cntAttempt++;
+            tierCnt++;
+        } while (minDifficulty != 1);
+
+        return true;
     }
 
     /**
@@ -4474,7 +4729,8 @@ public class DungeonThread implements Runnable {
 
         MarvinSegment seg;
 
-        MarvinImage subm = new MarvinImage(bot.browser.getImg().getSubimage(350, 150, 70, 35)); // the first (upper most) of the 5 buttons in the drop-down menu. Note that every while a "tier x" is written bellow it, so text is higher up (hence we need to scan a larger area)
+        // the first (upper most) of the 5 buttons in the drop-down menu. Note that every while a "tier x" is written bellow it, so text is higher up (hence we need to scan a larger area)
+        MarvinImage subm = new MarvinImage(bot.browser.getImg().getSubimage(350, 150, 70, 35));
         subm.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
         BufferedImage sub = subm.getBufferedImage();
         int num = readNumFromImg(sub);

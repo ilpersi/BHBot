@@ -350,6 +350,9 @@ class CueManager {
         addCue("8", "cues/numbers/cue8.png", null);
         addCue("9", "cues/numbers/cue9.png", null);
 
+        // Difficulty Tier
+        addCue("hyphen", "cues/numbers/hyphen.png", null);
+
         // WB player TS numbers
         addCue("wb_player_ts_0", "cues/worldboss/ts/wb_player_ts_0.png", null);
         addCue("wb_player_ts_1", "cues/worldboss/ts/wb_player_ts_1.png", null);
@@ -385,6 +388,9 @@ class CueManager {
         addCue("small7", "cues/numbers/small7.png", null);
         addCue("small8", "cues/numbers/small8.png", null);
         addCue("small9", "cues/numbers/small9.png", null);
+
+        // T/G Gauntlet difficulty related
+        addCue("ScrollerAtTop", "cues/cueScrollerAtTop.png", null);
 
 
         // PvP strip related:

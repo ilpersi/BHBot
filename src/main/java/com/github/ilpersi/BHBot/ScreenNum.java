@@ -6,10 +6,10 @@ package com.github.ilpersi.BHBot;
  * @author Betalord
  */
 public class ScreenNum implements Comparable<ScreenNum> {
-    int value; // [0..9]
+    String value; // [0..9]
     private int xpos; // horizontal position on screen (relative to the detected image, for example)
 
-    ScreenNum(int value, int xpos) {
+    ScreenNum(String value, int xpos) {
         this.value = value;
         this.xpos = xpos;
     }
