@@ -4528,7 +4528,9 @@ public class DungeonThread implements Runnable {
 
     /**
      * Changes difficulty level in trials/gauntlet window using the two step choice: first selecting the range and then
-     * choosing the closed matched difficulty
+     * choosing the closed matched difficulty.
+     *
+     * Note: for this to work, trials/gauntlet window needs to be opened!
      *
      * @param newDifficulty The desired target difficulty
      * @return 0 in case of error, newDifficulty if everything was ok, another integer if for any reason the desired
@@ -4557,7 +4559,7 @@ public class DungeonThread implements Runnable {
         int cntAttempt = 0;
         while (seg == null) {
             if (cntAttempt > MAX_CLICKS) {
-                BHBot.logger.error("It was impossible to move the scroller to the top position for the difficulty range tier.");
+                BHBot.logger.error("It was impossible to move the scroller to the top position for the difficulty range.");
                 return 0;
             }
             bot.browser.clickInGame(540, 133);
@@ -4569,21 +4571,21 @@ public class DungeonThread implements Runnable {
         bot.browser.readScreen(Misc.Durations.SECOND / 2);
 
         cntAttempt = 0;
-        int tierCnt = 0;
+        int rangeCnt = 0;
         int minDifficulty;
         do {
             // we could not move the scroller at the bottom position
             if (cntAttempt > MAX_CLICKS) {
-                BHBot.logger.error("It was impossible to move the scroller to the bottom position for the difficulty tier.");
+                BHBot.logger.error("It was impossible to move the scroller to the bottom position for the difficulty.");
                 return 0;
             }
 
             // We read ranges five at time, so we scroll down when we are done.
             // We also use this to calculate the right difficulty range to read
-            int tierPos = tierCnt % 5;
+            int rangePos = rangeCnt % 5;
 
-            // we need to click on the bottom arrow to have new tiers on monitor
-            if (tierPos == 0 && tierCnt > 0) {
+            // we need to click on the bottom arrow to have new ranges on monitor
+            if (rangePos == 0 && rangeCnt > 0) {
                 seg = MarvinSegment.fromCue(BHBot.cues.get("DropDownDown"), bot.browser);
                 if (seg == null) {
                     BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty range drop-down menu!");
@@ -4597,16 +4599,16 @@ public class DungeonThread implements Runnable {
                 bot.browser.readScreen(Misc.Durations.SECOND / 2);
             }
 
-            // We use tierPos to read the right difficulty range
-            int posOffset = tierPos * yOffset;
-            BufferedImage topTierImg = bot.browser.getImg().getSubimage(difficultyRangeBounds.x1, difficultyRangeBounds.y1 + posOffset, difficultyRangeBounds.width, difficultyRangeBounds.height);
-            MarvinImage im = new MarvinImage(topTierImg);
+            // We use rangePos to read the right difficulty range
+            int posOffset = rangePos * yOffset;
+            BufferedImage topRangeImg = bot.browser.getImg().getSubimage(difficultyRangeBounds.x1, difficultyRangeBounds.y1 + posOffset, difficultyRangeBounds.width, difficultyRangeBounds.height);
+            MarvinImage im = new MarvinImage(topRangeImg);
             im.toBlackWhite(difficultyBlack, difficultyWhite, customMax);
 
             int[] diffRange = readNumRangeFromImg(im.getBufferedImage(), "", new HashSet<>(), "hyphen", "-");
             BHBot.logger.debug("Detected difficulty range: " + Arrays.toString(diffRange));
             if (diffRange.length != 2) {
-                BHBot.logger.error("It was impossible to read the top difficulty tier range");
+                BHBot.logger.error("It was impossible to read the top difficulty range");
                 return 0;
             }
 
@@ -4615,7 +4617,7 @@ public class DungeonThread implements Runnable {
             minDifficulty = rangeMinDifficulty;
 
             // new difficulty out of range, we only check it on the first iteration
-            if (tierCnt == 0) {
+            if (rangeCnt == 0) {
                 if (newDifficulty > rangeMaxDifficulty) {
                     BHBot.logger.error("New difficulty " + newDifficulty + " is bigger than maximum available difficulty: " + rangeMaxDifficulty);
                     return 0;
@@ -4661,7 +4663,7 @@ public class DungeonThread implements Runnable {
 
                 // Difficulty step value
                 int lvlStep = topLvl - secondLvl;
-                BHBot.logger.debug("Difficulty tier step is: " + lvlStep);
+                BHBot.logger.debug("Difficulty step is: " + lvlStep);
 
                 // We calculate all the possible values and back-fill them in an array list so that we can use them later
                 List<Integer> possibleDifficulties = new ArrayList<>();
@@ -4702,7 +4704,7 @@ public class DungeonThread implements Runnable {
                     }
 
                     /*
-                     * First five difficulty tiers are on screen, we start to scroll down and we use the possibleDifficulties
+                     * First five difficulty difficulties are on screen, we start to scroll down and we use the possibleDifficulties
                      * ArrayList that we created before to check that the position we currently are at is the one of the
                      * matched difficulty we found earlier
                      * */
@@ -4719,7 +4721,7 @@ public class DungeonThread implements Runnable {
             }
 
             cntAttempt++;
-            tierCnt++;
+            rangeCnt++;
         } while (minDifficulty != 1);
 
         return 0;
