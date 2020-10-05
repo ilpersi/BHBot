@@ -4499,10 +4499,11 @@ public class DungeonThread implements Runnable {
     }
 
     /**
-     * Changes difficulty level in trials/gauntlet/expedition window. <br>
-     * Note: for this to work, trials/gauntlet/expedition window must be open!
+     * Changes difficulty level in expedition window.
+     * Note: for this to work, expedition window must be open!
      *
-     * @return false in case of an error (unable to change difficulty).
+     * @return 0 in case of error, newDifficulty if everything was ok, another integer if for any reason the desired
+     *         level could not be set. Caller will have to check this in its own code.
      */
     int selectDifficulty(int oldDifficulty, int newDifficulty, Cue difficulty, int step, boolean useDifficultyRanges) {
         if (oldDifficulty == newDifficulty)
@@ -4525,6 +4526,14 @@ public class DungeonThread implements Runnable {
         return selectDifficultyFromDropDown(newDifficulty, 0, step);
     }
 
+    /**
+     * Changes difficulty level in trials/gauntlet window using the two step choice: first selecting the range and then
+     * choosing the closed matched difficulty
+     *
+     * @param newDifficulty The desired target difficulty
+     * @return 0 in case of error, newDifficulty if everything was ok, another integer if for any reason the desired
+     *         level could not be set. Caller will have to check this in its own code.
+     */
     private int selectDifficultyFromRange(int newDifficulty) {
 
         // Bounds for difficulty range
