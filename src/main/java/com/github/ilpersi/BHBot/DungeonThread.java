@@ -639,8 +639,8 @@ public class DungeonThread implements Runnable {
                                 }
                                 if (difficulty != targetDifficulty) {
                                     BHBot.logger.info("Detected " + (trials ? "trials" : "gauntlet") + " difficulty level: " + difficulty + ", settings level: " + targetDifficulty + ". Changing..");
-                                    boolean result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficulty"), 1, true);
-                                    if (!result) { // error!
+                                    int result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficulty"), 1, true);
+                                    if (result == 0) { // error!
                                         // see if drop down menu is still open and close it:
                                         bot.browser.readScreen(Misc.Durations.SECOND);
                                         tryClosingWindow(BHBot.cues.get("DifficultyDropDown"));
@@ -654,6 +654,14 @@ public class DungeonThread implements Runnable {
                                         String updated = settingName + " " + difficulty;
                                         settingsUpdate(original, updated);
 
+                                    } else if (result != targetDifficulty) {
+                                        BHBot.logger.warn(targetDifficulty + " is not available in " + (trials ? "trials" : "gauntlet") + " difficulty selection. Closest match is " + result + ".");
+
+                                        // We update the setting file with the old difficulty level
+                                        String settingName = trials ? "difficultyTrials" : "difficultyGauntlet";
+                                        String original = settingName + " " + targetDifficulty;
+                                        String updated = settingName + " " + result;
+                                        settingsUpdate(original, updated);
                                     }
                                 }
 
@@ -1467,8 +1475,8 @@ public class DungeonThread implements Runnable {
 
                                     if (difficulty != targetDifficulty) {
                                         BHBot.logger.info("Detected Expedition difficulty level: " + difficulty + ", settings level is " + targetDifficulty + ". Changing..");
-                                        boolean result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficultyExpedition"), 5, false);
-                                        if (!result) { // error!
+                                        int result = selectDifficulty(difficulty, targetDifficulty, BHBot.cues.get("SelectDifficultyExpedition"), 5, false);
+                                        if (result == 0) { // error!
                                             // see if drop down menu is still open and close it:
                                             bot.browser.readScreen(Misc.Durations.SECOND);
                                             tryClosingWindow(BHBot.cues.get("DifficultyDropDown"));
@@ -1481,6 +1489,13 @@ public class DungeonThread implements Runnable {
                                             String updated = expeditionFailsafePortal + " " + difficulty;
                                             settingsUpdate(original, updated);
 
+                                        } else if (result != targetDifficulty) {
+                                            BHBot.logger.warn(targetDifficulty + " is not available. Running Expedition at the closest match " + result + ".");
+
+                                            // We update the file with the old difficulty level
+                                            String original = expeditionFailsafePortal + " " + targetDifficulty;
+                                            String updated = expeditionFailsafePortal + " " + result;
+                                            settingsUpdate(original, updated);
                                         }
                                     }
 
@@ -4484,23 +4499,19 @@ public class DungeonThread implements Runnable {
     }
 
     /**
-     * Changes difficulty level in trials/gauntlet window. <br>
-     * Note: for this to work, trials/gauntlet window must be open!
+     * Changes difficulty level in trials/gauntlet/expedition window. <br>
+     * Note: for this to work, trials/gauntlet/expedition window must be open!
      *
      * @return false in case of an error (unable to change difficulty).
      */
-    boolean selectDifficulty(int oldDifficulty, int newDifficulty) {
-        return selectDifficulty(oldDifficulty, newDifficulty, BHBot.cues.get("SelectDifficulty"), 1, false);
-    }
-
-    private boolean selectDifficulty(int oldDifficulty, int newDifficulty, Cue difficulty, int step, boolean useDifficultyRanges) {
+    int selectDifficulty(int oldDifficulty, int newDifficulty, Cue difficulty, int step, boolean useDifficultyRanges) {
         if (oldDifficulty == newDifficulty)
-            return true; // no change
+            return newDifficulty; // no change
 
         MarvinSegment seg = MarvinSegment.fromCue(difficulty, 2 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.error("Error: unable to detect 'select difficulty' button while trying to change difficulty level!");
-            return false; // error
+            return 0; // error
         }
 
         bot.browser.clickOnSeg(seg);
@@ -4514,7 +4525,7 @@ public class DungeonThread implements Runnable {
         return selectDifficultyFromDropDown(newDifficulty, 0, step);
     }
 
-    private boolean selectDifficultyFromRange(int newDifficulty) {
+    private int selectDifficultyFromRange(int newDifficulty) {
 
         // Bounds for difficulty range
         Bounds difficultyRangeBounds = Bounds.fromWidthHeight(305, 140, 160, 35);
@@ -4538,7 +4549,7 @@ public class DungeonThread implements Runnable {
         while (seg == null) {
             if (cntAttempt > MAX_CLICKS) {
                 BHBot.logger.error("It was impossible to move the scroller to the top position for the difficulty range tier.");
-                return false;
+                return 0;
             }
             bot.browser.clickInGame(540, 133);
 
@@ -4555,7 +4566,7 @@ public class DungeonThread implements Runnable {
             // we could not move the scroller at the bottom position
             if (cntAttempt > MAX_CLICKS) {
                 BHBot.logger.error("It was impossible to move the scroller to the bottom position for the difficulty tier.");
-                return false;
+                return 0;
             }
 
             // We read ranges five at time, so we scroll down when we are done.
@@ -4568,7 +4579,7 @@ public class DungeonThread implements Runnable {
                 if (seg == null) {
                     BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet difficulty range drop-down menu!");
                     bot.saveGameScreen("select_difficulty_range_arrow_down", "errors");
-                    return false;
+                    return 0;
                 }
 
                 for (int barPos = 0; barPos < 5; barPos++) {
@@ -4587,7 +4598,7 @@ public class DungeonThread implements Runnable {
             BHBot.logger.debug("Detected difficulty range: " + Arrays.toString(diffRange));
             if (diffRange.length != 2) {
                 BHBot.logger.error("It was impossible to read the top difficulty tier range");
-                return false;
+                return 0;
             }
 
             // We save difficulty bounds for readability sake
@@ -4598,7 +4609,7 @@ public class DungeonThread implements Runnable {
             if (tierCnt == 0) {
                 if (newDifficulty > rangeMaxDifficulty) {
                     BHBot.logger.error("New difficulty " + newDifficulty + " is bigger than maximum available difficulty: " + rangeMaxDifficulty);
-                    return false;
+                    return 0;
                 }
             }
 
@@ -4626,7 +4637,7 @@ public class DungeonThread implements Runnable {
                 int topLvl = readNumFromImg(topLvlMImg.getBufferedImage());
                 if (topLvl == 0) {
                     BHBot.logger.error("Impossible to read difficulty range top level.");
-                    return false;
+                    return 0;
                 }
 
                 // Second difficulty value
@@ -4636,7 +4647,7 @@ public class DungeonThread implements Runnable {
                 int secondLvl = readNumFromImg(secondLvlMImg.getBufferedImage());
                 if (secondLvl == 0) {
                     BHBot.logger.error("Impossible to read difficulty range second level.");
-                    return false;
+                    return 0;
                 }
 
                 // Difficulty step value
@@ -4658,7 +4669,7 @@ public class DungeonThread implements Runnable {
                 int idx = 0;
                 for(int i = 1; i < possibleDifficulties.size(); i++){
                     int cdistance = Math.abs(possibleDifficulties.get(i) - newDifficulty);
-                    if(cdistance < distance){
+                    if(cdistance <= distance){
                         idx = i;
                         distance = cdistance;
                     }
@@ -4678,7 +4689,7 @@ public class DungeonThread implements Runnable {
                     if (seg == null) {
                         BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet second step difficulty range drop-down menu!");
                         bot.saveGameScreen("select_difficulty_range_2nd_step_arrow_down", "errors");
-                        return false;
+                        return 0;
                     }
 
                     /*
@@ -4692,19 +4703,17 @@ public class DungeonThread implements Runnable {
                         if (possibleDifficulties.get(idxI) == matchedDifficulty) {
                             // We can finally click on the difficulty value!!
                             bot.browser.clickInGame(topLvlBounds.x1 + topLvlBounds.width / 2, topLvlBounds.y1 + (yOffset * 4) + topLvlBounds.height / 2);
-                            return true;
+                            return matchedDifficulty;
                         }
                     }
-
                 }
-
             }
 
             cntAttempt++;
             tierCnt++;
         } while (minDifficulty != 1);
 
-        return true;
+        return 0;
     }
 
     /**
@@ -4714,7 +4723,7 @@ public class DungeonThread implements Runnable {
      *
      * @return false on error (caller must do restart() if he gets false as a result from this method)
      */
-    private boolean selectDifficultyFromDropDown(int newDifficulty, int recursionDepth, int step) {
+    private int selectDifficultyFromDropDown(int newDifficulty, int recursionDepth, int step) {
         // horizontal position of the 5 buttons:
         final int posx = 390;
         // vertical positions of the 5 buttons:
@@ -4724,7 +4733,7 @@ public class DungeonThread implements Runnable {
             BHBot.logger.error("Error: Selecting difficulty level from the drop-down menu ran into an endless loop!");
             bot.saveGameScreen("select_difficulty_recursion", "errors");
             tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
-            return false;
+            return 0;
         }
 
         MarvinSegment seg;
@@ -4739,7 +4748,7 @@ public class DungeonThread implements Runnable {
             BHBot.logger.error("Error: unable to read difficulty level from a drop-down menu!");
             bot.saveGameScreen("select_difficulty_read", "errors");
             tryClosingWindow(); // clean up after our selves (ignoring any exception while doing it)
-            return false;
+            return 0;
         }
 
         int move = (newDifficulty - num) / step; // if negative, we have to move down (in dropdown/numbers), or else up
@@ -4748,7 +4757,7 @@ public class DungeonThread implements Runnable {
         if (move >= -4 && move <= 0) {
             // we have it on screen. Let's select it!
             bot.browser.clickInGame(posx, posy[Math.abs(move)]); // will auto-close the drop down (but it takes a second or so, since it's animated)
-            return true;
+            return newDifficulty;
         }
 
         // scroll the drop-down until we reach our position:
@@ -4761,7 +4770,7 @@ public class DungeonThread implements Runnable {
                 BHBot.logger.error("Error: unable to detect up arrow in trials/gauntlet/expedition difficulty drop-down menu!");
                 bot.saveGameScreen("select_difficulty_arrow_up", "errors");
                 bot.browser.clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
-                return false;
+                return 0;
             }
             for (int i = 0; i < move; i++) {
                 bot.browser.clickOnSeg(seg);
@@ -4774,7 +4783,7 @@ public class DungeonThread implements Runnable {
                 BHBot.logger.error("Error: unable to detect down arrow in trials/gauntlet/expedition difficulty drop-down menu!");
                 bot.saveGameScreen("select_difficulty_arrow_down", "errors");
                 bot.browser.clickInGame(posx, posy[0]); // regardless of the error, click on the first selection in the drop-down, so that we don't need to re-scroll entire list next time we try!
-                return false;
+                return 0;
             }
             int moves = Math.abs(move) - 4;
 //			BHBot.logger.info("Scrolls to 60 = " + Integer.toString(moves));

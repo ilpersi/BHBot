@@ -327,7 +327,7 @@ public class BHBot {
                 if (params.length > 1) {
                     int goal = Integer.parseInt(params[1]);
                     logger.info("Goal difficulty: " + goal);
-                    boolean result = dungeon.selectDifficulty(current, goal);
+                    int result = dungeon.selectDifficulty(current, goal, BHBot.cues.get("SelectDifficulty"), 1, false);
                     logger.info("Difficulty change result: " + result);
                 }
                 break;
