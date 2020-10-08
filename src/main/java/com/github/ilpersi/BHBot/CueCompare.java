@@ -9,7 +9,7 @@ import java.io.IOException;
  * This is a stand-alone class to be used as an utility. The goal of this class is to provide a tool to compare cues.
  * Using the img1Path and img2Path, it is possible to specify the two cues you want to compare
  * As output of the tool, in the path specified in imgOutPath, the tool will create a new cue that is the result of
- * the comparison: in this resulting cue only the pixels that are equal between the two imput cues will have a color,
+ * the comparison: in this resulting cue only the pixels that are equal between the two input cues will have a color,
  * the remaining pixels will be transparent.
  *
  * This tool is useful when you want to easily remove changing background from a cue or you want to spot differences
@@ -38,7 +38,7 @@ public class CueCompare {
 
             for (int y = y1; y < y2; y++) {
                 for (int x = x1; x < x2; x++) {
-                    //we check each pixel, if it matchs we increase the counter
+                    //we check each pixel, if it matches we increase the counter
                     if (pixelMatrix1[x][y] == pixelMatrix2[x][y]) {
                         matchingPixels++;
                     }
@@ -114,9 +114,12 @@ public class CueCompare {
     }
 
     public static void main(String[] args) {
+        String flUsage = "USAGE with file list: CueCompare -fl|--file-list <inputImg1FilePath> <inputImg2FilePath> [... <inputImgNFilePath>] <outputImgFilePath>";
+        String fpUsage = "USAGE with file path: CueCompare -fp|--file-path <inputFolderPath> <outputImgPath>";
+
         if ("-fl".equals(args[0]) || "--file-list".equals(args[0])) {
             if (args.length < 4) {
-                System.out.println("USAGE with file list: CueCompare -fl|--file-list <inputImg1FilePath> <inputImg2FilePath> [... <inputImgNFilePath>] <outputImgFilePath>");
+                System.out.println(flUsage);
                 return;
             }
 
@@ -145,7 +148,7 @@ public class CueCompare {
             }
         } else if ("-fp".equals(args[0]) || "--file-path".equals(args[0])) {
             if (args.length != 3) {
-                System.out.println("USAGE with file path: CueCompare -fp|--file-path <inputFolderPath> <outputImgPath>");
+                System.out.println(fpUsage);
                 return;
             }
 
@@ -163,9 +166,9 @@ public class CueCompare {
             }
 
             String outPath = args[2];
-            File outputhFile = new File(outPath);
+            File outputFile = new File(outPath);
 
-            if (outputhFile.isDirectory()) {
+            if (outputFile.isDirectory()) {
                 System.out.println("outputImgPat parameter must not be a directory.");
                 return;
             }
@@ -176,8 +179,10 @@ public class CueCompare {
             for (final File imgFile : folderFile.listFiles()) {
                 if (imgFile.isDirectory()) {
                     System.out.println("Skipping directory: " + imgFile.getAbsolutePath());
+                    //noinspection UnnecessaryContinue
                     continue;
-                } else if (imgFile.getName().equals(outputhFile.getName())) {
+                } else if (imgFile.getName().equals(outputFile.getName())) {
+                    //noinspection UnnecessaryContinue
                     continue;
                 } else {
                     String fileName = imgFile.getName();
@@ -206,8 +211,8 @@ public class CueCompare {
 
 
         } else {
-            System.out.println("USAGE with file list: CueCompare -fl|--file-list <inputImg1FilePath> <inputImg2FilePath> [... <inputImgNFilePath>] <outputImgFilePath>");
-            System.out.println("USAGE with file path: CueCompare -fp|--file-path <inputFolderPath> <outputImgPath>");
+            System.out.println(flUsage);
+            System.out.println(fpUsage);
         }
     }
 }
