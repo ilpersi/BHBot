@@ -2936,36 +2936,10 @@ public class DungeonThread implements Runnable {
      */
     private BribeDetails verifyBribeNames() {
 
-        BooleanSupplier openView = () -> {
-            MarvinSegment seg;
-            seg = MarvinSegment.fromCue(BHBot.cues.get("View"), Misc.Durations.SECOND * 3, bot.browser);
-            if (seg != null) {
-                bot.browser.clickOnSeg(seg);
-                bot.browser.readScreen(Misc.Durations.SECOND * 2);
-                return true;
-            } else {
-                return false;
-            }
-        };
-
-        BooleanSupplier closeView = () -> {
-            MarvinSegment seg;
-            seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 2 * Misc.Durations.SECOND, bot.browser);
-            if (seg != null) {
-                bot.browser.clickOnSeg(seg);
-                bot.browser.readScreen(Misc.Durations.SECOND);
-                return true;
-            } else {
-                return false;
-            }
-        };
-
         List<String> wrongNames = new ArrayList<>();
         BribeDetails result = new BribeDetails();
         String familiarName;
         int toBribeCnt;
-
-        boolean viewIsOpened = false;
 
         bot.browser.readScreen(Misc.Durations.SECOND);
         for (String familiarDetails : bot.settings.familiars) {
@@ -2975,39 +2949,12 @@ public class DungeonThread implements Runnable {
             toBribeCnt = Integer.parseInt(details[1]);
 
             // cue related stuff
-            boolean isOldFormat = false;
+            //boolean isOldFormat = false;
 
             Cue familiarCue = BHBot.cues.getOrNull(familiarName);
 
-            if (familiarCue == null) {
-                familiarCue = BHBot.cues.getOrNull("old" + familiarName);
-                if (familiarCue != null) isOldFormat = true;
-            }
-
             if (familiarCue != null) {
                 if (toBribeCnt > 0) {
-                    if (isOldFormat) { // Old style familiar
-                        if (!viewIsOpened) { // we try to open the view menu if closed
-                            if (openView.getAsBoolean()) {
-                                bot.browser.readScreen(Misc.Durations.SECOND * 2);
-                                viewIsOpened = true;
-                            } else {
-                                BHBot.logger.error("Old format familiar with no view button");
-                                restart();
-                            }
-                        }
-                    } else { // New style familiar
-                        if (viewIsOpened) { // we try to close the view menu if opened
-                            if (closeView.getAsBoolean()) {
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                viewIsOpened = false;
-                            } else {
-                                BHBot.logger.error("Old style familiar detected with no X button to close the view menu.");
-                                restart();
-                            }
-                        }
-                    }
-
                     if (MarvinSegment.fromCue(familiarCue, Misc.Durations.SECOND * 3, bot.browser) != null) {
                         BHBot.logger.autobribe("Detected familiar " + familiarDetails + " as valid in familiars");
                         result.toBribeCnt = toBribeCnt;
@@ -3023,13 +2970,6 @@ public class DungeonThread implements Runnable {
             } else {
                 BHBot.logger.warn("Impossible to find a cue for familiar " + familiarName + ", it will be temporary removed from settings.");
                 wrongNames.add(familiarDetails);
-            }
-        }
-
-        if (viewIsOpened) {
-            if (!closeView.getAsBoolean()) {
-                BHBot.logger.error("Impossible to close view menu at the end of familiar setting loop!");
-                restart();
             }
         }
 
@@ -4245,7 +4185,7 @@ public class DungeonThread implements Runnable {
             return 0; // error
 
         StringBuilder result = new StringBuilder();
-        for (ScreenNum sn: nums) {
+        for (ScreenNum sn : nums) {
             result.append(sn.value);
         }
 
@@ -4256,10 +4196,10 @@ public class DungeonThread implements Runnable {
      * Given a image containing a range of values in this format <value1><separator><value2>, this method will
      * read the image and return the integer representation of <value1> and <value2>.
      *
-     * @param im a BufferedImage containing the range. The image must be converted in Black & White scale.
-     * @param numberPrefix The prefix used to read number cues. This depends on how cues have been defined
-     * @param intToSkip Should we skip any number from the range read?
-     * @param rangeSeparatorName The name of the separator cue
+     * @param im                  a BufferedImage containing the range. The image must be converted in Black & White scale.
+     * @param numberPrefix        The prefix used to read number cues. This depends on how cues have been defined
+     * @param intToSkip           Should we skip any number from the range read?
+     * @param rangeSeparatorName  The name of the separator cue
      * @param rangeSeparatorValue What character will be used to represent the separator internally in the method?
      * @return An integer array of two values containing the minimum and maximum values for the range.
      * In case of error an empty array is returned and you have to check this in your own code.
@@ -4301,7 +4241,7 @@ public class DungeonThread implements Runnable {
         Collections.sort(nums);
 
         StringBuilder result = new StringBuilder();
-        for (ScreenNum sn: nums) {
+        for (ScreenNum sn : nums) {
             result.append(sn.value);
         }
 
@@ -4503,7 +4443,7 @@ public class DungeonThread implements Runnable {
      * Note: for this to work, expedition window must be open!
      *
      * @return 0 in case of error, newDifficulty if everything was ok, another integer if for any reason the desired
-     *         level could not be set. Caller will have to check this in its own code.
+     * level could not be set. Caller will have to check this in its own code.
      */
     int selectDifficulty(int oldDifficulty, int newDifficulty, Cue difficulty, int step, boolean useDifficultyRanges) {
         if (oldDifficulty == newDifficulty)
@@ -4529,12 +4469,12 @@ public class DungeonThread implements Runnable {
     /**
      * Changes difficulty level in trials/gauntlet window using the two step choice: first selecting the range and then
      * choosing the closed matched difficulty.
-     *
+     * <p>
      * Note: for this to work, trials/gauntlet window needs to be opened!
      *
      * @param newDifficulty The desired target difficulty
      * @return 0 in case of error, newDifficulty if everything was ok, another integer if for any reason the desired
-     *         level could not be set. Caller will have to check this in its own code.
+     * level could not be set. Caller will have to check this in its own code.
      */
     private int selectDifficultyFromRange(int newDifficulty) {
 
@@ -4549,7 +4489,7 @@ public class DungeonThread implements Runnable {
         final int customMax = 254;
 
         // Scroller cues
-        Cue scrollerAtTop = new Cue(BHBot.cues.get("ScrollerAtTop"), Bounds.fromWidthHeight(520, 115, 35, 90) );
+        Cue scrollerAtTop = new Cue(BHBot.cues.get("ScrollerAtTop"), Bounds.fromWidthHeight(520, 115, 35, 90));
 //        Cue scrollerAtBottom = new Cue(BHBot.cues.get("ScrollerAtBottom"), Bounds.fromWidthHeight(520, 360, 35, 90) );
         // Scroller max clicks
         final int MAX_CLICKS = 30;
@@ -4626,7 +4566,7 @@ public class DungeonThread implements Runnable {
 
             // we've found the right range and we click it!
             if (newDifficulty >= rangeMinDifficulty && newDifficulty <= rangeMaxDifficulty) {
-                bot.browser.clickInGame((difficultyRangeBounds.x1 + difficultyRangeBounds.width / 2),  (difficultyRangeBounds.y1 + posOffset + difficultyRangeBounds.height / 2));
+                bot.browser.clickInGame((difficultyRangeBounds.x1 + difficultyRangeBounds.width / 2), (difficultyRangeBounds.y1 + posOffset + difficultyRangeBounds.height / 2));
 
                 // We wait for the difficulty selection to come out
                 bot.browser.readScreen(Misc.Durations.SECOND);
@@ -4678,9 +4618,9 @@ public class DungeonThread implements Runnable {
                 // The absolute value of the difference is used to check the closest match
                 int distance = Math.abs(possibleDifficulties.get(0) - newDifficulty);
                 int idx = 0;
-                for(int i = 1; i < possibleDifficulties.size(); i++){
+                for (int i = 1; i < possibleDifficulties.size(); i++) {
                     int cdistance = Math.abs(possibleDifficulties.get(i) - newDifficulty);
-                    if(cdistance <= distance){
+                    if (cdistance <= distance) {
                         idx = i;
                         distance = cdistance;
                     }
