@@ -2409,7 +2409,7 @@ public class DungeonThread implements Runnable {
         /*
          * autoBribe/Persuasion code
          */
-        if ((bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Dungeon) && (activityDuration % 5 == 0) && encounterStatus) {
+        if ((bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Dungeon) && encounterStatus) {
             seg = MarvinSegment.fromCue(BHBot.cues.get("Persuade"), bot.browser);
             if (seg != null) {
                 handleFamiliarEncounter();
