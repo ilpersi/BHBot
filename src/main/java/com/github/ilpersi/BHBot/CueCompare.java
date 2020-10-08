@@ -55,46 +55,32 @@ public class CueCompare {
         }
     }
 
-    public static void main(String[] args) {
-        if (args.length < 3) {
-            System.out.println("USAGE: CueCompare <inputImg1Path> <inputImg2Path> [... <inputImgNPath>] <outputImgPath>");
-            return;
-        }
-
-        // We start to compare from image #2 (position # in args)
-        for (int imgCnt = 1; imgCnt <= (args.length - 2); imgCnt++) {
-
-            // After the first for iteration the source image is the output of the previous comparison
-            String img1Path;
-            if (imgCnt == 1) {
-                img1Path = args[imgCnt - 1];
-            } else {
-                img1Path = args[args.length - 1];
+    static private void createDiffImage(File img1File, File img2File, String imgOutPath) {
+        if (img1File != null && img2File != null) {
+            BufferedImage img1;
+            try {
+                img1 = ImageIO.read(img1File);
+            } catch (IOException e) {
+                System.out.println("Error while reading image 1: " + img1File.getName());
+                e.printStackTrace();
+                return;
             }
 
-            // current image
-            String img2Path = args[imgCnt];
-            String imgOutPath = args[args.length - 1];
 
-            // Buffered images
-            BufferedImage img1 = null;
             BufferedImage img2 = null;
-            BufferedImage img3;
-
             try {
-                img1 = ImageIO.read(new File(img1Path));
-                img2 = ImageIO.read(new File(img2Path));
+                img2 = ImageIO.read(img2File);
             } catch (IOException e) {
+                System.out.println("Error while reading image 2: " + img2File.getName());
                 e.printStackTrace();
             }
 
-            // If both the input cues are ok, we go on with the processing
             if (img1 != null && img2 != null) {
                 // To allow the comparison, image cues need to be of the same size
                 if (img1.getWidth() == img2.getWidth() && img1.getHeight() == img2.getHeight()) {
 
                     // Buffered image to handle the output
-                    img3 = new BufferedImage(img1.getWidth(), img1.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                    BufferedImage img3 = new BufferedImage(img1.getWidth(), img1.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
                     int[][] pixelMatrix1 = Misc.convertTo2D(img1);
                     int[][] pixelMatrix2 = Misc.convertTo2D(img2);
@@ -120,10 +106,108 @@ public class CueCompare {
                     }
 
                 } else {
-                    System.out.printf("Img 1 W:%d H:%d -- Img 2 W:%d H:%d", img1.getWidth(), img1.getHeight(), img2.getWidth(), img2.getHeight());
+                    System.out.printf("Img 1 %s W:%d H:%d -- Img 2 %s W:%d H:%d\n",
+                            img1File.getName(), img1.getWidth(), img1.getHeight(), img2File.getName(), img2.getWidth(), img2.getHeight());
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        if ("-fl".equals(args[0]) || "--file-list".equals(args[0])) {
+            if (args.length < 4) {
+                System.out.println("USAGE with file list: CueCompare -fl|--file-list <inputImg1FilePath> <inputImg2FilePath> [... <inputImgNFilePath>] <outputImgFilePath>");
+                return;
+            }
+
+            int secondImgIdx = 2;
+
+            for (int imgCnt = secondImgIdx; imgCnt <= (args.length - 2); imgCnt++) {
+
+                // After the first for iteration the source image is the output of the previous comparison
+                String img1Path;
+                if (imgCnt == secondImgIdx) {
+                    img1Path = args[imgCnt - 1];
+                } else {
+                    img1Path = args[args.length - 1];
+                }
+
+                // current image
+                String img2Path = args[imgCnt];
+                String imgOutPath = args[args.length - 1];
+
+                File img1File = new File(img1Path);
+                File img2File = new File(img2Path);
+
+                createDiffImage(img1File, img2File, imgOutPath);
+
+
+            }
+        } else if ("-fp".equals(args[0]) || "--file-path".equals(args[0])) {
+            if (args.length != 3) {
+                System.out.println("USAGE with file path: CueCompare -fp|--file-path <inputFolderPath> <outputImgPath>");
+                return;
+            }
+
+            String folderPath = args[1];
+            File folderFile = new File(folderPath);
+
+            if (!folderFile.exists()) {
+                System.out.println("Path does not exist: " + folderPath);
+                return;
+            }
+
+            if (!folderFile.isDirectory()) {
+                System.out.println("Path is not a directory: " + folderPath);
+                return;
+            }
+
+            String outPath = args[2];
+            File outputhFile = new File(outPath);
+
+            if (outputhFile.isDirectory()) {
+                System.out.println("outputImgPat parameter must not be a directory.");
+                return;
+            }
+
+            int imgCnt = 1;
+            File img1File = null;
+
+            for (final File imgFile : folderFile.listFiles()) {
+                if (imgFile.isDirectory()) {
+                    System.out.println("Skipping directory: " + imgFile.getAbsolutePath());
+                    continue;
+                } else if (imgFile.getName().equals(outputhFile.getName())) {
+                    continue;
+                } else {
+                    String fileName = imgFile.getName();
+                    String fileExtension = fileName.substring(fileName.lastIndexOf(".")).toLowerCase();
+
+                    if (!".jpg".equals(fileExtension) && !".png".equals(fileExtension)) {
+                        System.out.println("Skipping non image file: " + fileName);
+                        continue;
+                    }
+
+                    if (imgCnt == 1) {
+                        img1File = imgFile;
+                        imgCnt++;
+                        continue;
+                    }
+
+                    createDiffImage(img1File, imgFile, outPath);
+
+                    img1File = new File(outPath);
+
+                    imgCnt++;
                 }
             }
 
+            System.out.println("Merged " + imgCnt + " images.");
+
+
+        } else {
+            System.out.println("USAGE with file list: CueCompare -fl|--file-list <inputImg1FilePath> <inputImg2FilePath> [... <inputImgNFilePath>] <outputImgFilePath>");
+            System.out.println("USAGE with file path: CueCompare -fp|--file-path <inputFolderPath> <outputImgPath>");
         }
     }
 }
