@@ -527,6 +527,7 @@ class CueManager {
         addCue("ItemSet", "cues/items/cueItemSet.png", null); // Set Item border
         addCue("ItemMyt", "cues/items/cueItemMyt.png", null); // Mythical Item border
         //legendary
+        addCue("Material_R11", "cues/items/material_r11.png", null);
         addCue("Material_R10", "cues/items/material_r10.png", null);
         addCue("Material_R9", "cues/items/material_r9.png", null);
         addCue("Material_R8", "cues/items/material_r8.png", null);

@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BooleanSupplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
@@ -5886,6 +5885,7 @@ public class DungeonThread implements Runnable {
     private boolean restrictedCues(BufferedImage victoryPopUpImg, Bounds foundArea) {
         MarvinSegment seg;
         HashMap<String, Cue> restrictedCues = new HashMap<>();
+        restrictedCues.put("Sand Clock", BHBot.cues.get("Material_R11"));
         restrictedCues.put("Monster Cell", BHBot.cues.get("Material_R10"));
         restrictedCues.put("Power Stone", BHBot.cues.get("Material_R9"));
         restrictedCues.put("Fire Blossom", BHBot.cues.get("Material_R8"));
