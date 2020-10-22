@@ -1751,6 +1751,12 @@ public class DungeonThread implements Runnable {
                                     cutOffLoop:
                                     while (Misc.getTime() < cutOffTime && bot.running && !bot.finished) {
 
+                                        // When a puse command is issued, we get out of the WB lobby
+                                        if (bot.scheduler.isPaused()) {
+                                            BHBot.logger.info("Pause detected, exiting from World Boss loby.");
+                                            break;
+                                        }
+
                                         // we make sure to update the screen image as FindSubimage.findSubimage is using a static image
                                         // at the same time we also wait 500ms so to easu CPU consumption
                                         bot.browser.readScreen(500);
