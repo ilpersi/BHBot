@@ -2349,6 +2349,7 @@ public class DungeonThread implements Runnable {
             inEncounterTimestamp = TimeUnit.MILLISECONDS.toSeconds(Misc.getTime());
             startTimeCheck = true;
             encounterStatus = false; //true is in encounter, false is out of encounter
+            positionChecker.resetStartPos();
         }
 
         long activityDuration = (TimeUnit.MILLISECONDS.toSeconds(Misc.getTime()) - activityStartTime);
@@ -2371,6 +2372,7 @@ public class DungeonThread implements Runnable {
                 BHBot.logger.trace("Updating idle time (In combat)");
                 bot.scheduler.resetIdleTime(true);
                 encounterStatus = true;
+                positionChecker.resetStartPos();
             }
         }
 

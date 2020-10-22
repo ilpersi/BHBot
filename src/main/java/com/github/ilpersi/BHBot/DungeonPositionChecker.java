@@ -79,6 +79,10 @@ public class DungeonPositionChecker {
         return (Misc.getTime() - lastPositionTime) >= (minPosDelay * Misc.Durations.SECOND);
     }
 
+    void resetStartPos() {
+        resetStartPos = true;
+    }
+
     /**
      * @param img The BufferedImage that you want to get the hash for
      * @return an array of bytes that contains the MD5 hash
