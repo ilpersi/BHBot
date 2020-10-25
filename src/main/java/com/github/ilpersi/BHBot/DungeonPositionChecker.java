@@ -1,11 +1,6 @@
 package com.github.ilpersi.BHBot;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 /**
@@ -93,6 +88,6 @@ public class DungeonPositionChecker {
      * @return true if images are the same
      */
     private boolean MD5Compare(BufferedImage imgActual, BufferedImage imgExpected) {
-        return Arrays.equals(Misc.imgToMd5(imgActual), Misc.imgToMd5(imgExpected));
+        return Arrays.equals(Misc.imgToMD5(imgActual), Misc.imgToMD5(imgExpected));
     }
 }
