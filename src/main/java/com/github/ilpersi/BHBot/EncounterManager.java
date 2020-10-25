@@ -323,7 +323,7 @@ public class EncounterManager {
      * Once that the type is known, the name will be extracted using a specific value for the color
      *
      * @param screenImg    A Buffered Image containing the image
-     * @param familiarType What is the type of the familar we are looking to find the name
+     * @param familiarType What is the type of the familiar we are looking to find the name
      * @return A Buffered Image containing just the familiar name
      */
     static BufferedImage getFamiliarNameImg(BufferedImage screenImg, FamiliarType familiarType, Bounds nameBounds) {
