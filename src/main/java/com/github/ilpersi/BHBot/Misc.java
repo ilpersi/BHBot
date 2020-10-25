@@ -319,6 +319,7 @@ public class Misc {
         data.put("mimeType", "image/png");
         data.put("name", nameImgFile.getName());
         data.put("data", Misc.encodeFileToBase64Binary(nameImgFile));
+        data.put("MD5", Misc.imgToMD5(nameImg));
 
         String postBody = Misc.formEncode(data);
 
