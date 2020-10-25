@@ -465,6 +465,14 @@ public class BHBot {
                     case "fam":
                         DungeonThread.printFamiliars();
                         break;
+                    case "fam-md5":
+                        if (params.length == 2)
+                            EncounterManager.printMD5();
+                        else if (params.length == 3)
+                            EncounterManager.printMD5(params[2]);
+                        else
+                            BHBot.logger.warn("USAGE: print fam-md5 [familiarName]");
+                        break;
                     case "screen-rect":
                         int minx = 0, miny = 0, maxx = 0, maxy = 0, cnt = 0;
                         GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
