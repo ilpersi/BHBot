@@ -248,11 +248,10 @@ public class EncounterManager {
     }
 
     /**
-     *
      * This method is contributing familiar cues to the project. Before contributing the familiar image,
      * the method is taking care of stripping all the unnecessary pixels
      *
-     * @param shootName Name of the image containing the familiar screenshot
+     * @param shootName    Name of the image containing the familiar screenshot
      * @param familiarType The familiar type: COMMON|RARE|EPIC|LEGENDARY
      */
     private void contributeFamiliarShoot(String shootName, FamiliarType familiarType) {

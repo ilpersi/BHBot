@@ -6,9 +6,7 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -20,6 +18,16 @@ class CueManager {
         CueData(String cuePath, Bounds cueBounds) {
             this.cuePath = cuePath;
             this.cueBounds = cueBounds;
+        }
+    }
+
+    static class CueDetails {
+        final String name;
+        final String path;
+
+        CueDetails(String cueName, String cuePath) {
+            this.name = cueName;
+            this.path = cuePath;
         }
     }
 
@@ -90,9 +98,14 @@ class CueManager {
         return img;
     }
 
-    @SuppressWarnings("SameParameterValue")
-    int loadCueFolder(String cuesPath, String prefix, boolean stripCueStr, Bounds bounds) {
-        int totalLoaded = 0;
+    /**
+     * Given an origin folder, this nethod will return cueDetails for all the cues that are part of that folder
+     *
+     * @param cuesPath The path where to search for PNG cues
+     * @return  An ArrayList of CueDetails with name and path for each of the found Cue
+     */
+    static ArrayList<CueDetails> getCueDetailsFromPath(String cuesPath) {
+        ArrayList<CueDetails> cueDetails = new ArrayList<>();
 
         // We make sure that the last char of the path is a folder separator
         if (!"/".equals(cuesPath.substring(cuesPath.length() - 1))) cuesPath += "/";
@@ -105,8 +118,8 @@ class CueManager {
 
                 InputStream in = classLoader.getResourceAsStream(cuesPath);
                 if (in == null) {
-                    BHBot.logger.error("Impossible to create InputStream in loadCueFolder");
-                    return totalLoaded;
+                    BHBot.logger.error("Impossible to create InputStream in getCueDetails");
+                    return cueDetails;
                 }
 
                 BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -117,7 +130,7 @@ class CueManager {
                         resource = br.readLine();
                         if (resource == null) break;
                     } catch (IOException e) {
-                        BHBot.logger.error("Error while reading resources in loadCueFolder", e);
+                        BHBot.logger.error("Error while reading resources in getCueDetails", e);
                         continue;
                     }
                     int dotPosition = resource.lastIndexOf('.');
@@ -125,11 +138,8 @@ class CueManager {
                     if ("png".equals(fileExtension.toLowerCase())) {
                         String cueName = resource.substring(0, dotPosition);
 
-                        if (prefix != null) cueName = prefix + cueName;
-                        if (stripCueStr) cueName = cueName.replace("cue", "");
-
-                        addCue(cueName.toLowerCase(), cuesPath + resource, bounds);
-                        totalLoaded++;
+                        CueDetails details = new CueDetails(cueName.toLowerCase(), cuesPath + resource);
+                        cueDetails.add(details);
                     }
                 }
             } else if ("jar".equals(url.getProtocol())) { // Run from JAR
@@ -142,7 +152,7 @@ class CueManager {
                     decodedURL = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
                 } catch (UnsupportedEncodingException e) {
                     BHBot.logger.error("Impossible to decode pat for jar: " + jarPath, e);
-                    return totalLoaded;
+                    return cueDetails;
                 }
 
                 JarFile jar;
@@ -150,7 +160,7 @@ class CueManager {
                     jar = new JarFile(decodedURL);
                 } catch (IOException e) {
                     BHBot.logger.error("Impossible to open JAR file : " + decodedURL, e);
-                    return totalLoaded;
+                    return cueDetails;
                 }
 
                 Enumeration<JarEntry> entries = jar.entries();
@@ -181,17 +191,35 @@ class CueManager {
                         if ("png".equals(fileExtension.toLowerCase())) {
                             String cueName = fileName.substring(0, dotPosition);
 
-                            if (prefix != null) cueName = prefix + cueName;
-                            if (stripCueStr) cueName = cueName.replace("cue", "");
-                            BHBot.logger.trace("cueName: " + cueName);
+                            BHBot.logger.trace("cueName: " + cueName.toLowerCase());
 
                             // resourceRelativePath begins with a '/' char and we want to be sure to remove it
-                            addCue(cueName.toLowerCase(), resourceRelativePath.substring(1), bounds);
-                            totalLoaded++;
+                            CueDetails details = new CueDetails(cueName.toLowerCase(), resourceRelativePath.substring(1));
+                            cueDetails.add(details);
                         }
                     }
                 }
 
+            }
+        }
+        
+        return cueDetails;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    int loadCueFolder(String cuesPath, String prefix, boolean stripCueStr, Bounds bounds) {
+        int totalLoaded = 0;
+        
+        ArrayList<CueDetails> cueDetails = CueManager.getCueDetailsFromPath(cuesPath);
+        if (cueDetails.size() > 0) {
+            totalLoaded += cueDetails.size();
+
+            for (CueDetails details : cueDetails) {
+                String cueName = details.name;
+                if (prefix != null) cueName = prefix + cueName;
+                if (stripCueStr) cueName = cueName.replace("cue", "");
+
+                addCue(cueName, details.path, bounds);
             }
         }
 
