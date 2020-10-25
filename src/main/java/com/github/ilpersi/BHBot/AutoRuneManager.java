@@ -172,7 +172,7 @@ class AutoRuneManager {
 
         if (leftMinorRune == null || rightMinorRune == null) {
             bot.saveGameScreen("wrong-rune-detection", "errors");
-            Misc.contributeImage(bot.browser.getImg(), "rune-contribution.png", Bounds.fromWidthHeight(205, 150, 385, 270));
+            Misc.contributeImage(bot.browser.getImg(), "rune-contribution", Bounds.fromWidthHeight(205, 150, 385, 270));
         }
 
         if (exitRunesMenu) {

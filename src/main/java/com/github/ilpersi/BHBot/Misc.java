@@ -283,39 +283,53 @@ public class Misc {
 
     }
 
-    @SuppressWarnings("SameParameterValue")
-    static void contributeImage(BufferedImage img, String runeName, Bounds subArea) {
+    /**
+     *
+     * This method is taking care of managing image contributions.
+     * Image contributions are used to get cues that are difficult to gather, e.g.: rune cues, familiar cues
+     * When calling this method, always make sure not to pass an image containing sensitive data
+     *
+     * @param img The BufferedImage to be contributed to the project
+     * @param imgName The name the buffered image will have once it is uploaded
+     * @param subArea If you only want to specify a sub area of the image, pass the subArea parameter,
+     *                otherwise the full image will be contributed
+     */
+    static void contributeImage(BufferedImage img, String imgName, Bounds subArea) {
 
         // we generate a sub image based on the bounds
-        BufferedImage nameImg = img.getSubimage(subArea.x1, subArea.y1, subArea.width, subArea.height);
+        BufferedImage nameImg;
+        if (subArea != null)
+            nameImg = img.getSubimage(subArea.x1, subArea.y1, subArea.width, subArea.height);
+        else
+            nameImg = img;
 
-        File nameImgFile = new File(runeName + "-ctb.png");
+        // We strip any png extension to avoid weird names
+        imgName = imgName.replace(".png", "");
+
+
+        File nameImgFile = new File(imgName + "-ctb.png");
         try {
             ImageIO.write(nameImg, "png", nameImgFile);
         } catch (IOException e) {
             BHBot.logger.error("Error while creating rune contribution file", e);
         }
 
-        HashMap<String, String> data = new HashMap<>();
+        HashMap<Object, Object> data = new HashMap<>();
         data.put("mimeType", "image/png");
         data.put("name", nameImgFile.getName());
         data.put("data", Misc.encodeFileToBase64Binary(nameImgFile));
 
-        StringBuilder postBody = new StringBuilder();
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            if (postBody.length() > 0) postBody.append("&");
+        String postBody = Misc.formEncode(data);
 
-            postBody.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8))
-                    .append("=")
-                    .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
-        }
-
+        // Follow redirects does not work with HTTP 2.0
         HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
                 .followRedirects(HttpClient.Redirect.ALWAYS)
                 .build();
+
+        // We make sure to pass the proper content-type
         HttpRequest request = HttpRequest.newBuilder()
-                .POST(HttpRequest.BodyPublishers.ofString(postBody.toString()))
+                .POST(HttpRequest.BodyPublishers.ofString(postBody))
                 .uri(URI.create("https://script.google.com/macros/s/AKfycby-tCXZ6MHt_ZSUixCcNbYFjDuri6WvljomLgGy_m5lLZw1y5fZ/exec"))
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .build();
@@ -323,7 +337,31 @@ public class Misc {
         try {
             client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            BHBot.logger.error("Exception while getting latest version info from Git Hub", e);
+            BHBot.logger.error("Exception while contributing Image " + imgName, e);
         }
+
+        if (!nameImgFile.delete()) {
+            BHBot.logger.error("Impossible to delete contribution image: " + nameImgFile.getAbsolutePath());
+        }
+    }
+
+    /**
+     *
+     * This method will take care of formatting hashmaps into encoded form data
+     *
+     * @param data The HashMap to be encoded
+     * @return HTTP encoded string in the format key1=value1 ready to be used in HTTP requests
+     */
+    static String formEncode(HashMap<Object, Object> data) {
+        StringBuilder postBody = new StringBuilder();
+        for (Map.Entry<Object, Object> entry : data.entrySet()) {
+            if (postBody.length() > 0) postBody.append("&");
+
+            postBody.append(URLEncoder.encode(entry.getKey().toString(), StandardCharsets.UTF_8))
+                    .append("=")
+                    .append(URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8));
+        }
+
+        return postBody.toString();
     }
 }

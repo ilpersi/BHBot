@@ -3906,39 +3906,10 @@ public class DungeonThread implements Runnable {
 
         }
 
+        Bounds nameBound = Bounds.fromWidthHeight(minX, minY, maxX - minX, maxY - minY);
         BufferedImage nameImg = zoneImg.getSubimage(minX, minY, maxX - minX, maxY - minY);
-//		zoneImgTmp.delete();
 
-        File nameImgFile = new File(shootName + "-ctb.png");
-        try {
-            ImageIO.write(nameImg, "png", nameImgFile);
-        } catch (IOException e) {
-            BHBot.logger.error("Error while creating contribution file", e);
-        }
-
-        MimetypesFileTypeMap ftm = new MimetypesFileTypeMap();
-        ContentType ct = ContentType.create(ftm.getContentType(nameImgFile));
-
-        List<NameValuePair> params = new ArrayList<>(3);
-        params.add(new BasicNameValuePair("mimeType", ct.toString()));
-        params.add(new BasicNameValuePair("name", nameImgFile.getName()));
-        params.add(new BasicNameValuePair("data", Misc.encodeFileToBase64Binary(nameImgFile)));
-
-        try {
-            post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            BHBot.logger.error("Error while encoding POST request in contribution", e);
-        }
-
-        try {
-            httpClient.execute(post);
-        } catch (IOException e) {
-            BHBot.logger.error("Error while executing HTTP request in contribution", e);
-        }
-
-        if (!nameImgFile.delete()) {
-            BHBot.logger.warn("Impossible to delete " + nameImgFile.getAbsolutePath());
-        }
+        Misc.contributeImage(nameImg, shootName, nameBound);
 
     }
 
