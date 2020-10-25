@@ -183,8 +183,32 @@ public class BlockerThread implements Runnable {
                     } else {
                         BHBot.logger.debug("RecentlyDisconnected status is: " + bot.getState());
                     }
+
                     BHBot.logger.info("'You were recently in a dungeon' dialog detected and confirmed. Resuming dungeon...");
-                    Misc.sleep(60 * Misc.Durations.SECOND); //long sleep as if the checkShrine didn't find the potion button we'd enter a restart loop
+
+                    // So that the screen reloads correctly
+                    Misc.sleep(Misc.Durations.SECOND * 2);
+
+                    /* We wait for the first of three possible conditions
+                        1) Setting cue has been found
+                        2) Guild cue has been found
+                        3) We timed out after 5 minutes
+                     */
+                    long reconnectTimeout = Misc.getTime() + (Misc.Durations.MINUTE * 5);
+                    MarvinSegment settingSeg = MarvinSegment.fromCue("SettingsGear", 500, bot.browser);
+                    MarvinSegment guildSeg = MarvinSegment.fromCue(BHBot.cues.get("GuildButton"), 500, bot.browser);
+
+                    while (guildSeg == null && settingSeg == null && Misc.getTime() <= reconnectTimeout) {
+                        bot.browser.readScreen(500);
+                        settingSeg = MarvinSegment.fromCue("SettingsGear", bot.browser);
+                        guildSeg = MarvinSegment.fromCue(BHBot.cues.get("GuildButton"), bot.browser);
+                    }
+
+                    if (guildSeg == null && settingSeg == null) {
+                        BHBot.logger.warn("'You were recently in a dungeon' reconnection timed-out");
+                        bot.saveGameScreen("recently-disconnected-timeout", "errors");
+                    }
+
                     bot.dungeon.shrineManager.updateShrineSettings(false, false); //in case we are stuck in a dungeon lets enable shrines/boss
                     continue;
                 }
