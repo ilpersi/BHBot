@@ -60,9 +60,6 @@ public class DungeonThread implements Runnable {
     // Generic counters HashMap
     HashMap<BHBot.State, DungeonCounter> counters = new HashMap<>();
 
-    // When we do not have anymore gems to use this is true
-    private boolean noGemsToBribe = false;
-
     private long ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
     private long XEALS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
     private long TICKETS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE;
@@ -95,6 +92,7 @@ public class DungeonThread implements Runnable {
     AutoShrineManager shrineManager;
     AutoReviveManager reviveManager;
     AutoRuneManager runeManager;
+    EncounterManager encounterManager;
     DungeonPositionChecker positionChecker;
 
     private Iterator<String> activitysIterator;
@@ -2410,7 +2408,7 @@ public class DungeonThread implements Runnable {
         if ((bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Dungeon) && encounterStatus) {
             seg = MarvinSegment.fromCue(BHBot.cues.get("Persuade"), bot.browser);
             if (seg != null) {
-                handleFamiliarEncounter();
+                encounterManager.processFamiliarEncounter();
             }
         }
 
@@ -2832,204 +2830,6 @@ public class DungeonThread implements Runnable {
         return false;
     }
 
-    private void handleFamiliarEncounter() {
-        MarvinSegment seg;
-
-        BHBot.logger.autobribe("Familiar encountered");
-        bot.browser.readScreen(2 * Misc.Durations.SECOND);
-
-        FamiliarType familiarLevel;
-        if (MarvinSegment.fromCue(BHBot.cues.get("CommonFamiliar"), bot.browser) != null) {
-            familiarLevel = FamiliarType.COMMON;
-        } else if (MarvinSegment.fromCue(BHBot.cues.get("RareFamiliar"), bot.browser) != null) {
-            familiarLevel = FamiliarType.RARE;
-        } else if (MarvinSegment.fromCue(BHBot.cues.get("EpicFamiliar"), bot.browser) != null) {
-            familiarLevel = FamiliarType.EPIC;
-        } else if (MarvinSegment.fromCue(BHBot.cues.get("LegendaryFamiliar"), bot.browser) != null) {
-            familiarLevel = FamiliarType.LEGENDARY;
-        } else {
-            familiarLevel = FamiliarType.ERROR; // error
-        }
-
-        PersuationType persuasion;
-        BribeDetails bribeInfo = new BribeDetails();
-
-        // Checking familiars setting takes time and a lot of cues verifications. We try to minimize the number of times
-        // this is done
-        boolean skipBribeNames = false;
-        if ((bot.settings.bribeLevel > 0 && familiarLevel.getValue() >= bot.settings.bribeLevel) ||
-                (bot.settings.familiars.size() == 0)) {
-            skipBribeNames = true;
-        }
-
-        if (!skipBribeNames) {
-            bribeInfo = verifyBribeNames();
-        }
-
-        if ((bot.settings.bribeLevel > 0 && familiarLevel.getValue() >= bot.settings.bribeLevel) ||
-                bribeInfo.toBribeCnt > 0) {
-            persuasion = PersuationType.BRIBE;
-        } else if ((bot.settings.persuasionLevel > 0 && familiarLevel.getValue() >= bot.settings.persuasionLevel)) {
-            persuasion = PersuationType.PERSUADE;
-        } else {
-            persuasion = PersuationType.DECLINE;
-        }
-
-        // If we're set to bribe and we don't have gems, we default to PERSUASION
-        if (persuasion == PersuationType.BRIBE && noGemsToBribe) {
-            persuasion = PersuationType.PERSUADE;
-        }
-
-        StringBuilder persuasionLog = new StringBuilder("familiar-");
-        persuasionLog.append(familiarLevel.toString().toUpperCase()).append("-");
-        persuasionLog.append(persuasion.toString().toUpperCase()).append("-");
-        persuasionLog.append("attempt");
-
-        // We save all the errors and persuasions based on settings
-        if ((familiarLevel.getValue() >= bot.settings.familiarScreenshot) || familiarLevel == FamiliarType.ERROR) {
-            bot.saveGameScreen(persuasionLog.toString(), "familiars");
-
-            if (bot.settings.contributeFamiliars) {
-                contributeFamiliarShoot(persuasionLog.toString(), familiarLevel);
-            }
-        }
-
-        // We attempt persuasion or bribe based on settings
-        if (persuasion == PersuationType.BRIBE) {
-            if (!bribeFamiliar()) {
-                BHBot.logger.autobribe("Bribe attempt failed! Trying with persuasion...");
-                if (persuadeFamiliar()) {
-                    BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
-                } else {
-                    BHBot.logger.error("Impossible to persuade familiar, restarting...");
-                    restart();
-                }
-            } else {
-                updateFamiliarCounter(bribeInfo.familiarName.toUpperCase());
-            }
-        } else if (persuasion == PersuationType.PERSUADE) {
-            if (persuadeFamiliar()) {
-                BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
-            } else {
-                BHBot.logger.error("Impossible to attempt persuasion, restarting.");
-                restart();
-            }
-        } else {
-            seg = MarvinSegment.fromCue(BHBot.cues.get("DeclineRed"), bot.browser);
-            if (seg != null) {
-                bot.browser.clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
-                bot.browser.readScreen(Misc.Durations.SECOND * 2);
-                seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), Misc.Durations.SECOND, bot.browser);
-                bot.browser.clickOnSeg(seg);
-                BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion declined.");
-            } else {
-                BHBot.logger.error("Impossible to find the decline button, restarting...");
-                restart();
-            }
-        }
-    }
-
-    /**
-     * Will verify if in the current persuasion screen one of the bribeNames is present
-     */
-    private BribeDetails verifyBribeNames() {
-
-        List<String> wrongNames = new ArrayList<>();
-        BribeDetails result = new BribeDetails();
-        String familiarName;
-        int toBribeCnt;
-
-        bot.browser.readScreen(Misc.Durations.SECOND);
-        for (String familiarDetails : bot.settings.familiars) {
-            // familiar details from settings
-            String[] details = familiarDetails.toLowerCase().split(" ");
-            familiarName = details[0];
-            toBribeCnt = Integer.parseInt(details[1]);
-
-            // cue related stuff
-            //boolean isOldFormat = false;
-
-            Cue familiarCue = BHBot.cues.getOrNull(familiarName);
-
-            if (familiarCue != null) {
-                if (toBribeCnt > 0) {
-                    if (MarvinSegment.fromCue(familiarCue, Misc.Durations.SECOND * 3, bot.browser) != null) {
-                        BHBot.logger.autobribe("Detected familiar " + familiarDetails + " as valid in familiars");
-                        result.toBribeCnt = toBribeCnt;
-                        result.familiarName = familiarName;
-                        break;
-
-                    }
-
-                } else {
-                    BHBot.logger.warn("Count for familiar " + familiarName + " is 0! Temporary removing it form the settings...");
-                    wrongNames.add(familiarDetails);
-                }
-            } else {
-                BHBot.logger.warn("Impossible to find a cue for familiar " + familiarName + ", it will be temporary removed from settings.");
-                wrongNames.add(familiarDetails);
-            }
-        }
-
-        // If there is any error we update the settings
-        for (String wrongName : wrongNames) {
-            bot.settings.familiars.remove(wrongName);
-        }
-
-        return result;
-    }
-
-    private boolean bribeFamiliar() {
-        bot.browser.readScreen();
-        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("Bribe"), Misc.Durations.SECOND * 3, bot.browser);
-        BufferedImage tmpScreen = bot.browser.getImg();
-
-        if (seg != null) {
-            bot.browser.clickOnSeg(seg);
-            Misc.sleep(2 * Misc.Durations.SECOND);
-
-            seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), Misc.Durations.SECOND * 5, bot.browser);
-            if (seg != null) {
-                bot.browser.clickOnSeg(seg);
-                Misc.sleep(2 * Misc.Durations.SECOND);
-            }
-
-            if (MarvinSegment.fromCue(BHBot.cues.get("NotEnoughGems"), Misc.Durations.SECOND * 5, bot.browser) != null) {
-                BHBot.logger.warn("Not enough gems to attempt a bribe!");
-                noGemsToBribe = true;
-                if (!bot.browser.closePopupSecurely(BHBot.cues.get("NotEnoughGems"), BHBot.cues.get("No"))) {
-                    BHBot.logger.error("Impossible to close the Not Enough gems pop-up. Restarting...");
-                    restart();
-                }
-                return false;
-            }
-            bot.notificationManager.sendBribeNotification(tmpScreen);
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean persuadeFamiliar() {
-
-        MarvinSegment seg;
-        seg = MarvinSegment.fromCue(BHBot.cues.get("Persuade"), bot.browser);
-        if (seg != null) {
-
-            bot.browser.clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
-            Misc.sleep(2 * Misc.Durations.SECOND);
-
-            bot.browser.readScreen();
-            seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), bot.browser);
-            bot.browser.clickOnSeg(seg);
-            Misc.sleep(2 * Misc.Durations.SECOND);
-
-            return true;
-        }
-
-        return false;
-    }
-
     private void handleAutoOff() {
         MarvinSegment seg;
 
@@ -3094,51 +2894,6 @@ public class DungeonThread implements Runnable {
 
         if (!bot.browser.closePopupSecurely(BHBot.cues.get("WorldBossTitle"), new Cue(BHBot.cues.get("X"), Bounds.fromWidthHeight(640, 75, 55, 55)))) {
             BHBot.logger.error("second x Error returning to main screen from World Boss, restarting");
-        }
-    }
-
-    private void updateFamiliarCounter(String fam) {
-        String familiarToUpdate = "";
-        String updatedFamiliar = "";
-
-        for (String fa : bot.settings.familiars) { //cycle through array
-            String fString = fa.toUpperCase().split(" ")[0]; //case sensitive for a match so convert to upper case
-            int currentCounter = Integer.parseInt(fa.split(" ")[1]); //set the bribe counter to an int
-            if (fam.equals(fString)) { //when match is found from the function
-                familiarToUpdate = fa; //write current status to String
-                currentCounter--; // decrease the counter
-                updatedFamiliar = (fString.toLowerCase() + " " + currentCounter); //update new string with familiar name and decrease counter
-            }
-        }
-
-        try {
-            // input the file content to the StringBuffer "input"
-            BufferedReader file = new BufferedReader(new FileReader("settings.ini"));
-            String line;
-            StringBuilder inputBuffer = new StringBuilder();
-
-            //print lines to string with linebreaks
-            while ((line = file.readLine()) != null) {
-                inputBuffer.append(line);
-                inputBuffer.append(System.getProperty("line.separator"));
-            }
-            String inputStr = inputBuffer.toString(); //load lines to string
-            file.close();
-
-            //find containing string and update with the output string from the function above
-            if (inputStr.contains(familiarToUpdate)) {
-                inputStr = inputStr.replace(familiarToUpdate, updatedFamiliar);
-            }
-
-            // write the string from memory over the existing file
-            FileOutputStream fileOut = new FileOutputStream("settings.ini");
-            fileOut.write(inputStr.getBytes());
-            fileOut.close();
-
-            bot.settings.load();  //reload the new settings file so the counter will be updated for the next bribe
-
-        } catch (Exception e) {
-            System.out.println("Problem writing to settings file");
         }
     }
 
@@ -3836,75 +3591,6 @@ public class DungeonThread implements Runnable {
         }
 
         return true;
-    }
-
-    /**
-     *
-     * This method is contributing familiar cues to the project. Before contributing the familiar image,
-     * the method is taking care of stripping all the unnecessary pixels
-     *
-     * @param shootName Name of the image containing the familiar screenshot
-     * @param familiarType The familiar type: COMMON|RARE|EPIC|LEGENDARY
-     */
-    private void contributeFamiliarShoot(String shootName, FamiliarType familiarType) {
-
-        // we generate a sub image with just the name of the familiar
-        bot.browser.readScreen(Misc.Durations.SECOND);
-        int familiarTxtColor;
-        switch (familiarType) {
-            case COMMON:
-                familiarTxtColor = -6881668;
-                break;
-            case RARE:
-                familiarTxtColor = -7168525;
-                break;
-            case EPIC:
-                familiarTxtColor = -98436;
-                break;
-            case LEGENDARY:
-                familiarTxtColor = -66048;
-                break;
-            case ERROR:
-            default:
-                familiarTxtColor = 0;
-                break;
-        }
-
-        if (familiarTxtColor == 0) return;
-
-        BufferedImage zoneImg = bot.browser.getImg().getSubimage(105, 60, 640, 105);
-
-		/*File zoneImgTmp = new File("tmp-NAME-ZONE.png");
-		try {
-			ImageIO.write(zoneImg, "png", zoneImgTmp);
-		} catch (IOException e) {
-			BHBot.logger.error("", e);
-		}*/
-
-        int minX = zoneImg.getWidth();
-        int minY = zoneImg.getHeight();
-        int maxY = 0;
-        int maxX = 0;
-
-        int[][] pixelMatrix = Misc.convertTo2D(zoneImg);
-        for (int y = 0; y < zoneImg.getHeight(); y++) {
-            for (int x = 0; x < zoneImg.getWidth(); x++) {
-                if (pixelMatrix[x][y] == familiarTxtColor) {
-                    if (y < minY) minY = y;
-                    if (x < minX) minX = x;
-                    if (y > maxY) maxY = y;
-                    if (x > maxX) maxX = x;
-                } else {
-                    zoneImg.setRGB(x, y, 0);
-                }
-            }
-
-        }
-
-        Bounds nameBound = Bounds.fromWidthHeight(minX, minY, maxX - minX, maxY - minY);
-
-        Misc.contributeImage(zoneImg, shootName, nameBound);
-
     }
 
     /**
@@ -5554,31 +5240,6 @@ public class DungeonThread implements Runnable {
 
         PersuationType(String name) {
             this.name = name;
-        }
-
-        public String toString() {
-            return this.name;
-        }
-
-    }
-
-    public enum FamiliarType {
-        ERROR("Error", 0),
-        COMMON("Common", 1),
-        RARE("Rare", 2),
-        EPIC("Epic", 3),
-        LEGENDARY("Legendary", 4);
-
-        private final String name;
-        private final int type;
-
-        FamiliarType(String name, int type) {
-            this.name = name;
-            this.type = type;
-        }
-
-        public int getValue() {
-            return this.type;
         }
 
         public String toString() {

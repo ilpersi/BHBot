@@ -63,6 +63,9 @@ public class BHBot {
 
     long botStartTime;
 
+    // When we do not have anymore gems to use this is true
+    boolean noGemsToBribe = false;
+
     public static void main(String[] args) {
         BHBot bot = new BHBot();
         bot.notificationManager = new NotificationManager(bot);
@@ -980,6 +983,7 @@ public class BHBot {
         // skip the initialization if idleMode is true
         dungeon.shrineManager = new AutoShrineManager(this, settings.idleMode);
         dungeon.runeManager = new AutoRuneManager(this, settings.idleMode);
+        dungeon.encounterManager = new EncounterManager(this);
         dungeon.reviveManager.reset();
         dungeon.positionChecker = new DungeonPositionChecker();
     }
