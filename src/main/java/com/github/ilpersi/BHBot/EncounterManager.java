@@ -409,8 +409,7 @@ public class EncounterManager {
                 BufferedImage famImg = CueManager.loadImage(classLoader, details.path);
                 BufferedImage famNameImg = EncounterManager.getFamiliarNameImg(famImg, cuesPath.getKey(), null);
 
-                byte[] imgMD5 = Misc.imgToMD5(famNameImg);
-                String MD5Str = Misc.MD5Str(imgMD5);
+                String MD5Str = Misc.imgToMD5(famNameImg);
 
                 EncounterManager.FamiliarDetails familiar = new FamiliarDetails(details.name, cuesPath.getKey());
                 EncounterManager.famMD5Table.put(MD5Str, familiar);

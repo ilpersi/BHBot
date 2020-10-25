@@ -370,13 +370,13 @@ public class Misc {
      * @param img The BufferedImage that you want to get the hash for
      * @return an array of bytes that contains the MD5 hash
      */
-    static byte[] imgToMD5(BufferedImage img) {
+    static String imgToMD5(BufferedImage img) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             ImageIO.write(img, "png", outputStream);
         } catch (IOException e) {
             BHBot.logger.error("imgToMd5: impossible to write image to outputStream", e);
-            return new byte[] {};
+            return "";
         }
         byte[] data = outputStream.toByteArray();
 
@@ -385,13 +385,9 @@ public class Misc {
             md = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
             BHBot.logger.error("imgToMd5: error while digesting MD5 hash", e);
-            return new byte[] {};
+            return "";
         }
         md.update(data);
-        return md.digest();
-    }
-
-    static String MD5Str(byte[] bytes){
-        return Base64.getEncoder().encodeToString(bytes);
+        return Base64.getEncoder().encodeToString(md.digest());
     }
 }

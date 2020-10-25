@@ -168,8 +168,7 @@ public class CueCompare {
                     continue;
                 }
 
-                String imgMD5 = Misc.MD5Str(Misc.imgToMD5(img));
-                System.out.println(imgFile.getAbsolutePath() + " MD5 is : " + imgMD5);
+                System.out.println(imgFile.getAbsolutePath() + " MD5 is : " + Misc.imgToMD5(img));
 
 
             }

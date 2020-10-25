@@ -88,6 +88,6 @@ public class DungeonPositionChecker {
      * @return true if images are the same
      */
     private boolean MD5Compare(BufferedImage imgActual, BufferedImage imgExpected) {
-        return Arrays.equals(Misc.imgToMD5(imgActual), Misc.imgToMD5(imgExpected));
+        return Misc.imgToMD5(imgActual).equals(Misc.imgToMD5(imgExpected));
     }
 }
