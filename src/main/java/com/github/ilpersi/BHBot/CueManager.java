@@ -46,7 +46,7 @@ class CueManager {
     Cue get(String cueKey) {
         if (!loadedCues.containsKey(cueKey)) {
             CueData cueData = addedCues.get(cueKey);
-            loadedCues.put(cueKey, new Cue(cueKey, loadImage(cueData.cuePath), cueData.cueBounds));
+            loadedCues.put(cueKey, new Cue(cueKey, loadImage(classLoader, cueData.cuePath), cueData.cueBounds));
 
             // once we loaded the cue, we don't need the data anymore
             addedCues.remove(cueKey);
@@ -67,7 +67,7 @@ class CueManager {
         return loadedCues.size();
     }
 
-    private BufferedImage loadImage(String f) {
+    static BufferedImage loadImage(ClassLoader classLoader, String f) {
         BufferedImage img = null;
         InputStream resourceURL = classLoader.getResourceAsStream(f);
 
@@ -80,7 +80,7 @@ class CueManager {
             }
 
             if (decodedURL != null) {
-                resourceURL =classLoader.getResourceAsStream(decodedURL);
+                resourceURL = classLoader.getResourceAsStream(decodedURL);
             }
             BHBot.logger.trace("Encoded IMG URI is: " + decodedURL);
         }

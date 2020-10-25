@@ -4,11 +4,11 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class EncounterManager {
     private final BHBot bot;
+    static HashMap<String, FamiliarDetails> famMD5Table = new HashMap<>();
 
     public enum FamiliarType {
         ERROR("Error", 0),
@@ -35,13 +35,23 @@ public class EncounterManager {
 
     }
 
-    static class BribeDetails {
+    static class BribeSettings {
         String familiarName;
         int toBribeCnt;
 
-        BribeDetails() {
+        BribeSettings() {
             this.familiarName = "";
             this.toBribeCnt = 0;
+        }
+    }
+
+    static class FamiliarDetails {
+        String familiarName;
+        FamiliarType familiarType;
+
+        FamiliarDetails(String familiarName, FamiliarType familiarType) {
+            this.familiarName = familiarName;
+            this.familiarType = familiarType;
         }
     }
 
@@ -69,7 +79,7 @@ public class EncounterManager {
         }
 
         DungeonThread.PersuationType persuasion;
-        BribeDetails bribeInfo = new BribeDetails();
+        BribeSettings bribeInfo = new BribeSettings();
 
         // Checking familiars setting takes time and a lot of cues verifications. We try to minimize the number of times
         // this is done
@@ -149,10 +159,10 @@ public class EncounterManager {
     /**
      * Will verify if in the current persuasion screen one of the bribeNames is present
      */
-    private BribeDetails verifyBribeNames() {
+    private BribeSettings verifyBribeNames() {
 
         List<String> wrongNames = new ArrayList<>();
-        BribeDetails result = new BribeDetails();
+        BribeSettings result = new BribeSettings();
         String familiarName;
         int toBribeCnt;
 
@@ -257,7 +267,7 @@ public class EncounterManager {
     private void contributeFamiliarShoot(String shootName, FamiliarType familiarType) {
 
         bot.browser.readScreen(Misc.Durations.SECOND);
-        BufferedImage famNameImg = EncounterManager.getFamiliarNameImg(bot.browser.getImg(), familiarType);
+        BufferedImage famNameImg = EncounterManager.getFamiliarNameImg(bot.browser.getImg(), familiarType, new Bounds(105, 60, 640, 105));
 
         Misc.contributeImage(famNameImg, shootName, null);
 
@@ -308,7 +318,15 @@ public class EncounterManager {
         }
     }
 
-    static BufferedImage getFamiliarNameImg(BufferedImage screenImg, FamiliarType familiarType) {
+    /**
+     * This methods extract an image only containing the familiar name. The logic is based on the type of the familiar.
+     * Once that the type is known, the name will be extracted using a specific value for the color
+     *
+     * @param screenImg    A Buffered Image containing the image
+     * @param familiarType What is the type of the familar we are looking to find the name
+     * @return A Buffered Image containing just the familiar name
+     */
+    static BufferedImage getFamiliarNameImg(BufferedImage screenImg, FamiliarType familiarType, Bounds nameBounds) {
         int familiarTxtColor;
         switch (familiarType) {
             case COMMON:
@@ -331,7 +349,12 @@ public class EncounterManager {
 
         if (familiarTxtColor == 0) return null;
 
-        BufferedImage nameImgRect = screenImg.getSubimage(105, 60, 640, 105);
+
+        BufferedImage nameImgRect;
+        if (nameBounds != null)
+            nameImgRect = screenImg.getSubimage(nameBounds.x1, nameBounds.y1, nameBounds.width, nameBounds.height);
+        else
+            nameImgRect = screenImg;
 
 		/*File zoneImgTmp = new File("tmp-NAME-ZONE.png");
 		try {
@@ -361,5 +384,36 @@ public class EncounterManager {
         }
 
         return nameImgRect.getSubimage(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    /**
+     * This will build the full list of MD5 for all the known familiars. This list will be used to manage bribing and
+     * persuasions during encounters.
+     */
+    static void buildMD5() {
+        final ClassLoader classLoader = EncounterManager.class.getClassLoader();
+
+        HashMap<EncounterManager.FamiliarType, String> folders = new HashMap<>();
+        folders.put(FamiliarType.COMMON, "cues/familiars/01 Common");
+        folders.put(FamiliarType.RARE, "cues/familiars/02 Rare");
+        folders.put(FamiliarType.EPIC, "cues/familiars/03 Epic");
+        folders.put(FamiliarType.LEGENDARY, "cues/familiars/04 Legendary");
+
+        for (Map.Entry<EncounterManager.FamiliarType, String> cuesPath : folders.entrySet()) {
+            ArrayList<CueManager.CueDetails> famDetails = CueManager.getCueDetailsFromPath(cuesPath.getValue());
+
+            for (CueManager.CueDetails details : famDetails) {
+
+                BufferedImage famImg = CueManager.loadImage(classLoader, details.path);
+                BufferedImage famNameImg = EncounterManager.getFamiliarNameImg(famImg, cuesPath.getKey(), null);
+
+                byte[] imgMD5 = Misc.imgToMd5(famNameImg);
+                String MD5Str = Arrays.toString(imgMD5);
+
+                EncounterManager.FamiliarDetails familiar = new FamiliarDetails(details.name, cuesPath.getKey());
+                EncounterManager.famMD5Table.put(MD5Str, familiar);
+
+            }
+        }
     }
 }

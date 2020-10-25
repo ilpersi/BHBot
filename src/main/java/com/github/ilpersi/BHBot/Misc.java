@@ -13,6 +13,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
@@ -363,5 +365,30 @@ public class Misc {
         }
 
         return postBody.toString();
+    }
+
+    /**
+     * @param img The BufferedImage that you want to get the hash for
+     * @return an array of bytes that contains the MD5 hash
+     */
+    static byte[] imgToMd5(BufferedImage img) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(img, "png", outputStream);
+        } catch (IOException e) {
+            BHBot.logger.error("imgToMd5: impossible to write image to outputStream", e);
+            return new byte[] {};
+        }
+        byte[] data = outputStream.toByteArray();
+
+        MessageDigest md;
+        try {
+            md = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            BHBot.logger.error("imgToMd5: error while digesting MD5 hash", e);
+            return new byte[] {};
+        }
+        md.update(data);
+        return md.digest();
     }
 }

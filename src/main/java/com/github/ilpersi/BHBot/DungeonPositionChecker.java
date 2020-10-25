@@ -84,31 +84,6 @@ public class DungeonPositionChecker {
     }
 
     /**
-     * @param img The BufferedImage that you want to get the hash for
-     * @return an array of bytes that contains the MD5 hash
-     */
-    private byte[] imgToMd5(BufferedImage img) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try {
-            ImageIO.write(img, "png", outputStream);
-        } catch (IOException e) {
-            BHBot.logger.error("imgToMd5: impossible to write image to outputStream", e);
-            return new byte[] {};
-        }
-        byte[] data = outputStream.toByteArray();
-
-        MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            BHBot.logger.error("imgToMd5: error while digesting MD5 hash", e);
-            return new byte[] {};
-        }
-        md.update(data);
-        return md.digest();
-    }
-
-    /**
      *
      * To compare images we use the MD5: from tests it is approximately 5X faster than pixel comparison and,
      * as images to compare are the same, it is very reliable
@@ -118,6 +93,6 @@ public class DungeonPositionChecker {
      * @return true if images are the same
      */
     private boolean MD5Compare(BufferedImage imgActual, BufferedImage imgExpected) {
-        return Arrays.equals(imgToMd5(imgActual), imgToMd5(imgExpected));
+        return Arrays.equals(Misc.imgToMd5(imgActual), Misc.imgToMd5(imgExpected));
     }
 }
