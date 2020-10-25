@@ -1,6 +1,5 @@
 package com.github.ilpersi.BHBot;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -170,7 +169,7 @@ public class Misc {
 
         byte[] encoded = new byte[0];
         try {
-            encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(toEncode));
+            encoded = Base64.getEncoder().encode(FileUtils.readFileToByteArray(toEncode));
         } catch (IOException e) {
             BHBot.logger.error("Error in encodeFileToBase64Binary", e);
         }
@@ -371,7 +370,7 @@ public class Misc {
      * @param img The BufferedImage that you want to get the hash for
      * @return an array of bytes that contains the MD5 hash
      */
-    static byte[] imgToMd5(BufferedImage img) {
+    static byte[] imgToMD5(BufferedImage img) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             ImageIO.write(img, "png", outputStream);
@@ -390,5 +389,9 @@ public class Misc {
         }
         md.update(data);
         return md.digest();
+    }
+
+    static String MD5Str(byte[] bytes){
+        return Base64.getEncoder().encodeToString(bytes);
     }
 }

@@ -116,6 +116,7 @@ public class CueCompare {
     public static void main(String[] args) {
         String flUsage = "USAGE with file list: CueCompare -fl|--file-list <inputImg1FilePath> <inputImg2FilePath> [... <inputImgNFilePath>] <outputImgFilePath>";
         String fpUsage = "USAGE with file path: CueCompare -fp|--file-path <inputFolderPath> <outputImgPath>";
+        String MD5FLfpUsage = "USAGE with file list: CueCompare -md5fl|--md5-file-list <inputImg1FilePath> <inputImg2FilePath> [... <inputImgNFilePath>]";
 
         if ("-fl".equals(args[0]) || "--file-list".equals(args[0])) {
             if (args.length < 4) {
@@ -143,6 +144,32 @@ public class CueCompare {
                 File img2File = new File(img2Path);
 
                 createDiffImage(img1File, img2File, imgOutPath);
+
+
+            }
+        } else if ("-md5fl".equals(args[0]) || "--md5-file-list".equals(args[0])) {
+            if (args.length < 4) {
+                System.out.println(MD5FLfpUsage);
+                return;
+            }
+
+            for (int imgCnt = 1; imgCnt <= (args.length); imgCnt++) {
+
+                // After the first for iteration the source image is the output of the previous comparison
+                String imgPath = args[1];
+
+                File imgFile = new File(imgPath);
+                BufferedImage img;
+                try {
+                    img = ImageIO.read(imgFile);
+                } catch (IOException e) {
+                    System.out.println("Error while reading image " + imgFile.getAbsolutePath());
+                    e.printStackTrace();
+                    continue;
+                }
+
+                String imgMD5 = Misc.MD5Str(Misc.imgToMD5(img));
+                System.out.println(imgFile.getAbsolutePath() + " MD5 is : " + imgMD5);
 
 
             }
@@ -213,6 +240,7 @@ public class CueCompare {
         } else {
             System.out.println(flUsage);
             System.out.println(fpUsage);
+            System.out.println(MD5FLfpUsage);
         }
     }
 }
