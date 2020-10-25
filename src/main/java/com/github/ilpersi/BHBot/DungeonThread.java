@@ -1,17 +1,8 @@
 package com.github.ilpersi.BHBot;
 
 import com.google.common.collect.Maps;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.openqa.selenium.Point;
 
-import javax.activation.MimetypesFileTypeMap;
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -3847,11 +3838,15 @@ public class DungeonThread implements Runnable {
         return true;
     }
 
+    /**
+     *
+     * This method is contributing familiar cues to the project. Before contributing the familiar image,
+     * the method is taking care of stripping all the unnecessary pixels
+     *
+     * @param shootName Name of the image containing the familiar screenshot
+     * @param familiarType The familiar type: COMMON|RARE|EPIC|LEGENDARY
+     */
     private void contributeFamiliarShoot(String shootName, FamiliarType familiarType) {
-
-        HttpClient httpClient = HttpClients.custom().useSystemProperties().build();
-
-        final HttpPost post = new HttpPost("https://script.google.com/macros/s/AKfycby-tCXZ6MHt_ZSUixCcNbYFjDuri6WvljomLgGy_m5lLZw1y5fZ/exec");
 
         // we generate a sub image with just the name of the familiar
         bot.browser.readScreen(Misc.Durations.SECOND);
@@ -3907,9 +3902,8 @@ public class DungeonThread implements Runnable {
         }
 
         Bounds nameBound = Bounds.fromWidthHeight(minX, minY, maxX - minX, maxY - minY);
-        BufferedImage nameImg = zoneImg.getSubimage(minX, minY, maxX - minX, maxY - minY);
 
-        Misc.contributeImage(nameImg, shootName, nameBound);
+        Misc.contributeImage(zoneImg, shootName, nameBound);
 
     }
 
