@@ -422,4 +422,20 @@ public class EncounterManager {
         }
         BHBot.logger.debug("Loaded " + totalMD5Cnt + " familiars MD5.");
     }
+
+    static void printMD5() {
+        for (Map.Entry<String, EncounterManager.FamiliarDetails> famDetails: EncounterManager.famMD5Table.entrySet()) {
+            BHBot.logger.debug("MD5 '" + famDetails.getKey() + "' - > " + famDetails.getValue().name);
+        }
+    }
+
+    static void printMD5(String famName) {
+        for (Map.Entry<String, EncounterManager.FamiliarDetails> famDetails: EncounterManager.famMD5Table.entrySet()) {
+            if (famName.toLowerCase().equals(famDetails.getValue().name.toLowerCase())) {
+                BHBot.logger.debug("MD5 '" + famDetails.getKey() + "' - > " + famDetails.getValue().name);
+                return;
+            }
+        }
+        BHBot.logger.warn("Familiar name not found: " + famName);
+    }
 }
