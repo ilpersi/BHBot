@@ -156,7 +156,7 @@ public class CueCompare {
             for (int imgCnt = 1; imgCnt <= (args.length); imgCnt++) {
 
                 // After the first for iteration the source image is the output of the previous comparison
-                String imgPath = args[1];
+                String imgPath = args[imgCnt];
 
                 File imgFile = new File(imgPath);
                 BufferedImage img;
