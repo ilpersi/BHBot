@@ -148,7 +148,7 @@ public class CueCompare {
 
             }
         } else if ("-md5fl".equals(args[0]) || "--md5-file-list".equals(args[0])) {
-            if (args.length < 4) {
+            if (args.length < 2) {
                 System.out.println(MD5FLfpUsage);
                 return;
             }
