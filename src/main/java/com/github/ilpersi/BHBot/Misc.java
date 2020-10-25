@@ -1,6 +1,5 @@
 package com.github.ilpersi.BHBot;
 
-import org.apache.commons.io.FileUtils;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -12,6 +11,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -169,7 +170,7 @@ public class Misc {
 
         byte[] encoded = new byte[0];
         try {
-            encoded = Base64.getEncoder().encode(FileUtils.readFileToByteArray(toEncode));
+            encoded = Base64.getEncoder().encode(Files.readAllBytes(Paths.get(toEncode.getAbsolutePath())));
         } catch (IOException e) {
             BHBot.logger.error("Error in encodeFileToBase64Binary", e);
         }
@@ -240,8 +241,8 @@ public class Misc {
      * This method is intended to be used by developers to fastly get all the positions of a scrolling bar.
      * This can be used when new content is released and there is the need to re-calculate bar positions
      *
-     * @author ilpersi
      * @param bot An initialized BHBot instance
+     * @author ilpersi
      */
     static void findScrollBarPositions(BHBot bot) {
         int lastPosition = -1;
@@ -274,7 +275,7 @@ public class Misc {
         }
 
         StringBuilder posOutput = new StringBuilder("{");
-        for (Integer pos: positions) {
+        for (Integer pos : positions) {
             if (posOutput.length() > 1) posOutput.append(", ");
 
             posOutput.append(pos);
@@ -285,12 +286,11 @@ public class Misc {
     }
 
     /**
-     *
      * This method is taking care of managing image contributions.
      * Image contributions are used to get cues that are difficult to gather, e.g.: rune cues, familiar cues
      * When calling this method, always make sure not to pass an image containing sensitive data
      *
-     * @param img The BufferedImage to be contributed to the project
+     * @param img     The BufferedImage to be contributed to the project
      * @param imgName The name the buffered image will have once it is uploaded
      * @param subArea If you only want to specify a sub area of the image, pass the subArea parameter,
      *                otherwise the full image will be contributed
@@ -347,7 +347,6 @@ public class Misc {
     }
 
     /**
-     *
      * This method will take care of formatting hashmaps into encoded form data
      *
      * @param data The HashMap to be encoded
