@@ -383,7 +383,11 @@ public class EncounterManager {
 
         }
 
-        return nameImgRect.getSubimage(minX, minY, maxX - minX, maxY - minY);
+        // pixel comparison is 0 based while image size i 1 based
+        int width = maxX > 0 ? maxX - minX + 1 : 0;
+        int height = maxY > 0 ? maxY - minY + 1 : 0;
+
+        return nameImgRect.getSubimage(minX, minY, width, height);
     }
 
     /**
