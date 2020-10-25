@@ -392,6 +392,7 @@ public class EncounterManager {
      */
     static void buildMD5() {
         final ClassLoader classLoader = EncounterManager.class.getClassLoader();
+        int totalMD5Cnt = 0;
 
         HashMap<EncounterManager.FamiliarType, String> folders = new HashMap<>();
         folders.put(FamiliarType.COMMON, "cues/familiars/01 Common");
