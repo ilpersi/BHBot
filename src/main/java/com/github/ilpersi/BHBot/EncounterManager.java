@@ -46,12 +46,12 @@ public class EncounterManager {
     }
 
     static class FamiliarDetails {
-        String familiarName;
-        FamiliarType familiarType;
+        String name;
+        FamiliarType type;
 
         FamiliarDetails(String familiarName, FamiliarType familiarType) {
-            this.familiarName = familiarName;
-            this.familiarType = familiarType;
+            this.name = familiarName;
+            this.type = familiarType;
         }
     }
 
