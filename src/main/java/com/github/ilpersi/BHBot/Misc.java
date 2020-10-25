@@ -2,25 +2,18 @@ package com.github.ilpersi.BHBot;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
-
-import javax.activation.MimetypesFileTypeMap;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author Betalord
@@ -290,11 +283,8 @@ public class Misc {
 
     }
 
+    @SuppressWarnings("SameParameterValue")
     static void contributeImage(BufferedImage img, String runeName, Bounds subArea) {
-
-        HttpClient httpClient = HttpClients.custom().useSystemProperties().build();
-
-        final HttpPost post = new HttpPost("https://script.google.com/macros/s/AKfycby-tCXZ6MHt_ZSUixCcNbYFjDuri6WvljomLgGy_m5lLZw1y5fZ/exec");
 
         // we generate a sub image based on the bounds
         BufferedImage nameImg = img.getSubimage(subArea.x1, subArea.y1, subArea.width, subArea.height);
@@ -306,30 +296,34 @@ public class Misc {
             BHBot.logger.error("Error while creating rune contribution file", e);
         }
 
-        MimetypesFileTypeMap ftm = new MimetypesFileTypeMap();
-        ContentType ct = ContentType.create(ftm.getContentType(nameImgFile));
+        HashMap<String, String> data = new HashMap<>();
+        data.put("mimeType", "image/png");
+        data.put("name", nameImgFile.getName());
+        data.put("data", Misc.encodeFileToBase64Binary(nameImgFile));
 
-        List<NameValuePair> params = new ArrayList<>(3);
-        params.add(new BasicNameValuePair("mimeType", ct.toString()));
-        params.add(new BasicNameValuePair("name", nameImgFile.getName()));
-        params.add(new BasicNameValuePair("data", Misc.encodeFileToBase64Binary(nameImgFile)));
+        StringBuilder postBody = new StringBuilder();
+        for (Map.Entry<String, String> entry : data.entrySet()) {
+            if (postBody.length() > 0) postBody.append("&");
+
+            postBody.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8))
+                    .append("=")
+                    .append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
+        }
+
+        HttpClient client = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .followRedirects(HttpClient.Redirect.ALWAYS)
+                .build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .POST(HttpRequest.BodyPublishers.ofString(postBody.toString()))
+                .uri(URI.create("https://script.google.com/macros/s/AKfycby-tCXZ6MHt_ZSUixCcNbYFjDuri6WvljomLgGy_m5lLZw1y5fZ/exec"))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .build();
 
         try {
-            post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            BHBot.logger.error("Error while encoding POST request in rune contribution", e);
+            client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            BHBot.logger.error("Exception while getting latest version info from Git Hub", e);
         }
-
-        try {
-            httpClient.execute(post);
-        } catch (IOException e) {
-            BHBot.logger.error("Error while executing HTTP request in rune contribution", e);
-        }
-
-        if (!nameImgFile.delete()) {
-            BHBot.logger.warn("Impossible to delete " + nameImgFile.getAbsolutePath());
-        }
-
     }
-
 }
