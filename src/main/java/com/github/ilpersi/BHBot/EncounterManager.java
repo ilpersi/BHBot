@@ -401,6 +401,7 @@ public class EncounterManager {
 
         for (Map.Entry<EncounterManager.FamiliarType, String> cuesPath : folders.entrySet()) {
             ArrayList<CueManager.CueDetails> famDetails = CueManager.getCueDetailsFromPath(cuesPath.getValue());
+            totalMD5Cnt += famDetails.size();
 
             for (CueManager.CueDetails details : famDetails) {
 
@@ -415,5 +416,6 @@ public class EncounterManager {
 
             }
         }
+        BHBot.logger.debug("Loaded " + totalMD5Cnt + " familiars MD5.");
     }
 }
