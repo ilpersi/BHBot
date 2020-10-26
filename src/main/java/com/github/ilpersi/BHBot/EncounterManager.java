@@ -158,11 +158,13 @@ public class EncounterManager {
                 bot.restart(true, false);
             }
         } else {
-            seg = MarvinSegment.fromCue(BHBot.cues.get("DeclineRed"), bot.browser);
+            seg = MarvinSegment.fromCue(BHBot.cues.get("DeclineRed"), 500, Bounds.fromWidthHeight(205, 420, 200, 65), bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
                 bot.browser.readScreen(Misc.Durations.SECOND * 2);
-                seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), Misc.Durations.SECOND, bot.browser);
+                // TODO Add Bounds for yesgreen
+                seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), Misc.Durations.SECOND * 5, bot.browser);
+                bot.saveGameScreen("decline-familiar-yesgreen", "debug", bot.browser.getImg());
                 bot.browser.clickOnSeg(seg);
                 BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion declined.");
             } else {
@@ -234,12 +236,16 @@ public class EncounterManager {
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
 
+            // TODO Add Bounds for YesGreen
             seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), Misc.Durations.SECOND * 7, bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg);
-                // Misc.sleep(2 * Misc.Durations.SECOND);
+            } else {
+                BHBot.logger.error("Impossible to find YesGreen in bribeFamiliar");
+                return false;
             }
 
+            // TODO Add Bounds for NotEnoughGems
             if (MarvinSegment.fromCue(BHBot.cues.get("NotEnoughGems"), Misc.Durations.SECOND * 5, bot.browser) != null) {
                 BHBot.logger.warn("Not enough gems to attempt a bribe!");
                 bot.noGemsToBribe = true;
@@ -270,14 +276,14 @@ public class EncounterManager {
 
             bot.browser.clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
 
-            bot.browser.readScreen(2 * Misc.Durations.SECOND);
-            seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), bot.browser);
-            bot.browser.clickOnSeg(seg);
-            // Misc.sleep(2 * Misc.Durations.SECOND);
-
-            return true;
+            seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), Misc.Durations.SECOND * 5, Bounds.fromWidthHeight(245, 330, 165, 65), bot.browser);
+            if (seg != null) {
+                bot.browser.clickOnSeg(seg);
+                return true;
+            } else {
+                BHBot.logger.error("Impossible to find the YesGreen button in persuadeFamiliar");
+            }
         }
-
         return false;
     }
 
