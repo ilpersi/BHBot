@@ -5136,23 +5136,6 @@ public class DungeonThread implements Runnable {
         }
     }
 
-    public enum PersuationType {
-        DECLINE("Decline"),
-        PERSUADE("Persuasion"),
-        BRIBE("Bribe");
-
-        private final String name;
-
-        PersuationType(String name) {
-            this.name = name;
-        }
-
-        public String toString() {
-            return this.name;
-        }
-
-    }
-
     /**
      * Events that use badges as "fuel".
      */

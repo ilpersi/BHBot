@@ -35,6 +35,23 @@ public class EncounterManager {
 
     }
 
+    public enum PersuationType {
+        DECLINE("Decline"),
+        PERSUADE("Persuasion"),
+        BRIBE("Bribe");
+
+        private final String name;
+
+        PersuationType(String name) {
+            this.name = name;
+        }
+
+        public String toString() {
+            return this.name;
+        }
+
+    }
+
     static class BribeSettings {
         String familiarName;
         int toBribeCnt;
@@ -94,16 +111,16 @@ public class EncounterManager {
 
         if ((bot.settings.bribeLevel > 0 && familiarLevel.getValue() >= bot.settings.bribeLevel) ||
                 bribeInfo.toBribeCnt > 0) {
-            persuasion = DungeonThread.PersuationType.BRIBE;
+            persuasion = PersuationType.BRIBE;
         } else if ((bot.settings.persuasionLevel > 0 && familiarLevel.getValue() >= bot.settings.persuasionLevel)) {
-            persuasion = DungeonThread.PersuationType.PERSUADE;
+            persuasion = PersuationType.PERSUADE;
         } else {
-            persuasion = DungeonThread.PersuationType.DECLINE;
+            persuasion = PersuationType.DECLINE;
         }
 
         // If we're set to bribe and we don't have gems, we default to PERSUASION
-        if (persuasion == DungeonThread.PersuationType.BRIBE && bot.noGemsToBribe) {
-            persuasion = DungeonThread.PersuationType.PERSUADE;
+        if (persuasion == PersuationType.BRIBE && bot.noGemsToBribe) {
+            persuasion = PersuationType.PERSUADE;
         }
 
         StringBuilder persuasionLog = new StringBuilder("familiar-");
@@ -121,7 +138,7 @@ public class EncounterManager {
         }
 
         // We attempt persuasion or bribe based on settings
-        if (persuasion == DungeonThread.PersuationType.BRIBE) {
+        if (persuasion == PersuationType.BRIBE) {
             if (!bribeFamiliar()) {
                 BHBot.logger.autobribe("Bribe attempt failed! Trying with persuasion...");
                 if (persuadeFamiliar()) {
@@ -133,7 +150,7 @@ public class EncounterManager {
             } else {
                 updateFamiliarCounter(bribeInfo.familiarName.toUpperCase());
             }
-        } else if (persuasion == DungeonThread.PersuationType.PERSUADE) {
+        } else if (persuasion == PersuationType.PERSUADE) {
             if (persuadeFamiliar()) {
                 BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion attempted.");
             } else {
