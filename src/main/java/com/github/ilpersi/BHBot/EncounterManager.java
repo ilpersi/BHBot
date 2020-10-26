@@ -63,7 +63,6 @@ public class EncounterManager {
         MarvinSegment seg;
 
         BHBot.logger.autobribe("Familiar encountered");
-        bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
         FamiliarType familiarLevel;
         if (MarvinSegment.fromCue(BHBot.cues.get("CommonFamiliar"), bot.browser) != null) {
@@ -166,7 +165,6 @@ public class EncounterManager {
         String familiarName;
         int toBribeCnt;
 
-        bot.browser.readScreen(Misc.Durations.SECOND);
         for (String familiarDetails : bot.settings.familiars) {
             // familiar details from settings
             String[] details = familiarDetails.toLowerCase().split(" ");
@@ -207,18 +205,16 @@ public class EncounterManager {
     }
 
     private boolean bribeFamiliar() {
-        bot.browser.readScreen();
         MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("Bribe"), Misc.Durations.SECOND * 3, bot.browser);
         BufferedImage tmpScreen = bot.browser.getImg();
 
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
-            Misc.sleep(2 * Misc.Durations.SECOND);
 
-            seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), Misc.Durations.SECOND * 5, bot.browser);
+            seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), Misc.Durations.SECOND * 7, bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg);
-                Misc.sleep(2 * Misc.Durations.SECOND);
+                // Misc.sleep(2 * Misc.Durations.SECOND);
             }
 
             if (MarvinSegment.fromCue(BHBot.cues.get("NotEnoughGems"), Misc.Durations.SECOND * 5, bot.browser) != null) {
@@ -244,12 +240,11 @@ public class EncounterManager {
         if (seg != null) {
 
             bot.browser.clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
-            Misc.sleep(2 * Misc.Durations.SECOND);
 
-            bot.browser.readScreen();
+            bot.browser.readScreen(2 * Misc.Durations.SECOND);
             seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), bot.browser);
             bot.browser.clickOnSeg(seg);
-            Misc.sleep(2 * Misc.Durations.SECOND);
+            // Misc.sleep(2 * Misc.Durations.SECOND);
 
             return true;
         }
@@ -266,7 +261,6 @@ public class EncounterManager {
      */
     private void contributeFamiliarShoot(String shootName, FamiliarType familiarType) {
 
-        bot.browser.readScreen(Misc.Durations.SECOND);
         BufferedImage famNameImg = EncounterManager.getFamiliarNameImg(bot.browser.getImg(), familiarType, new Bounds(105, 60, 640, 105));
 
         Misc.contributeImage(famNameImg, shootName, null);
