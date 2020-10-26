@@ -221,6 +221,12 @@ public class EncounterManager {
         return result;
     }
 
+    /**
+     * Bot will attempt to bribe the current encountered familiar.
+     * Encounter window must be opened for this to work correctly
+     *
+     * @return true if bribe attempt is correctly performed, false otherwise
+     */
     private boolean bribeFamiliar() {
         MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("Bribe"), Misc.Durations.SECOND * 3, bot.browser);
         BufferedImage tmpScreen = bot.browser.getImg();
@@ -250,6 +256,12 @@ public class EncounterManager {
         return false;
     }
 
+    /**
+     * Bot will attempt to persuade the current encountered familiar.
+     * For this to work, the familiar window must be opened!
+     *
+     * @return true if persuasion is successfully peformed, false otherwise
+     */
     private boolean persuadeFamiliar() {
 
         MarvinSegment seg;
@@ -434,12 +446,20 @@ public class EncounterManager {
         BHBot.logger.debug("Loaded " + totalMD5Cnt + " familiars MD5.");
     }
 
+    /**
+     * Print the full list of MD5 hashes
+     */
     static void printMD5() {
         for (Map.Entry<String, EncounterManager.FamiliarDetails> famDetails: EncounterManager.famMD5Table.entrySet()) {
             BHBot.logger.debug("MD5 '" + famDetails.getKey() + "' - > " + famDetails.getValue().name);
         }
     }
 
+    /**
+     * This method will search for famName in the MD5 hashmap and print the MD5 hash if found
+     *
+     * @param famName The name of the desired familiar
+     */
     static void printMD5(String famName) {
         for (Map.Entry<String, EncounterManager.FamiliarDetails> famDetails: EncounterManager.famMD5Table.entrySet()) {
             if (famName.toLowerCase().equals(famDetails.getValue().name.toLowerCase())) {
