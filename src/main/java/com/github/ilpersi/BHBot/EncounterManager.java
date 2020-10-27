@@ -94,7 +94,7 @@ public class EncounterManager {
             familiarLevel = FamiliarType.ERROR; // error
         }
 
-        DungeonThread.PersuationType persuasion;
+        PersuationType persuasion;
         BribeSettings bribeInfo = new BribeSettings();
 
         // Checking familiars setting takes time and a lot of cues verifications. We try to minimize the number of times
@@ -131,11 +131,25 @@ public class EncounterManager {
         // We save all the errors and persuasions based on settings
         if ((familiarLevel.getValue() >= bot.settings.familiarScreenshot) || familiarLevel == FamiliarType.ERROR) {
             bot.saveGameScreen(persuasionLog.toString(), "familiars");
-
-            if (bot.settings.contributeFamiliars) {
-                contributeFamiliarShoot(persuasionLog.toString(), familiarLevel);
-            }
         }
+
+        // if (bot.settings.contributeFamiliars) {
+
+        // We build the MD5 string for the current encounter
+        BufferedImage famNameImg = EncounterManager.getFamiliarNameImg(bot.browser.getImg(), familiarLevel, new Bounds(105, 60, 640, 105));
+        String famNameMD5 = Misc.imgToMD5(famNameImg);
+
+        // We check if the familiar is known
+        FamiliarDetails encounterDetails = EncounterManager.famMD5Table.getOrDefault(famNameMD5, null);
+        if (encounterDetails == null) {
+            // String unkMD5 = bot.saveGameScreen(familiarLevel.toString() + "-unknown-familiar", "unknown-familiars", famNameImg);
+            // BHBot.logger.debug("MD5 familiar unknown: '" + famNameMD5 + "' saved as " + unkMD5);
+            // we contribute unknown familiars
+            Misc.contributeImage(famNameImg, persuasionLog.toString(), null);
+        } else {
+            BHBot.logger.debug("MD5 familiar detected: " + encounterDetails.name);
+        }
+        // }
 
         // We attempt persuasion or bribe based on settings
         if (persuasion == PersuationType.BRIBE) {
@@ -267,7 +281,7 @@ public class EncounterManager {
      * Bot will attempt to persuade the current encountered familiar.
      * For this to work, the familiar window must be opened!
      *
-     * @return true if persuasion is successfully peformed, false otherwise
+     * @return true if persuasion is successfully performed, false otherwise
      */
     private boolean persuadeFamiliar() {
 
@@ -286,21 +300,6 @@ public class EncounterManager {
             }
         }
         return false;
-    }
-
-    /**
-     * This method is contributing familiar cues to the project. Before contributing the familiar image,
-     * the method is taking care of stripping all the unnecessary pixels
-     *
-     * @param shootName    Name of the image containing the familiar screenshot
-     * @param familiarType The familiar type: COMMON|RARE|EPIC|LEGENDARY
-     */
-    private void contributeFamiliarShoot(String shootName, FamiliarType familiarType) {
-
-        BufferedImage famNameImg = EncounterManager.getFamiliarNameImg(bot.browser.getImg(), familiarType, new Bounds(105, 60, 640, 105));
-
-        Misc.contributeImage(famNameImg, shootName, null);
-
     }
 
     private void updateFamiliarCounter(String fam) {
