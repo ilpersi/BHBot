@@ -158,15 +158,18 @@ public class EncounterManager {
                 bot.restart(true, false);
             }
         } else {
-            seg = MarvinSegment.fromCue(BHBot.cues.get("DeclineRed"), 500, Bounds.fromWidthHeight(205, 420, 200, 65), bot.browser);
+            seg = MarvinSegment.fromCue(BHBot.cues.get("DeclineRed"), 0, Bounds.fromWidthHeight(205, 420, 200, 65), bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg); // seg = detectCue(cues.get("Persuade"))
-                bot.browser.readScreen(Misc.Durations.SECOND * 2);
-                // TODO Add Bounds for yesgreen
-                seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), Misc.Durations.SECOND * 5, bot.browser);
-                bot.saveGameScreen("decline-familiar-yesgreen", "debug", bot.browser.getImg());
-                bot.browser.clickOnSeg(seg);
-                BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion declined.");
+
+                seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), Misc.Durations.SECOND * 5, Bounds.fromWidthHeight(245, 330, 165, 65), bot.browser);
+                if (seg != null) {
+                    bot.browser.clickOnSeg(seg);
+                    BHBot.logger.autobribe(familiarLevel.toString().toUpperCase() + " persuasion declined.");
+                } else {
+                    BHBot.logger.error("Impossible to find the yes-green button after decline, restarting...");
+                    bot.restart(true, false);
+                }
             } else {
                 BHBot.logger.error("Impossible to find the decline button, restarting...");
                 bot.restart(true, false);
@@ -190,14 +193,12 @@ public class EncounterManager {
             familiarName = details[0];
             toBribeCnt = Integer.parseInt(details[1]);
 
-            // cue related stuff
-            //boolean isOldFormat = false;
-
             Cue familiarCue = BHBot.cues.getOrNull(familiarName);
 
             if (familiarCue != null) {
                 if (toBribeCnt > 0) {
-                    if (MarvinSegment.fromCue(familiarCue, Misc.Durations.SECOND * 3, bot.browser) != null) {
+                    // The familiar screen is opened, we we search for cues without timeout
+                    if (MarvinSegment.fromCue(familiarCue, bot.browser) != null) {
                         BHBot.logger.autobribe("Detected familiar " + familiarDetails + " as valid in familiars");
                         result.toBribeCnt = toBribeCnt;
                         result.familiarName = familiarName;
@@ -230,7 +231,7 @@ public class EncounterManager {
      * @return true if bribe attempt is correctly performed, false otherwise
      */
     private boolean bribeFamiliar() {
-        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("Bribe"), Misc.Durations.SECOND * 3, bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("Bribe"), bot.browser);
         BufferedImage tmpScreen = bot.browser.getImg();
 
         if (seg != null) {
