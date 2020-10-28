@@ -168,11 +168,12 @@ public class Misc {
 
     static String encodeFileToBase64Binary(File toEncode) {
 
-        byte[] encoded = new byte[0];
+        byte[] encoded;
         try {
             encoded = Base64.getEncoder().encode(Files.readAllBytes(Paths.get(toEncode.getAbsolutePath())));
         } catch (IOException e) {
             BHBot.logger.error("Error in encodeFileToBase64Binary", e);
+            return "";
         }
         return new String(encoded, StandardCharsets.US_ASCII);
     }
@@ -289,20 +290,19 @@ public class Misc {
      * This method is taking care of managing image contributions.
      * Image contributions are used to get cues that are difficult to gather, e.g.: rune cues, familiar cues
      * When calling this method, always make sure not to pass an image containing sensitive data
-     *
-     * @param img     The BufferedImage to be contributed to the project
+     *  @param img     The BufferedImage to be contributed to the project
      * @param imgName The name the buffered image will have once it is uploaded
      * @param subArea If you only want to specify a sub area of the image, pass the subArea parameter,
-     *                otherwise the full image will be contributed
+     * @return true if contribution was successful
      */
-    static void contributeImage(BufferedImage img, String imgName, Bounds subArea) {
+    static boolean contributeImage(BufferedImage img, String imgName, Bounds subArea) {
 
         // we generate a sub image based on the bounds
-        BufferedImage nameImg;
+        BufferedImage subImg;
         if (subArea != null)
-            nameImg = img.getSubimage(subArea.x1, subArea.y1, subArea.width, subArea.height);
+            subImg = img.getSubimage(subArea.x1, subArea.y1, subArea.width, subArea.height);
         else
-            nameImg = img;
+            subImg = img;
 
         // We strip any png extension to avoid weird names
         imgName = imgName.replace(".png", "");
@@ -310,16 +310,23 @@ public class Misc {
 
         File nameImgFile = new File(imgName + "-ctb.png");
         try {
-            ImageIO.write(nameImg, "png", nameImgFile);
+            ImageIO.write(subImg, "png", nameImgFile);
         } catch (IOException e) {
             BHBot.logger.error("Error while creating rune contribution file", e);
+        }
+
+        String encodedContent = Misc.encodeFileToBase64Binary(nameImgFile);
+
+        if ("".equals(encodedContent)) {
+            BHBot.logger.debug("It was impossible to contribute image: " + imgName);
+            return false;
         }
 
         HashMap<Object, Object> data = new HashMap<>();
         data.put("mimeType", "image/png");
         data.put("name", nameImgFile.getName());
-        data.put("data", Misc.encodeFileToBase64Binary(nameImgFile));
-        data.put("MD5", Misc.imgToMD5(nameImg));
+        data.put("data", encodedContent);
+        data.put("MD5", Misc.imgToMD5(subImg));
 
         String postBody = Misc.formEncode(data);
 
@@ -345,6 +352,8 @@ public class Misc {
         if (!nameImgFile.delete()) {
             BHBot.logger.error("Impossible to delete contribution image: " + nameImgFile.getAbsolutePath());
         }
+
+        return true;
     }
 
     /**

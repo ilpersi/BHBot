@@ -136,7 +136,8 @@ public class EncounterManager {
         // if (bot.settings.contributeFamiliars) {
 
         // We build the MD5 string for the current encounter
-        BufferedImage famNameImg = EncounterManager.getFamiliarNameImg(bot.browser.getImg(), familiarLevel, new Bounds(105, 60, 640, 105));
+        Bounds familiarNameBounds = new Bounds(105, 60, 640, 105);
+        BufferedImage famNameImg = EncounterManager.getFamiliarNameImg(bot.browser.getImg(), familiarLevel, familiarNameBounds);
         String famNameMD5 = Misc.imgToMD5(famNameImg);
 
         // We check if the familiar is known
@@ -145,7 +146,9 @@ public class EncounterManager {
             // String unkMD5 = bot.saveGameScreen(familiarLevel.toString() + "-unknown-familiar", "unknown-familiars", famNameImg);
             // BHBot.logger.debug("MD5 familiar unknown: '" + famNameMD5 + "' saved as " + unkMD5);
             // we contribute unknown familiars
-            Misc.contributeImage(famNameImg, persuasionLog.toString(), null);
+            if (!Misc.contributeImage(famNameImg, persuasionLog.toString(), null)) {
+                Misc.contributeImage(bot.browser.getImg(), persuasionLog.toString(), familiarNameBounds);
+            }
         } else {
             BHBot.logger.debug("MD5 familiar detected: " + encounterDetails.name);
         }
