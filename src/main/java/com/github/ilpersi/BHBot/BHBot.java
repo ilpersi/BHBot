@@ -42,7 +42,7 @@ public class BHBot {
     DungeonThread dungeon;
     private int numFailedRestarts = 0; // in a row
 
-    Settings settings = new Settings().setDebug();
+    Settings settings = new Settings();
     Scheduler scheduler = new Scheduler();
     NotificationManager notificationManager;
     ExceptionManager excManager;

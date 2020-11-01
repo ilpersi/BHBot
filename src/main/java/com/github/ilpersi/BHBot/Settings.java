@@ -392,50 +392,37 @@ public class Settings {
     ArrayList<String> warningSettingLInes = new ArrayList<>();
 
     public Settings() {
-        activitiesEnabled = new LinkedHashSet<>();
-//        activitiesSchedule = new ArrayList<>();
-        screenshots = new LinkedHashSet<>();
-        setScreenshotsFromString("w d f b dg wg fe"); // enabled all by default
-        worldBossSettings = new RandomCollection<>();
-        dungeons = new RandomCollection<>();
-        setDungeons("z1d4 3 100"); // some default value
-        wednesdayDungeons = new RandomCollection<>();
-        setWednesdayDungeons(""); // default is empty, else if people delete the line it will load this value
-        raids = new RandomCollection<>();
-        setRaids("1 3 100"); // some default value
-        wednesdayRaids = new RandomCollection<>();
-        setWednesdayRaids(""); // default is empty, else if people delete the line it will load this value
-        expeditions = new RandomCollection<>();
-        setExpeditions("p1 100 100"); // some default value
-        pvpstrip = new ArrayList<>();
-        gvgstrip = new ArrayList<>();
-        consumables = new ArrayList<>();
-        familiars = new ArrayList<>();
-        autoRevive = new ArrayList<>();
-        tankPriority = new ArrayList<>();
-        autoShrine = new ArrayList<>();
-        autoRuneDefault = new ArrayList<>();
-        poNotifyDrop = new ArrayList<>();
-        discordNotifyDrop = new ArrayList<>();
-        setDifficultyFailsafeFromString("t:0 g:0");
+        setDefault();
     }
 
-    // a handy shortcut for some debug settings:
-    Settings setDebug() {
-        /*activitiesEnabled.add("r"); // Raid
-        activitiesEnabled.add("d"); // Dungeon
-        activitiesEnabled.add("g"); // Gauntlet
-        activitiesEnabled.add("t"); // Trials
-        activitiesEnabled.add("p"); // PVP
-        activitiesEnabled.add("v"); // GVG
-        activitiesEnabled.add("i"); // Invasion*/
-
-        difficultyTrials = 60;
-        difficultyGauntlet = 60;
-        setDungeons("z2d1 3 50", "z2d2 3 50");
-        setRaids("1 3 100");
-
-        return this; // for chaining
+    private void setDefault() {
+        activitiesEnabled = new LinkedHashSet<>();
+        autoRevive = new ArrayList<>();
+        autoShrine = new ArrayList<>();
+        autoRuneDefault = new ArrayList<>();
+        consumables = new ArrayList<>();
+        difficultyTrials = 10;
+        difficultyGauntlet = 10;
+        discordNotifyDrop = new ArrayList<>();
+        dungeons = new RandomCollection<>();
+        expeditions = new RandomCollection<>();
+        familiars = new ArrayList<>();
+        gvgstrip = new ArrayList<>();
+        poNotifyDrop = new ArrayList<>();
+        pvpstrip = new ArrayList<>();
+        raids = new RandomCollection<>();
+        screenshots = new LinkedHashSet<>();
+        setDifficultyFailsafeFromString("t:0 g:0");
+        setDungeons("z1d1 1 100"); // some default value
+        setExpeditions("p1 100 100"); // some default value
+        setRaids("1 1 100"); // some default value
+        setScreenshotsFromString("w d f b dg wg fe"); // enabled all by default
+        setWednesdayDungeons(""); // default is empty, else if people delete the line it will load this value
+        setWednesdayRaids(""); // default is empty, else if people delete the line it will load this value
+        tankPriority = new ArrayList<>();
+        wednesdayDungeons = new RandomCollection<>();
+        wednesdayRaids = new RandomCollection<>();
+        worldBossSettings = new RandomCollection<>();
     }
 
     /**
@@ -1344,6 +1331,7 @@ public class Settings {
      */
     void load(List<String> lines) {
         // As different profile may use different configurations, we make sure that everytime lastUsedMap is cleared
+        setDefault();
         lastUsedMap.clear();
 
         for (String line : lines) {
