@@ -127,19 +127,8 @@ public class Settings {
             this.scheduleList.clear();
         }
 
-        /**
-         * @return true if any of the scheduling settings in the wrapped list is active
-         */
-        boolean canRun() {
-            // No schedule is present so we assume the bot should always run
-            if (this.scheduleList.isEmpty()) return true;
-
-            for (Settings.ActivitiesScheduleSetting s : this.scheduleList) {
-                if (s.isActive()) {
-                    return true;
-                }
-            }
-            return false;
+        boolean isEmpty() {
+            return this.scheduleList.isEmpty();
         }
 
         @NotNull
@@ -473,10 +462,10 @@ public class Settings {
 
     private void setActivitiesSchedule(String... schedules) {
 
-        // (?<weekDay>[0-9\*])\s*(?<startH>\d{1,2}):(?<startM>\d{1,2})(?<secStartGrp>:(?<startS>\d{1,2}))*-(?<endH>\d{1,2}):(?<endM>\d{1,2})(?<secEndGrp>:(?<endS>\d{1,2}))*\s*(?<plan>\w+)*\s*(?<chromeProfPath>"(?<profilePath>[^"]+)")*
-        //
-        // Options: Case insensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
-        //
+        // (?<weekDay>[0-9\*])\s*(?<startH>\d{1,2}):(?<startM>\d{1,2})(?<secStartGrp>:(?<startS>\d{1,2}))?-(?<endH>\d{1,2}):(?<endM>\d{1,2})(?<secEndGrp>:(?<endS>\d{1,2}))?\s*(?<plan>\w+)?\s*(?<chromeProfPath>"(?<profilePath>[^"]+)")?
+        // 
+        // Options: Case insensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
+        // 
         // Match the regex below and capture its match into a backreference named “weekDay” (also backreference number 1) «(?<weekDay>[0-9\*])»
         //    Match a single character present in the list below «[0-9\*]»
         //       A character in the range between “0” and “9” «0-9»
@@ -490,10 +479,8 @@ public class Settings {
         // Match the regex below and capture its match into a backreference named “startM” (also backreference number 3) «(?<startM>\d{1,2})»
         //    Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
         //       Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
-        // Match the regex below and capture its match into a backreference named “secStartGrp” (also backreference number 4) «(?<secStartGrp>:(?<startS>\d{1,2}))*»
-        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
-        //       You repeated the capturing group itself.  The group will capture only the last iteration.  Put a capturing group around the repeated group to capture all iterations. «*»
-        //       Or, if you don’t want to capture anything, replace the capturing group with a non-capturing group to make your regex more efficient.
+        // Match the regex below and capture its match into a backreference named “secStartGrp” (also backreference number 4) «(?<secStartGrp>:(?<startS>\d{1,2}))?»
+        //    Between zero and one times, as many times as possible, giving back as needed (greedy) «?»
         //    Match the colon character «:»
         //    Match the regex below and capture its match into a backreference named “startS” (also backreference number 5) «(?<startS>\d{1,2})»
         //       Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
@@ -506,47 +493,36 @@ public class Settings {
         // Match the regex below and capture its match into a backreference named “endM” (also backreference number 7) «(?<endM>\d{1,2})»
         //    Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
         //       Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
-        // Match the regex below and capture its match into a backreference named “secEndGrp” (also backreference number 8) «(?<secEndGrp>:(?<endS>\d{1,2}))*»
-        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
-        //       You repeated the capturing group itself.  The group will capture only the last iteration.  Put a capturing group around the repeated group to capture all iterations. «*»
-        //       Or, if you don’t want to capture anything, replace the capturing group with a non-capturing group to make your regex more efficient.
+        // Match the regex below and capture its match into a backreference named “secEndGrp” (also backreference number 8) «(?<secEndGrp>:(?<endS>\d{1,2}))?»
+        //    Between zero and one times, as many times as possible, giving back as needed (greedy) «?»
         //    Match the colon character «:»
         //    Match the regex below and capture its match into a backreference named “endS” (also backreference number 9) «(?<endS>\d{1,2})»
         //       Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
         //          Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
         // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
         //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
-        // Match the regex below and capture its match into a backreference named “plan” (also backreference number 10) «(?<plan>\w+)*»
-        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
-        //       You repeated the capturing group itself.  The group will capture only the last iteration.  Put a capturing group around the repeated group to capture all iterations. «*»
-        //       Or, if you don’t want to capture anything, replace the capturing group with a non-capturing group to make your regex more efficient.
+        // Match the regex below and capture its match into a backreference named “plan” (also backreference number 10) «(?<plan>\w+)?»
+        //    Between zero and one times, as many times as possible, giving back as needed (greedy) «?»
         //    Match a single character that is a “word character” (ASCII letter, digit, or underscore only) «\w+»
         //       Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
         // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
         //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
-        // Match the regex below and capture its match into a backreference named “chromeProfPath” (also backreference number 11) «(?<chromeProfPath>"(?<profilePath>[^"]+)")*»
-        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
-        //       You repeated the capturing group itself.  The group will capture only the last iteration.  Put a capturing group around the repeated group to capture all iterations. «*»
-        //       Or, if you don’t want to capture anything, replace the capturing group with a non-capturing group to make your regex more efficient.
+        // Match the regex below and capture its match into a backreference named “chromeProfPath” (also backreference number 11) «(?<chromeProfPath>"(?<profilePath>[^"]+)")?»
+        //    Between zero and one times, as many times as possible, giving back as needed (greedy) «?»
         //    Match the character “"” literally «"»
         //    Match the regex below and capture its match into a backreference named “profilePath” (also backreference number 12) «(?<profilePath>[^"]+)»
         //       Match any character that is NOT a “"” «[^"]+»
         //          Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
         //    Match the character “"” literally «"»
 
-        Pattern scheduleRegex = Pattern.compile("(?<weekDay>[0-9*])\\s*(?<startH>\\d{1,2}):(?<startM>\\d{1,2})(?<secStartGrp>:(?<startS>\\d{1,2}))*-(?<endH>\\d{1,2}):(?<endM>\\d{1,2})(?<secEndGrp>:(?<endS>\\d{1,2}))*\\s*(?<plan>\\w+)*\\s*(?<chromeProfPath>\"(?<profilePath>[^\"]+)\")*", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+
+        Pattern scheduleRegex = Pattern.compile("(?<weekDay>[0-9*])\\s*(?<startH>\\d{1,2}):(?<startM>\\d{1,2})(?<secStartGrp>:(?<startS>\\d{1,2}))?-(?<endH>\\d{1,2}):(?<endM>\\d{1,2})(?<secEndGrp>:(?<endS>\\d{1,2}))?\\s*(?<plan>\\w+)?\\s*(?<chromeProfPath>\"(?<profilePath>[^\"]+)\")?", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
         this.activitiesSchedule.clear();
 
         for (String s : schedules) {
             String add = s.trim();
             if ("".equals(add)) continue;
-
-            String[] times = add.split("-");
-            if (times.length != 2) {
-                warningSettingLInes.add("Impossible to find start time and end time for scheduling: " + add);
-                continue;
-            }
 
             Matcher startMatcher;
             try {
@@ -578,7 +554,7 @@ public class Settings {
                 // Settings Plan
                 String plan = "".equals(startMatcher.group("plan")) || startMatcher.group("plan") == null ? "" : startMatcher.group("plan");
 
-                // Chrome Parofile Path
+                // Chrome Profile Path
                 String profilePath = "".equals(startMatcher.group("chromeProfPath")) || startMatcher.group("chromeProfPath") == null ? "" : startMatcher.group("profilePath");
 
                 if (startTime != null && endTime != null) {
@@ -631,7 +607,7 @@ public class Settings {
 
         // \s*(?<type>[onm3bt])\s+(?<difficulty>[123])\s+(?<tier>\d{1,2})\s+(?<chanceToRun>\d*)\s*(?<timer>\d*)\s*(?<dungeonOnTimeout>[01])*\s*(?<solo>[01])*\s*(?<minimumTotalTS>\d+)*\s*(?<minimumPlayerTS>\d+)*
         //
-        // Options: Case sensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
+        // Options: Case sensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
         //
         // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
         //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
@@ -1528,7 +1504,7 @@ public class Settings {
             try {
                 // \s*[onm3bt]\s[123]\s\d{1,2}\s*$
                 //
-                // Options: Case sensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
+                // Options: Case sensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
                 //
                 // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
                 //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»

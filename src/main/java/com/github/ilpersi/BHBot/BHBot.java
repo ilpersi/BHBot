@@ -66,6 +66,9 @@ public class BHBot {
     // When we do not have anymore gems to use this is true
     boolean noGemsToBribe = false;
 
+    // currently used scheduling
+    Settings.ActivitiesScheduleSetting currentScheduling = null;
+
     public static void main(String[] args) {
         BHBot bot = new BHBot();
         bot.notificationManager = new NotificationManager(bot);
@@ -114,6 +117,8 @@ public class BHBot {
                     i++;
             }
         }
+
+        final String initialConfigurationFile = Settings.configurationFile;
 
         if ("LOAD_IDLE_SETTINGS".equals(Settings.configurationFile)) {
             bot.settings.setIdle();
@@ -234,19 +239,59 @@ public class BHBot {
             }
 
             // When no scheduling is present, we stop the bot
-            if (bot.running && State.Main.equals(bot.getState())) {
-                if (!bot.settings.activitiesSchedule.canRun()) {
+            if (bot.running && !bot.settings.activitiesSchedule.isEmpty() && bot.currentScheduling != null && State.Main.equals(bot.getState())) {
+                if (bot.currentScheduling.isActive()) {
                     bot.running = false;
                     bot.stop();
+                    bot.currentScheduling = null;
                 }
             }
 
             // When the bot is not running, we check if an active schedule is available
-            if (!bot.running && bot.settings.activitiesSchedule.canRun()) {
-                bot.browser = new BrowserManager(bot, userDataDir);
-                bot.running = true;
-                bot.scheduler.resetIdleTime(true);
-                bot.processCommand("start");
+            if (!bot.running) {
+                if (bot.settings.activitiesSchedule.isEmpty()) {
+                    bot.browser = new BrowserManager(bot, userDataDir);
+                    bot.running = true;
+                    bot.scheduler.resetIdleTime(true);
+                    bot.processCommand("start");
+                } else {
+
+                    for (Settings.ActivitiesScheduleSetting s : bot.settings.activitiesSchedule) {
+                        if (s.isActive()) {
+
+                            // We check what Chrome Profile path to use
+                            String chromeProfilePath = "".equals(s.chromeProfilePath) ? userDataDir : s.chromeProfilePath;
+
+                            // We check what setting plan to use
+                            if (!"".equals(s.settingsPlan)) {
+                                Settings.configurationFile = "plans/" + s.settingsPlan + ".ini";
+                            } else {
+                                Settings.configurationFile = initialConfigurationFile;
+                            }
+
+                            // We load the settings
+                            try {
+                                bot.settings.load(Settings.configurationFile);
+                            } catch (FileNotFoundException e) {
+                                BHBot.logger.error("It was impossible to load setting file for scheduling : " + s.toString());
+                                continue;
+                            }
+
+                            // We save the current scheduling
+                            bot.currentScheduling = s;
+
+                            bot.settings.checkDeprecatedSettings();
+                            bot.settings.sanitizeSetting();
+                            bot.reloadLogger();
+
+                            bot.browser = new BrowserManager(bot, chromeProfilePath);
+                            bot.running = true;
+                            bot.scheduler.resetIdleTime(true);
+                            bot.processCommand("start");
+                            break;
+                        }
+                    }
+                }
             }
 
             BHBot.logger.trace("Main Thread Sleeping");
@@ -722,7 +767,7 @@ public class BHBot {
         return true;
     }
 
-    private void reloadLogger() {
+    void reloadLogger() {
         ConfigurationFactory configFactory = new BHBotConfigurationFactory();
         ConfigurationFactory.setConfigurationFactory(configFactory);
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
