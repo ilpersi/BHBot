@@ -419,6 +419,7 @@ class CueManager {
 
         // T/G Gauntlet difficulty related
         addCue("ScrollerAtTop", "cues/cueScrollerAtTop.png", null);
+        addCue("ScrollerNone", "cues/cueScrollerNone.png", Bounds.fromWidthHeight(525, 120, 30, 330));
 
 
         // PvP strip related:

@@ -4057,18 +4057,23 @@ public class DungeonThread implements Runnable {
         // Scroller max clicks
         final int MAX_CLICKS = 30;
 
-        // We make sure the scroll is at the top position. This is just failsafe in all the tests this was always the default behavior
-        MarvinSegment seg = MarvinSegment.fromCue(scrollerAtTop, Misc.Durations.SECOND / 2, bot.browser);
         int cntAttempt = 0;
-        while (seg == null) {
-            if (cntAttempt > MAX_CLICKS) {
-                BHBot.logger.error("It was impossible to move the scroller to the top position for the difficulty range.");
-                return 0;
-            }
-            bot.browser.clickInGame(540, 133);
 
+        // We make sure the scroll is at the top position. This is just failsafe in all the tests this was always the default behavior
+        MarvinSegment seg = MarvinSegment.fromCue("ScrollerNone", Misc.Durations.SECOND / 2, bot.browser);
+        if (seg != null) {
             seg = MarvinSegment.fromCue(scrollerAtTop, Misc.Durations.SECOND / 2, bot.browser);
-            cntAttempt++;
+
+            while (seg == null) {
+                if (cntAttempt > MAX_CLICKS) {
+                    BHBot.logger.error("It was impossible to move the scroller to the top position for the difficulty range.");
+                    return 0;
+                }
+                bot.browser.clickInGame(540, 133);
+
+                seg = MarvinSegment.fromCue(scrollerAtTop, Misc.Durations.SECOND / 2, bot.browser);
+                cntAttempt++;
+            }
         }
 
         bot.browser.readScreen(Misc.Durations.SECOND / 2);
