@@ -228,7 +228,7 @@ public class Settings {
     int maxTokens = 10;
     int maxTickets = 10;
     int maxBadges = 10;
-    int maxXeals = 4;
+    int maxXeals = 10;
 
     // costs (1..5) for various events:
     int costPVP = 1;
@@ -383,7 +383,7 @@ public class Settings {
     private boolean useHeadlessMode = false; // run Chrome with --headless switch?
     private boolean restartAfterAdOfferTimeout = true; // if true, then bot will automatically restart itself if it hasn't claimed any ad offer in a time longer than defined. This is needed because ads don't appear anymore if Chrome doesn't get restarted.
     private boolean resetTimersOnBattleEnd = true; // if true, readout timers will get reset once dungeon is cleared (or pvp or gvg or any other type of battle)
-    private final Map<String, String> lastUsedMap = new HashMap<>();
+    private Map<String, String> lastUsedMap = new HashMap<>();
 
     // If any error happens during the settings loading, this arraylist is populated with the offending lines
     ArrayList<String> wrongSettingLines = new ArrayList<>();
@@ -395,23 +395,107 @@ public class Settings {
         setDefault();
     }
 
+    /**
+     * Takes care of resetting all the settings to their default value.
+     */
     private void setDefault() {
         activitiesEnabled = new LinkedHashSet<>();
+        activitiesRoundRobin = true;
+        activitiesSchedule = new ActivitiesScheduleList();
+        autoBossRune = new HashMap<>();
+        autoConsume = false;
         autoRevive = new ArrayList<>();
-        autoShrine = new ArrayList<>();
+        autoRune = new HashMap<>();
         autoRuneDefault = new ArrayList<>();
+        autoShrine = new ArrayList<>();
+        autoStartChromeDriver = true;
+        baitAmount = 5;
+        battleDelay = 60;
+        bribeLevel = 0;
         consumables = new ArrayList<>();
-        difficultyTrials = 10;
+        contributeFamiliars = true;
+        costExpedition = 1;
+        costGauntlet = 1;
+        costGVG = 1;
+        costInvasion = 1;
+        costPVP = 1;
+        costTrials = 1;
+        debugDetectionTimes = false;
+        debugWBTS = false;
+        difficultyFailsafe = new HashMap<>();
         difficultyGauntlet = 10;
+        difficultyTrials = 10;
+        discordNotifyAlive = 0;
+        discordNotifyBribe = false;
+        discordNotifyCrash = false;
         discordNotifyDrop = new ArrayList<>();
+        discordNotifyErrors = false;
+        discordNotifyPM = false;
+        discordUserName = "";
+        discordWebHookUrl = "";
         dungeons = new RandomCollection<>();
+        enableDiscord = false;
+        enablePushover = false;
+        enterGuildHall = true;
         expeditions = new RandomCollection<>();
         familiars = new ArrayList<>();
+        familiarScreenshot = 2;
+        gvgOpponent = 1;
         gvgstrip = new ArrayList<>();
+        hideWindowOnRestart = false;
+        idleMode = false;
+        lastUsedMap = new HashMap<>();
+        logBaseDir = "logs";
+        logLevel = Level.INFO;
+        logMaxDays = 30;
+        logPringStatusMessages = false;
+        maxBadges = 10;
+        maxShards = 4;
+        maxTickets = 10;
+        maxTokens = 10;
+        maxXeals = 10;
+        minBadges = 5;
+        minEnergyPercentage = 70;
+        minShards = 2;
+        minSolo = 0;
+        minTickets = 5;
+        minTokens = 5;
+        minXeals = 1;
+        openSkeleton = 0;
+        password = "";
+        persuasionLevel = 1;
+        poAppToken = "";
+        poNotifyAlive = 0;
+        poNotifyBribe = false;
+        poNotifyCrash = false;
         poNotifyDrop = new ArrayList<>();
+        poNotifyErrors = false;
+        poNotifyPM = false;
+        positionDelay = 0;
+        potionLimit = 5;
+        potionOrder = "123";
+        poUserToken = "";
+        pvpOpponent = 1;
         pvpstrip = new ArrayList<>();
         raids = new RandomCollection<>();
+        reconnectTimer = 60;
+        resetTimersOnBattleEnd = true;
+        restartAfterAdOfferTimeout = true;
         screenshots = new LinkedHashSet<>();
+        shrineDelay = 20;
+        successThreshold = new HashMap<>();
+        tankPosition = 1;
+        tankPriority = new ArrayList<>();
+        useDoNotShareURL = false;
+        useHeadlessMode = false;
+        username = "";
+        victoryScreenshot = false;
+        warningSettingLInes = new ArrayList<>();
+        wednesdayDungeons = new RandomCollection<>();
+        wednesdayRaids = new RandomCollection<>();
+        worldBossSettings = new RandomCollection<>();
+        wrongSettingLines = new ArrayList<>();
+
         setDifficultyFailsafeFromString("t:0 g:0");
         setDungeons("z1d1 1 100"); // some default value
         setExpeditions("p1 100 100"); // some default value
@@ -419,10 +503,6 @@ public class Settings {
         setScreenshotsFromString("w d f b dg wg fe"); // enabled all by default
         setWednesdayDungeons(""); // default is empty, else if people delete the line it will load this value
         setWednesdayRaids(""); // default is empty, else if people delete the line it will load this value
-        tankPriority = new ArrayList<>();
-        wednesdayDungeons = new RandomCollection<>();
-        wednesdayRaids = new RandomCollection<>();
-        worldBossSettings = new RandomCollection<>();
     }
 
     /**
