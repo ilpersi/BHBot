@@ -238,9 +238,9 @@ public class BHBot {
                 logger.error("Impossible to read user input", e);
             }
 
-            // When no scheduling is present, we stop the bot
+            // When the current schedule is no longer valid, we exit from it
             if (bot.running && !bot.settings.activitiesSchedule.isEmpty() && bot.currentScheduling != null && State.Main.equals(bot.getState())) {
-                if (bot.currentScheduling.isActive()) {
+                if (!bot.currentScheduling.isActive()) {
                     bot.running = false;
                     bot.stop();
                     bot.currentScheduling = null;
