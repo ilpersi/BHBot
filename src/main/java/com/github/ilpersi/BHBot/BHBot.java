@@ -239,7 +239,7 @@ public class BHBot {
             }
 
             // When the current schedule is no longer valid, we exit from it
-            if (bot.running && !bot.settings.activitiesSchedule.isEmpty() && bot.currentScheduling != null && State.Main.equals(bot.getState())) {
+            if (bot.running && bot.currentScheduling != null && State.Main.equals(bot.getState())) {
                 if (!bot.currentScheduling.isActive()) {
                     bot.running = false;
                     bot.stop();
