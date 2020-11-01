@@ -288,6 +288,7 @@ public class BHBot {
                             bot.running = true;
                             bot.scheduler.resetIdleTime(true);
                             bot.processCommand("start");
+                            BHBot.logger.info("Current scheduler is: " + s.toString());
                             break;
                         }
                     }

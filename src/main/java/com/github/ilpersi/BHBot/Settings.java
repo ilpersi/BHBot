@@ -86,6 +86,20 @@ public class Settings {
             return (this.startTime.compareTo(LocalTime.now()) <= 0) && (this.endTime.compareTo(LocalTime.now()) >= 0
             && ("*".equals(this.weekDay) || this.weekDay.equals(new SimpleDateFormat("u").format(new Date()))) );
         }
+
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder();
+            result.append(this.weekDay).append(" ")
+                    .append(this.startTime.toString())
+                    .append("-")
+                    .append(this.endTime.toString());
+
+            if (!"".equals(this.settingsPlan)) result.append(" ").append(this.settingsPlan);
+            if (!"".equals(this.chromeProfilePath)) result.append(" \"").append(this.chromeProfilePath).append("\"");
+
+            return result.toString();
+        }
     }
 
     /**
@@ -105,13 +119,7 @@ public class Settings {
                     StringBuilder result = new StringBuilder();
                     for (ActivitiesScheduleSetting s : this) {
                         if (result.length() > 0) result.append(";");
-                        result.append(s.weekDay).append(" ")
-                                .append(s.startTime.toString())
-                                .append("-")
-                                .append(s.endTime.toString());
-
-                        if (!"".equals(s.settingsPlan)) result.append(" ").append(s.settingsPlan);
-                        if (!"".equals(s.chromeProfilePath)) result.append(" \"").append(s.chromeProfilePath).append("\"");
+                        result.append(s.toString());
                     }
                     return result.toString();
                 }
