@@ -1343,6 +1343,9 @@ public class Settings {
      * Loads settings from list of string arguments (which are lines of the settings.ini file, for example)
      */
     void load(List<String> lines) {
+        // As different profile may use different configurations, we make sure that everytime lastUsedMap is cleared
+        lastUsedMap.clear();
+
         for (String line : lines) {
             if (line.trim().equals("")) continue;
             if (line.startsWith("#")) continue; // a comment
