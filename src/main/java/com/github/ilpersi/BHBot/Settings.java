@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -32,7 +33,7 @@ public class Settings {
         Integer minimumPlayerTS;
 
         WorldBossSetting(char type, byte difficulty, byte tier, double chanceToRun, @Nullable Short timer,
-                                @Nullable Boolean solo, @Nullable Integer minimumTotalTS, @Nullable Integer minimumPlayerTS) {
+                         @Nullable Boolean solo, @Nullable Integer minimumTotalTS, @Nullable Integer minimumPlayerTS) {
             this.type = type;
             this.difficulty = difficulty;
             this.tier = tier;
@@ -63,19 +64,27 @@ public class Settings {
      * This class holds the scheduling settings. It is basically composed of two attributes startTime and endTime
      */
     static class ActivitiesScheduleSetting {
+        String weekDay;
         LocalTime startTime;
         LocalTime endTime;
+        String settingsPlan;
+        String chromeProfilePath;
 
-        ActivitiesScheduleSetting(LocalTime startTime, LocalTime endTime) {
+        ActivitiesScheduleSetting(String weekDay, LocalTime startTime, LocalTime endTime, String settingsPlan, String chromeProfilePath) {
+            this.weekDay = weekDay;
             this.startTime = startTime;
             this.endTime = endTime;
+            this.settingsPlan = settingsPlan;
+            this.chromeProfilePath = chromeProfilePath;
         }
 
         /**
-         * @return true if the the current time is >= of the startTime and <= of the endTime
+         * @return true if the the current time is >= of the startTime and <= of the endTime and the weekDay is either *
+         * or the current day of the week
          */
         boolean isActive() {
-            return (this.startTime.compareTo(LocalTime.now()) <= 0) && (this.endTime.compareTo(LocalTime.now()) >= 0);
+            return (this.startTime.compareTo(LocalTime.now()) <= 0) && (this.endTime.compareTo(LocalTime.now()) >= 0
+            && ("*".equals(this.weekDay) || this.weekDay.equals(new SimpleDateFormat("u").format(new Date()))) );
         }
     }
 
@@ -86,19 +95,23 @@ public class Settings {
     static class ActivitiesScheduleList implements Iterable<ActivitiesScheduleSetting> {
         private final List<ActivitiesScheduleSetting> scheduleList;
 
-        ActivitiesScheduleList () {
+        ActivitiesScheduleList() {
             // We initialize the array list and override the toString method
-            this.scheduleList = new ArrayList<>(){
+            this.scheduleList = new ArrayList<>() {
                 private static final long serialVersionUID = 1L;
 
-                @Override public @NotNull String toString()
-                {
+                @Override
+                public @NotNull String toString() {
                     StringBuilder result = new StringBuilder();
                     for (ActivitiesScheduleSetting s : this) {
                         if (result.length() > 0) result.append(";");
-                        result.append(s.startTime.toString())
+                        result.append(s.weekDay).append(" ")
+                                .append(s.startTime.toString())
                                 .append("-")
                                 .append(s.endTime.toString());
+
+                        if (!"".equals(s.settingsPlan)) result.append(" ").append(s.settingsPlan);
+                        if (!"".equals(s.chromeProfilePath)) result.append(" \"").append(s.chromeProfilePath).append("\"");
                     }
                     return result.toString();
                 }
@@ -121,7 +134,7 @@ public class Settings {
             // No schedule is present so we assume the bot should always run
             if (this.scheduleList.isEmpty()) return true;
 
-            for (Settings.ActivitiesScheduleSetting s: this.scheduleList){
+            for (Settings.ActivitiesScheduleSetting s : this.scheduleList) {
                 if (s.isActive()) {
                     return true;
                 }
@@ -279,7 +292,7 @@ public class Settings {
      * World Boss Settings
      **/
     RandomCollection<WorldBossSetting> worldBossSettings;
-//    List<String> worldBossSettings;
+    //    List<String> worldBossSettings;
 //    int worldBossTimer = 0;
 //    boolean worldBossSolo = false;
     boolean debugWBTS = false;
@@ -459,29 +472,73 @@ public class Settings {
     }
 
     private void setActivitiesSchedule(String... schedules) {
-        // (?<hours>\d{1,2}):(?<minutes>\d{1,2})(:(?<seconds>\d{1,2}))*
+
+        // (?<weekDay>[0-9\*])\s*(?<startH>\d{1,2}):(?<startM>\d{1,2})(?<secStartGrp>:(?<startS>\d{1,2}))*-(?<endH>\d{1,2}):(?<endM>\d{1,2})(?<secEndGrp>:(?<endS>\d{1,2}))*\s*(?<plan>\w+)*\s*(?<chromeProfPath>"(?<profilePath>[^"]+)")*
         //
-        // Options: Case sensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
+        // Options: Case insensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
         //
-        // Match the regex below and capture its match into a backreference named “hours” (also backreference number 1) «(?<hours>\d{1,2})»
+        // Match the regex below and capture its match into a backreference named “weekDay” (also backreference number 1) «(?<weekDay>[0-9\*])»
+        //    Match a single character present in the list below «[0-9\*]»
+        //       A character in the range between “0” and “9” «0-9»
+        //       The literal character “*” «\*»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        // Match the regex below and capture its match into a backreference named “startH” (also backreference number 2) «(?<startH>\d{1,2})»
         //    Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
         //       Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
         // Match the colon character «:»
-        // Match the regex below and capture its match into a backreference named “minutes” (also backreference number 2) «(?<minutes>\d{1,2})»
+        // Match the regex below and capture its match into a backreference named “startM” (also backreference number 3) «(?<startM>\d{1,2})»
         //    Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
         //       Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
-        // Match the regex below and capture its match into backreference number 3 «(:(?<seconds>\d{1,2}))*»
+        // Match the regex below and capture its match into a backreference named “secStartGrp” (also backreference number 4) «(?<secStartGrp>:(?<startS>\d{1,2}))*»
         //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        //       You repeated the capturing group itself.  The group will capture only the last iteration.  Put a capturing group around the repeated group to capture all iterations. «*»
+        //       Or, if you don’t want to capture anything, replace the capturing group with a non-capturing group to make your regex more efficient.
         //    Match the colon character «:»
-        //    Match the regex below and capture its match into a backreference named “seconds” (also backreference number 4) «(?<seconds>\d{1,2})»
+        //    Match the regex below and capture its match into a backreference named “startS” (also backreference number 5) «(?<startS>\d{1,2})»
         //       Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
         //          Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+        // Match the character “-” literally «-»
+        // Match the regex below and capture its match into a backreference named “endH” (also backreference number 6) «(?<endH>\d{1,2})»
+        //    Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+        //       Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+        // Match the colon character «:»
+        // Match the regex below and capture its match into a backreference named “endM” (also backreference number 7) «(?<endM>\d{1,2})»
+        //    Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+        //       Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+        // Match the regex below and capture its match into a backreference named “secEndGrp” (also backreference number 8) «(?<secEndGrp>:(?<endS>\d{1,2}))*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        //       You repeated the capturing group itself.  The group will capture only the last iteration.  Put a capturing group around the repeated group to capture all iterations. «*»
+        //       Or, if you don’t want to capture anything, replace the capturing group with a non-capturing group to make your regex more efficient.
+        //    Match the colon character «:»
+        //    Match the regex below and capture its match into a backreference named “endS” (also backreference number 9) «(?<endS>\d{1,2})»
+        //       Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+        //          Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        // Match the regex below and capture its match into a backreference named “plan” (also backreference number 10) «(?<plan>\w+)*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        //       You repeated the capturing group itself.  The group will capture only the last iteration.  Put a capturing group around the repeated group to capture all iterations. «*»
+        //       Or, if you don’t want to capture anything, replace the capturing group with a non-capturing group to make your regex more efficient.
+        //    Match a single character that is a “word character” (ASCII letter, digit, or underscore only) «\w+»
+        //       Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        // Match the regex below and capture its match into a backreference named “chromeProfPath” (also backreference number 11) «(?<chromeProfPath>"(?<profilePath>[^"]+)")*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        //       You repeated the capturing group itself.  The group will capture only the last iteration.  Put a capturing group around the repeated group to capture all iterations. «*»
+        //       Or, if you don’t want to capture anything, replace the capturing group with a non-capturing group to make your regex more efficient.
+        //    Match the character “"” literally «"»
+        //    Match the regex below and capture its match into a backreference named “profilePath” (also backreference number 12) «(?<profilePath>[^"]+)»
+        //       Match any character that is NOT a “"” «[^"]+»
+        //          Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
+        //    Match the character “"” literally «"»
 
-        Pattern scheduleRegex = Pattern.compile("(?<hours>\\d{1,2}):(?<minutes>\\d{1,2})(:(?<seconds>\\d{1,2}))*");
+        Pattern scheduleRegex = Pattern.compile("(?<weekDay>[0-9*])\\s*(?<startH>\\d{1,2}):(?<startM>\\d{1,2})(?<secStartGrp>:(?<startS>\\d{1,2}))*-(?<endH>\\d{1,2}):(?<endM>\\d{1,2})(?<secEndGrp>:(?<endS>\\d{1,2}))*\\s*(?<plan>\\w+)*\\s*(?<chromeProfPath>\"(?<profilePath>[^\"]+)\")*", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
         this.activitiesSchedule.clear();
 
-        for (String s: schedules) {
+        for (String s : schedules) {
             String add = s.trim();
             if ("".equals(add)) continue;
 
@@ -491,51 +548,48 @@ public class Settings {
                 continue;
             }
 
-            // We match the start time
-            LocalTime startTime = null;
+            Matcher startMatcher;
             try {
-                Matcher startMatcher = scheduleRegex.matcher(times[0]);
-                if (startMatcher.find()) {
-                    int hours = Integer.parseInt(startMatcher.group("hours"));
-                    int minutes = Integer.parseInt(startMatcher.group("minutes"));
-                    int seconds = "".equals(startMatcher.group("seconds")) || startMatcher.group("seconds") == null ? 0 : Integer.parseInt(startMatcher.group("seconds"));
-                    startTime = LocalTime.of(hours, minutes, seconds);
-                } else {
-                    warningSettingLInes.add("Impossible to match start time format for scheduling: " + add);
-                    continue;
-                }
+                startMatcher = scheduleRegex.matcher(s);
             } catch (PatternSyntaxException ex) {
                 // Syntax error in the regular expression
                 warningSettingLInes.add("Error when matching start time format for scheduling: " + add);
+                continue;
             }
 
-            // We match the end time
-            LocalTime endTime = null;
-            try {
-                Matcher endMatcher = scheduleRegex.matcher(times[1]);
-                if (endMatcher.find()) {
-                    int hours = Integer.parseInt(endMatcher.group("hours"));
-                    int minutes = Integer.parseInt(endMatcher.group("minutes"));
-                    int seconds = "".equals(endMatcher.group("seconds")) || endMatcher.group("seconds") == null ? 0 : Integer.parseInt(endMatcher.group("seconds"));
-                    endTime = LocalTime.of(hours, minutes, seconds);
-                } else {
-                    warningSettingLInes.add("Impossible to match end time format for scheduling: " + add);
-                    continue;
-                }
-            } catch (PatternSyntaxException ex) {
-                // Syntax error in the regular expression
-                warningSettingLInes.add("Error when matching end time format for scheduling: " + add);
-            }
-
-            if (startTime != null && endTime != null) {
-                if (endTime.compareTo(startTime) < 0) {
-                    warningSettingLInes.add("End time is before start time for schedule setting: " + add);
-                    continue;
-                }
-
-                activitiesSchedule.add(new ActivitiesScheduleSetting(startTime, endTime));
+            if (!startMatcher.find()) {
+                warningSettingLInes.add("Impossible to match start time format for scheduling: " + add);
             } else {
-                warningSettingLInes.add("Null startTime or endTime for setting: " + add);
+                // weekDay
+                String weekDay = startMatcher.group("weekDay");
+
+                // Start Time
+                int startH = Integer.parseInt(startMatcher.group("startH"));
+                int startM = Integer.parseInt(startMatcher.group("startM"));
+                int startS = "".equals(startMatcher.group("secStartGrp")) || startMatcher.group("secStartGrp") == null ? 0 : Integer.parseInt(startMatcher.group("startS"));
+                LocalTime startTime = LocalTime.of(startH, startM, startS);
+
+                // End Time
+                int endH = Integer.parseInt(startMatcher.group("endH"));
+                int endM = Integer.parseInt(startMatcher.group("endM"));
+                int endS = "".equals(startMatcher.group("secEndGrp")) || startMatcher.group("secEndGrp") == null ? 0 : Integer.parseInt(startMatcher.group("endS"));
+                LocalTime endTime = LocalTime.of(endH, endM, endS);
+
+                // Settings Plan
+                String plan = "".equals(startMatcher.group("plan")) || startMatcher.group("plan") == null ? "" : startMatcher.group("plan");
+
+                // Chrome Parofile Path
+                String profilePath = "".equals(startMatcher.group("chromeProfPath")) || startMatcher.group("chromeProfPath") == null ? "" : startMatcher.group("profilePath");
+
+                if (startTime != null && endTime != null) {
+                    if (endTime.compareTo(startTime) < 0) {
+                        warningSettingLInes.add("End time is before start time for schedule setting: " + add);
+                        continue;
+                    }
+                    activitiesSchedule.add(new ActivitiesScheduleSetting(weekDay, startTime, endTime, plan, profilePath));
+                } else {
+                    warningSettingLInes.add("Null startTime or endTime for setting: " + add);
+                }
             }
         }
     }
@@ -658,9 +712,9 @@ public class Settings {
 
                 // Nullable fields
                 timer = "".equals(wbMatcher.group("timer")) || wbMatcher.group("timer") == null ? null : Short.parseShort(wbMatcher.group("timer"));
-                solo = "".equals(wbMatcher.group("solo"))  || wbMatcher.group("solo") == null ? null : "1".equals(wbMatcher.group("solo"));
-                minimumTotalTS = "".equals(wbMatcher.group("minimumTotalTS"))  || wbMatcher.group("minimumTotalTS") == null ? null : Integer.parseInt(wbMatcher.group("minimumTotalTS"));
-                minimumPlayerTS = "".equals(wbMatcher.group("minimumPlayerTS")) || wbMatcher.group("minimumPlayerTS") == null ? null :  Integer.parseInt(wbMatcher.group("minimumPlayerTS"));
+                solo = "".equals(wbMatcher.group("solo")) || wbMatcher.group("solo") == null ? null : "1".equals(wbMatcher.group("solo"));
+                minimumTotalTS = "".equals(wbMatcher.group("minimumTotalTS")) || wbMatcher.group("minimumTotalTS") == null ? null : Integer.parseInt(wbMatcher.group("minimumTotalTS"));
+                minimumPlayerTS = "".equals(wbMatcher.group("minimumPlayerTS")) || wbMatcher.group("minimumPlayerTS") == null ? null : Integer.parseInt(wbMatcher.group("minimumPlayerTS"));
 
                 // Adding to the Random collection
                 WorldBossSetting wbSetting = new WorldBossSetting(type, difficulty, tier, chanceToRun, timer, solo, minimumTotalTS, minimumPlayerTS);
@@ -785,6 +839,7 @@ public class Settings {
             this.poNotifyDrop.add(add);
         }
     }
+
     private void setDiscordNotifyDrop(String... types) {
         this.discordNotifyDrop.clear();
         for (String t : types) {
@@ -857,7 +912,7 @@ public class Settings {
         }
     }
 
-    private void setSuccessThreshold (String... tresholds) {
+    private void setSuccessThreshold(String... tresholds) {
         this.successThreshold.clear();
         // We only support Trial and Gauntlets, so we do sanity checks here only settings the right letters t and g
         String tresholdPatternStr = "([tg]):([\\d]+):([\\d]+)";
@@ -1144,7 +1199,9 @@ public class Settings {
         setActivitiesSchedule(s.split(";"));
     }
 
-    private void setScreenshotsFromString(String s) { setScreenshots(s.split(" ")); }
+    private void setScreenshotsFromString(String s) {
+        setScreenshots(s.split(" "));
+    }
 
     private void setWorldBossNewFromString(String s) {
         setWorldBossNew(s.split(";"));
@@ -1467,7 +1524,7 @@ public class Settings {
         }
 
         // We check if the worldBoss setting has the old format
-        if (lastUsedMap.getOrDefault("worldBoss", null) != null && !lastUsedMap.get("worldBoss").contains(";") ){
+        if (lastUsedMap.getOrDefault("worldBoss", null) != null && !lastUsedMap.get("worldBoss").contains(";")) {
             try {
                 // \s*[onm3bt]\s[123]\s\d{1,2}\s*$
                 //
