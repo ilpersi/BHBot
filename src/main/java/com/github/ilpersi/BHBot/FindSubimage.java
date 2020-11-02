@@ -56,39 +56,53 @@ class FindSubimage {
         boolean[][] processed = new boolean[imageIn.getWidth()][imageIn.getHeight()];
 
         // Full image
-        mainLoop:
-        for (int y = startY; y < endY; y++) {
-            for (int x = startX; x < endX; x++) {
+        try {
+            mainLoop:
+            for (int y = startY; y < endY; y++) {
+                for (int x = startX; x < endX; x++) {
 
-                if (processed[x][y]) {
-                    continue;
-                }
+                    if (processed[x][y]) {
+                        continue;
+                    }
 
-                int notMatched = 0;
-                boolean match = true;
-                // subimage
-                if (y + subimage.getHeight() < imageIn.getHeight() && x + subimage.getWidth() < imageIn.getWidth()) {
+                    int notMatched = 0;
+                    boolean match = true;
+                    // subimage
+                    if (y + subimage.getHeight() < imageIn.getHeight() && x + subimage.getWidth() < imageIn.getWidth()) {
 
 
-                    outerLoop:
-                    for (int i = 0; i < subimage.getHeight(); i++) {
-                        for (int j = 0; j < subimage.getWidth(); j++) {
+                        outerLoop:
+                        for (int i = 0; i < subimage.getHeight(); i++) {
+                            for (int j = 0; j < subimage.getWidth(); j++) {
 
-                            if (processed[x + j][y + i]) {
-                                match = false;
-                                break outerLoop;
-                            }
+                                if (processed[x + j][y + i]) {
+                                    match = false;
+                                    break outerLoop;
+                                }
 
-                            Color c1 = new Color(imageIn.getRGB(x + j, y + i), true);
+                                Color c1 = new Color(imageIn.getRGB(x + j, y + i), true);
 
-                            Color c2 = new Color(subimage.getRGB(j, i), true);
+                                Color c2 = new Color(subimage.getRGB(j, i), true);
 
-                            if (c2.getAlpha() == 0) {
-                                if (!treatTransparentAsObscured)
-                                    continue; // we don't match transparent pixels!
-                                // treat transparent pixel as obscured background:
-                                int total = c1.getRed() + c1.getGreen() + c1.getBlue();
-                                if (total > 200) {
+                                if (c2.getAlpha() == 0) {
+                                    if (!treatTransparentAsObscured)
+                                        continue; // we don't match transparent pixels!
+                                    // treat transparent pixel as obscured background:
+                                    int total = c1.getRed() + c1.getGreen() + c1.getBlue();
+                                    if (total > 200) {
+                                        notMatched++;
+
+                                        if (notMatched > (1 - similarity) * subImagePixels) {
+                                            match = false;
+                                            break outerLoop;
+                                        }
+                                    }
+                                } else if
+                                (
+                                        Math.abs(c1.getRed() - c2.getRed()) > 5 ||
+                                                Math.abs(c1.getGreen() - c2.getGreen()) > 5 ||
+                                                Math.abs(c1.getBlue() - c2.getBlue()) > 5
+                                ) {
                                     notMatched++;
 
                                     if (notMatched > (1 - similarity) * subImagePixels) {
@@ -96,39 +110,29 @@ class FindSubimage {
                                         break outerLoop;
                                     }
                                 }
-                            } else if
-                            (
-                                    Math.abs(c1.getRed() - c2.getRed()) > 5 ||
-                                            Math.abs(c1.getGreen() - c2.getGreen()) > 5 ||
-                                            Math.abs(c1.getBlue() - c2.getBlue()) > 5
-                            ) {
-                                notMatched++;
-
-                                if (notMatched > (1 - similarity) * subImagePixels) {
-                                    match = false;
-                                    break outerLoop;
-                                }
                             }
                         }
-                    }
-                } else {
-                    match = false;
-                }
-
-                if (match) {
-                    segments.add(new MarvinSegment(x, y, x + subimage.getWidth(), y + subimage.getHeight()));
-
-                    if (!findAll) {
-                        break mainLoop;
+                    } else {
+                        match = false;
                     }
 
-                    for (int i = 0; i < subimage.getHeight(); i++) {
-                        for (int j = 0; j < subimage.getWidth(); j++) {
-                            processed[x + j][y + i] = true;
+                    if (match) {
+                        segments.add(new MarvinSegment(x, y, x + subimage.getWidth(), y + subimage.getHeight()));
+
+                        if (!findAll) {
+                            break mainLoop;
+                        }
+
+                        for (int i = 0; i < subimage.getHeight(); i++) {
+                            for (int j = 0; j < subimage.getWidth(); j++) {
+                                processed[x + j][y + i] = true;
+                            }
                         }
                     }
                 }
             }
+        } catch (java.lang.ArrayIndexOutOfBoundsException e) {
+            BHBot.logger.debug("ArrayIndexOutOfBoundsException in FindSubimage", e);
         }
 
         return segments;
