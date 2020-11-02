@@ -49,7 +49,7 @@ public class Misc {
         return r.toString();
     }
 
-    static List<String> readTextFile2(String file) throws FileNotFoundException {
+    static List<String> fileToList(String file) throws FileNotFoundException {
         List<String> lines = new ArrayList<>();
         BufferedReader br;
 

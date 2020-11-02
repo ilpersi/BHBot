@@ -184,6 +184,7 @@ public class Settings {
     boolean activitiesRoundRobin = true;
     // We extend the ArrayList class with a couple of helper methods
     ActivitiesScheduleList activitiesSchedule = new ActivitiesScheduleList();
+    ActivitiesScheduleList defaultActivitiesSchedule = new ActivitiesScheduleList();
 
     // Pushover settings
     boolean enablePushover = false;
@@ -404,7 +405,7 @@ public class Settings {
     private void setDefault() {
         activitiesEnabled = new LinkedHashSet<>();
         activitiesRoundRobin = true;
-        activitiesSchedule = new ActivitiesScheduleList();
+        activitiesSchedule = defaultActivitiesSchedule;
         autoBossRune = new HashMap<>();
         autoConsume = false;
         autoRevive = new ArrayList<>();
@@ -1451,6 +1452,7 @@ public class Settings {
         // Scheduling can only be changed by the original configuratin file, not by plans
         if (sourceFile.equals(Settings.initialConfigurationFile)) {
             setActivitiesScheduleFromString(lastUsedMap.getOrDefault("activitiesSchedule", activitiesSchedule.toString()));
+            defaultActivitiesSchedule = activitiesSchedule;
         }
         activitiesRoundRobin = lastUsedMap.getOrDefault("activitiesRoundRobin", activitiesRoundRobin ? "1" : "0").equals("1");
 
@@ -1565,9 +1567,18 @@ public class Settings {
      * Loads settings from disk.
      */
     void load(String file) throws FileNotFoundException {
-        List<String> lines = Misc.readTextFile2(file);
-        if (lines == null || lines.size() == 0)
-            return;
+
+        // If we are reloading a file that is different from the initial one, we always make sure to also reload
+        // the original one as some settings can only be changed on the original one e.g.: schedulings
+        if (!file.equals(Settings.initialConfigurationFile)) {
+            List<String> lines = Misc.fileToList(Settings.initialConfigurationFile);
+            if (lines != null && lines.size() > 0) {
+                load(lines, true, Settings.initialConfigurationFile);
+            }
+        }
+
+        List<String> lines = Misc.fileToList(file);
+        if (lines == null || lines.size() == 0) return;
 
         load(lines, true, file);
     }

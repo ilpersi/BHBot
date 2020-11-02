@@ -154,6 +154,9 @@ public class BHBot {
             }
         }
 
+        // We make sure to save the default schedulings, so they are never erased at reload
+        bot.settings.defaultActivitiesSchedule = bot.settings.activitiesSchedule;
+
         // settings are now loaded
         debugDetectionTimes = bot.settings.debugDetectionTimes;
         logBaseDir = bot.settings.logBaseDir;
@@ -244,16 +247,19 @@ public class BHBot {
                     bot.running = false;
                     bot.stop();
                     bot.currentScheduling = null;
+                    continue;
                 }
             }
 
             // When the bot is not running, we check if an active schedule is available
             if (!bot.running) {
                 if (bot.settings.activitiesSchedule.isEmpty()) {
+                    BHBot.logger.debug("Scheduling is empty, using default configuration.");
                     bot.browser = new BrowserManager(bot, userDataDir);
                     bot.running = true;
                     bot.scheduler.resetIdleTime(true);
                     bot.processCommand("start");
+                    continue;
                 } else {
 
                     BHBot.logger.debug("Checking for available schedulings");
@@ -507,6 +513,10 @@ public class BHBot {
                 }
 
                 switch (params[1]) {
+                    case "config-file":
+                        BHBot.logger.info("Initial configuration file: " + Settings.initialConfigurationFile);
+                        BHBot.logger.info("Current configuration file: " + Settings.configurationFile);
+                        break;
                     case "familiars":
                     case "familiar":
                     case "fam":
