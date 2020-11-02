@@ -139,6 +139,8 @@ public class Settings {
             return this.scheduleList.isEmpty();
         }
 
+        int size() {return this.scheduleList.size();}
+
         @NotNull
         @Override
         public Iterator<ActivitiesScheduleSetting> iterator() {

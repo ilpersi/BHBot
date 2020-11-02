@@ -520,6 +520,17 @@ public class BHBot {
                         else
                             BHBot.logger.warn("USAGE: print fam-md5 [familiarName]");
                         break;
+                    case "scheduling":
+                        if (settings.activitiesSchedule.size() == 0) {
+                            BHBot.logger.info("No scheduling are present at the moment.");
+                        } else {
+                            StringBuilder schedulingStr = new StringBuilder("Current available schedules are:\n");
+                            for (Settings.ActivitiesScheduleSetting activeScheduling : settings.activitiesSchedule) {
+                                schedulingStr.append(activeScheduling.toString());
+                            }
+                            BHBot.logger.info(schedulingStr.toString());
+                        }
+                        break;
                     case "screen-rect":
                         int minx = 0, miny = 0, maxx = 0, maxy = 0, cnt = 0;
                         GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
