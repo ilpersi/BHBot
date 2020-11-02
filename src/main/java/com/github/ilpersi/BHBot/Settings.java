@@ -152,6 +152,7 @@ public class Settings {
     }
 
     static String configurationFile = "settings.ini";
+    static String initialConfigurationFile = "settings.ini";
 
     String username = "";
     String password = "";
@@ -1409,10 +1410,13 @@ public class Settings {
     /**
      * Loads settings from list of string arguments (which are lines of the settings.ini file, for example)
      */
-    void load(List<String> lines) {
+    void load(List<String> lines, boolean reset, String sourceFile) {
+
         // As different profile may use different configurations, we make sure that everytime lastUsedMap is cleared
-        setDefault();
-        lastUsedMap.clear();
+        if (reset) {
+            setDefault();
+            lastUsedMap.clear();
+        }
 
         for (String line : lines) {
             if (line.trim().equals("")) continue;
@@ -1441,7 +1445,11 @@ public class Settings {
         setScreenshotsFromString(lastUsedMap.getOrDefault("screenshots", getScreenshotsAsString()));
 
         setactivitiesEnabledFromString(lastUsedMap.getOrDefault("activitiesEnabled", getactivitiesEnabledAsString()));
-        setActivitiesScheduleFromString(lastUsedMap.getOrDefault("activitiesSchedule", activitiesSchedule.toString()));
+
+        // Scheduling can only be changed by the original configuratin file, not by plans
+        if (sourceFile.equals(Settings.initialConfigurationFile)) {
+            setActivitiesScheduleFromString(lastUsedMap.getOrDefault("activitiesSchedule", activitiesSchedule.toString()));
+        }
         activitiesRoundRobin = lastUsedMap.getOrDefault("activitiesRoundRobin", activitiesRoundRobin ? "1" : "0").equals("1");
 
         enablePushover = lastUsedMap.getOrDefault("enablePushover", enablePushover ? "1" : "0").equals("1");
@@ -1559,7 +1567,7 @@ public class Settings {
         if (lines == null || lines.size() == 0)
             return;
 
-        load(lines);
+        load(lines, true, file);
     }
 
     boolean checkUnsupportedSettings() {

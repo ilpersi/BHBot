@@ -118,7 +118,7 @@ public class BHBot {
             }
         }
 
-        final String initialConfigurationFile = Settings.configurationFile;
+        Settings.initialConfigurationFile = Settings.configurationFile;
 
         if ("LOAD_IDLE_SETTINGS".equals(Settings.configurationFile)) {
             bot.settings.setIdle();
@@ -256,6 +256,7 @@ public class BHBot {
                     bot.processCommand("start");
                 } else {
 
+                    BHBot.logger.debug("Checking for available schedulings");
                     for (Settings.ActivitiesScheduleSetting s : bot.settings.activitiesSchedule) {
                         if (s.isActive()) {
 
@@ -266,7 +267,7 @@ public class BHBot {
                             if (!"".equals(s.settingsPlan)) {
                                 Settings.configurationFile = "plans/" + s.settingsPlan + ".ini";
                             } else {
-                                Settings.configurationFile = initialConfigurationFile;
+                                Settings.configurationFile = Settings.initialConfigurationFile;
                             }
 
                             // We load the settings
@@ -620,7 +621,7 @@ public class BHBot {
                 if (i == -1)
                     return;
                 list.add(c.substring(i + 1));
-                settings.load(list);
+                settings.load(list, false, "command");
                 settings.checkDeprecatedSettings();
                 settings.sanitizeSetting();
                 reloadLogger();
