@@ -346,7 +346,7 @@ public class BrowserManager {
         } catch (RuntimeException e) {
             BHBot.logger.error("Runtime error when taking screenshot: ", e);
             restart(false);
-            return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+            return new BufferedImage(800, 520, BufferedImage.TYPE_INT_RGB);
         }
     }
 
