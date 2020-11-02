@@ -262,7 +262,7 @@ public class BHBot {
                     continue;
                 } else {
 
-                    BHBot.logger.debug("Checking for available schedulings");
+                    BHBot.logger.trace("Checking for available schedulings");
                     for (Settings.ActivitiesScheduleSetting s : bot.settings.activitiesSchedule) {
                         if (s.isActive()) {
 
