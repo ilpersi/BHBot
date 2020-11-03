@@ -6,6 +6,7 @@ BHBot\.jar
 chrome_profile/
 logs/
 screenshots/
+plans/
 
 # IntelliJ Files
 BHBot\.iml
