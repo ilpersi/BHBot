@@ -54,6 +54,8 @@ public class BHBot {
 
     private BHBot.State state; // at which stage of the game/menu are we currently?
     private BHBot.State lastJoinedState;
+
+    private long lastStateChange = Misc.getTime();
     /**
      * Set it to true to end main loop and end program gracefully
      */
@@ -243,7 +245,15 @@ public class BHBot {
 
             // When the current schedule is no longer valid, we exit from it
             if (bot.running && bot.currentScheduling != null && State.Main.equals(bot.getState()) && !bot.scheduler.isPaused()) {
-                if (!bot.currentScheduling.isActive()) {
+
+                /*
+                 * As DungeonThread in running in parallel to this thread it may happen that it is starting adventures
+                 * while we are exiting from the current scheduling, to prevent this we check how long we entered in the
+                 * current state
+                 * */
+                long currentStateDuratoin = Misc.getTime() - bot.lastStateChange;
+
+                if (!bot.currentScheduling.isActive() && currentStateDuratoin > (Misc.Durations.SECOND * 10)) {
                     bot.running = false;
                     bot.stop();
                     bot.currentScheduling = null;
@@ -890,6 +900,7 @@ public class BHBot {
     }
 
     synchronized void setState(State state) {
+        this.lastStateChange = Misc.getTime();
         this.state = state;
     }
 
