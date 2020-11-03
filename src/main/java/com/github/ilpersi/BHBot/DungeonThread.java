@@ -4061,7 +4061,7 @@ public class DungeonThread implements Runnable {
 
         // We make sure the scroll is at the top position. This is just failsafe in all the tests this was always the default behavior
         MarvinSegment seg = MarvinSegment.fromCue("ScrollerNone", Misc.Durations.SECOND / 2, bot.browser);
-        if (seg != null) {
+        if (seg == null) {
             seg = MarvinSegment.fromCue(scrollerAtTop, Misc.Durations.SECOND / 2, bot.browser);
 
             while (seg == null) {
@@ -4202,6 +4202,7 @@ public class DungeonThread implements Runnable {
                 // We have it on screen, so we can click on it!
                 if (idx < 5) {
                     bot.browser.clickInGame(topLvlBounds.x1 + topLvlBounds.width / 2, topLvlBounds.y1 + (yOffset * idx) + topLvlBounds.height / 2);
+                    return matchedDifficulty;
                 } else {
                     // We check that the arrow down on the scroller is there
                     seg = MarvinSegment.fromCue(BHBot.cues.get("DropDownDown"), bot.browser);
