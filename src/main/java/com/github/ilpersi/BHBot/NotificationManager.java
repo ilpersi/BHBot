@@ -55,6 +55,9 @@ public class NotificationManager {
 
     void sendAliveNotification() {
 
+        // We only send notifications if the bot is running
+        if (bot.scheduler.isPaused() || bot.finished || !bot.running) return;
+
         // periodic notification
         if (shouldNotify ()) {
             if (((Misc.getTime() - timeLastPOAlive) > (bot.settings.poNotifyAlive * Misc.Durations.HOUR)) && timeLastPOAlive != 0 ||
