@@ -536,8 +536,14 @@ public class BHBot {
                         } else {
                             StringBuilder schedulingStr = new StringBuilder("Current available schedules are:\n");
                             for (Settings.ActivitiesScheduleSetting activeScheduling : settings.activitiesSchedule) {
-                                schedulingStr.append(activeScheduling.toString());
+                                schedulingStr.append(activeScheduling.toString()).append("\n");
                             }
+
+                            if (currentScheduling != null) {
+                                schedulingStr.append("\n")
+                                        .append("Current scheduling is: ").append(currentScheduling);
+                            }
+
                             BHBot.logger.info(schedulingStr.toString());
                         }
                         break;
