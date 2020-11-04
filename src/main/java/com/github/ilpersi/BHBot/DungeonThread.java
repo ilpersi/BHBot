@@ -155,6 +155,13 @@ public class DungeonThread implements Runnable {
                     continue;
                 }
 
+                // If the current scheduling is no longer valid, as soon as we get in state Main we break so that the
+                // Main Thread can switch to a new valid scheduling without interrupting adventures
+                if (bot.currentScheduling != null && !bot.currentScheduling.isActive() && BHBot.State.Main.equals(bot.getState())) {
+                    BHBot.logger.debug("Current scheduling is no longer active.");
+                    break;
+                }
+
                 if (Misc.getTime() - bot.scheduler.getIdleTime() > MAX_IDLE_TIME) {
                     BHBot.logger.warn("Idle time exceeded... perhaps caught in a loop? Restarting... (state=" + bot.getState() + ")");
                     bot.saveGameScreen("idle-timeout-error", "errors");
