@@ -15,6 +15,11 @@ public class BlockerThread implements Runnable {
     public void run() {
         MarvinSegment seg;
 
+        // We initialize the counter HasMap using the state as key
+        for (BHBot.State state : BHBot.State.values()) {
+            bot.dungeon.counters.put(state, new DungeonCounter(0, 0));
+        }
+
         while (!bot.finished) {
             try {
                 bot.scheduler.process();
