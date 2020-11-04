@@ -489,8 +489,8 @@ class CueManager {
         addCue("PortalBorderLeaves", "cues/expedition/portalBorderLeaves.png", new Bounds(48, 447, 107, 503));
 
         //WorldBoss Related
-        addCue("WorldBoss", "cues/cueWorldBoss.png", null);
-        addCue("WorldBossSelector", "cues/cueWorldBossSelector.png", null);
+        addCue("WorldBoss", "cues/worldboss/cueWorldBoss.png", null);
+        addCue("WorldBossSelector", "cues/worldboss/cueWorldBossSelector.png", null);
         addCue("DarkBlueSummon", "cues/worldboss/cueDarkBlueSummon.png", Bounds.fromWidthHeight(453, 449, 99, 28));
         addCue("LargeDarkBlueSummon", "cues/worldboss/cueLargeDarkBlueSummon.png", Bounds.fromWidthHeight(492, 363, 99, 28));
         addCue("SmallDarkBlueSummon", "cues/worldboss/cueSmallDarkBlueSummon.png", Bounds.fromWidthHeight(430, 388, 95, 28));
@@ -501,12 +501,12 @@ class CueManager {
         addCue("OrlagSelected", "cues/cueOrlagSelected.png", new Bounds(360, 430, 440, 460));
         addCue("NetherSelected", "cues/cueNetherSelected.png", null);
         addCue("Private", "cues/cuePrivate.png", new Bounds(310, 320, 370, 380));
-        addCue("Unready", "cues/cueWorldBossUnready.png", new Bounds(170, 210, 215, 420));
-        addCue("WorldBossTier", "cues/cueWorldBossTier.png", Bounds.fromWidthHeight(314, 206, 88, 28));
-        addCue("WorldBossTierDropDown", "cues/cueWorldBossTierDropDown.png", Bounds.fromWidthHeight(304, 199, 194, 42));
-        addCue("WorldBossDifficultyNormal", "cues/cueWorldBossDifficultyNormal.png", new Bounds(300, 275, 500, 325));
-        addCue("WorldBossDifficultyHard", "cues/cueWorldBossDifficultyHard.png", new Bounds(300, 275, 500, 325));
-        addCue("WorldBossDifficultyHeroic", "cues/cueWorldBossDifficultyHeroic.png", new Bounds(300, 275, 500, 325));
+        addCue("Unready", "cues/worldboss/cueWorldBossUnready.png", new Bounds(170, 210, 215, 420));
+        addCue("WorldBossTier", "cues/worldboss/cueWorldBossTier.png", Bounds.fromWidthHeight(314, 206, 88, 28));
+        addCue("WorldBossTierDropDown", "cues/worldboss/cueWorldBossTierDropDown.png", Bounds.fromWidthHeight(304, 199, 194, 42));
+        addCue("WorldBossDifficultyNormal", "cues/worldboss/cueWorldBossDifficultyNormal.png", new Bounds(300, 275, 500, 325));
+        addCue("WorldBossDifficultyHard", "cues/worldboss/cueWorldBossDifficultyHard.png", new Bounds(300, 275, 500, 325));
+        addCue("WorldBossDifficultyHeroic", "cues/worldboss/cueWorldBossDifficultyHeroic.png", new Bounds(300, 275, 500, 325));
         addCue("WorldBossPopup", "cues/worldboss/cueWorldBossPopup.png", Bounds.fromWidthHeight(305, 29, 67, 53));
         addCue("NotEnoughXeals", "cues/worldboss/cueNotEnoughXeals.png", Bounds.fromWidthHeight(270, 220, 260, 90));
 
