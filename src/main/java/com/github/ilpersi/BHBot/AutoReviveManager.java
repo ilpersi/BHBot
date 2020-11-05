@@ -250,7 +250,7 @@ public class AutoReviveManager {
                 }
             }
         } else { // Impossible to find the potions button
-            bot.saveGameScreen("auto-revive-no-potions");
+            bot.saveGameScreen("auto-revive-no-potions", "errors", bot.browser.getImg());
             BHBot.logger.autorevive("Impossible to find the potions button!");
         }
 
