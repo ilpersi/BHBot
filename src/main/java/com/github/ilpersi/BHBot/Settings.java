@@ -84,7 +84,7 @@ public class Settings {
          */
         boolean isActive() {
             return (this.startTime.compareTo(LocalTime.now()) <= 0) && (this.endTime.compareTo(LocalTime.now()) >= 0
-            && ("*".equals(this.weekDay) || this.weekDay.equals(new SimpleDateFormat("u").format(new Date()))) );
+            && (this.weekDay.contains("*") || this.weekDay.contains(new SimpleDateFormat("u").format(new Date()))) );
         }
 
         @Override
@@ -541,14 +541,15 @@ public class Settings {
 
     private void setActivitiesSchedule(String... schedules) {
 
-        // (?<weekDay>[0-9\*])\s*(?<startH>\d{1,2}):(?<startM>\d{1,2})(?<secStartGrp>:(?<startS>\d{1,2}))?-(?<endH>\d{1,2}):(?<endM>\d{1,2})(?<secEndGrp>:(?<endS>\d{1,2}))?\s*(?<plan>\w+)?\s*(?<chromeProfPath>"(?<profilePath>[^"]+)")?
+        // (?<weekDay>[0-9*]+)\s*(?<startH>\d{1,2}):(?<startM>\d{1,2})(?<secStartGrp>:(?<startS>\d{1,2}))?-(?<endH>\d{1,2}):(?<endM>\d{1,2})(?<secEndGrp>:(?<endS>\d{1,2}))?\s*(?<plan>\w+)?\s*(?<chromeProfPath>"(?<profilePath>[^"]+)")?
         // 
         // Options: Case insensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
         // 
-        // Match the regex below and capture its match into a backreference named “weekDay” (also backreference number 1) «(?<weekDay>[0-9\*])»
-        //    Match a single character present in the list below «[0-9\*]»
+        // Match the regex below and capture its match into a backreference named “weekDay” (also backreference number 1) «(?<weekDay>[0-9*]+)»
+        //    Match a single character present in the list below «[0-9*]+»
+        //       Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
         //       A character in the range between “0” and “9” «0-9»
-        //       The literal character “*” «\*»
+        //       The literal character “*” «*»
         // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
         //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
         // Match the regex below and capture its match into a backreference named “startH” (also backreference number 2) «(?<startH>\d{1,2})»
@@ -595,7 +596,8 @@ public class Settings {
         //    Match the character “"” literally «"»
 
 
-        Pattern scheduleRegex = Pattern.compile("(?<weekDay>[0-9*])\\s*(?<startH>\\d{1,2}):(?<startM>\\d{1,2})(?<secStartGrp>:(?<startS>\\d{1,2}))?-(?<endH>\\d{1,2}):(?<endM>\\d{1,2})(?<secEndGrp>:(?<endS>\\d{1,2}))?\\s*(?<plan>\\w+)?\\s*(?<chromeProfPath>\"(?<profilePath>[^\"]+)\")?", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+
+        Pattern scheduleRegex = Pattern.compile("(?<weekDay>[0-9*]+)\\s*(?<startH>\\d{1,2}):(?<startM>\\d{1,2})(?<secStartGrp>:(?<startS>\\d{1,2}))?-(?<endH>\\d{1,2}):(?<endM>\\d{1,2})(?<secEndGrp>:(?<endS>\\d{1,2}))?\\s*(?<plan>\\w+)?\\s*(?<chromeProfPath>\"(?<profilePath>[^\"]+)\")?", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
         this.activitiesSchedule.clear();
 
