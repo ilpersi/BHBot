@@ -1595,7 +1595,7 @@ public class DungeonThread implements Runnable {
                                 if (currentTier != wbSetting.tier) {
                                     BHBot.logger.info("T" + currentTier + " detected, changing to T" + wbSetting.tier);
                                     Misc.sleep(500);
-                                    if (!changeWorldBossTier(wbSetting.tier, wbType)) {
+                                    if (!changeWorldBossTier(wbSetting.tier)) {
                                         restart();
                                         continue;
                                     }
@@ -3885,7 +3885,12 @@ public class DungeonThread implements Runnable {
         return readNumFromImg(imb);
     }
 
-    private boolean changeWorldBossTier(int targetTier, WorldBoss wbType) {
+    /**
+     * This method takes care of managing the correct WB tier selection
+     * @param targetTier The desired tier for the World Boss
+     * @return true for success, false if an error happens
+     */
+    private boolean changeWorldBossTier(int targetTier) {
         MarvinSegment seg;
         bot.browser.readScreen(Misc.Durations.SECOND); //wait for screen to stabilize
         seg = MarvinSegment.fromCue(BHBot.cues.get("WorldBossTierDropDown"), 2 * Misc.Durations.SECOND, bot.browser);
@@ -3899,66 +3904,49 @@ public class DungeonThread implements Runnable {
         bot.browser.clickOnSeg(seg);
         bot.browser.readScreen(2 * Misc.Durations.SECOND); //wait for screen to stabilize
 
-        // Temporary variables initialialized
-        Point tierButton = new Point(388, 167); // Position of the top tier selection button
-        int yOffset; // If the bot needs to click on a tier that is not the top most, what is the offset of it?
+        // We detect what is the top available tier. This may be different based on player level and unlocked zones
+        Bounds topTierBounds = Bounds.fromWidthHeight(403, 156, 27, 26);
+        MarvinImage topTierImg = new MarvinImage(bot.browser.getImg().getSubimage(topTierBounds.x1, topTierBounds.y1, topTierBounds.width, topTierBounds.height));
+        topTierImg.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
+        int topAvailableTier = readNumFromImg(topTierImg.getBufferedImage(), "", new HashSet<>());
 
-        // If the world boss has scrollbar positions, it means that we must check if we need to scroll the bar
-        if (wbType.getYScrollerPositions().length > 0) {
-
-            seg = MarvinSegment.fromCue(BHBot.cues.get("StripScrollerTopPos"), 2 * Misc.Durations.SECOND, bot.browser);
-
-            if (seg == null) {
-                BHBot.logger.error("Error: unable to detect world boss scrollbar postion in changeWorldBossTier!");
-                bot.saveGameScreen("scroll_wb_error", "errors");
-                return false;
-            }
-
-            int scrollBarPos = Misc.findClosestMatch(wbType.getYScrollerPositions(), seg.y1);
-
-            // if scrollBarPos is zero, the bar is at top and the max tier available is equal to maxTierAvailable
-            int maxTierAvailable = wbType.getMaxTier() - scrollBarPos;
-            int minTierAvailable = maxTierAvailable - 4; // there are five buttons
-
-            // Do we need to scroll down?
-            if (targetTier < minTierAvailable) {
-                while (targetTier < minTierAvailable) {
-                    seg = MarvinSegment.fromCue("DropDownDown", 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(515, 415, 50, 50), bot.browser);
-                    if (seg == null) {
-                        BHBot.logger.error("Error: unable to scroll dowon in changeWorldBossTier!");
-                        bot.saveGameScreen("scroll_down_wb_error", "errors");
-                        return false;
-                    }
-
-                    bot.browser.clickOnSeg(seg);
-                    maxTierAvailable -= 1;
-                    minTierAvailable -= 1;
-                }
-            }
-
-            // Do we need to scroll up?
-            if (targetTier > maxTierAvailable) {
-                while (targetTier > maxTierAvailable) {
-                    seg = MarvinSegment.fromCue("DropDownUp", 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(515, 115, 50, 50), bot.browser);
-                    if (seg == null) {
-                        BHBot.logger.error("Error: unable to scroll up in changeWorldBossTier!");
-                        bot.saveGameScreen("scroll_up_wb_error", "errors");
-                        return false;
-                    }
-
-                    bot.browser.clickOnSeg(seg);
-                    maxTierAvailable += 1;
-                    minTierAvailable += 1;
-                }
-            }
-
-            yOffset = maxTierAvailable - targetTier;
-        } else {
-            yOffset = wbType.getMaxTier() - targetTier;
+        if (topAvailableTier == 0) {
+            BHBot.logger.error("Impossible to detect maximum available tier in World Boss");
+            bot.saveGameScreen("wb_max_tier", "errors");
+            return false;
         }
 
-        tierButton.y += yOffset * 60;
-        bot.browser.clickInGame(tierButton);
+        BHBot.logger.debug("Detected top available tier is: " + topAvailableTier);
+
+        // The bounds for the WB tier selection
+        Bounds tiersBounds = Bounds.fromWidthHeight(263, 139, 251, 60);
+
+        // Offset between the different tiers buttons
+        int tierOffset = 52;
+
+        // Used to check how many times we should click the arrow down cue
+        int tierDiff = topAvailableTier - targetTier;
+
+        // position on X axis is independent from tier
+        int clickX = tiersBounds.x1 + (tiersBounds.width / 2);
+
+        if (tierDiff > 4) {
+            seg = MarvinSegment.fromCue(BHBot.cues.get("DropDownDown"), bot.browser);
+            if (seg == null) {
+                BHBot.logger.error("Error: unable to detect down arrow in World Boss Tier selection");
+                bot.saveGameScreen("wb_tier_arrow_down", "errors");
+                return false;
+            }
+            // we need to scroll down till the right tier
+            do {
+                bot.browser.clickOnSeg(seg);
+                tierDiff--;
+            } while (tierDiff > 4);
+
+        }
+
+        int clickY = tiersBounds.y1 + (tierOffset * tierDiff) + (tiersBounds.height / 2);
+        bot.browser.clickInGame(clickX, clickY);
 
         return true;
     }
