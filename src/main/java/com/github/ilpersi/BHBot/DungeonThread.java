@@ -159,7 +159,7 @@ public class DungeonThread implements Runnable {
                 // If the current scheduling is no longer valid, as soon as we get in state Main we break so that the
                 // Main Thread can switch to a new valid scheduling without interrupting adventures
                 if (bot.currentScheduling != null && !bot.currentScheduling.isActive() && BHBot.State.Main.equals(bot.getState())) {
-                    BHBot.logger.debug("Current scheduling is no longer active.");
+                    BHBot.logger.debug("Inactive scheduling detected in DungeonThread.");
                     break;
                 }
 
