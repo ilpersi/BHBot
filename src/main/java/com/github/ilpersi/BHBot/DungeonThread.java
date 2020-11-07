@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -3922,30 +3923,37 @@ public class DungeonThread implements Runnable {
         Bounds tiersBounds = Bounds.fromWidthHeight(263, 139, 251, 60);
 
         // Offset between the different tiers buttons
-        int tierOffset = 52;
-
-        // Used to check how many times we should click the arrow down cue
-        int tierDiff = topAvailableTier - targetTier;
+        int tierOffset = 60;
 
         // position on X axis is independent from tier
         int clickX = tiersBounds.x1 + (tiersBounds.width / 2);
 
-        if (tierDiff > 4) {
-            seg = MarvinSegment.fromCue(BHBot.cues.get("DropDownDown"), bot.browser);
-            if (seg == null) {
-                BHBot.logger.error("Error: unable to detect down arrow in World Boss Tier selection");
-                bot.saveGameScreen("wb_tier_arrow_down", "errors");
-                return false;
-            }
-            // we need to scroll down till the right tier
-            do {
-                bot.browser.clickOnSeg(seg);
-                tierDiff--;
-            } while (tierDiff > 4);
+        // Used to understand how many times we should click on bar down/up cue
+        int tierDiff = topAvailableTier - targetTier;
 
+        // Used to check if we should scroll
+        Function<Integer, Boolean> scrollCheck = tierDiff < 0 ? tierDiffArg -> tierDiffArg < 0 : tierDiffArg -> tierDiffArg > 4;
+
+        // Used to change the tierDiff value during iterations
+        Function<Integer, Integer> tierDiffUpdate = tierDiff < 0 ? tierDiffArg -> tierDiffArg + 1 : tierDiffArg -> tierDiffArg - 1;
+
+        // Used to identify the correct cue to scroll
+        String cueName = tierDiff < 0 ? "DropDownUp" : "DropDownDown";
+
+        seg = MarvinSegment.fromCue(BHBot.cues.get(cueName), bot.browser);
+        if (seg == null) {
+            BHBot.logger.error("Error: unable to detect " + cueName + " in World Boss Tier selection");
+            bot.saveGameScreen("wb_tier_" + cueName, "errors");
+            return false;
+        }
+
+        while (scrollCheck.apply(tierDiff)) {
+            bot.browser.clickOnSeg(seg);
+            tierDiff = tierDiffUpdate.apply(tierDiff);
         }
 
         int clickY = tiersBounds.y1 + (tierOffset * tierDiff) + (tiersBounds.height / 2);
+
         bot.browser.clickInGame(clickX, clickY);
 
         return true;
@@ -5307,14 +5315,14 @@ public class DungeonThread implements Runnable {
      * This Enum is used to group together all the information related to the World Boss
      */
     enum WorldBoss {
-        Orlag("o", "Orlag Clan", 1, 3, 12, 5, new int[]{147, 175, 204, 232, 261, 289}),
-        Netherworld("n", "Netherworld", 2, 3, 13, 3, new int[]{147, 173, 199, 225, 250, 276, 302}),
-        Melvin("m", "Melvin", 3, 10, 11, 4, new int[]{}),
-        Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11, 3, new int[]{}),
-        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 12, 3, new int[]{}),
-        TitansAttack("t", "Titans Attack", 6, 11, 14, 3, new int[]{}),
-        IgnitedAbyss("i", "The Ignited Abyss", 7, 13, 14, 3, new int[]{}),
-        Unknown("?", "Unknown", 8, 13, 100, 1, new int[]{});
+        Orlag("o", "Orlag Clan", 1, 3, 12, 5),
+        Netherworld("n", "Netherworld", 2, 3, 13, 3),
+        Melvin("m", "Melvin", 3, 10, 11, 4),
+        Ext3rmin4tion("3", "3xt3rmin4tion", 4, 10, 11, 3),
+        BrimstoneSyndicate("b", "Brimstone Syndicate", 5, 11, 12, 3),
+        TitansAttack("t", "Titans Attack", 6, 11, 14, 3),
+        IgnitedAbyss("i", "The Ignited Abyss", 7, 13, 14, 3),
+        Unknown("?", "Unknown", 8, 13, 100, 1);
 
         private final String letter;
         private final String Name;
@@ -5322,7 +5330,6 @@ public class DungeonThread implements Runnable {
         private final int minTier;
         private final int maxTier;
         private final int partySize;
-        private final int[] yScrollerPositions;
 
         /**
          * @param letter             the shortcut letter used in settings.ini
@@ -5331,16 +5338,14 @@ public class DungeonThread implements Runnable {
          * @param minTier            the minimum tier required to join the World Boss
          * @param maxTier            the maximum tier you are allowed to join for the World Boss
          * @param partySize          the party size of the World Boss
-         * @param yScrollerPositions the positions of the scroller bar in the tier selection window
          */
-        WorldBoss(String letter, String Name, int number, int minTier, int maxTier, int partySize, int[] yScrollerPositions) {
+        WorldBoss(String letter, String Name, int number, int minTier, int maxTier, int partySize) {
             this.letter = letter;
             this.Name = Name;
             this.number = number;
             this.minTier = minTier;
             this.maxTier = maxTier;
             this.partySize = partySize;
-            this.yScrollerPositions = yScrollerPositions;
         }
 
         String getLetter() {
@@ -5367,9 +5372,9 @@ public class DungeonThread implements Runnable {
             return partySize;
         }
 
-        int[] getYScrollerPositions() {
+        /*int[] getYScrollerPositions() {
             return yScrollerPositions;
-        }
+        }*/
 
         static WorldBoss fromLetter(String Letter) {
             for (WorldBoss wb : WorldBoss.values()) {
