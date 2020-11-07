@@ -1016,12 +1016,9 @@ public class DungeonThread implements Runnable {
 
                                     if (bot.settings.gvgstrip.size() > 0) {
                                         // If we need to strip down for GVG, we need to close the GVG gump and open it again
-                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND * 2, bot.browser);
-                                        bot.browser.clickOnSeg(seg);
-                                        bot.browser.readScreen(2 * Misc.Durations.SECOND);
+                                        bot.browser.closePopupSecurely(BHBot.cues.get("GVGWindow"), BHBot.cues.get("X"));
                                         stripDown(bot.settings.gvgstrip);
-                                        seg = MarvinSegment.fromCue(BHBot.cues.get("GVG"), Misc.Durations.SECOND * 3, bot.browser);
-                                        bot.browser.clickOnSeg(seg);
+                                        bot.browser.clickOnSeg(badgeBtn);
                                     }
 
                                     // select cost if needed:
