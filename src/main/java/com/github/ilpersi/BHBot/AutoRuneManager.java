@@ -154,7 +154,9 @@ class AutoRuneManager {
         // determine equipped runes
         leftMinorRune = null;
         rightMinorRune = null;
+
         bot.browser.readScreen();
+
         for (MinorRune rune : MinorRune.values()) {
             Cue runeCue = rune.getRuneCue();
 
@@ -399,18 +401,25 @@ class AutoRuneManager {
     private boolean noRunesNeedSwitching(@NotNull List<MinorRuneEffect> desiredRunes) {
         MinorRuneEffect desiredLeftRune = desiredRunes.get(0);
         MinorRuneEffect desiredRightRune = desiredRunes.get(1);
-        MinorRuneEffect currentLeftRune = leftMinorRune.getRuneEffect();
-        MinorRuneEffect currentRightRune = rightMinorRune.getRuneEffect();
 
-        if (desiredLeftRune == currentLeftRune && desiredRightRune == currentRightRune) {
+        if (leftMinorRune == null) {
+            BHBot.logger.warn("Left minor rune is unknown");
+        }
+
+        if (rightMinorRune == null) {
+            BHBot.logger.warn("Right minor rune is unknown");
+        }
+
+        if ( (leftMinorRune != null &&  desiredLeftRune.equals(leftMinorRune.getRuneEffect()) )
+                && (rightMinorRune != null && desiredRightRune.equals(rightMinorRune.getRuneEffect()) )) {
             BHBot.logger.debug("No runes found that need switching.");
             return true; // Nothing to do
         }
 
-        if (desiredLeftRune != currentLeftRune) {
+        if (leftMinorRune == null || !desiredLeftRune.equals(leftMinorRune.getRuneEffect())) {
             BHBot.logger.debug("Left minor rune needs to be switched.");
         }
-        if (desiredRightRune != currentRightRune) {
+        if (rightMinorRune == null || !desiredRightRune.equals(rightMinorRune.getRuneEffect())) {
             BHBot.logger.debug("Right minor rune needs to be switched.");
         }
 
