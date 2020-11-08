@@ -249,10 +249,10 @@ public class AutoReviveManager {
                     }
                 }
             }
-        } else { // Impossible to find the potions button
+        } /*else { // Impossible to find the potions button
             bot.saveGameScreen("auto-revive-no-potions", "errors", bot.browser.getImg());
             BHBot.logger.autorevive("Impossible to find the potions button!");
-        }
+        }*/
 
         // If the unit selection screen is still open, we need to close it
         seg = MarvinSegment.fromCue(BHBot.cues.get("UnitSelect"), Misc.Durations.SECOND, bot.browser);
