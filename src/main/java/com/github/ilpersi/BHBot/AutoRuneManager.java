@@ -257,18 +257,19 @@ class AutoRuneManager {
         // Open character menu
         bot.browser.clickInGame(55, 465);
 
-        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("Runes"), 15 * Misc.Durations.SECOND, bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("Runes"), 5 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.warn("Error: unable to detect runes button! Skipping...");
             return true;
         }
 
-        bot.browser.clickOnSeg(seg);
-        Misc.sleep(500); //sleep for window animation (15s below was crashing the bot, not sure why
+        // We make sure to click on the runes button
+        bot.browser.closePopupSecurely(BHBot.cues.get("Runes"), BHBot.cues.get("Runes"));
 
-        seg = MarvinSegment.fromCue(BHBot.cues.get("RunesLayout"), 15 * Misc.Durations.SECOND, bot.browser);
+        seg = MarvinSegment.fromCue(BHBot.cues.get("RunesLayout"), 5 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.warn("Error: unable to detect rune layout! Skipping...");
+            bot.saveGameScreen("no-rune-layout", "errors", bot.browser.getImg());
             seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg);
