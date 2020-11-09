@@ -1772,7 +1772,7 @@ public class DungeonThread implements Runnable {
                                         bot.browser.readScreen();
                                         MarvinSegment segStart = MarvinSegment.fromCue(BHBot.cues.get("DarkBlueStart"), 5 * Misc.Durations.SECOND, bot.browser);
                                         if (segStart != null) {
-                                            bot.browser.clickOnSeg(segStart); //start World Boss
+                                            bot.browser.closePopupSecurely(BHBot.cues.get("DarkBlueStart"), BHBot.cues.get("DarkBlueStart")); //start World Boss
                                             bot.browser.readScreen();
                                             seg = MarvinSegment.fromCue(BHBot.cues.get("TeamNotFull"), 2 * Misc.Durations.SECOND, bot.browser); //check if we have the team not full screen an clear it
                                             if (seg != null) {
