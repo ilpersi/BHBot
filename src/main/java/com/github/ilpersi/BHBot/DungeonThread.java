@@ -596,7 +596,12 @@ public class DungeonThread implements Runnable {
                                 bot.browser.clickOnSeg(seg);
                                 bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
-                                if (!handleNotEnoughTokensPopup(false)) {
+                                Boolean notEnoughTokens = handleNotEnoughTokensPopup(false);
+                                if (notEnoughTokens != null) {
+                                    if (notEnoughTokens) {
+                                        continue;
+                                    }
+                                } else {
                                     restart();
                                     continue;
                                 }
@@ -612,7 +617,12 @@ public class DungeonThread implements Runnable {
                                 // This is a Bit Heroes bug!
                                 // On t/g main screen the token bar is wrongly full so it goes trough the "Play" button and
                                 // then it fails on the team "Accept" button
-                                if (!handleNotEnoughTokensPopup(true)) {
+                                notEnoughTokens = handleNotEnoughTokensPopup(false);
+                                if (notEnoughTokens != null) {
+                                    if (notEnoughTokens) {
+                                        continue;
+                                    }
+                                } else {
                                     restart();
                                     continue;
                                 }
@@ -3660,8 +3670,7 @@ public class DungeonThread implements Runnable {
      *
      * @return true in case popup was detected and closed.
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    private boolean handleNotEnoughTokensPopup(boolean closeTeamWindow) {
+    private Boolean handleNotEnoughTokensPopup(boolean closeTeamWindow) {
         MarvinSegment seg = MarvinSegment.fromCue("NotEnoughTokens", bot.browser);
 
         if (seg != null) {
@@ -3669,22 +3678,24 @@ public class DungeonThread implements Runnable {
 
             if (!bot.browser.closePopupSecurely(BHBot.cues.get("NotEnoughTokens"), BHBot.cues.get("No"))) {
                 BHBot.logger.error("Impossible to close the 'Not Enough Tokens' pop-up window. Restarting");
-                return false;
+                return null;
             }
 
             if (closeTeamWindow) {
                 if (!bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("X"))) {
                     BHBot.logger.error("Impossible to close the team window when no tokens are available. Restarting");
-                    return false;
+                    return null;
                 }
             }
 
             if (!bot.browser.closePopupSecurely(BHBot.cues.get("TrialsOrGauntletWindow"), BHBot.cues.get("X"))) {
                 BHBot.logger.error("Impossible to close the 'TrialsOrGauntletWindow' window. Restarting");
-                return false;
+                return null;
             }
+
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
