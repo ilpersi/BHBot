@@ -3668,7 +3668,7 @@ public class DungeonThread implements Runnable {
      * Will check if "Not enough tokens" popup is open. If it is, it will automatically close it and close all other windows
      * until it returns to the main screen.
      *
-     * @return true in case popup was detected and closed.
+     * @return null if error, true in case popup was detected and closed, false otherwise.
      */
     private Boolean handleNotEnoughTokensPopup(boolean closeTeamWindow) {
         MarvinSegment seg = MarvinSegment.fromCue("NotEnoughTokens", bot.browser);
