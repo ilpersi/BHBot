@@ -165,16 +165,6 @@ public class BlockerThread implements Runnable {
                     BHBot.logger.info("Daily reward claimed successfully.");
                     bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
-                    //We check for news and close so we don't take a gem count every time the bot starts
-                    seg = MarvinSegment.fromCue(BHBot.cues.get("News"), Misc.Durations.SECOND, bot.browser);
-                    if (seg != null) {
-                        seg = MarvinSegment.fromCue(BHBot.cues.get("Close"), 2 * Misc.Durations.SECOND, bot.browser);
-                        bot.browser.clickOnSeg(seg);
-                        BHBot.logger.info("News popup dismissed.");
-                        bot.browser.readScreen(2 * Misc.Durations.SECOND);
-                        continue;
-                    }
-
                     continue;
                 }
 
