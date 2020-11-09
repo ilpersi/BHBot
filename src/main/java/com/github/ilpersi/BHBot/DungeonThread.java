@@ -75,7 +75,7 @@ public class DungeonThread implements Runnable {
     private long timeLastGVGBadgesCheck = 0; // when did we check for badges the last time?
     private long timeLastBountyCheck = 0; // when did we check for bounties the last time?
     private long timeLastBonusCheck = 0; // when did we check for bonuses (active consumables) the last time?
-    private long timeLastFishingBaitsCheck = 0; // when did we check for fishing baits the last time?
+    long timeLastFishingBaitsCheck = 0; // when did we check for fishing baits the last time?
     private long timeLastFishingCheck = 0; // when did we check for fishing last time?
     private long timeLastDailyGem = 0; // when did we check for daily gem screenshot last time?
     private long timeLastWeeklyGem = Misc.getTime(); // when did we check for weekly gem screenshot last time?
@@ -1870,6 +1870,9 @@ public class DungeonThread implements Runnable {
                             }
 
                             handleFishingBaits();
+
+                            // handleFishingBaits() changes the State to FishingBaits
+                            bot.setState(BHBot.State.Main);
                             continue;
                         }
 
@@ -1883,6 +1886,9 @@ public class DungeonThread implements Runnable {
 
                             if ((Misc.getTime() - timeLastFishingBaitsCheck) > Misc.Durations.DAY) { //if we haven't collected bait today we need to do that first
                                 handleFishingBaits();
+
+                                // handleFishingBaits() changes the State to FishingBaits
+                                bot.setState(BHBot.State.Main);
                             }
 
                             boolean botPresent = new File("bh-fisher.jar").exists();
@@ -4564,6 +4570,7 @@ public class DungeonThread implements Runnable {
      * Daily collection of fishing baits!
      */
     private void handleFishingBaits() {
+        bot.setState(BHBot.State.FishingBaits);
         MarvinSegment seg;
 
         seg = MarvinSegment.fromCue(BHBot.cues.get("Fishing"), Misc.Durations.SECOND * 5, bot.browser);

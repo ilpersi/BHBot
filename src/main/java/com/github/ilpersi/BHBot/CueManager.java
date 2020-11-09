@@ -587,6 +587,7 @@ class CueManager {
         addCue("Invasion_Rewards", "cues/weeklyrewards/invasion.png", new Bounds(290, 130, 510, 160));
         addCue("Expedition_Rewards", "cues/weeklyrewards/expedition.png", new Bounds(290, 130, 510, 160));
         addCue("Fishing_Rewards", "cues/weeklyrewards/fishing.png", new Bounds(290, 130, 510, 160));
+        addCue("Fishing_Bait", "cues/weeklyrewards/fishing_bait.png", Bounds.fromWidthHeight(391, 199, 70, 69));
 
 
         int newFamCnt = loadCueFolder("cues/familiars/01 Common", null, false, new Bounds(145, 50, 575, 125));

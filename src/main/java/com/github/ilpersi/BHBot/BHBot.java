@@ -1087,6 +1087,7 @@ public class BHBot {
     enum State {
         Dungeon("Dungeon", "d"),
         Expedition("Expedition", "e"),
+        FishingBaits("Fishing Baits Popup", "a"),
         Gauntlet("Gauntlet", "g"),
         GVG("GVG", "v"),
         Invasion("Invasion", "i"),

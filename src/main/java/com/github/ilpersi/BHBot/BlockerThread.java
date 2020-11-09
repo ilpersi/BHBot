@@ -222,6 +222,23 @@ public class BlockerThread implements Runnable {
                     bot.browser.clickOnSeg(seg);
                     BHBot.logger.info("News popup dismissed.");
                     bot.browser.readScreen(2 * Misc.Durations.SECOND);
+
+                    continue;
+                }
+
+                // Sometimes the game is presenting fishing baits at login
+                if (!BHBot.State.FishingBaits.equals(bot.getState())) {
+                    seg = MarvinSegment.fromCue("Fishing_Bait", bot.browser);
+                    if (seg != null) {
+                        if ((bot.settings.screenshots.contains("a"))) {
+                            bot.saveGameScreen("fishing-baits", "fishing");
+                        }
+                        seg = MarvinSegment.fromCue(BHBot.cues.get("Close"), 2 * Misc.Durations.SECOND, Bounds.fromWidthHeight(561, 123, 58, 58), bot.browser);
+                        bot.browser.clickOnSeg(seg);
+                        BHBot.logger.info("Correctly collected fishing baits.");
+                        bot.dungeon.timeLastFishingBaitsCheck = Misc.getTime();
+                        continue;
+                    }
                 }
             } catch (Exception e) {
                 if (bot.excManager.manageException(e)) continue;
