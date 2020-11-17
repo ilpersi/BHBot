@@ -233,7 +233,7 @@ public class BlockerThread implements Runnable {
                         if ((bot.settings.screenshots.contains("a"))) {
                             bot.saveGameScreen("fishing-baits", "fishing");
                         }
-                        seg = MarvinSegment.fromCue(BHBot.cues.get("Close"), 2 * Misc.Durations.SECOND, Bounds.fromWidthHeight(561, 123, 58, 58), bot.browser);
+                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 2 * Misc.Durations.SECOND, Bounds.fromWidthHeight(561, 123, 58, 58), bot.browser);
                         bot.browser.clickOnSeg(seg);
                         BHBot.logger.info("Correctly collected fishing baits.");
                         bot.dungeon.timeLastFishingBaitsCheck = Misc.getTime();
