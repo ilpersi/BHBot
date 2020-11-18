@@ -1407,10 +1407,12 @@ public class DungeonThread implements Runnable {
                                     bot.browser.clickOnSeg(seg);
 
                                     //click enter
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 3 * Misc.Durations.SECOND, bot.browser);
+                                    Cue expeditionAccept = new Cue(BHBot.cues.get("Accept"), Bounds.fromWidthHeight(420, 430, 200, 65));
+
+                                    seg = MarvinSegment.fromCue(expeditionAccept, 3 * Misc.Durations.SECOND, bot.browser);
                                     if (seg != null) {
                                         //bot.browser.clickOnSeg(seg);
-                                        bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
+                                        bot.browser.closePopupSecurely(expeditionAccept, expeditionAccept);
                                     } else {
                                         BHBot.logger.error("No accept button for expedition team!");
                                         bot.saveGameScreen("expedtion-no-accept", "errors");
