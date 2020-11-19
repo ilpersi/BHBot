@@ -2343,12 +2343,10 @@ public class DungeonThread implements Runnable {
          *  Skeleton key code
          *  encounterStatus is set to true as the window obscures the guild icon
          */
-        if (activityDuration % 5 == 0 && encounterStatus) {
-            seg = MarvinSegment.fromCue(BHBot.cues.get("SkeletonTreasure"), bot.browser);
-            if (seg != null) {
-                if (handleSkeletonKey()) {
-                    restart();
-                }
+        seg = MarvinSegment.fromCue(BHBot.cues.get("SkeletonTreasure"), bot.browser);
+        if (seg != null) {
+            if (handleSkeletonKey()) {
+                restart();
             }
         }
 
@@ -2678,83 +2676,94 @@ public class DungeonThread implements Runnable {
     }
 
 
+    /**
+     * This method will take care of handling treasure chests found in raid and dungeons
+     *
+     * @return true if anny error happens, false on success
+     */
     private boolean handleSkeletonKey() {
         MarvinSegment seg;
 
+        // Let's check if we have skeleton keys or not
         seg = MarvinSegment.fromCue(BHBot.cues.get("SkeletonNoKeys"), 2 * Misc.Durations.SECOND, bot.browser);
-        if (seg != null) {
-            BHBot.logger.warn("No skeleton keys, skipping..");
-            seg = MarvinSegment.fromCue(BHBot.cues.get("Decline"), 5 * Misc.Durations.SECOND, bot.browser);
-            bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(Misc.Durations.SECOND);
-            seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, bot.browser);
-            bot.browser.clickOnSeg(seg);
+
+        final String declineMessage = seg != null ? "No skeleton keys, skipping.." : "Skeleton treasure found, declining.";
+        final String acceptMessage = bot.settings.openSkeleton == 1 ? "Skeleton treasure found, attempting to use key" : "Raid Skeleton treasure found, attempting to use key";
+
+        Bounds declineBounds = Bounds.fromWidthHeight(400, 360, 150, 65);
+        Bounds greenYesBounds = Bounds.fromWidthHeight(245, 335, 155, 55);
+        Bounds openBounds = Bounds.fromWidthHeight(250, 360, 150, 65);
+
+        // we don't have skeleton keys or setting does not allow us to open chests
+        if (seg != null || bot.settings.openSkeleton == 0) {
+            BHBot.logger.info(declineMessage);
+            seg = MarvinSegment.fromCue(BHBot.cues.get("Decline"), 5 * Misc.Durations.SECOND, declineBounds, bot.browser);
+            if (seg != null) {
+                bot.browser.clickOnSeg(seg);
+                seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, greenYesBounds, bot.browser);
+                if (seg != null) {
+                    bot.browser.clickOnSeg(seg);
+                } else {
+                    bot.saveGameScreen("treasure-decline-no-yes", "errors", bot.browser.getImg());
+                    BHBot.logger.error("Impossible to find yes button after decline in handleSkeletonKey");
+                    bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without YES button");
+                    return true;
+                }
+            } else {
+                bot.saveGameScreen("treasure-no-decline", "errors", bot.browser.getImg());
+                BHBot.logger.error("Impossible to find Decline button in handleSkeletonKey");
+                bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without DECLINE button");
+                return true;
+            }
             return false;
+        } else if (bot.settings.openSkeleton == 1 || (bot.settings.openSkeleton == 2 && bot.getState() == BHBot.State.Raid)) {
+            // Open all & Raid only
+            BHBot.logger.info(acceptMessage);
+            seg = MarvinSegment.fromCue(BHBot.cues.get("Open"), 5 * Misc.Durations.SECOND, openBounds, bot.browser);
+            if (seg != null) {
+                bot.browser.clickOnSeg(seg);
+                seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, greenYesBounds, bot.browser);
+                if (seg != null) {
+                    bot.browser.clickOnSeg(seg);
+                    if ((bot.settings.screenshots.contains("s"))) {
+                        bot.saveGameScreen("skeleton-contents", "rewards");
+                    }
+                    return false;
+                } else {
+                    BHBot.logger.error("Impossible to find yes button after open in handleSkeletonKey");
+                    bot.saveGameScreen("treasure-open no-yes", "errors");
+                    bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without YES button");
+                    return true;
+                }
+            } else {
+                BHBot.logger.error("Open button not found, restarting");
+                bot.saveGameScreen("skeleton-treasure-no-open", "errors");
+                bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without OPEN button");
+                return true;
+            }
+
+        } else {
+            BHBot.logger.info("Skeleton treasure found, declining.");
+            seg = MarvinSegment.fromCue(BHBot.cues.get("Decline"), 5 * Misc.Durations.SECOND, declineBounds, bot.browser);
+            if (seg != null) {
+                bot.browser.clickOnSeg(seg);
+                seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, greenYesBounds, bot.browser);
+                if (seg != null) {
+                    bot.browser.clickOnSeg(seg);
+                    return false;
+                } else {
+                    bot.saveGameScreen("treasure-no-settings-decline-no-yes", "errors", bot.browser.getImg());
+                    BHBot.logger.error("Impossible to find yes button after decline with no settings in handleSkeletonKey");
+                    bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without YES button");
+                    return true;
+                }
+            } else {
+                bot.saveGameScreen("treasure-no-settings-no-decline", "errors", bot.browser.getImg());
+                BHBot.logger.error("Impossible to find decline with no settings button in handleSkeletonKey");
+                bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without DECLINE button");
+                return true;
+            }
         }
-
-        if (bot.settings.openSkeleton == 0) {
-            BHBot.logger.info("Skeleton treasure found, declining.");
-            seg = MarvinSegment.fromCue(BHBot.cues.get("Decline"), 5 * Misc.Durations.SECOND, bot.browser);
-            bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(Misc.Durations.SECOND);
-            seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, bot.browser);
-            bot.browser.clickOnSeg(seg);
-            return false;
-
-        } else if (bot.settings.openSkeleton == 1) {
-            BHBot.logger.info("Skeleton treasure found, attemping to use key");
-            seg = MarvinSegment.fromCue(BHBot.cues.get("Open"), 5 * Misc.Durations.SECOND, bot.browser);
-            if (seg == null) {
-                BHBot.logger.error("Open button not found, restarting");
-                bot.saveGameScreen("skeleton-treasure-no-open");
-                bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without OPEN button");
-                return true;
-            }
-            bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(Misc.Durations.SECOND);
-            seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, bot.browser);
-            if (seg == null) {
-                BHBot.logger.error("Yes button not found, restarting");
-                bot.saveGameScreen("skeleton-treasure-no-yes");
-                bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without YES button");
-                return true;
-            }
-            bot.browser.clickOnSeg(seg);
-            return false;
-
-        } else if (bot.settings.openSkeleton == 2 && bot.getState() == BHBot.State.Raid) {
-            BHBot.logger.info("Raid Skeleton treasure found, attemping to use key");
-            seg = MarvinSegment.fromCue(BHBot.cues.get("Open"), 5 * Misc.Durations.SECOND, bot.browser);
-            if (seg == null) {
-                BHBot.logger.error("Open button not found, restarting");
-                bot.saveGameScreen("skeleton-treasure-no-open");
-                bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without OPEN button");
-                return true;
-            }
-            bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(Misc.Durations.SECOND);
-            seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, bot.browser);
-            if (seg == null) {
-                BHBot.logger.error("Yes button not found, restarting");
-                bot.saveGameScreen("skeleton-treasure-no-yes");
-                bot.notificationManager.sendErrorNotification("Treasure chest error", "Skeleton Chest gump without YES button");
-                return true;
-            }
-            bot.browser.clickOnSeg(seg);
-            Misc.sleep(500);
-            if ((bot.settings.screenshots.contains("s"))) {
-                bot.saveGameScreen("skeleton-contents", "rewards");
-            }
-            return false;
-
-        } else
-            BHBot.logger.info("Skeleton treasure found, declining.");
-        seg = MarvinSegment.fromCue(BHBot.cues.get("Decline"), 5 * Misc.Durations.SECOND, bot.browser);
-        bot.browser.clickOnSeg(seg);
-        bot.browser.readScreen(Misc.Durations.SECOND);
-        seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, bot.browser);
-        bot.browser.clickOnSeg(seg);
-        return false;
     }
 
     private void handleAutoOff() {
