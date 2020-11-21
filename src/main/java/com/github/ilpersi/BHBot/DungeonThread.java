@@ -617,7 +617,7 @@ public class DungeonThread implements Runnable {
                                 // This is a Bit Heroes bug!
                                 // On t/g main screen the token bar is wrongly full so it goes trough the "Play" button and
                                 // then it fails on the team "Accept" button
-                                notEnoughTokens = handleNotEnoughTokensPopup(false);
+                                notEnoughTokens = handleNotEnoughTokensPopup(true);
                                 if (notEnoughTokens != null) {
                                     if (notEnoughTokens) {
                                         continue;
