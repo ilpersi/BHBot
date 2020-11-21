@@ -1780,6 +1780,10 @@ public class Settings {
         if (lastUsedMap.getOrDefault("thursdayDungeons", null) != null) {
             BHBot.logger.warn("Deprecated setting detected: thursdayDungeons. Use the new wednesdayDungeons instead.");
         }
+
+        if (lastUsedMap.getOrDefault("wednesdayRaids", null) != null) {
+            BHBot.logger.warn("Deprecated setting detected: wednesdayRaids. Use the new raids setting format instead.");
+        }
     }
 
     void sanitizeSetting() {
