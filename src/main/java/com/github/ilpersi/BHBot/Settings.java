@@ -110,19 +110,21 @@ public class Settings {
             int difficulty;
             double chanceToRun;
 
-            // \s*(?<weekDay>[*1234567]{1,7})\s(?<adventureZone>\d{1,2})\s(?<difficulty>[123])\s(?<chanceToRun>\d+)\s?(?<rerun>[01]?)\s?(?<solo>[01]?)
-            //
-            // Options: Case insensitive; Exact spacing; Dot doesn't match line breaks; ^$ don’t match at line breaks; Default line breaks
-            //
+            // \s*(?<weekDay>[*1234567]{1,7})\s(?<adventureZone>[1-9zd]{1,4})\s(?<difficulty>[123])\s(?<chanceToRun>\d+)\s?(?<rerun>[01]?)\s?(?<solo>[01]?)
+            // 
+            // Options: Case insensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
+            // 
             // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
             //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
             // Match the regex below and capture its match into a backreference named “weekDay” (also backreference number 1) «(?<weekDay>[*1234567]{1,7})»
             //    Match a single character from the list “*1234567” «[*1234567]{1,7}»
             //       Between one and 7 times, as many times as possible, giving back as needed (greedy) «{1,7}»
             // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s»
-            // Match the regex below and capture its match into a backreference named “adventureZone” (also backreference number 2) «(?<raidNun>\d{1,2})»
-            //    Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
-            //       Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+            // Match the regex below and capture its match into a backreference named “adventureZone” (also backreference number 2) «(?<adventureZone>[1-9zd]{1,4})»
+            //    Match a single character present in the list below «[1-9zd]{1,4}»
+            //       Between one and 4 times, as many times as possible, giving back as needed (greedy) «{1,4}»
+            //       A character in the range between “1” and “9” «1-9»
+            //       A single character from the list “zd” (case insensitive) «zd»
             // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s»
             // Match the regex below and capture its match into a backreference named “difficulty” (also backreference number 3) «(?<difficulty>[123])»
             //    Match a single character from the list “123” «[123]»
@@ -141,7 +143,7 @@ public class Settings {
             //    Match a single character from the list “01” «[01]?»
             //       Between zero and one times, as many times as possible, giving back as needed (greedy) «?»
 
-            Pattern raidRegex = Pattern.compile("\\s*(?<weekDay>[*1234567]{1,7})\\s(?<adventureZone>\\d{1,2})\\s(?<difficulty>[123])\\s(?<chanceToRun>\\d+)\\s?(?<rerun>[01]?)\\s?(?<solo>[01]?)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+            Pattern raidRegex = Pattern.compile("\\s*(?<weekDay>[*1234567]{1,7})\\s(?<adventureZone>[1-9zd]{1,4})\\s(?<difficulty>[123])\\s(?<chanceToRun>\\d+)\\s?(?<rerun>[01]?)\\s?(?<solo>[01]?)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
             // Optional fields, by default the value is false
             boolean rerun;
