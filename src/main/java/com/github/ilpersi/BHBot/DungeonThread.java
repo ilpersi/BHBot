@@ -350,7 +350,7 @@ public class DungeonThread implements Runnable {
                                 bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(raidBTNSeg);
 
-                                Settings.AdventureSetting raidSetting = decideRaidRandomly();
+                                Settings.AdventureSetting raidSetting = decideAdventureRandomly(bot.settings.raids);
                                 if (raidSetting == null) {
                                     bot.settings.activitiesEnabled.remove("r");
                                     BHBot.logger.error("It was impossible to choose a raid randomly, raids are disabled!");
@@ -3314,23 +3314,23 @@ public class DungeonThread implements Runnable {
     }
 
     /**
-     * Returns a random raid configuration. The logic takes care of giving priority to excat days configuration over the * ones
+     * Returns a random adventure configuration. The logic takes care of giving priority to exact days configuration over the * ones
      *
-     * @return a Settings.RaidSetting element to be used
+     * @return a Settings.AdventureSetting element to be used
      */
-    private Settings.AdventureSetting decideRaidRandomly() {
+    private Settings.AdventureSetting decideAdventureRandomly(List<Settings.AdventureSetting> startList) {
         RandomCollection<Settings.AdventureSetting> randomRaid = new RandomCollection<>();
 
         // We create a random collection that is specific for the current day
         String todayNum = new SimpleDateFormat("u").format(new Date());
-        for (Settings.AdventureSetting setting: bot.settings.raids) {
+        for (Settings.AdventureSetting setting: startList) {
             if (setting.weekDay.contains(todayNum)) randomRaid.add(setting.chanceToRun, setting);
         }
 
         if (randomRaid.size() > 0) return randomRaid.next();
 
         // We create a random collection
-        for (Settings.AdventureSetting setting: bot.settings.raids) {
+        for (Settings.AdventureSetting setting: startList) {
             if (setting.weekDay.contains("*")) randomRaid.add(setting.chanceToRun, setting);
         }
 
