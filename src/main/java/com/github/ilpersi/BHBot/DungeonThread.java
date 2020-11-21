@@ -350,7 +350,7 @@ public class DungeonThread implements Runnable {
                                 bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(raidBTNSeg);
 
-                                Settings.RaidSetting raidSetting = decideRaidRandomly();
+                                Settings.AdventureSetting raidSetting = decideRaidRandomly();
                                 if (raidSetting == null) {
                                     bot.settings.activitiesEnabled.remove("r");
                                     BHBot.logger.error("It was impossible to choose a raid randomly, raids are disabled!");
@@ -359,7 +359,7 @@ public class DungeonThread implements Runnable {
                                     continue;
                                 }
 
-                                if (!handleRaidSelection(raidSetting.raidNum, raidSetting.difficulty)) {
+                                if (!handleRaidSelection(raidSetting.adventureZone, raidSetting.difficulty)) {
                                     restart();
                                     continue;
                                 }
@@ -394,7 +394,7 @@ public class DungeonThread implements Runnable {
                                 } else {
                                     bot.setState(BHBot.State.Raid);
                                     bot.setLastJoinedState(BHBot.State.Raid);
-                                    BHBot.logger.info("Raid " + raidSetting.fullName() + " initiated!");
+                                    BHBot.logger.info("Raid initiated!");
                                     runeManager.reset();
                                 }
                             }
@@ -3318,19 +3318,19 @@ public class DungeonThread implements Runnable {
      *
      * @return a Settings.RaidSetting element to be used
      */
-    private Settings.RaidSetting decideRaidRandomly() {
-        RandomCollection<Settings.RaidSetting> randomRaid = new RandomCollection<>();
+    private Settings.AdventureSetting decideRaidRandomly() {
+        RandomCollection<Settings.AdventureSetting> randomRaid = new RandomCollection<>();
 
         // We create a random collection that is specific for the current day
         String todayNum = new SimpleDateFormat("u").format(new Date());
-        for (Settings.RaidSetting setting: bot.settings.raids) {
+        for (Settings.AdventureSetting setting: bot.settings.raids) {
             if (setting.weekDay.contains(todayNum)) randomRaid.add(setting.chanceToRun, setting);
         }
 
         if (randomRaid.size() > 0) return randomRaid.next();
 
         // We create a random collection
-        for (Settings.RaidSetting setting: bot.settings.raids) {
+        for (Settings.AdventureSetting setting: bot.settings.raids) {
             if (setting.weekDay.contains("*")) randomRaid.add(setting.chanceToRun, setting);
         }
 
@@ -3465,7 +3465,9 @@ public class DungeonThread implements Runnable {
      * <p>
      * Returns false in case it failed.
      */
-    private boolean handleRaidSelection(int desiredRaid, int difficulty) {
+    private boolean handleRaidSelection(String desiredRaidZone, int difficulty) {
+
+        int desiredRaid = Integer.parseInt(desiredRaidZone);
 
         MarvinSegment seg;
 
@@ -3504,11 +3506,11 @@ public class DungeonThread implements Runnable {
         BHBot.logger.debug("Detected: R" + raidUnlocked + " unlocked");
 
         if (raidUnlocked < desiredRaid) {
-            BHBot.logger.warn("Raid selected in settings (R" + desiredRaid + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
+            BHBot.logger.warn("Raid selected in settings (R" + desiredRaidZone + ") is higher than raid level unlocked, running highest available (R" + raidUnlocked + ")");
             desiredRaid = raidUnlocked;
         }
 
-        BHBot.logger.info("Attempting R" + desiredRaid + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
+        BHBot.logger.info("Attempting R" + desiredRaidZone + " " + (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"));
 
         // we sort the list of dots, using the x1 coordinate
         raidDotsList.sort(comparing(MarvinSegment::getX1));
@@ -3532,7 +3534,7 @@ public class DungeonThread implements Runnable {
 
         if (!onlyR1 && (selectedRaid != desiredRaid)) {
             // we need to change the raid type!
-            BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaid);
+            BHBot.logger.info("Changing from R" + selectedRaid + " to R" + desiredRaidZone);
             // we click on the desired cue
             bot.browser.clickOnSeg(raidDotsList.get(desiredRaid - 1));
         }
