@@ -25,20 +25,18 @@ public class DungeonThread implements Runnable {
     private static int globalTickets;
     private static int globalTokens;
 
-    /*
-          Match the character “z” literally (case sensitive) «z»
-          Match the regex below and capture its match into a backreference named “zone” (also backreference number 1) «(?<zone>\d{1,2})»
-             Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
-                Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
-          Match the character “d” literally (case sensitive) «d»
-          Match the regex below and capture its match into a backreference named “dungeon” (also backreference number 2) «(?<dungeon>[1234])»
-             Match a single character from the list “1234” «[1234]»
-          Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s+»
-             Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
-          Match the regex below and capture its match into a backreference named “difficulty” (also backreference number 3) «(?<difficulty>[123])»
-             Match a single character from the list “123” «[123]»
-         */
-    private final Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])\\s+(?<difficulty>[123])");
+    // z(?<zone>\d{1,2})d(?<dungeon>[1234])
+    // 
+    // Options: Case insensitive; Exact spacing; Dot doesn’t match line breaks; ^$ don’t match at line breaks; Default line breaks
+    // 
+    // Match the character “z” literally (case insensitive) «z»
+    // Match the regex below and capture its match into a backreference named “zone” (also backreference number 1) «(?<zone>\d{1,2})»
+    //    Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+    //       Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+    // Match the character “d” literally (case insensitive) «d»
+    // Match the regex below and capture its match into a backreference named “dungeon” (also backreference number 2) «(?<dungeon>[1234])»
+    //    Match a single character from the list “1234” «[1234]»
+    private final Pattern dungeonRegex = Pattern.compile("z(?<zone>\\d{1,2})d(?<dungeon>[1234])", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
     @SuppressWarnings("FieldCanBeLocal")
     private final long MAX_IDLE_TIME = 15 * Misc.Durations.MINUTE;
 
@@ -709,16 +707,16 @@ public class DungeonThread implements Runnable {
 
                                 Matcher dungeonMatcher = dungeonRegex.matcher(dungeonSetting.adventureZone.toLowerCase());
                                 if (!dungeonMatcher.find()) {
-                                    BHBot.logger.error("Wrong format in dungeon detected: " + dungeonSetting.adventureZone + "! It will be skipped...");
+                                    BHBot.logger.error("Wrong format in dungeon detected: '" + dungeonSetting.adventureZone + "'! It will be skipped...");
                                     bot.notificationManager.sendErrorNotification("Dungeon error", "Wrong dungeon format detected: " + dungeonSetting.adventureZone);
+                                    // TODO close the dungeon window
                                     continue;
                                 }
 
                                 int goalZone = Integer.parseInt(dungeonMatcher.group("zone"));
                                 int goalDungeon = Integer.parseInt(dungeonMatcher.group("dungeon"));
-                                int difficulty = Integer.parseInt(dungeonMatcher.group("difficulty"));
 
-                                String difficultyName = (difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic");
+                                String difficultyName = (dungeonSetting.difficulty == 1 ? "Normal" : dungeonSetting.difficulty == 2 ? "Hard" : "Heroic");
 
                                 BHBot.logger.info("Attempting " + difficultyName + " z" + goalZone + "d" + goalDungeon);
 
@@ -764,7 +762,7 @@ public class DungeonThread implements Runnable {
                                     specialDungeon = true;
                                     seg = MarvinSegment.fromCue(BHBot.cues.get("Enter"), 5 * Misc.Durations.SECOND, bot.browser);
                                 } else { //else select appropriate difficulty
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), 5 * Misc.Durations.SECOND, bot.browser);
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get(dungeonSetting.difficulty == 1 ? "Normal" : dungeonSetting.difficulty == 2 ? "Hard" : "Heroic"), 5 * Misc.Durations.SECOND, bot.browser);
                                 }
                                 bot.browser.clickOnSeg(seg);
 
@@ -812,7 +810,7 @@ public class DungeonThread implements Runnable {
                                 bot.setLastJoinedState(BHBot.State.Dungeon);
                                 runeManager.reset();
 
-                                BHBot.logger.info("Dungeon <z" + goalZone + "d" + goalDungeon + "> " + (difficulty == 1 ? "normal" : difficulty == 2 ? "hard" : "heroic") + " initiated!");
+                                BHBot.logger.info("Dungeon <z" + goalZone + "d" + goalDungeon + "> " + (dungeonSetting.difficulty == 1 ? "normal" : dungeonSetting.difficulty == 2 ? "hard" : "heroic") + " initiated!");
                             }
                             continue;
                         } // energy
