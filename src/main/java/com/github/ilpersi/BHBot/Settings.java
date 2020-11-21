@@ -1137,17 +1137,13 @@ public class Settings {
         return result.toString();
     }
 
-    private String getDungeonsAsString() {
-        return dungeons.toString();
-    }
-
     private String getExpeditionsAsString() {
         return expeditions.toString();
     }
 
-    private String getRaidsAsString() {
+    private String getAdventuresAsString(List<AdventureSetting> adventureSettingList) {
         StringBuilder settingBuilder = new StringBuilder();
-        for (AdventureSetting s : this.raids) {
+        for (AdventureSetting s : adventureSettingList) {
             if (settingBuilder.length() > 0) settingBuilder.append(";");
 
             settingBuilder.append(s.toString());
@@ -1551,8 +1547,8 @@ public class Settings {
         difficultyGauntlet = Integer.parseInt(lastUsedMap.getOrDefault("difficultyGauntlet", "" + difficultyGauntlet));
         minSolo = Integer.parseInt(lastUsedMap.getOrDefault("minSolo", "" + minSolo));
 
-        setDungeonsFromString(lastUsedMap.getOrDefault("dungeons", getDungeonsAsString()));
-        setRaidsFromString(lastUsedMap.getOrDefault("raids", getRaidsAsString()));
+        setDungeonsFromString(lastUsedMap.getOrDefault("dungeons", getAdventuresAsString(this.dungeons)));
+        setRaidsFromString(lastUsedMap.getOrDefault("raids", getAdventuresAsString(this.raids)));
         setExpeditionsFromString(lastUsedMap.getOrDefault("expeditions", getExpeditionsAsString()));
         setStripsFromString(lastUsedMap.getOrDefault("pvpstrip", getStripsAsString()));
         setGVGStripsFromString(lastUsedMap.getOrDefault("gvgstrip", getGVGStripsAsString()));
