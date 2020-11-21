@@ -208,6 +208,7 @@ public class CueCompare {
                     //noinspection UnnecessaryContinue
                     continue;
                 } else if (imgFile.getName().equals(outputFile.getName())) {
+                    System.out.println("Skipping output file: " + imgFile.getAbsolutePath());
                     //noinspection UnnecessaryContinue
                     continue;
                 } else {
@@ -233,7 +234,7 @@ public class CueCompare {
                 }
             }
 
-            System.out.println("Merged " + imgCnt + " images.");
+            System.out.println("Merged " + (imgCnt - 1) + " images.");
 
 
         } else {
