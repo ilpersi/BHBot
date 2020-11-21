@@ -60,6 +60,55 @@ public class Settings {
         }
     }
 
+    static class RaidSetting {
+        String weekDay;
+        int raidNum;
+        int difficulty;
+        double chanceToRun;
+
+        // Optional fields, can be nullable so we use Java primitives
+        Boolean rerun;
+        Boolean solo;
+
+        RaidSetting(String weekDay, int number, int difficulty, double chanceToRun, boolean solo, boolean rerun) {
+            this.weekDay = weekDay;
+            this.raidNum = number;
+            this.difficulty = difficulty;
+            this.chanceToRun = chanceToRun;
+            this.solo = solo;
+            this.rerun = rerun;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder(this.weekDay).append(' ')
+                .append(this.raidNum).append(" ")
+                .append(this.difficulty).append(" ")
+                .append((int) this.chanceToRun);
+
+
+            // we only append what is really needed
+            if (solo && rerun) {
+                // they are both true, we append both
+                sb.append(" ").append(1); // solo
+                sb.append(" ").append(1); // rerun
+            }  else if (solo) {
+                // only rerun is true, we skip solo
+                sb.append(" ").append(1); // solo
+            } else if (rerun) {
+                // rerun is false, solo is true
+                sb.append(" ").append(0); // solo
+                sb.append(" ").append(1); // rerun
+            }
+
+            return sb.toString();
+        }
+
+        String fullName () {
+            return "r" + this.raidNum;
+        }
+    }
+
     /**
      * This class holds the scheduling settings. It is basically composed of two attributes startTime and endTime
      */
@@ -287,8 +336,8 @@ public class Settings {
      * '1 3 70;2 1 30' ==> in 70% of cases it will do R1 on heroic, in 30% of cases it will do R2 normal
      * '1 3 100' ==> in 100% of cases it will do R1 on heroic
      */
-    RandomCollection<String> raids;
-    RandomCollection<String> wednesdayRaids;
+    List<RaidSetting> raids;
+    //RandomCollection<String> wednesdayRaids;
     /**
      * World Boss Settings
      **/
@@ -481,7 +530,7 @@ public class Settings {
         poUserToken = "";
         pvpOpponent = 1;
         pvpstrip = new ArrayList<>();
-        raids = new RandomCollection<>();
+        raids = new ArrayList<>();
         reconnectTimer = 60;
         resetTimersOnBattleEnd = true;
         restartAfterAdOfferTimeout = true;
@@ -496,17 +545,15 @@ public class Settings {
         victoryScreenshot = false;
         warningSettingLInes = new ArrayList<>();
         wednesdayDungeons = new RandomCollection<>();
-        wednesdayRaids = new RandomCollection<>();
         worldBossSettings = new RandomCollection<>();
         wrongSettingLines = new ArrayList<>();
 
         setDifficultyFailsafeFromString("t:0 g:0");
         setDungeons("z1d1 1 100"); // some default value
         setExpeditions("p1 100 100"); // some default value
-        setRaids("1 1 100"); // some default value
+        setRaids("* 1 1 100"); // some default value
         setScreenshotsFromString("w d f b dg wg fe"); // enabled all by default
         setWednesdayDungeons(""); // default is empty, else if people delete the line it will load this value
-        setWednesdayRaids(""); // default is empty, else if people delete the line it will load this value
     }
 
     /**
@@ -835,35 +882,70 @@ public class Settings {
 
     private void setRaids(String... raids) {
         this.raids.clear();
-        double weight;
-        String name;
-        String[] config;
+
+        String weekDay;
+        int number;
+        int difficulty;
+        double chanceToRun;
+
+        // \s*(?<weekDay>[*1234567]{1,7})\s(?<raidNum>\d{1,2})\s(?<difficulty>[123])\s(?<chanceToRun>\d+)\s?(?<rerun>[01]?)\s?(?<solo>[01]?)
+        // 
+        // Options: Case insensitive; Exact spacing; Dot doesn't match line breaks; ^$ don’t match at line breaks; Default line breaks
+        // 
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s*»
+        //    Between zero and unlimited times, as many times as possible, giving back as needed (greedy) «*»
+        // Match the regex below and capture its match into a backreference named “weekDay” (also backreference number 1) «(?<weekDay>[*1234567]{1,7})»
+        //    Match a single character from the list “*1234567” «[*1234567]{1,7}»
+        //       Between one and 7 times, as many times as possible, giving back as needed (greedy) «{1,7}»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s»
+        // Match the regex below and capture its match into a backreference named “raidNum” (also backreference number 2) «(?<raidNun>\d{1,2})»
+        //    Match a single character that is a “digit” (ASCII 0–9 only) «\d{1,2}»
+        //       Between one and 2 times, as many times as possible, giving back as needed (greedy) «{1,2}»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s»
+        // Match the regex below and capture its match into a backreference named “difficulty” (also backreference number 3) «(?<difficulty>[123])»
+        //    Match a single character from the list “123” «[123]»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s»
+        // Match the regex below and capture its match into a backreference named “chanceToRun” (also backreference number 4) «(?<chanceToRun>\d+)»
+        //    Match a single character that is a “digit” (ASCII 0–9 only) «\d+»
+        //       Between one and unlimited times, as many times as possible, giving back as needed (greedy) «+»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s?»
+        //    Between zero and one times, as many times as possible, giving back as needed (greedy) «?»
+        // Match the regex below and capture its match into a backreference named “rerun” (also backreference number 5) «(?<rerun>[01]?)»
+        //    Match a single character from the list “01” «[01]?»
+        //       Between zero and one times, as many times as possible, giving back as needed (greedy) «?»
+        // Match a single character that is a “whitespace character” (ASCII space, tab, line feed, carriage return, vertical tab, form feed) «\s?»
+        //    Between zero and one times, as many times as possible, giving back as needed (greedy) «?»
+        // Match the regex below and capture its match into a backreference named “solo” (also backreference number 6) «(?<solo>[01]?)»
+        //    Match a single character from the list “01” «[01]?»
+        //       Between zero and one times, as many times as possible, giving back as needed (greedy) «?»
+
+        Pattern raidRegex = Pattern.compile("\\s*(?<weekDay>[*1234567]{1,7})\\s(?<raidNum>\\d{1,2})\\s(?<difficulty>[123])\\s(?<chanceToRun>\\d+)\\s?(?<rerun>[01]?)\\s?(?<solo>[01]?)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+
+        // Optional fields, by default the value is false
+        boolean rerun;
+        boolean solo;
 
         for (String d : raids) {
             String add = d.trim();
             if ("".equals(add))
                 continue;
-            config = add.split(" ");
-            weight = Double.parseDouble(config[2]);
-            name = config[0] + " " + config[1];
-            this.raids.add(weight, name);
-        }
-    }
 
-    private void setWednesdayRaids(String... wednesdayRaids) {
-        this.wednesdayRaids.clear();
-        double weight;
-        String name;
-        String[] config;
+            Matcher raidtMatcher = raidRegex.matcher(add);
+            if (raidtMatcher.find()) {
+                weekDay = raidtMatcher.group("weekDay");
+                number = Integer.parseInt(raidtMatcher.group("raidNum"));
+                difficulty = Integer.parseInt(raidtMatcher.group("difficulty"));
+                chanceToRun =  Double.parseDouble(raidtMatcher.group("chanceToRun"));
 
-        for (String d : wednesdayRaids) {
-            String add = d.trim();
-            if ("".equals(add))
-                continue;
-            config = add.split(" ");
-            weight = Double.parseDouble(config[2]);
-            name = config[0] + " " + config[1];
-            this.wednesdayRaids.add(weight, name);
+                // Optional settings
+                rerun = !"".equals(raidtMatcher.group("rerun")) && raidtMatcher.group("rerun") != null;
+                solo = !"".equals(raidtMatcher.group("solo")) && raidtMatcher.group("solo") != null;
+
+                RaidSetting raidSetting = new RaidSetting(weekDay, number, difficulty, chanceToRun, rerun, solo);
+                this.raids.add(raidSetting);
+            } else {
+                warningSettingLInes.add("Unknown raid setting format: " + add);
+            }
         }
     }
 
@@ -1103,10 +1185,6 @@ public class Settings {
         return raids.toString();
     }
 
-    private String getWednesdayRaidsAsString() {
-        return wednesdayRaids.toString();
-    }
-
     private String getStripsAsString() {
         StringBuilder result = new StringBuilder();
         for (String s : pvpstrip)
@@ -1278,10 +1356,6 @@ public class Settings {
 
     private void setRaidsFromString(String s) {
         setRaids(s.split(";"));
-    }
-
-    private void setWednesdayRaidsFromString(String s) {
-        setWednesdayRaids(s.split(";"));
     }
 
     private void setStripsFromString(String s) {
@@ -1513,7 +1587,6 @@ public class Settings {
         setDungeonsFromString(lastUsedMap.getOrDefault("dungeons", getDungeonsAsString()));
         setWednesdayDungeonsFromString(lastUsedMap.getOrDefault("wednesdayDungeons", getWednesdayDungeonsAsString()));
         setRaidsFromString(lastUsedMap.getOrDefault("raids", getRaidsAsString()));
-        setWednesdayRaidsFromString(lastUsedMap.getOrDefault("wednesdayRaids", getWednesdayRaidsAsString()));
         setExpeditionsFromString(lastUsedMap.getOrDefault("expeditions", getExpeditionsAsString()));
         setStripsFromString(lastUsedMap.getOrDefault("pvpstrip", getStripsAsString()));
         setGVGStripsFromString(lastUsedMap.getOrDefault("gvgstrip", getGVGStripsAsString()));

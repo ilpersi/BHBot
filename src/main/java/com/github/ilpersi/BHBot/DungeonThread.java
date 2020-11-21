@@ -350,8 +350,8 @@ public class DungeonThread implements Runnable {
                                 bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(raidBTNSeg);
 
-                                String raid = decideRaidRandomly();
-                                if (raid == null) {
+                                Settings.RaidSetting raidSetting = decideRaidRandomly();
+                                if (raidSetting == null) {
                                     bot.settings.activitiesEnabled.remove("r");
                                     BHBot.logger.error("It was impossible to choose a raid randomly, raids are disabled!");
                                     bot.notificationManager.sendErrorNotification("Raid Error", "It was impossible to choose a raid randomly, raids are disabled!");
@@ -359,10 +359,7 @@ public class DungeonThread implements Runnable {
                                     continue;
                                 }
 
-                                int difficulty = Integer.parseInt(raid.split(" ")[1]);
-                                int desiredRaid = Integer.parseInt(raid.split(" ")[0]);
-
-                                if (!handleRaidSelection(desiredRaid, difficulty)) {
+                                if (!handleRaidSelection(raidSetting.raidNum, raidSetting.difficulty)) {
                                     restart();
                                     continue;
                                 }
@@ -381,7 +378,7 @@ public class DungeonThread implements Runnable {
                                 bot.browser.readScreen();
                                 detectCharacterDialogAndHandleIt();
 
-                                seg = MarvinSegment.fromCue(BHBot.cues.get(difficulty == 1 ? "Normal" : difficulty == 2 ? "Hard" : "Heroic"), bot.browser);
+                                seg = MarvinSegment.fromCue(BHBot.cues.get(raidSetting.difficulty == 1 ? "Normal" : raidSetting.difficulty == 2 ? "Hard" : "Heroic"), bot.browser);
                                 bot.browser.clickOnSeg(seg);
                                 bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
@@ -397,7 +394,7 @@ public class DungeonThread implements Runnable {
                                 } else {
                                     bot.setState(BHBot.State.Raid);
                                     bot.setLastJoinedState(BHBot.State.Raid);
-                                    BHBot.logger.info("Raid initiated!");
+                                    BHBot.logger.info("Raid " + raidSetting.fullName() + " initiated!");
                                     runeManager.reset();
                                 }
                             }
@@ -3317,21 +3314,35 @@ public class DungeonThread implements Runnable {
     }
 
     /**
-     * Returns raid type (1, 2 or 3) and difficulty level (1, 2 or 3, which correspond to normal, hard and heroic), e.g. '1 3'.
+     * Returns a random raid configuration. The logic takes care of giving priority to excat days configuration over the * ones
+     *
+     * @return a Settings.RaidSetting element to be used
      */
-    private String decideRaidRandomly() {
-        if ("3".equals(new SimpleDateFormat("u").format(new Date())) &&
-                bot.settings.wednesdayRaids.size() > 0) { // if its wednesday and wednesdayRaids is not empty
-            return bot.settings.wednesdayRaids.next();
-        } else {
-            return bot.settings.raids.next();
+    private Settings.RaidSetting decideRaidRandomly() {
+        RandomCollection<Settings.RaidSetting> randomRaid = new RandomCollection<>();
+
+        // We create a random collection that is specific for the current day
+        String todayNum = new SimpleDateFormat("u").format(new Date());
+        for (Settings.RaidSetting setting: bot.settings.raids) {
+            if (setting.weekDay.contains(todayNum)) randomRaid.add(setting.chanceToRun, setting);
         }
+
+        if (randomRaid.size() > 0) return randomRaid.next();
+
+        // We create a random collection
+        for (Settings.RaidSetting setting: bot.settings.raids) {
+            if (setting.weekDay.contains("*")) randomRaid.add(setting.chanceToRun, setting);
+        }
+
+        if (randomRaid.size() > 0) return randomRaid.next();
+
+        return null;
     }
 
     /**
      * Returns number of zone that is currently selected in the quest window (we need to be in the quest window for this to work).
      * Returns 0 in case zone could not be read (in case we are not in the quest window, for example).
-     */
+    */
     private int readCurrentZone() {
         if (MarvinSegment.fromCue("Zone1", bot.browser) != null)
             return 1;
