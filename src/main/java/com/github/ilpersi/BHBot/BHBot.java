@@ -838,55 +838,69 @@ public class BHBot {
                 return;
             }
 
-            GitHubRelease lastReleaseInfo;
-            lastReleaseInfo = gson.fromJson(response.body(), GitHubRelease.class);
+            GitHubRelease[] lastReleaseInfo;
+            lastReleaseInfo = gson.fromJson(response.body(), GitHubRelease[].class);
 
-            String tagName = lastReleaseInfo.tagName;
-            String tagUrl = "https://api.github.com/repos/ilpersi/BHBot/git/refs/tags/" + tagName;
+            HashMap<String, String> updates = new HashMap<>();
 
-            request = HttpRequest.newBuilder()
-                    .uri(URI.create(tagUrl))
-                    .build();
+            for (GitHubRelease release: lastReleaseInfo) {
 
-            response = null;
-            try {
-                response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            } catch (IOException | InterruptedException e) {
-                logger.error("Exception while getting tag ref info from Git Hub", e);
-            }
+                String tagName = release.tagName;
+                String tagUrl = "https://api.github.com/repos/ilpersi/BHBot/git/refs/tags/" + tagName;
 
-            if (response != null) {
-                statusCode = response.statusCode();
-                if (statusCode != 200) {
-                    logger.error("GitHub version check failed with HTTP error code : " + statusCode);
-                    return;
+                request = HttpRequest.newBuilder()
+                        .uri(URI.create(tagUrl))
+                        .build();
+
+                response = null;
+                try {
+                    response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                } catch (IOException | InterruptedException e) {
+                    logger.error("Exception while getting tag ref info from Git Hub", e);
                 }
 
-                GitHubTag lastReleaseTagInfo;
-                lastReleaseTagInfo = gson.fromJson(response.body(), GitHubTag.class);
-
-                Double onlineVersion = Double.parseDouble(lastReleaseInfo.tagName.replace("v", ""));
-
-                if (onlineVersion > currentVersion) {
-                    logger.warn("A new BHBot version is available and you can get it from " + lastReleaseInfo.releaseURL);
-                    logger.warn("Here are new features:");
-                    for (String feature : lastReleaseInfo.releaseNotes.split("\n")) {
-                        logger.warn(feature);
+                if (response != null) {
+                    statusCode = response.statusCode();
+                    if (statusCode != 200) {
+                        logger.error("GitHub version check failed with HTTP error code : " + statusCode);
+                        return;
                     }
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        logger.warn("Error while waiting for GitHub release check");
-                    }
-                } else if (onlineVersion.equals(currentVersion)) {
-                    if (lastReleaseTagInfo.object.sha.equals(gitProperties.get("git.commit.id"))) {
-                        logger.debug("BHBot is running on the latest version.");
+
+                    GitHubTag lastReleaseTagInfo;
+                    lastReleaseTagInfo = gson.fromJson(response.body(), GitHubTag.class);
+
+                    Double onlineVersion = Double.parseDouble(release.tagName.replace("v", ""));
+
+                    if (onlineVersion > currentVersion) {
+                        updates.put(release.tagName, release.releaseNotes);
+                    } else if (onlineVersion.equals(currentVersion)) {
+                        if (updates.size() > 0) break;
+
+                        if (lastReleaseTagInfo.object.sha.equals(gitProperties.get("git.commit.id"))) {
+                            logger.debug("BHBot is running on the latest version.");
+                        } else {
+                            logger.warn("You are running on a bleeding edge version of BHBot and there may be bugs.");
+                        }
+                        return;
                     } else {
                         logger.warn("You are running on a bleeding edge version of BHBot and there may be bugs.");
                     }
                 } else {
-                    logger.warn("You are running on a bleeding edge version of BHBot and there may be bugs.");
+                    return;
                 }
+
+            }
+            if (updates.size() > 0) {
+                logger.warn("Your current version is " + updates.size() + " version behind the latest released one. Here is a list of updates:");
+
+                for (Map.Entry<String, String> vu: updates.entrySet()) {
+                    logger.warn(vu.getKey() + " updates:");
+                    for (String line : vu.getValue().split("\n")) {
+                        logger.warn(line);
+                    }
+                }
+
+                Misc.sleep(5000);
             }
         }
     }
@@ -1096,7 +1110,8 @@ public class BHBot {
         PVP("PVP", "p"),
         Raid("Raid", "r"),
         Trials("Trials", "t"),
-        WorldBoss("World Boss", "w");
+        WorldBoss("World Boss", "w"),
+        RerunRaid("Raid Rerun", "rr");
 
         private final String name;
         private final String shortcut;
