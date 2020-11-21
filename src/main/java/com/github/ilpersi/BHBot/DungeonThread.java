@@ -770,7 +770,7 @@ public class DungeonThread implements Runnable {
 
                                 //team selection screen
                                 /* Solo-for-bounty code */
-                                if (goalZone <= bot.settings.minSolo) { //if the level is soloable then clear the team to complete bounties
+                                if (dungeonSetting.solo) { //if the level is soloable then clear the team to complete bounties
                                     bot.browser.readScreen(Misc.Durations.SECOND);
                                     seg = MarvinSegment.fromCue(BHBot.cues.get("Clear"), Misc.Durations.SECOND * 2, bot.browser);
                                     if (seg != null) {
@@ -788,7 +788,7 @@ public class DungeonThread implements Runnable {
                                 //bot.browser.clickOnSeg(seg);
                                 bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
 
-                                if (goalZone <= bot.settings.minSolo) {
+                                if (dungeonSetting.solo) {
                                     bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for dropdown animation to finish
                                     seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser);
                                     if (seg != null) {

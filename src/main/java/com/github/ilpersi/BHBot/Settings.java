@@ -469,7 +469,6 @@ public class Settings {
      * Development Settings
      **/
     int familiarScreenshot = 2;
-    int minSolo = 2;
 
     /**
      * Fishing Settings
@@ -569,7 +568,6 @@ public class Settings {
         minBadges = 5;
         minEnergyPercentage = 70;
         minShards = 2;
-        minSolo = 0;
         minTickets = 5;
         minTokens = 5;
         minXeals = 1;
@@ -1545,7 +1543,6 @@ public class Settings {
         gvgOpponent = Integer.parseInt(lastUsedMap.getOrDefault("gvgOpponent", "" + gvgOpponent));
         difficultyTrials = Integer.parseInt(lastUsedMap.getOrDefault("difficultyTrials", "" + difficultyTrials));
         difficultyGauntlet = Integer.parseInt(lastUsedMap.getOrDefault("difficultyGauntlet", "" + difficultyGauntlet));
-        minSolo = Integer.parseInt(lastUsedMap.getOrDefault("minSolo", "" + minSolo));
 
         setDungeonsFromString(lastUsedMap.getOrDefault("dungeons", getAdventuresAsString(this.dungeons)));
         setRaidsFromString(lastUsedMap.getOrDefault("raids", getAdventuresAsString(this.raids)));
@@ -1744,6 +1741,10 @@ public class Settings {
 
         if (lastUsedMap.getOrDefault("wednesdayDungeons", null) != null) {
             BHBot.logger.warn("Deprecated setting detected: wednesdayDungeons. Use the new dungeons setting format instead.");
+        }
+
+        if (lastUsedMap.getOrDefault("minSolo", null) != null) {
+            BHBot.logger.warn("Deprecated setting detected: minSolo. Use the new dungeons setting format instead.");
         }
     }
 
