@@ -326,24 +326,7 @@ public class DungeonThread implements Runnable {
                                     bot.browser.readScreen(Misc.Durations.SECOND);
                                 }
 
-                                //autoshrine
-                                if (bot.settings.autoShrine.contains("r")) {
-                                    BHBot.logger.info("Configuring autoShrine for Raid");
-                                    if (!shrineManager.updateShrineSettings(true, true)) {
-                                        BHBot.logger.error("Impossible to configure autoShrine for Raid!");
-                                    }
-                                }
-
-                                //autoBossRune
-                                if (bot.settings.autoBossRune.containsKey("r") && !bot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autobossrune enabled
-                                    BHBot.logger.info("Configuring autoBossRune for Raid");
-                                    if (!shrineManager.updateShrineSettings(true, false)) {
-                                        BHBot.logger.error("Impossible to configure autoBossRune for Raid!");
-                                    }
-                                }
-
-                                //activity runes
-                                runeManager.processAutoRune("r");
+                                handleRaidConfiguration();
 
                                 bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(raidBTNSeg);
@@ -3525,6 +3508,29 @@ public class DungeonThread implements Runnable {
         }
 
         return true;
+    }
+
+    private void handleRaidConfiguration() {
+
+        //autoshrine
+        if (bot.settings.autoShrine.contains("r")) {
+            BHBot.logger.info("Configuring autoShrine for Raid");
+            if (!shrineManager.updateShrineSettings(true, true)) {
+                BHBot.logger.error("Impossible to configure autoShrine for Raid!");
+            }
+        }
+
+        //autoBossRune
+        if (bot.settings.autoBossRune.containsKey("r") && !bot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autobossrune enabled
+            BHBot.logger.info("Configuring autoBossRune for Raid");
+            if (!shrineManager.updateShrineSettings(true, false)) {
+                BHBot.logger.error("Impossible to configure autoBossRune for Raid!");
+            }
+        }
+
+        //activity runes
+        runeManager.processAutoRune("r");
+
     }
 
     /**
