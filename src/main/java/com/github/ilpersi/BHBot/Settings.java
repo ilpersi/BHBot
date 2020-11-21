@@ -607,7 +607,7 @@ public class Settings {
         wrongSettingLines = new ArrayList<>();
 
         setDifficultyFailsafeFromString("t:0 g:0");
-        setAdventures(this.dungeons, "dungeon", "z1d1 1 100");
+        setAdventures(this.dungeons, "dungeon", "* z1d1 1 100");
         setExpeditions("p1 100 100"); // some default value
         setAdventures(this.raids, "raid","* 1 1 100"); // some default value for raids
         setScreenshotsFromString("w d f b dg wg fe"); // enabled all by default
