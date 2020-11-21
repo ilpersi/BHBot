@@ -816,7 +816,7 @@ public class BHBot {
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.github.com/repos/ilpersi/BHBot/releases/latest"))
+                .uri(URI.create("https://api.github.com/repos/ilpersi/BHBot/releases"))
                 .build();
 
         HttpResponse<String> response = null;
