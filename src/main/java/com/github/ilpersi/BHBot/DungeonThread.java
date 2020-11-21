@@ -699,18 +699,18 @@ public class DungeonThread implements Runnable {
                                 bot.browser.clickOnSeg(seg);
                                 bot.browser.readScreen(5 * Misc.Durations.SECOND);
 
-                                String dungeon = decideDungeonRandomly();
-                                if (dungeon == null) {
+                                Settings.AdventureSetting dungeonSetting = decideAdventureRandomly(bot.settings.dungeons);
+                                if (dungeonSetting == null) {
                                     bot.settings.activitiesEnabled.remove("d");
                                     BHBot.logger.error("It was impossible to choose a dungeon randomly, dungeons are disabled!");
                                     bot.notificationManager.sendErrorNotification("Dungeon error", "It was impossible to choose a dungeon randomly, dungeons are disabled!");
                                     continue;
                                 }
 
-                                Matcher dungeonMatcher = dungeonRegex.matcher(dungeon.toLowerCase());
+                                Matcher dungeonMatcher = dungeonRegex.matcher(dungeonSetting.adventureZone.toLowerCase());
                                 if (!dungeonMatcher.find()) {
-                                    BHBot.logger.error("Wrong format in dungeon detected: " + dungeon + "! It will be skipped...");
-                                    bot.notificationManager.sendErrorNotification("Dungeon error", "Wrong dungeon format detected: " + dungeon);
+                                    BHBot.logger.error("Wrong format in dungeon detected: " + dungeonSetting.adventureZone + "! It will be skipped...");
+                                    bot.notificationManager.sendErrorNotification("Dungeon error", "Wrong dungeon format detected: " + dungeonSetting.adventureZone);
                                     continue;
                                 }
 
@@ -3298,19 +3298,6 @@ public class DungeonThread implements Runnable {
             return false;
         }
         return true;
-    }
-
-    /**
-     * Returns dungeon and difficulty level, e.g. 'z2d4 2'.
-     */
-    private String decideDungeonRandomly() {
-
-        if ("3".equals(new SimpleDateFormat("u").format(new Date())) &&
-                bot.settings.wednesdayDungeons.size() > 0) { // if its wednesday and wednesdayRaids is not empty
-            return bot.settings.wednesdayDungeons.next();
-        } else {
-            return bot.settings.dungeons.next();
-        }
     }
 
     /**

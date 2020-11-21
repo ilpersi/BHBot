@@ -388,8 +388,7 @@ public class Settings {
      * and followed by a space character and percentage, e.g. '50'.
      * Example of full string: 'z2d4 3 50'.
      */
-    RandomCollection<String> dungeons;
-    RandomCollection<String> wednesdayDungeons;
+    List<AdventureSetting> dungeons;
     /**
      * List of raids we want to do with a difficulty level and percentage.
      * Examples:
@@ -546,7 +545,7 @@ public class Settings {
         discordNotifyPM = false;
         discordUserName = "";
         discordWebHookUrl = "";
-        dungeons = new RandomCollection<>();
+        dungeons = new ArrayList<>();
         enableDiscord = false;
         enablePushover = false;
         enterGuildHall = true;
@@ -604,16 +603,14 @@ public class Settings {
         username = "";
         victoryScreenshot = false;
         warningSettingLInes = new ArrayList<>();
-        wednesdayDungeons = new RandomCollection<>();
         worldBossSettings = new RandomCollection<>();
         wrongSettingLines = new ArrayList<>();
 
         setDifficultyFailsafeFromString("t:0 g:0");
-        setDungeons("z1d1 1 100"); // some default value
+        setAdventures(this.dungeons, "dungeon", "z1d1 1 100");
         setExpeditions("p1 100 100"); // some default value
         setAdventures(this.raids, "raid","* 1 1 100"); // some default value for raids
         setScreenshotsFromString("w d f b dg wg fe"); // enabled all by default
-        setWednesdayDungeons(""); // default is empty, else if people delete the line it will load this value
     }
 
     /**
@@ -889,40 +886,6 @@ public class Settings {
         }
     }
 
-    private void setDungeons(String... dungeons) {
-        this.dungeons.clear();
-        double weight;
-        String name;
-        String[] config;
-
-        for (String d : dungeons) {
-            String add = d.trim();
-            if ("".equals(add))
-                continue;
-            config = add.split(" ");
-            weight = Double.parseDouble(config[2]);
-            name = config[0] + " " + config[1];
-            this.dungeons.add(weight, name);
-        }
-    }
-
-    private void setWednesdayDungeons(String... wednesdayDungeons) {
-        this.wednesdayDungeons.clear();
-        double weight;
-        String name;
-        String[] config;
-
-        for (String d : wednesdayDungeons) {
-            String add = d.trim();
-            if ("".equals(add))
-                continue;
-            config = add.split(" ");
-            weight = Double.parseDouble(config[2]);
-            name = config[0] + " " + config[1];
-            this.wednesdayDungeons.add(weight, name);
-        }
-    }
-
     private void setExpeditions(String... expeditions) {
         this.expeditions.clear();
         double weight;
@@ -1178,10 +1141,6 @@ public class Settings {
         return dungeons.toString();
     }
 
-    private String getWednesdayDungeonsAsString() {
-        return wednesdayDungeons.toString();
-    }
-
     private String getExpeditionsAsString() {
         return expeditions.toString();
     }
@@ -1355,11 +1314,7 @@ public class Settings {
     }
 
     private void setDungeonsFromString(String s) {
-        setDungeons(s.split(";"));
-    }
-
-    private void setWednesdayDungeonsFromString(String s) {
-        setWednesdayDungeons(s.split(";"));
+        setAdventures(this.dungeons, "dungeon", s.split(";"));
     }
 
     private void setExpeditionsFromString(String s) {
@@ -1597,7 +1552,6 @@ public class Settings {
         minSolo = Integer.parseInt(lastUsedMap.getOrDefault("minSolo", "" + minSolo));
 
         setDungeonsFromString(lastUsedMap.getOrDefault("dungeons", getDungeonsAsString()));
-        setWednesdayDungeonsFromString(lastUsedMap.getOrDefault("wednesdayDungeons", getWednesdayDungeonsAsString()));
         setRaidsFromString(lastUsedMap.getOrDefault("raids", getRaidsAsString()));
         setExpeditionsFromString(lastUsedMap.getOrDefault("expeditions", getExpeditionsAsString()));
         setStripsFromString(lastUsedMap.getOrDefault("pvpstrip", getStripsAsString()));
