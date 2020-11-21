@@ -611,7 +611,7 @@ public class Settings {
         setDifficultyFailsafeFromString("t:0 g:0");
         setDungeons("z1d1 1 100"); // some default value
         setExpeditions("p1 100 100"); // some default value
-        setRaids("* 1 1 100"); // some default value
+        setAdventures(this.raids, "raid","* 1 1 100"); // some default value for raids
         setScreenshotsFromString("w d f b dg wg fe"); // enabled all by default
         setWednesdayDungeons(""); // default is empty, else if people delete the line it will load this value
     }
@@ -940,16 +940,16 @@ public class Settings {
         }
     }
 
-    private void setRaids(String... raids) {
-        this.raids.clear();
+    private void setAdventures(List<AdventureSetting> adventureList, String adventureName, String... adventures) {
+        adventureList.clear();
 
-        for (String r: raids) {
-            AdventureSetting raidSetting = AdventureSetting.fromString(r);
+        for (String a: adventures) {
+            AdventureSetting adventureSetting = AdventureSetting.fromString(a);
 
-            if (raidSetting != null) {
-                this.raids.add(raidSetting);
+            if (adventureSetting != null) {
+                adventureList.add(adventureSetting);
             } else {
-                warningSettingLInes.add("Unknown raid setting format: " + r);
+                warningSettingLInes.add("Unknown " + adventureName + " setting format: " + a);
             }
         }
     }
@@ -1367,7 +1367,7 @@ public class Settings {
     }
 
     private void setRaidsFromString(String s) {
-        setRaids(s.split(";"));
+        setAdventures(this.raids, "raid", s.split(";"));
     }
 
     private void setStripsFromString(String s) {
