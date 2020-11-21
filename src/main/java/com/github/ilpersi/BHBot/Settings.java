@@ -1187,7 +1187,14 @@ public class Settings {
     }
 
     private String getRaidsAsString() {
-        return raids.toString();
+        StringBuilder settingBuilder = new StringBuilder();
+        for (AdventureSetting s : this.raids) {
+            if (settingBuilder.length() > 0) settingBuilder.append(";");
+
+            settingBuilder.append(s.toString());
+        }
+
+        return settingBuilder.toString();
     }
 
     private String getStripsAsString() {
