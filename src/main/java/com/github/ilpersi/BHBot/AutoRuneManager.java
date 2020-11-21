@@ -349,6 +349,8 @@ class AutoRuneManager {
 
                     handleMinorBossRunes();
 
+                    bot.dungeon.setAutoOff(1000);
+
                     if (!bot.dungeon.shrineManager.updateShrineSettings(false, false)) {
                         BHBot.logger.error("Impossible to disable Ignore Boss in handleAutoBossRune!");
                         BHBot.logger.warn("Resetting encounter timer to try again in 30 seconds.");
@@ -356,15 +358,8 @@ class AutoRuneManager {
                         return;
                     }
 
-                    // We disable and re-enable the auto feature
-                    while (MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), 500, bot.browser) != null) {
-                        bot.browser.clickInGame(780, 270); //auto off
-                        bot.browser.readScreen(500);
-                    }
-                    while (MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), 500, bot.browser) != null) {
-                        bot.browser.clickInGame(780, 270); //auto on again
-                        bot.browser.readScreen(500);
-                    }
+                    bot.dungeon.setAutoOn(1000);
+
                     autoBossRuned = true;
                 }
             }

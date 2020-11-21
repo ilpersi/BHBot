@@ -73,7 +73,7 @@ public class AutoShrineManager {
         }
     }
 
-    private void resetAutoButton() {
+    /*private void resetAutoButton() {
         // We disable and re-enable the auto feature
         MarvinSegment autoSeg = MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), 500, bot.browser);
 
@@ -92,7 +92,7 @@ public class AutoShrineManager {
             BHBot.logger.error("Impossible to find Auto On button!");
             bot.notificationManager.sendErrorNotification("Auto Shrine Error", "Impossible to find Auto On button");
         }
-    }
+    }*/
 
     private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {
         bot.browser.readScreen();
@@ -139,6 +139,8 @@ public class AutoShrineManager {
             }
 
             if (disableIgnoreShrines) {
+                bot.dungeon.setAutoOff(1000);
+
                 BHBot.logger.autoshrine(ignoreShrineMsg);
 
                 if (!updateShrineSettings(true, false)) {
@@ -149,7 +151,7 @@ public class AutoShrineManager {
                 //noinspection DuplicatedCode
                 bot.browser.readScreen(100);
 
-                resetAutoButton();
+                bot.dungeon.setAutoOn(1000);
 
                 BHBot.logger.autoshrine("Waiting " + bot.settings.shrineDelay + "s to disable ignore boss");
                 long timeToWait = Misc.getTime() + (battleDelay * Misc.Durations.SECOND);
@@ -160,6 +162,8 @@ public class AutoShrineManager {
                     // TODO de-spagettify the boss rune feature
                      bot.dungeon.runeManager.handleMinorBossRunes();
                 }
+
+                bot.dungeon.setAutoOff(1000);
 
                 while (Misc.getTime() < timeToWait) {
                     Misc.sleep(Misc.Durations.SECOND);
@@ -173,7 +177,7 @@ public class AutoShrineManager {
                 //noinspection DuplicatedCode,DuplicatedCode
                 bot.browser.readScreen(100);
 
-                resetAutoButton();
+                bot.dungeon.setAutoOn(1000);
 
                 bot.scheduler.resetIdleTime(true);
             }

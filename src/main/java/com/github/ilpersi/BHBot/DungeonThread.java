@@ -78,10 +78,6 @@ public class DungeonThread implements Runnable {
     private long timeLastDailyGem = 0; // when did we check for daily gem screenshot last time?
     private long timeLastWeeklyGem = Misc.getTime(); // when did we check for weekly gem screenshot last time?
 
-    /**
-     * global autorune vals
-     */
-
     BHBot bot;
     AutoShrineManager shrineManager;
     AutoReviveManager reviveManager;
@@ -2751,8 +2747,7 @@ public class DungeonThread implements Runnable {
         if ((bot.settings.autoRevive.size() == 0) || (bot.getState() != BHBot.State.Trials && bot.getState() != BHBot.State.Gauntlet
                 && bot.getState() != BHBot.State.Raid && bot.getState() != BHBot.State.Expedition)) {
             BHBot.logger.debug("AutoRevive disabled, reenabling auto.. State = '" + bot.getState() + "'");
-            seg = MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), bot.browser);
-            if (seg != null) bot.browser.clickOnSeg(seg);
+            setAutoOn(0);
             bot.scheduler.resetIdleTime(true);
             return;
         }
@@ -2761,8 +2756,7 @@ public class DungeonThread implements Runnable {
         seg = MarvinSegment.fromCue(BHBot.cues.get("Defeat"), Misc.Durations.SECOND, bot.browser);
         if (seg != null) {
             BHBot.logger.autorevive("Defeat screen, skipping revive check");
-            seg = MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
-            if (seg != null) bot.browser.clickOnSeg(seg);
+            setAutoOn(Misc.Durations.SECOND);
             bot.browser.readScreen(Misc.Durations.SECOND);
             bot.scheduler.resetIdleTime(true);
             return;
@@ -2771,8 +2765,7 @@ public class DungeonThread implements Runnable {
         seg = MarvinSegment.fromCue(BHBot.cues.get("VictoryLarge"), 500, bot.browser);
         if (seg != null) {
             BHBot.logger.autorevive("Victory popup, skipping revive check");
-            seg = MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
-            if (seg != null) bot.browser.clickOnSeg(seg);
+            setAutoOn(Misc.Durations.SECOND);
 
             seg = MarvinSegment.fromCue(BHBot.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, bot.browser); // after enabling auto again the bot would get stuck at the victory screen, this should close it
             if (seg != null)
@@ -2787,8 +2780,7 @@ public class DungeonThread implements Runnable {
 
         reviveManager.processAutoRevive();
 
-        seg = MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), Misc.Durations.SECOND, bot.browser);
-        if (seg != null) bot.browser.clickOnSeg(seg);
+        setAutoOn(Misc.Durations.SECOND);
         bot.scheduler.resetIdleTime(true);
 
         // after reviving we update encounter timestamp as it wasn't updating from processDungeon
@@ -5517,6 +5509,22 @@ public class DungeonThread implements Runnable {
         }
 
         return "";
+    }
+
+    void setAutoOff(int timeout) {
+        MarvinSegment autoSeg = MarvinSegment.fromCue(BHBot.cues.get("AutoOn"), timeout, bot.browser);
+
+        if (autoSeg != null) {
+            bot.browser.clickOnSeg(autoSeg);
+        }
+    }
+
+    void setAutoOn(int timeout) {
+        MarvinSegment autoSeg = MarvinSegment.fromCue(BHBot.cues.get("AutoOff"), timeout, bot.browser);
+
+        if (autoSeg != null) {
+            bot.browser.clickOnSeg(autoSeg);
+        }
     }
 
 }
