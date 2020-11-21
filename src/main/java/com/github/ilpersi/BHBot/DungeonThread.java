@@ -18,12 +18,12 @@ import static java.util.Comparator.comparing;
 
 public class DungeonThread implements Runnable {
 
-    private static int globalShards;
-    private static int globalBadges;
-    private static int globalEnergy;
-    private static int globalXeals;
-    private static int globalTickets;
-    private static int globalTokens;
+    private int globalShards;
+    private int globalBadges;
+    private int globalEnergy;
+    private int globalXeals;
+    private int globalTickets;
+    private int globalTokens;
 
     // z(?<zone>\d{1,2})d(?<dungeon>[1234])
     // 
