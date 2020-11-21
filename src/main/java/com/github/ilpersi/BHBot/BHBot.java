@@ -106,7 +106,6 @@ public class BHBot {
                 case "init":  //start bot in idle mode
                 case "idle":  //start bot in idle mode
                     Settings.configurationFile = "LOAD_IDLE_SETTINGS";
-                    i++;
                     continue;
                 case "settings":
                 case "configurationFile":
