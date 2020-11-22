@@ -230,6 +230,7 @@ public class BlockerThread implements Runnable {
                 if (!BHBot.State.FishingBaits.equals(bot.getState())) {
                     seg = MarvinSegment.fromCue("Fishing_Bait", bot.browser);
                     if (seg != null) {
+                        BHBot.logger.debug("Fishing baits detected during login...");
                         if ((bot.settings.screenshots.contains("a"))) {
                             bot.saveGameScreen("fishing-baits", "fishing");
                         }
