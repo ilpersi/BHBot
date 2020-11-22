@@ -163,11 +163,11 @@ public class AutoShrineManager {
                      bot.dungeon.runeManager.handleMinorBossRunes();
                 }
 
-                bot.dungeon.setAutoOff(1000);
-
                 while (Misc.getTime() < timeToWait) {
                     Misc.sleep(Misc.Durations.SECOND);
                 }
+
+                bot.dungeon.setAutoOff(1000);
 
                 if (!updateShrineSettings(false, false)) {
                     BHBot.logger.error("Impossible to disable Ignore Boss in handleAutoShrine!");
