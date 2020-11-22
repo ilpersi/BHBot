@@ -50,6 +50,7 @@ public class DungeonThread implements Runnable {
     private boolean specialDungeon; //d4 check for closing properly when no energy
     private String expeditionFailsafePortal = "";
     private int expeditionFailsafeDifficulty = 0;
+    private boolean rerunCurrentActivity = false;
 
     // Generic counters HashMap
     HashMap<BHBot.State, DungeonCounter> counters = new HashMap<>();
@@ -195,6 +196,12 @@ public class DungeonThread implements Runnable {
                     }
                 }
 
+                if (BHBot.State.RerunRaid.equals(bot.getState())) {
+                    handleRaidConfiguration();
+                    setAutoOn(Misc.Durations.SECOND);
+                    bot.setState(BHBot.State.Raid);
+                }
+
                 // process dungeons of any kind (if we are in any):
                 if (bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Trials || bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.Dungeon || bot.getState() == BHBot.State.PVP || bot.getState() == BHBot.State.GVG || bot.getState() == BHBot.State.Invasion || bot.getState() == BHBot.State.Expedition || bot.getState() == BHBot.State.WorldBoss) {
                     processDungeon();
@@ -335,6 +342,9 @@ public class DungeonThread implements Runnable {
 
                                     continue;
                                 }
+
+                                // We only rerun if round robin is disabled and rerun is enabled for current configuration
+                                rerunCurrentActivity = raidSetting.rerun && !bot.settings.activitiesRoundRobin;
 
                                 if (!handleRaidSelection(raidSetting.adventureZone, raidSetting.difficulty)) {
                                     restart();
@@ -2376,7 +2386,8 @@ public class DungeonThread implements Runnable {
         /*
          *  Check for the 'Cleared' dialogue and handle post-activity tasks
          */
-        if (bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Dungeon || bot.getState() == BHBot.State.Expedition || bot.getState() == BHBot.State.Trials) {
+        if (bot.getState() == BHBot.State.Raid || bot.getState() == BHBot.State.Dungeon
+                || bot.getState() == BHBot.State.Expedition|| bot.getState() == BHBot.State.Trials) {
             seg = MarvinSegment.fromCue(BHBot.cues.get("Cleared"), bot.browser);
             if (seg != null) {
 
@@ -2394,26 +2405,49 @@ public class DungeonThread implements Runnable {
                 //handle SuccessThreshold
                 handleSuccessThreshold(bot.getState());
 
-                //close 'cleared' popup
-                bot.browser.closePopupSecurely(BHBot.cues.get("Cleared"), BHBot.cues.get("YesGreen"));
-
-                // close the activity window to return us to the main screen
-                if (bot.getState() != BHBot.State.Expedition) {
-                    bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
-                    bot.browser.closePopupSecurely(BHBot.cues.get("X"), BHBot.cues.get("X"));
-                }
-
-                //For Expedition we need to close 3 windows (Exped/Portal/Team) to return to main screen
-                if (bot.getState() == BHBot.State.Expedition) {
-                    bot.browser.closePopupSecurely(BHBot.cues.get("Enter"), BHBot.cues.get("X"));
-                    bot.browser.closePopupSecurely(BHBot.cues.get("PortalBorderLeaves"), BHBot.cues.get("X"));
-                    bot.browser.closePopupSecurely(BHBot.cues.get("BadgeBar"), BHBot.cues.get("X"));
-                }
-
                 resetAppropriateTimers();
                 reviveManager.reset();
 
-                bot.setState(BHBot.State.Main); // reset state
+                if (BHBot.State.Raid.equals(bot.getState()) && rerunCurrentActivity ) {
+                    setAutoOff(1000);
+
+                    Cue raidRerun = new Cue(BHBot.cues.get("Rerun"), Bounds.fromWidthHeight(425, 345, 95, 35));
+
+                    bot.browser.closePopupSecurely(BHBot.cues.get("Cleared"), raidRerun);
+
+                    // We are out of shards, so we get back to Main
+                    seg = MarvinSegment.fromCue("NotEnoughShards", Misc.Durations.SECOND * 3, bot.browser);
+                    if (seg != null) {
+
+                        bot.browser.closePopupSecurely(BHBot.cues.get("NotEnoughShards"), BHBot.cues.get("No"));
+
+                        rerunCurrentActivity = false;
+                        bot.setState(BHBot.State.Main);
+                        return;
+                    }
+
+                    bot.setState(BHBot.State.RerunRaid);
+                } else {
+
+                    //close 'cleared' popup
+                    bot.browser.closePopupSecurely(BHBot.cues.get("Cleared"), BHBot.cues.get("YesGreen"));
+
+                    // close the activity window to return us to the main screen
+                    if (bot.getState() != BHBot.State.Expedition) {
+                        bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
+                        bot.browser.closePopupSecurely(BHBot.cues.get("X"), BHBot.cues.get("X"));
+                    }
+
+                    //For Expedition we need to close 3 windows (Exped/Portal/Team) to return to main screen
+                    if (bot.getState() == BHBot.State.Expedition) {
+                        bot.browser.closePopupSecurely(BHBot.cues.get("Enter"), BHBot.cues.get("X"));
+                        bot.browser.closePopupSecurely(BHBot.cues.get("PortalBorderLeaves"), BHBot.cues.get("X"));
+                        bot.browser.closePopupSecurely(BHBot.cues.get("BadgeBar"), BHBot.cues.get("X"));
+                    }
+
+                    bot.setState(BHBot.State.Main); // reset state
+                }
+
                 return;
             }
         }
@@ -2421,7 +2455,10 @@ public class DungeonThread implements Runnable {
         /*
          *  Check for the 'Victory' screen and handle post-activity tasks
          */
-        if (bot.getState() == BHBot.State.WorldBoss || bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.Invasion || bot.getState() == BHBot.State.PVP || bot.getState() == BHBot.State.GVG) {
+        if (bot.getState() == BHBot.State.WorldBoss || bot.getState() == BHBot.State.Gauntlet
+                || bot.getState() == BHBot.State.Invasion|| bot.getState() == BHBot.State.PVP
+                || bot.getState() == BHBot.State.GVG) {
+
             if (bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.GVG) {
                 seg = MarvinSegment.fromCue(BHBot.cues.get("VictorySmall"), bot.browser);
             } else {
@@ -2518,70 +2555,37 @@ public class DungeonThread implements Runnable {
                 handleLoot();
             }
 
-            //in Gauntlet/Invasion/GVG the close button is green, everywhere else its blue
-            if (bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.Invasion || bot.getState() == BHBot.State.GVG) {
-                seg = MarvinSegment.fromCue(BHBot.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, bot.browser);
-            } else {
-                if (bot.getState() == BHBot.State.PVP) {
-                    seg = MarvinSegment.fromCue("Close", 3 * Misc.Durations.SECOND, Bounds.fromWidthHeight(355, 345, 85, 35), bot.browser);
-                } else {
-                    seg = MarvinSegment.fromCue(BHBot.cues.get("Close"), 2 * Misc.Durations.SECOND, bot.browser);
+            // Difficulty failsafe logic
+            if (bot.getState().equals(BHBot.State.Expedition) &&  bot.settings.difficultyFailsafe.containsKey("e")) {
+                //Handle difficultyFailsafe for Expedition
+                // The key is the difficulty decrease, the value is the minimum level
+                Map.Entry<Integer, Integer> expedDifficultyFailsafe = bot.settings.difficultyFailsafe.get("e");
+                int levelOffset = expedDifficultyFailsafe.getKey();
+                int minimumLevel = expedDifficultyFailsafe.getValue();
+
+                // We check that the level offset for expedition is a multiplier of 5
+                int levelOffsetModule = levelOffset % 5;
+                if (levelOffsetModule != 0) {
+                    int newLevelOffset = levelOffset + (5 - levelOffsetModule);
+                    BHBot.logger.warn("Level offset " + levelOffset + " is not multiplier of 5, rounding it to " + newLevelOffset);
+                    bot.settings.difficultyFailsafe.put("e", Maps.immutableEntry(newLevelOffset, minimumLevel));
                 }
-            }
 
-            if (seg != null) {
-                bot.browser.clickOnSeg(seg);
-            } else {
-                BHBot.logger.warn("Problem: 'Defeat' popup detected but no 'Close' button detected in " + bot.getState().getName() + ".");
-                if (bot.getState() == BHBot.State.PVP) dressUp(bot.settings.pvpstrip);
-                if (bot.getState() == BHBot.State.GVG) dressUp(bot.settings.gvgstrip);
-                return;
-            }
+                // We calculate the new difficulty
+                int newExpedDifficulty = expeditionFailsafeDifficulty - levelOffset;
 
-            //Close the activity window to return us to the main screen
-            if (bot.getState() != BHBot.State.Expedition) {
-                bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
-                bot.browser.closePopupSecurely(BHBot.cues.get("X"), BHBot.cues.get("X"));
-            }
+                // We check that the new difficulty is not lower than the minimum
+                if (newExpedDifficulty < minimumLevel) newExpedDifficulty = minimumLevel;
+                if (newExpedDifficulty < 5) newExpedDifficulty = 5;
 
-            //For Expedition we need to close 3 windows (Exped/Portal/Team) to return to main screen
-            if (bot.getState() == BHBot.State.Expedition) {
-                bot.browser.closePopupSecurely(BHBot.cues.get("Enter"), BHBot.cues.get("X"));
-                bot.browser.closePopupSecurely(BHBot.cues.get("PortalBorderLeaves"), BHBot.cues.get("X"));
-                bot.browser.closePopupSecurely(BHBot.cues.get("BadgeBar"), BHBot.cues.get("X"));
-
-                //Handle difficultyFailsafe for Exped
-                if (bot.settings.difficultyFailsafe.containsKey("e")) {
-                    // The key is the difficulty decrease, the value is the minimum level
-                    Map.Entry<Integer, Integer> expedDifficultyFailsafe = bot.settings.difficultyFailsafe.get("e");
-                    int levelOffset = expedDifficultyFailsafe.getKey();
-                    int minimumLevel = expedDifficultyFailsafe.getValue();
-
-                    // We check that the level offset for expedition is a multiplier of 5
-                    int levelOffsetModule = levelOffset % 5;
-                    if (levelOffsetModule != 0) {
-                        int newLevelOffset = levelOffset + (5 - levelOffsetModule);
-                        BHBot.logger.warn("Level offset " + levelOffset + " is not multiplier of 5, rounding it to " + newLevelOffset);
-                        bot.settings.difficultyFailsafe.put("e", Maps.immutableEntry(newLevelOffset, minimumLevel));
-                    }
-
-                    // We calculate the new difficulty
-                    int newExpedDifficulty = expeditionFailsafeDifficulty - levelOffset;
-
-                    // We check that the new difficulty is not lower than the minimum
-                    if (newExpedDifficulty < minimumLevel) newExpedDifficulty = minimumLevel;
-                    if (newExpedDifficulty < 5) newExpedDifficulty = 5;
-
-                    // If the new difficulty is different from the current one, we update the ini setting
-                    if (newExpedDifficulty != expeditionFailsafeDifficulty) {
-                        String original = expeditionFailsafePortal + " " + expeditionFailsafeDifficulty;
-                        String updated = expeditionFailsafePortal + " " + newExpedDifficulty;
-                        settingsUpdate(original, updated);
-                    }
+                // If the new difficulty is different from the current one, we update the ini setting
+                if (newExpedDifficulty != expeditionFailsafeDifficulty) {
+                    String original = expeditionFailsafePortal + " " + expeditionFailsafeDifficulty;
+                    String updated = expeditionFailsafePortal + " " + newExpedDifficulty;
+                    settingsUpdate(original, updated);
                 }
-            }
-
-            if (bot.getState().equals(BHBot.State.Trials) && bot.settings.difficultyFailsafe.containsKey("t")) {
+            } else if (bot.getState().equals(BHBot.State.Trials) && bot.settings.difficultyFailsafe.containsKey("t")) {
+                // Difficulty failsafe for trials
                 // The key is the difficulty decrease, the value is the minimum level
                 Map.Entry<Integer, Integer> trialDifficultyFailsafe = bot.settings.difficultyFailsafe.get("t");
                 int levelOffset = trialDifficultyFailsafe.getKey();
@@ -2599,9 +2603,8 @@ public class DungeonThread implements Runnable {
                     String updated = "difficultyTrials " + newTrialDifficulty;
                     settingsUpdate(original, updated);
                 }
-            }
-
-            if (bot.getState().equals(BHBot.State.Gauntlet) && bot.settings.difficultyFailsafe.containsKey("g")) {
+            } else if (bot.getState().equals(BHBot.State.Gauntlet) && bot.settings.difficultyFailsafe.containsKey("g")) {
+                // Difficulty failsafe for Gauntlet
                 // The key is the difficulty decrease, the value is the minimum level
                 Map.Entry<Integer, Integer> gauntletDifficultyFailsafe = bot.settings.difficultyFailsafe.get("g");
                 int levelOffset = gauntletDifficultyFailsafe.getKey();
@@ -2623,6 +2626,39 @@ public class DungeonThread implements Runnable {
 
             resetAppropriateTimers();
             reviveManager.reset();
+
+            bot.saveGameScreen("defeat-pop-up-" + bot.getState(), "debug", bot.browser.getImg());
+
+            //in Gauntlet/Invasion/GVG the close button is green, everywhere else its blue
+            if (bot.getState() == BHBot.State.Gauntlet || bot.getState() == BHBot.State.Invasion || bot.getState() == BHBot.State.GVG) {
+                seg = MarvinSegment.fromCue(BHBot.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, bot.browser);
+            } else {
+                if (bot.getState() == BHBot.State.PVP) {
+                    seg = MarvinSegment.fromCue("Close", 3 * Misc.Durations.SECOND, Bounds.fromWidthHeight(355, 345, 85, 35), bot.browser);
+                } else {
+                    seg = MarvinSegment.fromCue(BHBot.cues.get("Close"), 2 * Misc.Durations.SECOND, bot.browser);
+                }
+            }
+
+            if (seg != null) {
+                bot.browser.clickOnSeg(seg);
+            } else {
+                BHBot.logger.warn("Problem: 'Defeat' popup detected but no 'Close' button detected in " + bot.getState().getName() + ".");
+                if (bot.getState() == BHBot.State.PVP) dressUp(bot.settings.pvpstrip);
+                if (bot.getState() == BHBot.State.GVG) dressUp(bot.settings.gvgstrip);
+                return;
+            }
+
+            if (bot.getState() != BHBot.State.Expedition) {
+                //Close the activity window to return us to the main screen
+                bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
+                bot.browser.closePopupSecurely(BHBot.cues.get("X"), BHBot.cues.get("X"));
+            } else {
+                //For Expedition we need to close 3 windows (Exped/Portal/Team) to return to main screen
+                bot.browser.closePopupSecurely(BHBot.cues.get("Enter"), BHBot.cues.get("X"));
+                bot.browser.closePopupSecurely(BHBot.cues.get("PortalBorderLeaves"), BHBot.cues.get("X"));
+                bot.browser.closePopupSecurely(BHBot.cues.get("BadgeBar"), BHBot.cues.get("X"));
+            }
 
             // We make sure to dress up
             if (bot.getState() == BHBot.State.PVP && bot.settings.pvpstrip.size() > 0) dressUp(bot.settings.pvpstrip);

@@ -260,6 +260,7 @@ class CueManager {
         addCue("RaidSummon", "cues/cueRaidSummon.png", new Bounds(480, 360, 540, 380));
         addCue("RaidLevel", "cues/cueRaidLevel.png", Bounds.fromWidthHeight(230, 435, 330, 20)); // selected raid type button cue
         addCue("cueRaidLevelEmpty", "cues/cueRaidLevelEmpty.png", Bounds.fromWidthHeight(230, 435, 330, 20)); // unselected raid type button cue
+        addCue("NotEnoughShards", "cues/cueNotEnoughShards.png", Bounds.fromWidthHeight(265, 215, 270, 70));
 
         // New Raid level detection logic
         addCue("Raid1Name", "cues/raid/r1Name.png", new Bounds(185, 340, 485, 395));// Raid 1 Name
@@ -272,6 +273,7 @@ class CueManager {
         addCue("Cleared", "cues/cueCleared.png", new Bounds(208, 113, 608, 394)); // used for example when raid has been finished
         addCue("Defeat", "cues/cueDefeat.png", new Bounds(320, 50, 480, 180)); // used for example when you have been defeated in a dungeon. Also used when you have been defeated in a gauntlet.
         addCue("YesGreen", "cues/cueYesGreen.png", null); // used for example when raid has been finished ("Cleared" popup)
+        addCue("Rerun", "cues/cueRerun.png", null); // used for example when raid has been finished ("Cleared" popup)
         addCue("Persuade", "cues/cuePersuade.png", new Bounds(116, 311, 286, 380));
         addCue("View", "cues/cueView.png", new Bounds(390, 415, 600, 486));
         addCue("Bribe", "cues/cueBribe.png", new Bounds(505, 305, 684, 375));
