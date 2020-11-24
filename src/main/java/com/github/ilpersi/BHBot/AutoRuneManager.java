@@ -301,13 +301,6 @@ class AutoRuneManager {
             return;
         }
 
-        // Back out of any raid/gauntlet/trial/GvG/etc pre-menu
-        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 2 * Misc.Durations.SECOND, bot.browser);
-        if (seg != null) {
-            bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(Misc.Durations.SECOND);
-        }
-
         if (!switchMinorRunes(desiredRunes))
             BHBot.logger.info("AutoRune failed!");
 

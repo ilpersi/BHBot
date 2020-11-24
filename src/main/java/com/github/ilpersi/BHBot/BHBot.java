@@ -1110,7 +1110,9 @@ public class BHBot {
         Raid("Raid", "r"),
         Trials("Trials", "t"),
         WorldBoss("World Boss", "w"),
-        RerunRaid("Raid Rerun", "rr");
+        RerunWorldBoss("World Boss Rerun", "wr"),
+        RerunRaid("Raid Rerun", "rr"),
+        RerunDungeon("Dungeon Rerun", "dr");
 
         private final String name;
         private final String shortcut;

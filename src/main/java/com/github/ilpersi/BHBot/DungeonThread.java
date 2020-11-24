@@ -197,8 +197,11 @@ public class DungeonThread implements Runnable {
                 }
 
                 if (BHBot.State.RerunRaid.equals(bot.getState())) {
-                    handleRaidConfiguration();
+                    // set up autoRune and autoShrine
+                    handleAdventureConfiguration(BHBot.State.Raid, false, null);
                     runeManager.reset();
+
+                    // We change the state only after we performed all the configurations
                     bot.setState(BHBot.State.Raid);
                     bot.setLastJoinedState(BHBot.State.Raid);
                     BHBot.logger.info("Raid rerun initiated!");
@@ -332,7 +335,8 @@ public class DungeonThread implements Runnable {
                                     bot.browser.readScreen(Misc.Durations.SECOND);
                                 }
 
-                                handleRaidConfiguration();
+                                // set up autoRune and autoShrine
+                                handleAdventureConfiguration(BHBot.State.Raid, true, null);
 
                                 bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(raidBTNSeg);
@@ -494,44 +498,11 @@ public class DungeonThread implements Runnable {
                                     bot.scheduler.doGauntletImmediately = false;
                                 }
 
-                                // One time check for Autoshrine
-                                //wait for window animation
+                                // set up autoRune and autoShrine
                                 if (trials) {
-                                    //if we need to configure runes/settings we close the window first
-                                    if (bot.settings.autoShrine.contains("t") || bot.settings.autoRune.containsKey("t") || bot.settings.autoBossRune.containsKey("t")) {
-                                        bot.browser.readScreen();
-                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                                        bot.browser.clickOnSeg(seg);
-                                        bot.browser.readScreen(Misc.Durations.SECOND);
-                                    }
-
-                                    //autoshrine
-                                    if (bot.settings.autoShrine.contains("t")) {
-                                        BHBot.logger.info("Configuring autoShrine for Trials");
-                                        if (!shrineManager.updateShrineSettings(true, true)) {
-                                            BHBot.logger.error("Impossible to configure autoShrine for Trials!");
-                                        }
-                                    }
-
-                                    //autoBossRune
-                                    if (bot.settings.autoBossRune.containsKey("t") && !bot.settings.autoShrine.contains("t")) { //if autoshrine disabled but autobossrune enabled
-                                        BHBot.logger.info("Configuring autoBossRune for Trials");
-                                        if (!shrineManager.updateShrineSettings(true, false)) {
-                                            BHBot.logger.error("Impossible to configure autoBossRune for Trials!");
-                                        }
-                                    }
-
-                                    //activity runes
-                                    runeManager.processAutoRune("t");
-
+                                    handleAdventureConfiguration(BHBot.State.Trials, true, null);
                                 } else {
-
-                                    if (bot.settings.autoRune.containsKey("g")) {
-
-                                        runeManager.processAutoRune("g");
-                                        bot.browser.readScreen(Misc.Durations.SECOND);
-                                    }
-
+                                    handleAdventureConfiguration(BHBot.State.Gauntlet, true, null);
                                 }
                                 bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(trialBTNSeg);
@@ -693,21 +664,10 @@ public class DungeonThread implements Runnable {
                                 if (bot.scheduler.doDungeonImmediately)
                                     bot.scheduler.doDungeonImmediately = false; // reset it
 
-                                //configure activity runes
-                                runeManager.processAutoRune("d");
+                                // set up autoRune and autoShrine
+                                handleAdventureConfiguration(BHBot.State.Dungeon, false, null);
 
-                                if (bot.settings.autoBossRune.containsKey("d") && !bot.settings.autoShrine.contains("d")) { //if autoshrine disabled but autorune enabled
-
-                                    BHBot.logger.info("Configuring autoBossRune for Dungeons");
-                                    if (!shrineManager.updateShrineSettings(true, false)) {
-                                        BHBot.logger.error("Impossible to configure autoBossRune for Dungeons!");
-                                    }
-
-                                    bot.browser.readScreen(Misc.Durations.SECOND);
-                                    Misc.sleep(2 * Misc.Durations.SECOND);
-                                }
-
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Quest"), bot.browser);
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("Quest"), Misc.Durations.SECOND * 3, bot.browser);
                                 if (seg == null) {
                                     bot.saveGameScreen("no-quest-btn", "errors", bot.browser.getImg());
                                     BHBot.logger.error("Impposible to find the quest button!");
@@ -869,7 +829,7 @@ public class DungeonThread implements Runnable {
                                     bot.scheduler.doPVPImmediately = false; // reset it
 
                                 //configure activity runes
-                                runeManager.processAutoRune("p");
+                                handleAdventureConfiguration(BHBot.State.PVP, false, null);
 
                                 BHBot.logger.info("Attempting PVP...");
                                 stripDown(bot.settings.pvpstrip);
@@ -1031,9 +991,8 @@ public class DungeonThread implements Runnable {
                                     if (bot.scheduler.doGVGImmediately)
                                         bot.scheduler.doGVGImmediately = false; // reset it
 
-
-                                    //configure activity runes
-                                    runeManager.processAutoRune("v");
+                                    // set up autoRune and autoShrine
+                                    handleAdventureConfiguration(BHBot.State.GVG, true, null);
                                     bot.browser.readScreen(Misc.Durations.SECOND);
                                     bot.browser.clickOnSeg(badgeBtn);
 
@@ -1151,8 +1110,8 @@ public class DungeonThread implements Runnable {
                                     if (bot.scheduler.doInvasionImmediately)
                                         bot.scheduler.doInvasionImmediately = false; // reset it
 
-                                    //configure activity runes
-                                    runeManager.processAutoRune("i");
+                                    // set up autoRune and autoShrine
+                                    handleAdventureConfiguration(BHBot.State.Invasion, true, null);
                                     bot.browser.readScreen(Misc.Durations.SECOND);
                                     bot.browser.clickOnSeg(badgeBtn);
 
@@ -1268,8 +1227,8 @@ public class DungeonThread implements Runnable {
                                         }
                                     }
 
-                                    //activity runes
-                                    runeManager.processAutoRune("e");
+                                    // set up autoRune and autoShrine
+                                    handleAdventureConfiguration(BHBot.State.Expedition, true, null);
 
                                     bot.browser.readScreen(Misc.Durations.SECOND);
                                     bot.browser.clickOnSeg(badgeBtn);
@@ -1536,16 +1495,8 @@ public class DungeonThread implements Runnable {
                                     continue;
                                 }
 
-                                //if we need to configure runes/settings we close the window first
-                                if (bot.settings.autoRune.containsKey("w")) {
-                                    bot.browser.readScreen();
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                                    bot.browser.clickOnSeg(seg);
-                                    bot.browser.readScreen(Misc.Durations.SECOND);
-                                }
-
-                                //configure activity runes
-                                runeManager.processAutoRune("w");
+                                // set up autoRune and autoShrine
+                                handleAdventureConfiguration(BHBot.State.WorldBoss, true, null);
 
                                 //We re-open the wb window
                                 if (bot.settings.autoRune.containsKey("w")) {
@@ -3569,26 +3520,36 @@ public class DungeonThread implements Runnable {
         return true;
     }
 
-    private void handleRaidConfiguration() {
+    private void handleAdventureConfiguration(BHBot.State state, boolean closeActivityWindow, Bounds xButtonBounds) {
+
+        if (closeActivityWindow) {
+            if (bot.settings.autoShrine.contains(state.getShortcut())
+                    || bot.settings.autoRune.containsKey(state.getShortcut())
+                    || bot.settings.autoBossRune.containsKey(state.getShortcut())) {
+
+                BHBot.logger.debug("Closing adventure window for " + state.getName());
+                tryClosingAdventureWindow(null);
+            }
+        }
 
         //autoshrine
-        if (bot.settings.autoShrine.contains("r")) {
-            BHBot.logger.info("Configuring autoShrine for Raid");
+        if (bot.settings.autoShrine.contains(state.getShortcut())) {
+            BHBot.logger.info("Configuring autoShrine for " + state.getName());
             if (!shrineManager.updateShrineSettings(true, true)) {
-                BHBot.logger.error("Impossible to configure autoShrine for Raid!");
+                BHBot.logger.error("Impossible to configure autoShrine for " + state.getName());
             }
         }
 
         //autoBossRune
-        if (bot.settings.autoBossRune.containsKey("r") && !bot.settings.autoShrine.contains("r")) { //if autoshrine disabled but autobossrune enabled
-            BHBot.logger.info("Configuring autoBossRune for Raid");
+        if (bot.settings.autoBossRune.containsKey(state.getShortcut()) && !bot.settings.autoShrine.contains(state.getShortcut())) { //if autoshrine disabled but autobossrune enabled
+            BHBot.logger.info("Configuring autoBossRune for " + state.getName());
             if (!shrineManager.updateShrineSettings(true, false)) {
-                BHBot.logger.error("Impossible to configure autoBossRune for Raid!");
+                BHBot.logger.error("Impossible to configure autoBossRune for " + state.getName());
             }
         }
 
         //activity runes
-        runeManager.processAutoRune("r");
+        runeManager.processAutoRune(state.getShortcut());
 
     }
 
@@ -4510,6 +4471,12 @@ public class DungeonThread implements Runnable {
         } catch (Exception e) {
             BHBot.logger.error("Error in tryClosingWindow", e);
         }
+    }
+
+    private void tryClosingAdventureWindow (Bounds xButtonBounds) {
+        bot.browser.readScreen();
+        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND * 2, xButtonBounds, bot.browser);
+        bot.browser.clickOnSeg(seg);
     }
 
     /**
