@@ -198,8 +198,11 @@ public class DungeonThread implements Runnable {
 
                 if (BHBot.State.RerunRaid.equals(bot.getState())) {
                     handleRaidConfiguration();
-                    setAutoOn(Misc.Durations.SECOND);
+                    runeManager.reset();
                     bot.setState(BHBot.State.Raid);
+                    bot.setLastJoinedState(BHBot.State.Raid);
+                    BHBot.logger.info("Raid rerun initiated!");
+                    setAutoOn(Misc.Durations.SECOND);
                 }
 
                 // process dungeons of any kind (if we are in any):
@@ -369,21 +372,48 @@ public class DungeonThread implements Runnable {
                                 bot.browser.clickOnSeg(seg);
                                 bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
+                                //team selection screen
+                                /* Solo-for-bounty code */
+                                if (raidSetting.solo) { //if the level is soloable then clear the team to complete bounties
+                                    bot.browser.readScreen(Misc.Durations.SECOND);
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Clear"), Misc.Durations.SECOND * 2, bot.browser);
+                                    if (seg != null) {
+                                        BHBot.logger.info("Attempting solo as per selected raid setting....");
+                                        bot.browser.clickOnSeg(seg);
+                                    } else {
+                                        BHBot.logger.error("Impossible to find clear button in Dungeon Team!");
+                                        restart();
+                                        continue;
+                                    }
+                                }
+
                                 //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
                                 //bot.browser.clickOnSeg(seg);
                                 bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
                                 bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
-                                if (handleTeamMalformedWarning()) {
-                                    BHBot.logger.error("Team incomplete, doing emergency restart..");
-                                    restart();
-                                    continue;
+                                if (raidSetting.solo) {
+                                    bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for dropdown animation to finish
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser);
+                                    if (seg != null) {
+                                        bot.browser.clickOnSeg(seg);
+                                    } else {
+                                        BHBot.logger.error("Impossible to find Yes button in Raid Team!");
+                                        restart();
+                                    }
                                 } else {
-                                    bot.setState(BHBot.State.Raid);
-                                    bot.setLastJoinedState(BHBot.State.Raid);
-                                    BHBot.logger.info("Raid initiated!");
-                                    runeManager.reset();
+                                    if (handleTeamMalformedWarning()) {
+                                        BHBot.logger.error("Team incomplete, doing emergency restart..");
+                                        restart();
+                                        continue;
+                                    }
                                 }
+
+                                bot.setState(BHBot.State.Raid);
+                                bot.setLastJoinedState(BHBot.State.Raid);
+                                BHBot.logger.info("Raid initiated!");
+                                runeManager.reset();
+
                             }
                             continue;
                         } // shards
@@ -497,6 +527,7 @@ public class DungeonThread implements Runnable {
                                 } else {
 
                                     if (bot.settings.autoRune.containsKey("g")) {
+
                                         runeManager.processAutoRune("g");
                                         bot.browser.readScreen(Misc.Durations.SECOND);
                                     }
@@ -761,7 +792,7 @@ public class DungeonThread implements Runnable {
                                     bot.browser.readScreen(Misc.Durations.SECOND);
                                     seg = MarvinSegment.fromCue(BHBot.cues.get("Clear"), Misc.Durations.SECOND * 2, bot.browser);
                                     if (seg != null) {
-                                        BHBot.logger.info("Selected zone under dungeon solo threshold, attempting solo");
+                                        BHBot.logger.info("Attempting solo as per selected dungeon setting....");
                                         bot.browser.clickOnSeg(seg);
                                     } else {
                                         BHBot.logger.error("Impossible to find clear button in Dungeon Team!");
