@@ -33,7 +33,7 @@ public class AutoShrineManager {
             return true;
         }
 
-        if (openSettings(Misc.Durations.SECOND)) {
+        if (openSettings(Misc.Durations.SECOND * 3)) {
             if (!initialized || ignoreBoss != this.ignoreBoss) {
                 Bounds ignoreBossBounds = Bounds.fromWidthHeight(175, 339, 38, 35);
                 MarvinSegment ignoreBossCheck = MarvinSegment.fromCue(BHBot.cues.get("IgnoreCheck"), 0, ignoreBossBounds, bot.browser);
@@ -97,11 +97,10 @@ public class AutoShrineManager {
     private boolean openSettings(@SuppressWarnings("SameParameterValue") int delay) {
         bot.browser.readScreen();
 
-        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("SettingsGear"), bot.browser);
+        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("SettingsGear"), delay, bot.browser);
         if (seg != null) {
             bot.browser.clickOnSeg(seg);
-            bot.browser.readScreen(delay);
-            seg = MarvinSegment.fromCue(BHBot.cues.get("Settings"), Misc.Durations.SECOND * 3, bot.browser);
+            seg = MarvinSegment.fromCue(BHBot.cues.get("Settings"), delay, bot.browser);
             return seg != null;
         } else {
             BHBot.logger.error("Impossible to find the settings button!");
