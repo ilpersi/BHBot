@@ -56,7 +56,16 @@ public class MarvinSegment {
         //source.drawRect(seg.x1, seg.y1, seg.x2-seg.x1, seg.y2-seg.y1, Color.blue);
         //MarvinImageIO.saveImage(source, "window_out.png");
         if (BHBot.debugDetectionTimes) {
-            BHBot.logger.info("cue detection time: " + (Misc.getTime() - timer) + "ms (" + cue.name + ") [" + (seg != null ? "true" : "false") + "]");
+            BHBot.logger.debug("cue detection time: " + (Misc.getTime() - timer) + "ms (" + cue.name + ") [" + (seg != null ? "true" : "false") + "]");
+        }
+
+        if (cue.bounds == null && seg != null && BHBot.debugNullBounds) {
+
+            String boundsDbgMsg = "Null bounds cue found " +
+                    "cueName: " + cue.name +
+                    "seg: " + seg;
+
+            BHBot.logger.debug(boundsDbgMsg);
         }
 
         return seg;

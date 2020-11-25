@@ -279,6 +279,7 @@ public class Settings {
     String discordWebHookUrl = "";
 
     boolean debugDetectionTimes = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
+    boolean debugNullBounds = false; // if true, then each time a cue with null bounds is found, details are logged
     boolean useDoNotShareURL = false; // if true, then each time a cue detection from game screenshot will be attempted, a time taken will be displayed together with a name of the cue
     boolean hideWindowOnRestart = false; // if true, game window will be hidden upon driver (re)start
     int reconnectTimer = 60;
@@ -534,6 +535,7 @@ public class Settings {
         costPVP = 1;
         costTrials = 1;
         debugDetectionTimes = false;
+        debugNullBounds = false;
         debugWBTS = false;
         difficultyFailsafe = new HashMap<>();
         difficultyGauntlet = 10;
@@ -1479,6 +1481,7 @@ public class Settings {
         useHeadlessMode = lastUsedMap.getOrDefault("headlessmode", useHeadlessMode ? "1" : "0").equals("1");
         restartAfterAdOfferTimeout = lastUsedMap.getOrDefault("restartAfterAdOfferTimeout", restartAfterAdOfferTimeout ? "1" : "0").equals("1");
         debugDetectionTimes = lastUsedMap.getOrDefault("debugDetectionTimes", debugDetectionTimes ? "1" : "0").equals("1");
+        debugNullBounds = lastUsedMap.getOrDefault("debugNullBounds", debugNullBounds ? "1" : "0").equals("1");
         useDoNotShareURL = lastUsedMap.getOrDefault("useDoNotShareURL", useDoNotShareURL ? "1" : "0").equals("1");
         hideWindowOnRestart = lastUsedMap.getOrDefault("hideWindowOnRestart", hideWindowOnRestart ? "1" : "0").equals("1");
         resetTimersOnBattleEnd = lastUsedMap.getOrDefault("resetTimersOnBattleEnd", resetTimersOnBattleEnd ? "1" : "0").equals("1");

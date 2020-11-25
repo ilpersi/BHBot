@@ -34,6 +34,7 @@ public class BHBot {
 
     // static settings
     static boolean debugDetectionTimes = false;
+    static boolean debugNullBounds = false;
     // TODO understand if it is possible to differentiate log settings without making them static
     static String logBaseDir;
     static long logMaxDays;
@@ -160,6 +161,7 @@ public class BHBot {
 
         // settings are now loaded
         debugDetectionTimes = bot.settings.debugDetectionTimes;
+        debugNullBounds = bot.settings.debugNullBounds;
         logBaseDir = bot.settings.logBaseDir;
         logMaxDays = bot.settings.logMaxDays;
         logLevel = bot.settings.logLevel;
