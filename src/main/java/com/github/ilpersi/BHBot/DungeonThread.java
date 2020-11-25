@@ -350,29 +350,40 @@ public class DungeonThread implements Runnable {
                                     continue;
                                 }
 
-                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("RaidSummon"), 2 * Misc.Durations.SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("RaidSummon"), 3 * Misc.Durations.SECOND, bot.browser);
                                 if (seg == null) {
                                     BHBot.logger.error("Raid Summon button not found");
                                     restart();
                                     continue;
                                 }
                                 bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                                 // dismiss character dialog if it pops up:
                                 bot.browser.readScreen();
                                 detectCharacterDialogAndHandleIt();
 
-                                seg = MarvinSegment.fromCue(BHBot.cues.get(raidSetting.difficulty == 1 ? "Normal" : raidSetting.difficulty == 2 ? "Hard" : "Heroic"), bot.browser);
+                                Cue raidDifficultyCue;
+                                switch (raidSetting.difficulty) {
+                                    case 1:
+                                        raidDifficultyCue = new Cue(BHBot.cues.get("Normal"), null);
+                                        break;
+                                    case 2:
+                                        raidDifficultyCue = new Cue(BHBot.cues.get("Hard"), null);
+                                        break;
+                                    case 3:
+                                    default:
+                                        raidDifficultyCue = new Cue(BHBot.cues.get("Heroic"), Bounds.fromWidthHeight(535, 225, 110, 35));
+                                        break;
+                                }
+
+                                seg = MarvinSegment.fromCue(raidDifficultyCue, Misc.Durations.SECOND * 3, bot.browser);
                                 bot.browser.clickOnSeg(seg);
-                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                                 //team selection screen
                                 /* Solo-for-bounty code */
                                 if (raidSetting.solo) { //if the level is soloable then clear the team to complete bounties
                                     bot.browser.readScreen(Misc.Durations.SECOND);
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Clear"), Misc.Durations.SECOND * 2, bot.browser);
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Clear"), Misc.Durations.SECOND * 2, Bounds.fromWidthHeight(310, 440, 110, 50), bot.browser);
                                     if (seg != null) {
                                         BHBot.logger.info("Attempting solo as per selected raid setting....");
                                         bot.browser.clickOnSeg(seg);
@@ -383,14 +394,12 @@ public class DungeonThread implements Runnable {
                                     }
                                 }
 
-                                //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
-                                //bot.browser.clickOnSeg(seg);
-                                bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
-                                bot.browser.readScreen(2 * Misc.Durations.SECOND);
+                                Cue AcceptBounds = new Cue(BHBot.cues.get("Accept"), Bounds.fromWidthHeight(465, 445, 110, 40));
+                                bot.browser.closePopupSecurely(AcceptBounds, AcceptBounds);
 
                                 if (raidSetting.solo) {
-                                    bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for dropdown animation to finish
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser);
+                                    Cue YesGreenBounds = new Cue(BHBot.cues.get("YesGreen"), Bounds.fromWidthHeight(290, 340, 70, 45));
+                                    seg = MarvinSegment.fromCue(YesGreenBounds, 4 * Misc.Durations.SECOND, bot.browser);
                                     if (seg != null) {
                                         bot.browser.clickOnSeg(seg);
                                     } else {
