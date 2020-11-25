@@ -1201,30 +1201,6 @@ public class DungeonThread implements Runnable {
                                         continue;
                                     }
 
-                                    //if we need to configure runes/settings we close the window first
-                                    if (bot.settings.autoShrine.contains("e") || bot.settings.autoRune.containsKey("e") || bot.settings.autoBossRune.containsKey("e")) {
-                                        bot.browser.readScreen();
-                                        seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                                        bot.browser.clickOnSeg(seg);
-                                        bot.browser.readScreen(Misc.Durations.SECOND);
-                                    }
-
-                                    //autoshrine
-                                    if (bot.settings.autoShrine.contains("e")) {
-                                        BHBot.logger.info("Configuring autoShrine for Expedition");
-                                        if (!shrineManager.updateShrineSettings(true, true)) {
-                                            BHBot.logger.error("Impossible to configure autoShrine for Expedition!");
-                                        }
-                                    }
-
-                                    //autoBossRune
-                                    if (bot.settings.autoBossRune.containsKey("e") && !bot.settings.autoShrine.contains("e")) { //if autoshrine disabled but autobossrune enabled
-                                        BHBot.logger.info("Configuring autoBossRune for Expedition");
-                                        if (!shrineManager.updateShrineSettings(true, false)) {
-                                            BHBot.logger.error("Impossible to configure autoBossRune for Expedition!");
-                                        }
-                                    }
-
                                     // set up autoRune and autoShrine
                                     handleAdventureConfiguration(BHBot.State.Expedition, true, null);
 
