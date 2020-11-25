@@ -1517,13 +1517,10 @@ public class DungeonThread implements Runnable {
                                     continue;
                                 }
 
-//							Misc.sleep(SECOND); //more stabilising if we changed world boss type
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                seg = MarvinSegment.fromCue("LargeDarkBlueSummon", 2 * Misc.Durations.SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue("LargeDarkBlueSummon", 4 * Misc.Durations.SECOND, bot.browser);
                                 bot.browser.clickOnSeg(seg); //selected world boss
 
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Private"), Misc.Durations.SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("Private"), Misc.Durations.SECOND * 3, bot.browser);
                                 if (!wbSetting.solo) {
                                     if (seg != null) {
                                         BHBot.logger.info("Unchecking private lobby");
@@ -1541,7 +1538,6 @@ public class DungeonThread implements Runnable {
                                 //world boss tier selection
 
                                 int currentTier = detectWorldBossTier();
-                                Misc.sleep(500);
                                 if (currentTier != wbSetting.tier) {
                                     BHBot.logger.info("T" + currentTier + " detected, changing to T" + wbSetting.tier);
                                     Misc.sleep(500);
@@ -1561,8 +1557,7 @@ public class DungeonThread implements Runnable {
                                     changeWorldBossDifficulty(wbSetting.difficulty);
                                 }
 
-                                bot.browser.readScreen(Misc.Durations.SECOND);
-                                seg = MarvinSegment.fromCue("SmallDarkBlueSummon", Misc.Durations.SECOND * 2, bot.browser);
+                                seg = MarvinSegment.fromCue("SmallDarkBlueSummon", Misc.Durations.SECOND * 3, bot.browser);
                                 bot.browser.clickOnSeg(seg); //accept current settings
 
                                 boolean insufficientXeals = handleNotEnoughXealsPopup();
@@ -3883,7 +3878,6 @@ public class DungeonThread implements Runnable {
     /* World boss reading and changing section */
     private int detectWorldBossTier() {
         int xOffset, yOffset, w, h;
-        bot.browser.readScreen(Misc.Durations.SECOND);
         MarvinSegment tierDropDown;
 
         if (!bot.browser.isDoNotShareUrl()) {
@@ -3896,7 +3890,7 @@ public class DungeonThread implements Runnable {
         w = 21;
         h = 19;
 
-        tierDropDown = MarvinSegment.fromCue("WorldBossTierDropDown", Misc.Durations.SECOND, bot.browser); // For tier drop down menu
+        tierDropDown = MarvinSegment.fromCue("WorldBossTierDropDown", Misc.Durations.SECOND * 2, bot.browser); // For tier drop down menu
 
         if (tierDropDown == null) {
             BHBot.logger.error("Error: unable to detect world boss difficulty selection box in detectWorldBossTier!");
