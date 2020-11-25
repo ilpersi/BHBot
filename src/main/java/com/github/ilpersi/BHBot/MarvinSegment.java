@@ -61,11 +61,38 @@ public class MarvinSegment {
 
         if (cue.bounds == null && seg != null && BHBot.debugNullBounds) {
 
+            int margin = 10;
+
+            int suggestedX1 = seg.x1 - margin;
+            while ((suggestedX1 % 5) != 0) suggestedX1 -= 1;
+
+            int suggestedY1 = seg.y1 - margin;
+            while ((suggestedY1 % 5) != 0) suggestedY1 -= 1;
+
+            int suggestedWidth = seg.x2 - suggestedX1 + margin;
+            while ((suggestedWidth % 5) != 0) suggestedWidth += 1;
+
+            int suggestedHeight = seg.y2 - suggestedY1 + margin;
+            while ((suggestedHeight % 5) != 0) suggestedHeight += 1;
+
+            // Found cue details
             String boundsDbgMsg = "Null bounds cue found " +
-                    "cueName: " + cue.name +
-                    "seg: " + seg;
+                    "cueName: '" + cue.name +
+                    "' x1: " + seg.x1 +
+                    " x2: " + seg.x2 +
+                    " y1: " + seg.y1 +
+                    " y2: " + seg.y2 +
+                    " with: " + seg.width +
+                    " height: " + seg.height;
 
             BHBot.logger.debug(boundsDbgMsg);
+
+            // Suggested bounds ready for code copy/paste
+            String suggestionBuilder = "Cue " + cue.name + "WithBounds = " +
+                    "new Cue(BHBot.cues.get(\"" + cue.name + "\"), Bounds.fromWidthHeight(" +
+                    suggestedX1 + ", " + suggestedY1 + ", " +
+                    suggestedWidth + ", " + suggestedHeight + "));";
+            BHBot.logger.debug(suggestionBuilder);
         }
 
         return seg;
