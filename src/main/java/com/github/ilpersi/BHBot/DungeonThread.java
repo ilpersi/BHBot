@@ -2417,9 +2417,19 @@ public class DungeonThread implements Runnable {
             }
             if (seg != null) {
 
-                Bounds closeBounds = null;
-                if (BHBot.State.Gauntlet.equals(bot.getState()))
-                    closeBounds = Bounds.fromWidthHeight(320, 420, 160, 65);
+                Bounds closeBounds;
+                switch (bot.getState()) {
+                    case Gauntlet:
+                        closeBounds = Bounds.fromWidthHeight(320, 420, 160, 65);
+                        break;
+                    case WorldBoss:
+                        closeBounds = Bounds.fromWidthHeight(425, 425, 100, 45);
+                        break;
+                    default:
+                        closeBounds = null;
+                        break;
+                }
+
                 // Sometime the victory pop-up is show without the close button, this check is there to ignore it
                 seg = MarvinSegment.fromCue(BHBot.cues.get("CloseGreen"), 2 * Misc.Durations.SECOND, closeBounds, bot.browser);
                 if (seg == null) {
@@ -2457,7 +2467,19 @@ public class DungeonThread implements Runnable {
 
                 // close the activity window to return us to the main screen
                 bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
-                bot.browser.closePopupSecurely(BHBot.cues.get("X"), BHBot.cues.get("X"));
+
+                Cue XWithBounds;
+                //noinspection SwitchStatementWithTooFewBranches
+                switch (bot.getState()) {
+                    case WorldBoss:
+                        XWithBounds = new Cue(BHBot.cues.get("X"), Bounds.fromWidthHeight(640, 75, 60, 60));
+                        break;
+                    default:
+                        XWithBounds = new Cue(BHBot.cues.get("X"), null);
+                        break;
+                }
+
+                bot.browser.closePopupSecurely(XWithBounds, BHBot.cues.get("X"));
 
                 //last few post activity tasks
                 resetAppropriateTimers();
