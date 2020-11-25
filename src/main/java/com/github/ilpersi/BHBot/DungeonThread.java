@@ -327,16 +327,8 @@ public class DungeonThread implements Runnable {
                                 if (bot.scheduler.doRaidImmediately)
                                     bot.scheduler.doRaidImmediately = false; // reset it
 
-                                //if we need to configure runes/settings we close the window first
-                                if (bot.settings.autoShrine.contains("r") || bot.settings.autoRune.containsKey("r") || bot.settings.autoBossRune.containsKey("r")) {
-                                    bot.browser.readScreen();
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
-                                    bot.browser.clickOnSeg(seg);
-                                    bot.browser.readScreen(Misc.Durations.SECOND);
-                                }
-
                                 // set up autoRune and autoShrine
-                                handleAdventureConfiguration(BHBot.State.Raid, true, null);
+                                handleAdventureConfiguration(BHBot.State.Raid, true, Bounds.fromWidthHeight(600, 80, 80, 80));
 
                                 bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(raidBTNSeg);
@@ -499,11 +491,8 @@ public class DungeonThread implements Runnable {
                                 }
 
                                 // set up autoRune and autoShrine
-                                if (trials) {
-                                    handleAdventureConfiguration(BHBot.State.Trials, true, null);
-                                } else {
-                                    handleAdventureConfiguration(BHBot.State.Gauntlet, true, null);
-                                }
+                                handleAdventureConfiguration(trials ? BHBot.State.Trials : BHBot.State.Gauntlet, true, null);
+
                                 bot.browser.readScreen(Misc.Durations.SECOND);
                                 bot.browser.clickOnSeg(trialBTNSeg);
                                 bot.browser.readScreen(Misc.Durations.SECOND); //wait for window animation
@@ -3528,7 +3517,7 @@ public class DungeonThread implements Runnable {
                     || bot.settings.autoBossRune.containsKey(state.getShortcut())) {
 
                 BHBot.logger.debug("Closing adventure window for " + state.getName());
-                tryClosingAdventureWindow(null);
+                tryClosingAdventureWindow(xButtonBounds);
             }
         }
 
@@ -4476,7 +4465,8 @@ public class DungeonThread implements Runnable {
     private void tryClosingAdventureWindow (Bounds xButtonBounds) {
         bot.browser.readScreen();
         MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND * 2, xButtonBounds, bot.browser);
-        bot.browser.clickOnSeg(seg);
+
+        if (seg != null) bot.browser.clickOnSeg(seg);
     }
 
     /**
