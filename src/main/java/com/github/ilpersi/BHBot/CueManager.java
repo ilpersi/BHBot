@@ -468,7 +468,7 @@ class CueManager {
         // rune management related:
         addCue("Runes", "cues/cueRunes.png", new Bounds(120, 450, 245, 495)); // runes button in profile
         addCue("RunesLayout", "cues/cueRunesLayout.png", new Bounds(340, 70, 460, 110)); // runes layout header
-        addCue("RunesPicker", "cues/cueRunesPicker.png", null); // rune picker
+        addCue("RunesPicker", "cues/runes/cueRunesPicker.png", Bounds.fromWidthHeight(335, 115, 130, 55)); // rune picker
         addCue("RunesSwitch", "cues/cueRunesSwitch.png", new Bounds(320, 260, 480, 295)); // rune picker
 
         // All minor rune cues
