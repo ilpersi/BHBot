@@ -700,7 +700,6 @@ public class DungeonThread implements Runnable {
 
                                 int currentZone = readCurrentZone();
                                 int vec = goalZone - currentZone; // movement vector
-//							BHBot.logger.info("Current zone: " + Integer.toString(currentZone) + " Target Zone: " + Integer.toString(goalZone));
                                 while (vec != 0) { // move to the correct zone
                                     if (vec > 0) {
                                         // note that moving to the right will fail in case player has not unlocked the zone yet!
@@ -734,7 +733,6 @@ public class DungeonThread implements Runnable {
 
                                 bot.browser.clickInGame(p.x, p.y);
 
-                                bot.browser.readScreen(3 * Misc.Durations.SECOND);
                                 // select difficulty (If D4 just hit enter):
                                 if ((goalDungeon == 4) || (goalZone == 7 && goalDungeon == 3) || (goalZone == 8 && goalDungeon == 3)) { // D4, or Z7D3/Z8D3
                                     specialDungeon = true;
