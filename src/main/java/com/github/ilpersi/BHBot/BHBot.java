@@ -942,7 +942,7 @@ public class BHBot {
         return saveGameScreen(prefix, subFolder, browser.takeScreenshot(true));
     }
 
-    synchronized String saveGameScreen(String prefix, String subFolder, BufferedImage img) {
+    synchronized static String saveGameScreen(String prefix, String subFolder, BufferedImage img) {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         // sub-folder logic management

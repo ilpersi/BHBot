@@ -1,5 +1,6 @@
 package com.github.ilpersi.BHBot;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 /**
@@ -93,6 +94,17 @@ public class MarvinSegment {
                     suggestedX1 + ", " + suggestedY1 + ", " +
                     suggestedWidth + ", " + suggestedHeight + "));";
             BHBot.logger.debug(suggestionBuilder);
+
+            // As screenshot of the found bounds on the image is saved in a dedicated folder
+            MarvinImage debugBounds = new MarvinImage(src);
+            debugBounds.drawRect(suggestedX1, suggestedY1, suggestedWidth, suggestedHeight, 3, Color.GREEN);
+            String boundsFName = BHBot.saveGameScreen("debugNullBounds", "debug_null_bounds", debugBounds.getBufferedImageNoAlpha());
+            BHBot.logger.debug("Found bounds saved in: " + boundsFName);
+
+            // To make the suggestion actionable we also print the stack trace so that developers can use it
+            BHBot.logger.debug(Misc.getStackTrace());
+
+
         }
 
         return seg;
