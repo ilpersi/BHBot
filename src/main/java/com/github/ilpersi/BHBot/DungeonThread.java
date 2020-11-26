@@ -759,10 +759,8 @@ public class DungeonThread implements Runnable {
                                     }
                                 }
 
-                                bot.browser.readScreen();
-                                //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), Misc.Durations.SECOND * 2, bot.browser);
-                                //bot.browser.clickOnSeg(seg);
-                                bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
+                               Cue dungeonAccept = new Cue(BHBot.cues.get("Accept"), Bounds.fromWidthHeight(465, 445, 110, 45));
+                               bot.browser.closePopupSecurely(dungeonAccept, dungeonAccept);
 
                                 if (dungeonSetting.solo) {
                                     bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for dropdown animation to finish
