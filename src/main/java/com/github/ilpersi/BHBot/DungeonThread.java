@@ -740,7 +740,21 @@ public class DungeonThread implements Runnable {
                                     specialDungeon = true;
                                     seg = MarvinSegment.fromCue(BHBot.cues.get("Enter"), 5 * Misc.Durations.SECOND, bot.browser);
                                 } else { //else select appropriate difficulty
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get(dungeonSetting.difficulty == 1 ? "Normal" : dungeonSetting.difficulty == 2 ? "Hard" : "Heroic"), 5 * Misc.Durations.SECOND, bot.browser);
+                                    Cue cueDifficulty;
+                                    switch (dungeonSetting.difficulty) {
+                                        case 1:
+                                            cueDifficulty = new Cue(BHBot.cues.get("Normal"), null);
+                                            break;
+                                        case 2:
+                                            cueDifficulty = new Cue(BHBot.cues.get("Hard"), null);
+                                            break;
+                                        case 3:
+                                        default:
+                                            cueDifficulty = new Cue(BHBot.cues.get("Heroic"), Bounds.fromWidthHeight(535, 225, 110, 40));
+                                            break;
+                                    }
+
+                                    seg = MarvinSegment.fromCue(cueDifficulty, 5 * Misc.Durations.SECOND, bot.browser);
                                 }
                                 bot.browser.clickOnSeg(seg);
 
