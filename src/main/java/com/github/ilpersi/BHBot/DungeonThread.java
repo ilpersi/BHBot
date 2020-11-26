@@ -1745,7 +1745,7 @@ public class DungeonThread implements Runnable {
                                     if (segStart != null) {
                                         bot.browser.clickOnSeg(segStart); //start World Boss
                                         Misc.sleep(2 * Misc.Durations.SECOND); //wait for dropdown animation to finish
-                                        seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser); //clear empty team prompt
+                                        seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, Bounds.fromWidthHeight(290, 345, 70, 45), bot.browser); //clear empty team prompt
                                         //click anyway this cue has issues
                                         if (seg == null) {
                                             Misc.sleep(500);
