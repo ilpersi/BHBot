@@ -2391,20 +2391,28 @@ public class DungeonThread implements Runnable {
                 } else {
 
                     //close 'cleared' popup
-                    Bounds yesGreen = null;
+                    Bounds yesGreenBounds = null;
                     if (BHBot.State.Raid.equals(bot.getState())) {
-                        yesGreen = Bounds.fromWidthHeight(290, 345, 70, 45);
+                        yesGreenBounds = Bounds.fromWidthHeight(290, 345, 70, 45);
                     }
 
-                    bot.browser.closePopupSecurely(BHBot.cues.get("Cleared"), new Cue(BHBot.cues.get("YesGreen"), yesGreen));
+                    bot.browser.closePopupSecurely(BHBot.cues.get("Cleared"), new Cue(BHBot.cues.get("YesGreen"), yesGreenBounds));
 
                     // close the activity window to return us to the main screen
                     if (bot.getState() != BHBot.State.Expedition) {
                         bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
 
-                        Cue XWithBounds = new Cue(BHBot.cues.get("X"), null);
-                        if (BHBot.State.Raid.equals(bot.getState())) {
-                            XWithBounds = new Cue(BHBot.cues.get("X"), Bounds.fromWidthHeight(610, 90, 60, 60));
+                        Cue XWithBounds;
+                        switch (bot.getState()) {
+                            case WorldBoss:
+                                XWithBounds = new Cue(BHBot.cues.get("X"), Bounds.fromWidthHeight(640, 75, 60, 60));
+                                break;
+                            case Raid:
+                                XWithBounds = new Cue(BHBot.cues.get("X"), Bounds.fromWidthHeight(610, 90, 60, 60));
+                                break;
+                            default:
+                                XWithBounds = new Cue(BHBot.cues.get("X"), null);
+                                break;
                         }
 
                         bot.browser.closePopupSecurely(XWithBounds, XWithBounds);
