@@ -2401,7 +2401,13 @@ public class DungeonThread implements Runnable {
                     // close the activity window to return us to the main screen
                     if (bot.getState() != BHBot.State.Expedition) {
                         bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for slide-in animation to finish
-                        bot.browser.closePopupSecurely(BHBot.cues.get("X"), BHBot.cues.get("X"));
+
+                        Cue XWithBounds = new Cue(BHBot.cues.get("X"), null);
+                        if (BHBot.State.Raid.equals(bot.getState())) {
+                            XWithBounds = new Cue(BHBot.cues.get("X"), Bounds.fromWidthHeight(610, 90, 60, 60));
+                        }
+
+                        bot.browser.closePopupSecurely(XWithBounds, XWithBounds);
                     }
 
                     //For Expedition we need to close 3 windows (Exped/Portal/Team) to return to main screen
