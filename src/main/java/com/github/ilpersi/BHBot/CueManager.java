@@ -491,7 +491,7 @@ class CueManager {
         addCue("PortalBorderLeaves", "cues/expedition/portalBorderLeaves.png", new Bounds(48, 447, 107, 503));
 
         //WorldBoss Related
-        addCue("WorldBoss", "cues/worldboss/cueWorldBoss.png", null);
+        addCue("WorldBoss", "cues/worldboss/cueWorldBoss.png", Bounds.fromWidthHeight(5, 235, 40, 55));
         addCue("WorldBossSelector", "cues/worldboss/cueWorldBossSelector.png", null);
         addCue("DarkBlueSummon", "cues/worldboss/cueDarkBlueSummon.png", Bounds.fromWidthHeight(453, 449, 99, 28));
         addCue("LargeDarkBlueSummon", "cues/worldboss/cueLargeDarkBlueSummon.png", Bounds.fromWidthHeight(492, 363, 99, 28));
