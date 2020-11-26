@@ -2381,12 +2381,12 @@ public class DungeonThread implements Runnable {
                 } else {
 
                     //close 'cleared' popup
-                    Cue YesGreenWithBounds = null;
+                    Bounds yesGreen = null;
                     if (BHBot.State.Raid.equals(bot.getState())) {
-                        YesGreenWithBounds = new Cue(BHBot.cues.get("YesGreen"), Bounds.fromWidthHeight(290, 345, 70, 45));
+                        yesGreen = Bounds.fromWidthHeight(290, 345, 70, 45);
                     }
 
-                    bot.browser.closePopupSecurely(BHBot.cues.get("Cleared"), YesGreenWithBounds);
+                    bot.browser.closePopupSecurely(BHBot.cues.get("Cleared"), new Cue(BHBot.cues.get("YesGreen"), yesGreen));
 
                     // close the activity window to return us to the main screen
                     if (bot.getState() != BHBot.State.Expedition) {
