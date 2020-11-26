@@ -2,6 +2,7 @@ package com.github.ilpersi.BHBot;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.HashSet;
 
 /**
  * This class has been copied from <br>
@@ -19,6 +20,8 @@ public class MarvinSegment {
             y1,
             y2;
     private final int area;
+
+    private static final HashSet<String> debugBoundsSet = new HashSet<>();
 
     MarvinSegment(int x1, int y1, int x2, int y2) {
         this.x1 = x1;
@@ -76,35 +79,42 @@ public class MarvinSegment {
             int suggestedHeight = seg.y2 - suggestedY1 + margin;
             while ((suggestedHeight % 5) != 0) suggestedHeight += 1;
 
-            // Found cue details
-            String boundsDbgMsg = "Null bounds cue found " +
-                    "cueName: '" + cue.name +
-                    "' x1: " + seg.x1 +
-                    " x2: " + seg.x2 +
-                    " y1: " + seg.y1 +
-                    " y2: " + seg.y2 +
-                    " with: " + seg.width +
-                    " height: " + seg.height;
+            // Key used to check if we printed null bounds info before
+            String cueKey = cue.name + "_" + suggestedX1 + "_" + suggestedWidth + "_" + suggestedY1 + "_" + suggestedHeight;
 
-            BHBot.logger.debug(boundsDbgMsg);
+            // We try to minimize the output checking if we printed a similar cue previously
+            if (!debugBoundsSet.contains(cueKey)) {
+                debugBoundsSet.add(cueKey);
 
-            // Suggested bounds ready for code copy/paste
-            String suggestionBuilder = "Cue " + cue.name + "WithBounds = " +
-                    "new Cue(BHBot.cues.get(\"" + cue.name + "\"), Bounds.fromWidthHeight(" +
-                    suggestedX1 + ", " + suggestedY1 + ", " +
-                    suggestedWidth + ", " + suggestedHeight + "));";
-            BHBot.logger.debug(suggestionBuilder);
+                // Found cue details
+                String boundsDbgMsg = "Null bounds cue found " +
+                        "cueName: '" + cue.name +
+                        "' x1: " + seg.x1 +
+                        " x2: " + seg.x2 +
+                        " y1: " + seg.y1 +
+                        " y2: " + seg.y2 +
+                        " with: " + seg.width +
+                        " height: " + seg.height;
 
-            // As screenshot of the found bounds on the image is saved in a dedicated folder
-            MarvinImage debugBounds = new MarvinImage(src);
-            debugBounds.drawRect(suggestedX1, suggestedY1, suggestedWidth, suggestedHeight, 3, Color.GREEN);
-            debugBounds.update();
-            String boundsFName = BHBot.saveGameScreen("debugNullBounds", "debug_null_bounds", debugBounds.getBufferedImage());
-            BHBot.logger.debug("Found bounds saved in: " + boundsFName);
+                BHBot.logger.debug(boundsDbgMsg);
 
-            // To make the suggestion actionable we also print the stack trace so that developers can use it
-            BHBot.logger.debug(Misc.getStackTrace());
+                // Suggested bounds ready for code copy/paste
+                String suggestionBuilder = "Cue " + cue.name + "WithBounds = " +
+                        "new Cue(BHBot.cues.get(\"" + cue.name + "\"), Bounds.fromWidthHeight(" +
+                        suggestedX1 + ", " + suggestedY1 + ", " +
+                        suggestedWidth + ", " + suggestedHeight + "));";
+                BHBot.logger.debug(suggestionBuilder);
 
+                // As screenshot of the found bounds on the image is saved in a dedicated folder
+                MarvinImage debugBounds = new MarvinImage(src);
+                debugBounds.drawRect(suggestedX1, suggestedY1, suggestedWidth, suggestedHeight, 3, Color.GREEN);
+                debugBounds.update();
+                String boundsFName = BHBot.saveGameScreen("debugNullBounds_" + cueKey, "debug_null_bounds", debugBounds.getBufferedImage());
+                BHBot.logger.debug("Found bounds saved in: " + boundsFName);
+
+                // To make the suggestion actionable we also print the stack trace so that developers can use it
+                BHBot.logger.debug(Misc.getStackTrace());
+            }
 
         }
 
