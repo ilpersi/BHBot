@@ -98,7 +98,8 @@ public class MarvinSegment {
             // As screenshot of the found bounds on the image is saved in a dedicated folder
             MarvinImage debugBounds = new MarvinImage(src);
             debugBounds.drawRect(suggestedX1, suggestedY1, suggestedWidth, suggestedHeight, 3, Color.GREEN);
-            String boundsFName = BHBot.saveGameScreen("debugNullBounds", "debug_null_bounds", debugBounds.getBufferedImageNoAlpha());
+            debugBounds.update();
+            String boundsFName = BHBot.saveGameScreen("debugNullBounds", "debug_null_bounds", debugBounds.getBufferedImage());
             BHBot.logger.debug("Found bounds saved in: " + boundsFName);
 
             // To make the suggestion actionable we also print the stack trace so that developers can use it
