@@ -320,7 +320,7 @@ class CueManager {
 
         addCue("Quest", "cues/cueQuest.png", new Bounds(0, 0, 40, 40)); // cue for quest (dungeons) button
         addCue("ZonesButton", "cues/cueZonesButton.png", new Bounds(105, 60, 125, 75));
-        addCue("Zone1", "cues/cueZone1.png", null);
+        addCue("Zone1", "cues/cueZone1.png", Bounds.fromWidthHeight(290, 45, 220, 55));
         addCue("Zone2", "cues/cueZone2.png", null);
         addCue("Zone3", "cues/cueZone3.png", null);
         addCue("Zone4", "cues/cueZone4.png", null);
