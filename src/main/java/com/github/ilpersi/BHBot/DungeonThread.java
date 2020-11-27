@@ -316,7 +316,7 @@ public class DungeonThread implements Runnable {
                                     bot.scheduler.doRaidImmediately = false; // reset it
 
                                 bot.browser.readScreen();
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, bot.browser);
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("X"), Misc.Durations.SECOND, Bounds.fromWidthHeight(610, 90, 60, 60), bot.browser);
                                 bot.browser.clickOnSeg(seg);
                                 Misc.sleep(Misc.Durations.SECOND);
 
@@ -595,7 +595,8 @@ public class DungeonThread implements Runnable {
 
                                 //seg = MarvinSegment.fromCue(BHBot.cues.get("Accept"), 5 * Misc.Durations.SECOND, bot.browser);
                                 //bot.browser.clickOnSeg(seg);
-                                bot.browser.closePopupSecurely(BHBot.cues.get("Accept"), BHBot.cues.get("Accept"));
+                                Cue AcceptWithBounds = new Cue(BHBot.cues.get("Accept"), Bounds.fromWidthHeight(465, 445, 110, 40));
+                                bot.browser.closePopupSecurely(AcceptWithBounds, AcceptWithBounds);
                                 bot.browser.readScreen(2 * Misc.Durations.SECOND);
 
                                 // This is a Bit Heroes bug!
@@ -759,8 +760,7 @@ public class DungeonThread implements Runnable {
                                 //team selection screen
                                 /* Solo-for-bounty code */
                                 if (dungeonSetting.solo) { //if the level is soloable then clear the team to complete bounties
-                                    bot.browser.readScreen(Misc.Durations.SECOND);
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Clear"), Misc.Durations.SECOND * 2, bot.browser);
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("Clear"), Misc.Durations.SECOND * 3, Bounds.fromWidthHeight(305, 435, 120, 60), bot.browser);
                                     if (seg != null) {
                                         BHBot.logger.info("Attempting solo as per selected dungeon setting....");
                                         bot.browser.clickOnSeg(seg);
@@ -775,8 +775,7 @@ public class DungeonThread implements Runnable {
                                bot.browser.closePopupSecurely(dungeonAccept, dungeonAccept);
 
                                 if (dungeonSetting.solo) {
-                                    bot.browser.readScreen(3 * Misc.Durations.SECOND); //wait for dropdown animation to finish
-                                    seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 2 * Misc.Durations.SECOND, bot.browser);
+                                    seg = MarvinSegment.fromCue(BHBot.cues.get("YesGreen"), 5 * Misc.Durations.SECOND, Bounds.fromWidthHeight(290, 340, 70, 45), bot.browser);
                                     if (seg != null) {
                                         bot.browser.clickOnSeg(seg);
                                     } else {

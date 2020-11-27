@@ -307,7 +307,7 @@ class CueManager {
         addCue("Gauntlet", "cues/cueGauntlet.png", null); // cue for gauntlet button
         addCue("Gauntlet2", "cues/cueGauntlet2.png", null); // alternative cue for gauntlet button
         addCue("Play", "cues/cuePlay.png", null); // cue for play button in trials/gauntlet window
-        addCue("TokenBar", "cues/cueTokenBar.png", null);
+        addCue("TokenBar", "cues/cueTokenBar.png", Bounds.fromWidthHeight(310, 40, 65, 55));
         addCue("CloseGreen", "cues/cueCloseGreen.png", null); // close button used with "You have been defeated" popup in gauntlet and also "Victory" window in gauntlet
         addCue("VictorySmall", "cues/Victory_Small.png", null); // victory window cue found upon completing gauntlet / PvP
 
@@ -327,7 +327,7 @@ class CueManager {
         addCue("Zone5", "cues/cueZone5.png", null);
         addCue("Zone6", "cues/cueZone6.png", null);
         addCue("Zone7", "cues/cueZone7.png", null);
-        addCue("Zone8", "cues/cueZone8.png", null);
+        addCue("Zone8", "cues/cueZone8.png", Bounds.fromWidthHeight(305, 45, 185, 50));
         addCue("Zone9", "cues/cueZone9.png", null);
         addCue("Zone10", "cues/cueZone10.png", null);
         addCue("Zone11", "cues/cueZone11.png", null);
@@ -350,7 +350,7 @@ class CueManager {
 
         // GVG related:
         addCue("GVG", "cues/cueGVG.png", null); // main GVG button cue
-        addCue("BadgeBar", "cues/cueBadgeBar.png", null);
+        addCue("BadgeBar", "cues/cueBadgeBar.png", Bounds.fromWidthHeight(315, 40, 60, 55));
         addCue("GVGWindow", "cues/cueGVGWindow.png", new Bounds(260, 90, 280, 110)); // GVG window cue
 
         addCue("InGamePM", "cues/cueInGamePM.png", new Bounds(450, 330, 530, 380)); // note that the guild window uses the same cue! That's why it's important that user doesn't open guild window while bot is working!
