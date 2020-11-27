@@ -466,6 +466,7 @@ class CueManager {
         addCue("LoadingInventoryIcon", "cues/cueLoadingInventoryIcon.png", null); // cue for loading animation for the icons inside inventory
 
         // rune management related:
+        addCue("CharacterMenu", "cues/cueCharacter.png", Bounds.fromWidthHeight(0, 465, 60, 55));
         addCue("Runes", "cues/cueRunes.png", new Bounds(120, 450, 245, 495)); // runes button in profile
         addCue("RunesLayout", "cues/cueRunesLayout.png", new Bounds(340, 70, 460, 110)); // runes layout header
         addCue("RunesPicker", "cues/runes/cueRunesPicker.png", Bounds.fromWidthHeight(335, 115, 130, 55)); // rune picker

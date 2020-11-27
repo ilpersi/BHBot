@@ -4535,7 +4535,7 @@ public class DungeonThread implements Runnable {
         MarvinSegment seg;
 
         // click on the character menu button (it's a bottom-left button with your character image on it):
-        bot.browser.clickInGame(55, 465);
+        if (openCharacterMenu()) return;
 
         seg = MarvinSegment.fromCue(BHBot.cues.get("StripSelectorButton"), 10 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
@@ -4811,7 +4811,7 @@ public class DungeonThread implements Runnable {
         BHBot.logger.info("Trying to consume some consumables (" + Misc.listToString(consumables) + ")...");
 
         // click on the character menu button (it's a bottom-left button with your character image on it):
-        bot.browser.clickInGame(55, 465);
+        if (openCharacterMenu()) return;
 
         seg = MarvinSegment.fromCue(BHBot.cues.get("StripSelectorButton"), 15 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
@@ -5589,6 +5589,25 @@ public class DungeonThread implements Runnable {
         if (autoSeg != null) {
             bot.browser.clickOnSeg(autoSeg);
         }
+    }
+
+    /**
+     * Takes care of opening the Character Menu (the one on the bottom left with your face in it)
+     *
+     * @return true if it was not possible to open the character menu
+     */
+    boolean openCharacterMenu() {
+        MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("CharacterMenu"), 5 * Misc.Durations.SECOND, bot.browser);
+        if (seg == null) {
+            bot.saveGameScreen("no-character-menu", "errors", bot.browser.getImg());
+            BHBot.logger.warn("Error: unable to detect character menu button! Skipping...");
+            BHBot.logger.debug(Misc.getStackTrace());
+            return true;
+        }
+
+        bot.browser.clickOnSeg(seg);
+
+        return false;
     }
 
 }

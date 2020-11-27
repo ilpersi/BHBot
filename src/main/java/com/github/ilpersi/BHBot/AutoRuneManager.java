@@ -255,11 +255,13 @@ class AutoRuneManager {
 
     private boolean openRunesMenu() {
         // Open character menu
-        bot.browser.clickInGame(55, 465);
+        if (bot.dungeon.openCharacterMenu()) return true;
 
         MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("Runes"), 5 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
+            bot.saveGameScreen("no-rune-button", "errors", bot.browser.getImg());
             BHBot.logger.warn("Error: unable to detect runes button! Skipping...");
+            BHBot.logger.debug(Misc.getStackTrace());
             return true;
         }
 
