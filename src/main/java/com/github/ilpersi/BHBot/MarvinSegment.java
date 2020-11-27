@@ -79,6 +79,16 @@ public class MarvinSegment {
             int suggestedHeight = seg.y2 - suggestedY1 + margin;
             while ((suggestedHeight % 5) != 0) suggestedHeight += 1;
 
+            // we make sure we dont exceed the src width
+            while ((suggestedX1 + suggestedWidth) > src.getWidth()) {
+                suggestedWidth -= 1;
+            }
+
+            // we make sure we dont exceed the src height
+            while ((suggestedY1 + suggestedHeight) > src.getHeight()) {
+                suggestedHeight -= 1;
+            }
+
             // Key used to check if we printed null bounds info before
             String cueKey = cue.name + "_" + suggestedX1 + "_" + suggestedWidth + "_" + suggestedY1 + "_" + suggestedHeight;
 
