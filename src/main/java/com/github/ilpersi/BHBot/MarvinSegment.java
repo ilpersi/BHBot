@@ -89,6 +89,10 @@ public class MarvinSegment {
                 suggestedHeight -= 1;
             }
 
+            // we make sure not to exceed initial boundaries
+            if (suggestedX1 < 0) suggestedX1 = 0;
+            if (suggestedY1 < 0) suggestedY1 = 0;
+
             // Key used to check if we printed null bounds info before
             String cueKey = cue.name + "_" + suggestedX1 + "_" + suggestedWidth + "_" + suggestedY1 + "_" + suggestedHeight;
 
