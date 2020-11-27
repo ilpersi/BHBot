@@ -47,6 +47,7 @@ public class BlackWhiteTools {
                              * OF THE TOBLACKWHITE METHOD
                              */
                             origImg.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
+                            origImg.update();
                             BufferedImage bwImage = origImg.getBufferedImage();
 
                             String fileName = "BlackWhite_" + fileEntry.getName();
@@ -82,6 +83,7 @@ public class BlackWhiteTools {
 
                 MarvinImage totalTSImg = new MarvinImage(screenImg.getSubimage(totalWBTS.x1, totalWBTS.y1, totalWBTS.width, totalWBTS.height));
                 totalTSImg.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
+                totalTSImg.update();
                 BufferedImage totalTSSubImg = totalTSImg.getBufferedImage();
 
             } catch (IOException e) {
@@ -106,6 +108,7 @@ public class BlackWhiteTools {
                 for (int partyMemberPos = 0; partyMemberPos < invitesCnt - 1; partyMemberPos++) {
                     MarvinImage subImg = new MarvinImage(screenImg.getSubimage(TSBound.x1, TSBound.y1 + (54 * partyMemberPos), TSBound.width, TSBound.height));
                     subImg.toBlackWhite(new Color(20, 20, 20), new Color(203, 203, 203), 203);
+                    subImg.update();
                     BufferedImage subimagetestbw = subImg.getBufferedImage();
 
                 }
@@ -133,6 +136,7 @@ public class BlackWhiteTools {
 
                 MarvinImage subImg = new MarvinImage(screenImg.getSubimage(375, 20, 55, 20));
                 subImg.toBlackWhite(new Color(10, 11, 13), new Color(64, 64, 64), 0);
+                subImg.update();
                 BufferedImage subimagetestbw = subImg.getBufferedImage();
 
             } catch (IOException e) {

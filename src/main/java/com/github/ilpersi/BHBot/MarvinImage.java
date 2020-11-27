@@ -868,6 +868,5 @@ public class MarvinImage implements Cloneable {
             }
         }
         setIntColorArray(map);
-        update(); // must be called! Or else things won't work...
     }
 }

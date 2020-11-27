@@ -1619,6 +1619,7 @@ public class DungeonThread implements Runnable {
                                         if (wbSetting.minimumTotalTS > 0) {
                                             MarvinImage totalTSImg = new MarvinImage(bot.browser.getImg().getSubimage(totalWBTS.x1, totalWBTS.y1, totalWBTS.width, totalWBTS.height));
                                             totalTSImg.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
+                                            totalTSImg.update();
                                             BufferedImage totalTSSubImg = totalTSImg.getBufferedImage();
                                             totalTS = readNumFromImg(totalTSSubImg, "wb_total_ts_", new HashSet<>());
 
@@ -1649,6 +1650,7 @@ public class DungeonThread implements Runnable {
                                                 for (int partyMemberPos = 0; partyMemberPos < inviteCnt; partyMemberPos++) {
                                                     MarvinImage subImg = new MarvinImage(bot.browser.getImg().getSubimage(TSBound.x1, TSBound.y1 + (54 * partyMemberPos), TSBound.width, TSBound.height));
                                                     subImg.toBlackWhite(new Color(20, 20, 20), new Color(203, 203, 203), 203);
+                                                    subImg.update();
                                                     BufferedImage tsSubImg = subImg.getBufferedImage();
 
                                                     int playerTS = readNumFromImg(tsSubImg, "wb_player_ts_", new HashSet<>());
@@ -2545,6 +2547,7 @@ public class DungeonThread implements Runnable {
                 bot.browser.readScreen();
                 MarvinImage subm = new MarvinImage(bot.browser.getImg().getSubimage(375, 20, 55, 20));
                 subm.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 64);
+                subm.update();
                 BufferedImage subimagetestbw = subm.getBufferedImage();
                 int num = readNumFromImg(subimagetestbw, "small", new HashSet<>());
                 BHBot.logger.info(bot.getState().getName() + " #" + counters.get(bot.getState()).getTotal() + " completed. Level reached: " + num);
@@ -3919,6 +3922,7 @@ public class DungeonThread implements Runnable {
 
         // make it white-gray (to facilitate cue recognition):
         im.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
+        im.update();
 
         BufferedImage imb = im.getBufferedImage();
 
@@ -3951,6 +3955,7 @@ public class DungeonThread implements Runnable {
 
         // make it white-gray (to facilitate cue recognition):
         im.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
+        im.update();
 
         BufferedImage imb = im.getBufferedImage();
 
@@ -3980,6 +3985,7 @@ public class DungeonThread implements Runnable {
         Bounds topTierBounds = Bounds.fromWidthHeight(403, 156, 27, 26);
         MarvinImage topTierImg = new MarvinImage(bot.browser.getImg().getSubimage(topTierBounds.x1, topTierBounds.y1, topTierBounds.width, topTierBounds.height));
         topTierImg.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
+        topTierImg.update();
         int topAvailableTier = readNumFromImg(topTierImg.getBufferedImage(), "", new HashSet<>());
 
         if (topAvailableTier == 0) {
@@ -4181,6 +4187,7 @@ public class DungeonThread implements Runnable {
             BufferedImage topRangeImg = bot.browser.getImg().getSubimage(difficultyRangeBounds.x1, difficultyRangeBounds.y1 + posOffset, difficultyRangeBounds.width, difficultyRangeBounds.height);
             MarvinImage im = new MarvinImage(topRangeImg);
             im.toBlackWhite(difficultyBlack, difficultyWhite, customMax);
+            im.update();
 
             int[] diffRange = readNumRangeFromImg(im.getBufferedImage(), "", new HashSet<>(), "hyphen", "-");
             BHBot.logger.debug("Detected difficulty range: " + Arrays.toString(diffRange));
@@ -4222,6 +4229,7 @@ public class DungeonThread implements Runnable {
                 BufferedImage topLvlBImg = bot.browser.getImg().getSubimage(topLvlBounds.x1, topLvlBounds.y1, topLvlBounds.width, topLvlBounds.height);
                 MarvinImage topLvlMImg = new MarvinImage(topLvlBImg);
                 topLvlMImg.toBlackWhite(difficultyBlack, difficultyWhite, customMax);
+                topLvlMImg.update();
                 int topLvl = readNumFromImg(topLvlMImg.getBufferedImage());
                 if (topLvl == 0) {
                     BHBot.logger.error("Impossible to read difficulty range top level.");
@@ -4232,6 +4240,7 @@ public class DungeonThread implements Runnable {
                 BufferedImage secondLvlBImg = bot.browser.getImg().getSubimage(topLvlBounds.x1, topLvlBounds.y1 + yOffset, topLvlBounds.width, topLvlBounds.height);
                 MarvinImage secondLvlMImg = new MarvinImage(secondLvlBImg);
                 secondLvlMImg.toBlackWhite(difficultyBlack, difficultyWhite, customMax);
+                secondLvlMImg.update();
                 int secondLvl = readNumFromImg(secondLvlMImg.getBufferedImage());
                 if (secondLvl == 0) {
                     BHBot.logger.error("Impossible to read difficulty range second level.");
@@ -4330,6 +4339,7 @@ public class DungeonThread implements Runnable {
         // the first (upper most) of the 5 buttons in the drop-down menu. Note that every while a "tier x" is written bellow it, so text is higher up (hence we need to scan a larger area)
         MarvinImage subm = new MarvinImage(bot.browser.getImg().getSubimage(350, 150, 70, 35));
         subm.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
+        subm.update();
         BufferedImage sub = subm.getBufferedImage();
         int num = readNumFromImg(sub);
 //		BHBot.logger.info("num = " + Integer.toString(num));
@@ -4408,6 +4418,7 @@ public class DungeonThread implements Runnable {
         while (true) {
             MarvinImage im = new MarvinImage(bot.browser.getImg().getSubimage(seg.x1 + 2, seg.y1 + 20, 35, 24));
             im.toBlackWhite(new Color(25, 25, 25), new Color(255, 255, 255), 254);
+            im.update();
             BufferedImage imb = im.getBufferedImage();
             d = readNumFromImg(imb);
             if (d != 0)
