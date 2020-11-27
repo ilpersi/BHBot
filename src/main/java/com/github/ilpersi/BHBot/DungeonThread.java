@@ -742,7 +742,7 @@ public class DungeonThread implements Runnable {
                                     Cue cueDifficulty;
                                     switch (dungeonSetting.difficulty) {
                                         case 1:
-                                            cueDifficulty = new Cue(BHBot.cues.get("Normal"), null);
+                                            cueDifficulty = new Cue(BHBot.cues.get("Normal"), Bounds.fromWidthHeight(155, 225, 110, 40));
                                             break;
                                         case 2:
                                             cueDifficulty = new Cue(BHBot.cues.get("Hard"), null);
@@ -3687,7 +3687,7 @@ public class DungeonThread implements Runnable {
                 specialDungeon = false;
             } else {
                 // close difficulty selection screen:
-                bot.browser.closePopupSecurely(BHBot.cues.get("Normal"), BHBot.cues.get("X"));
+                bot.browser.closePopupSecurely(new Cue(BHBot.cues.get("Normal"), Bounds.fromWidthHeight(155, 225, 110, 40)), BHBot.cues.get("X"));
             }
 
             // close zone view window:

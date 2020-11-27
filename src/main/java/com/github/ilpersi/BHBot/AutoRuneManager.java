@@ -181,7 +181,7 @@ class AutoRuneManager {
             Misc.sleep(500);
             bot.browser.closePopupSecurely(BHBot.cues.get("RunesLayout"), BHBot.cues.get("X"));
             Misc.sleep(500);
-            bot.browser.closePopupSecurely(BHBot.cues.get("StripSelectorButton"), BHBot.cues.get("X"));
+            bot.browser.closePopupSecurely(BHBot.cues.get("StripSelectorButton"), new Cue(BHBot.cues.get("X"), Bounds.fromWidthHeight(670, 45, 65, 70)));
         }
 
         boolean success = true;
