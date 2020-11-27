@@ -10,7 +10,7 @@ import java.awt.image.BufferedImage;
  *
  * @author Betalord
  */
-@SuppressWarnings("unused")
+
 public class MarvinImage implements Cloneable {
 
     public final static int COLOR_MODEL_RGB = 0;
@@ -436,6 +436,7 @@ public class MarvinImage implements Cloneable {
      *
      * @return int - the color value
      */
+    @SuppressWarnings("unused")
     public int limit8bitsColor(int color) {
 
         if (color > 255) {
@@ -455,7 +456,7 @@ public class MarvinImage implements Cloneable {
      *
      * @return int[]
      */
-    @SuppressWarnings("DuplicatedCode")
+    @SuppressWarnings({"unused", "DuplicatedCode"})
     public int[] Multi8p(int x, int y, int[][] masc) {
         //a b c
         //d e f
@@ -612,7 +613,7 @@ public class MarvinImage implements Cloneable {
      *
      * @return int[]
      */
-    @SuppressWarnings("DuplicatedCode")
+    @SuppressWarnings({"DuplicatedCode", "unused"})
     public double multi8p(int x, int y, double masc) {
         int aR = getIntComponent0(x - 1, y - 1);
         int bR = getIntComponent0(x - 1, y);
@@ -810,6 +811,7 @@ public class MarvinImage implements Cloneable {
      *
      * @param color color
      */
+    @SuppressWarnings("unused")
     public void setAlphaToColor(int color) {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
