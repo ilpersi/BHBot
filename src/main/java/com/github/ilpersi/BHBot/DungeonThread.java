@@ -3571,7 +3571,7 @@ public class DungeonThread implements Runnable {
         }
 
         //activity runes
-        runeManager.processAutoRune(state.getShortcut());
+        runeManager.processAutoRune(state);
 
     }
 

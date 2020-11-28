@@ -282,20 +282,19 @@ class AutoRuneManager {
         return false;
     }
 
-    void processAutoRune(String activity) {
+    void processAutoRune(BHBot.State state) {
         List<String> desiredRunesAsStrs;
-        String activityName = bot.getState().getNameFromShortcut(activity);
         if (bot.settings.autoRuneDefault.isEmpty()) {
             BHBot.logger.debug("autoRunesDefault not defined; aborting autoRunes");
             return;
         }
 
-        if (!bot.settings.autoRune.containsKey(activity)) {
-            BHBot.logger.debug("No autoRunes assigned for " + activityName + ", using defaults.");
+        if (!bot.settings.autoRune.containsKey(state.getShortcut())) {
+            BHBot.logger.debug("No autoRunes assigned for " + state.getName() + ", using defaults.");
             desiredRunesAsStrs = bot.settings.autoRuneDefault;
         } else {
-            BHBot.logger.info("Configuring autoRunes for " + activityName);
-            desiredRunesAsStrs = bot.settings.autoRune.get(activity);
+            BHBot.logger.info("Configuring autoRunes for " + state.getName());
+            desiredRunesAsStrs = bot.settings.autoRune.get(state.getShortcut());
         }
 
         List<MinorRuneEffect> desiredRunes = resolveDesiredRunes(desiredRunesAsStrs);
