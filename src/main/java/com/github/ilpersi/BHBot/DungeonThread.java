@@ -479,7 +479,7 @@ public class DungeonThread implements Runnable {
                                 int tokenDifference = (trials ? bot.settings.costTrials : bot.settings.costGauntlet) - tokens; //difference between needed and current resource
                                 if (tokenDifference > 1) {
                                     int increase = (tokenDifference - 1) * 45;
-                                    TOKENS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
+                                    TOKENS_CHECK_INTERVAL = (long) increase * Misc.Durations.MINUTE; //add 45 minutes to TOKENS_CHECK_INTERVAL for each token needed above 1
                                 } else
                                     TOKENS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 token check every 10 minutes
 
@@ -652,7 +652,7 @@ public class DungeonThread implements Runnable {
                                 int energyDifference = bot.settings.minEnergyPercentage - energy; //difference between needed and current resource
                                 if (energyDifference > 1) {
                                     int increase = (energyDifference - 1) * 8;
-                                    ENERGY_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 8 minutes to the check interval for each energy % needed above 1
+                                    ENERGY_CHECK_INTERVAL = (long) increase * Misc.Durations.MINUTE; //add 8 minutes to the check interval for each energy % needed above 1
                                 } else
                                     ENERGY_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
@@ -824,7 +824,7 @@ public class DungeonThread implements Runnable {
                                 int ticketDifference = bot.settings.costPVP - tickets; //difference between needed and current resource
                                 if (ticketDifference > 1) {
                                     int increase = (ticketDifference - 1) * 45;
-                                    TICKETS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                    TICKETS_CHECK_INTERVAL = (long) increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
                                 } else
                                     TICKETS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
@@ -983,7 +983,7 @@ public class DungeonThread implements Runnable {
                                     int badgeDifference = bot.settings.costGVG - badges; //difference between needed and current resource
                                     if (badgeDifference > 1) {
                                         int increase = (badgeDifference - 1) * 45;
-                                        BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                        BADGES_CHECK_INTERVAL = (long) increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
                                     } else
                                         BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
@@ -1102,7 +1102,7 @@ public class DungeonThread implements Runnable {
                                     int badgeDifference = bot.settings.costGVG - badges; //difference between needed and current resource
                                     if (badgeDifference > 1) {
                                         int increase = (badgeDifference - 1) * 45;
-                                        BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                        BADGES_CHECK_INTERVAL = (long) increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
                                     } else
                                         BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
@@ -1188,7 +1188,7 @@ public class DungeonThread implements Runnable {
                                     int badgeDifference = bot.settings.costGVG - badges; //difference between needed and current resource
                                     if (badgeDifference > 1) {
                                         int increase = (badgeDifference - 1) * 45;
-                                        BADGES_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
+                                        BADGES_CHECK_INTERVAL = (long) increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each ticket needed above 1
                                     } else
                                         BADGES_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
 
@@ -1445,7 +1445,7 @@ public class DungeonThread implements Runnable {
                                 int xealDifference = bot.settings.minXeals - xeals; //difference between needed and current resource
                                 if (xealDifference > 1) {
                                     int increase = (xealDifference - 1) * 45;
-                                    XEALS_CHECK_INTERVAL = increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each xeal needed above 1
+                                    XEALS_CHECK_INTERVAL = (long) increase * Misc.Durations.MINUTE; //add 45 minutes to the check interval for each xeal needed above 1
                                 } else
                                     XEALS_CHECK_INTERVAL = 10 * Misc.Durations.MINUTE; //if we only need 1 check every 10 minutes
                                 bot.browser.readScreen();
