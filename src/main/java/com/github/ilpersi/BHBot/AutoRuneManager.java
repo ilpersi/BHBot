@@ -22,7 +22,7 @@ class AutoRuneManager {
 
         public static MinorRuneEffect getEffectFromName(String name) {
             for (MinorRuneEffect effect : MinorRuneEffect.values())
-                if (effect.name.toLowerCase().equals(name.toLowerCase()))
+                if (effect.name.equalsIgnoreCase(name))
                     return effect;
             return null;
         }
@@ -259,7 +259,7 @@ class AutoRuneManager {
 
         MarvinSegment seg = MarvinSegment.fromCue(BHBot.cues.get("Runes"), 5 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
-            bot.saveGameScreen("no-rune-button", "errors", bot.browser.getImg());
+            Misc.saveScreen("no-rune-button", "errors", bot.browser.getImg());
             BHBot.logger.warn("Error: unable to detect runes button! Skipping...");
             BHBot.logger.debug(Misc.getStackTrace());
             return true;
@@ -271,7 +271,7 @@ class AutoRuneManager {
         seg = MarvinSegment.fromCue(BHBot.cues.get("RunesLayout"), 5 * Misc.Durations.SECOND, bot.browser);
         if (seg == null) {
             BHBot.logger.warn("Error: unable to detect rune layout! Skipping...");
-            bot.saveGameScreen("no-rune-layout", "errors", bot.browser.getImg());
+            Misc.saveScreen("no-rune-layout", "errors", bot.browser.getImg());
             seg = MarvinSegment.fromCue(BHBot.cues.get("X"), 5 * Misc.Durations.SECOND, bot.browser);
             if (seg != null) {
                 bot.browser.clickOnSeg(seg);

@@ -124,7 +124,7 @@ public class MarvinSegment {
                 debugBounds.drawRect(seg.x1, seg.y1, seg.width, seg.height, Color.BLUE);
                 debugBounds.drawRect(suggestedX1, suggestedY1, suggestedWidth, suggestedHeight, 3, Color.GREEN);
                 debugBounds.update();
-                String boundsFName = BHBot.saveGameScreen("debugNullBounds_" + cueKey, "debug_null_bounds", debugBounds.getBufferedImage());
+                String boundsFName = Misc.saveScreen("debugNullBounds_" + cueKey, "debug_null_bounds", debugBounds.getBufferedImage());
                 BHBot.logger.debug("Found bounds saved in: " + boundsFName);
 
                 // To make the suggestion actionable we also print the stack trace so that developers can use it

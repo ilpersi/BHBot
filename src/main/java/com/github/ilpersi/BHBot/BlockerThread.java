@@ -143,7 +143,7 @@ public class BlockerThread implements Runnable {
                     if (seg != null) {
                         if ((bot.settings.screenshots.contains("d"))) {
                             BufferedImage reward = bot.browser.getImg().getSubimage(131, 136, 513, 283);
-                            bot.saveGameScreen("daily_reward", "rewards", reward);
+                            Misc.saveScreen("daily_reward", "rewards", reward);
                         }
                         bot.browser.clickOnSeg(seg);
                     } else {
@@ -313,7 +313,7 @@ public class BlockerThread implements Runnable {
 
                     BHBot.logger.info(weeklyRewardEntry.getKey() + " reward claimed successfully.");
                     if ((bot.settings.screenshots.contains("w"))) {
-                        bot.saveGameScreen(weeklyRewardEntry.getKey().toLowerCase() + "_reward", "rewards", reward);
+                        Misc.saveScreen(weeklyRewardEntry.getKey().toLowerCase() + "_reward", "rewards", reward);
                     }
                 }
             }

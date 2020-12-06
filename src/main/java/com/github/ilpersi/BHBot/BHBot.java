@@ -9,7 +9,6 @@ import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -18,7 +17,6 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
@@ -931,57 +929,15 @@ public class BHBot {
      * @return name of the path in which the screenshot has been saved (successfully or not)
      */
     synchronized String saveGameScreen(String prefix) {
-        return saveGameScreen(prefix, null, browser.takeScreenshot(true));
+        return Misc.saveScreen(prefix, null, browser.takeScreenshot(true));
     }
 
     synchronized String saveGameScreen(String prefix, BufferedImage img) {
-        return saveGameScreen(prefix, null, img);
+        return Misc.saveScreen(prefix, null, img);
     }
 
     synchronized String saveGameScreen(String prefix, String subFolder) {
-        return saveGameScreen(prefix, subFolder, browser.takeScreenshot(true));
-    }
-
-    synchronized static String saveGameScreen(String prefix, String subFolder, BufferedImage img) {
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        // sub-folder logic management
-        String screenshotPath = BHBot.screenshotPath;
-        if (subFolder != null) {
-            File subFolderPath = new File(BHBot.screenshotPath + subFolder + "/");
-            if (!subFolderPath.exists()) {
-                if (!subFolderPath.mkdir()) {
-                    logger.error("Impossible to create screenshot sub folder in " + subFolder);
-                    return null;
-                } else {
-                    try {
-                        logger.info("Created screenshot sub-folder " + subFolderPath.getCanonicalPath());
-                    } catch (IOException e) {
-                        logger.error("Error while getting Canonical Path for newly created screenshots sub-folder", e);
-                    }
-                }
-            }
-            screenshotPath += subFolder + "/";
-        }
-
-        Date date = new Date();
-        String name = prefix + "_" + dateFormat.format(date) + ".png";
-        int num = 0;
-        File f = new File(screenshotPath + name);
-        while (f.exists()) {
-            num++;
-            name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
-            f = new File(screenshotPath + name);
-        }
-
-        // save screen shot:
-        try {
-            ImageIO.write(img, "png", f);
-        } catch (Exception e) {
-            logger.error("Impossible to take a screenshot!");
-        }
-
-        return f.getPath();
+        return Misc.saveScreen(prefix, subFolder, browser.takeScreenshot(true));
     }
 
     void dumpCrashLog(Exception originalException) {

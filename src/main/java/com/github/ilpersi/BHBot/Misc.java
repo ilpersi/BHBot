@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -23,6 +24,48 @@ import java.util.*;
 public class Misc {
 
     private static final Class<Misc> miscClass = Misc.class;
+
+    synchronized static String saveScreen(String prefix, String subFolder, BufferedImage img) {
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        // sub-folder logic management
+        String screenshotPath = BHBot.screenshotPath;
+        if (subFolder != null) {
+            File subFolderPath = new File(BHBot.screenshotPath + subFolder + "/");
+            if (!subFolderPath.exists()) {
+                if (!subFolderPath.mkdir()) {
+                    BHBot.logger.error("Impossible to create screenshot sub folder in " + subFolder);
+                    return null;
+                } else {
+                    try {
+                        BHBot.logger.info("Created screenshot sub-folder " + subFolderPath.getCanonicalPath());
+                    } catch (IOException e) {
+                        BHBot.logger.error("Error while getting Canonical Path for newly created screenshots sub-folder", e);
+                    }
+                }
+            }
+            screenshotPath += subFolder + "/";
+        }
+
+        Date date = new Date();
+        String name = prefix + "_" + dateFormat.format(date) + ".png";
+        int num = 0;
+        File f = new File(screenshotPath + name);
+        while (f.exists()) {
+            num++;
+            name = prefix + "_" + dateFormat.format(date) + "_" + num + ".png";
+            f = new File(screenshotPath + name);
+        }
+
+        // save screen shot:
+        try {
+            ImageIO.write(img, "png", f);
+        } catch (Exception e) {
+            BHBot.logger.error("Impossible to take a screenshot!");
+        }
+
+        return f.getPath();
+    }
 
     static final class Durations {
         static final int SECOND = 1000;
@@ -100,7 +143,7 @@ public class Misc {
 
     static String millisToHumanForm(Long millis) {
 
-        //millisecs
+        // milliseconds
         long millisecs = millis % 1000;
         // seconds
         long seconds = millis / 1000;
