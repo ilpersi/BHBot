@@ -439,7 +439,7 @@ public class DungeonThread implements Runnable {
                             if (seg == null)
                                 seg = MarvinSegment.fromCue(BHBot.cues.get("Gauntlet"), bot.browser);
                             if (seg == null) {
-                                seg = MarvinSegment.fromCue(BHBot.cues.get("Gauntlet2"), 0, Bounds.fromWidthHeight(735, 235, 55, 60), bot.browser);
+                                seg = MarvinSegment.fromCue(BHBot.cues.get("Gauntlet2"), 0, Bounds.fromWidthHeight(735, 235, 55, 180), bot.browser);
                             }
                             if (seg == null) {// trials/gauntlet button not visible (perhaps it is disabled?)
                                 BHBot.logger.warn("Gauntlet/Trials button not found");
