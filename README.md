@@ -1,5 +1,10 @@
 # BHBot
 
+# Update January 11 201
+## Kongregate switched from Flash to Unity technology making this tool no longer working. Please use another tool.
+
+
+
 [![Gitter chat](https://img.shields.io/gitter/room/ilpersi/BHBot.svg?color=red&style=plastic&logo=gitter)](https://gitter.im/BHBot/community)
 [![GitHub release](https://img.shields.io/github/release/ilpersi/BHBot.svg?label=last%20release&style=plastic&logo=docusign)](https://github.com/ilpersi/BHBot/releases/latest)
 [![GitHub issues by-label](https://img.shields.io/github/issues/ilpersi/BHBot/bug.svg?label=bug%28s%29&style=plastic&logo=hackaday)](https://github.com/ilpersi/BHBot/labels/bug)
